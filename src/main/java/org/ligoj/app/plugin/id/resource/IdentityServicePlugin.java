@@ -1,4 +1,4 @@
-package org.ligoj.app.resource.plugin.id;
+package org.ligoj.app.plugin.id.resource;
 
 import org.springframework.security.core.Authentication;
 

@@ -1,11 +1,11 @@
-package org.ligoj.app.resource.plugin.id;
+package org.ligoj.app.plugin.id.resource;
 
 import org.springframework.stereotype.Component;
 
 import org.ligoj.app.resource.plugin.AbstractServicePlugin;
 
 /**
- * The bug tracker service.
+ * The identity service.
  */
 @Component
 public class IdentityResource extends AbstractServicePlugin {
