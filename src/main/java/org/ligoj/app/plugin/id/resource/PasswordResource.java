@@ -45,7 +45,7 @@ import lombok.extern.slf4j.Slf4j;
 /**
  * LDAP password resource.
  */
-@Path("/ldap/password")
+@Path("/id/password")
 @Service
 @Transactional
 @Produces(MediaType.APPLICATION_JSON)
