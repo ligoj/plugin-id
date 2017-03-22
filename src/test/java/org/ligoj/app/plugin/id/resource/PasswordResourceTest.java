@@ -18,7 +18,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.ligoj.app.AbstractJpaTest;
 import org.ligoj.app.MatcherUtil;
-import org.ligoj.app.api.UserLdap;
+import org.ligoj.app.api.UserOrg;
 import org.ligoj.app.iam.IUserRepository;
 import org.ligoj.app.iam.IamConfiguration;
 import org.ligoj.app.iam.IamProvider;
@@ -135,7 +135,7 @@ public class PasswordResourceTest extends AbstractJpaTest {
 							return mimeMessagePreparator;
 						});
 
-		final UserLdap user = new UserLdap();
+		final UserOrg user = new UserOrg();
 		user.setFirstName("John");
 		user.setLastName("Doe");
 		user.setId("fdauganB");
@@ -162,7 +162,7 @@ public class PasswordResourceTest extends AbstractJpaTest {
 	@Test
 	public void requestRecoveryLocked() {
 		final PasswordResource resource = newResource();
-		final UserLdap lockedUser = mockUser(resource, "fdaugan");
+		final UserOrg lockedUser = mockUser(resource, "fdaugan");
 		Mockito.when(lockedUser.getLocked()).thenReturn(new Date());
 		resource.requestRecovery("fdaugan", "f.d@sample.com");
 		Assert.assertEquals(0, repository.findAll().size());
@@ -173,7 +173,7 @@ public class PasswordResourceTest extends AbstractJpaTest {
 	@Test
 	public void sendMailReset() throws MessagingException {
 		final PasswordResource resource = newResource();
-		final UserLdap user = new UserLdap();
+		final UserOrg user = new UserOrg();
 		user.setFirstName("John");
 		user.setLastName("Doe");
 		user.setId("fdauganB");
@@ -189,7 +189,7 @@ public class PasswordResourceTest extends AbstractJpaTest {
 		final PasswordResource resource = newResource();
 
 		exOnPrepare = null;
-		final UserLdap user = new UserLdap();
+		final UserOrg user = new UserOrg();
 		user.setFirstName("John");
 		user.setLastName("Doe");
 		user.setId("fdauganB");
@@ -282,7 +282,7 @@ public class PasswordResourceTest extends AbstractJpaTest {
 		final PasswordResource resource = newResource();
 		Mockito.when(resource.repository.findByLoginAndTokenAndDateAfter(ArgumentMatchers.anyString(), ArgumentMatchers.anyString(),
 				ArgumentMatchers.any(Date.class))).thenReturn(new PasswordReset());
-		final UserLdap lockedUser = mockUser(resource, "fdaugan");
+		final UserOrg lockedUser = mockUser(resource, "fdaugan");
 		Mockito.when(lockedUser.getLocked()).thenReturn(new Date());
 		resource.reset(prepareReset("fdaugan"), "fdaugan");
 		Assert.assertEquals(0, repository.findAll().size());
@@ -290,9 +290,9 @@ public class PasswordResourceTest extends AbstractJpaTest {
 		Mockito.verifyNoMoreInteractions(lockedUser);
 	}
 
-	private UserLdap mockUser(final PasswordResource resource, final String login) {
+	private UserOrg mockUser(final PasswordResource resource, final String login) {
 		final IUserRepository mock = resource.getUser();
-		final UserLdap user = Mockito.mock(UserLdap.class);
+		final UserOrg user = Mockito.mock(UserOrg.class);
 		Mockito.when(mock.findById("fdaugan")).thenReturn(user);
 		Mockito.when(user.getId()).thenReturn(login);
 		Mockito.when(user.getMails()).thenReturn(Collections.emptyList());

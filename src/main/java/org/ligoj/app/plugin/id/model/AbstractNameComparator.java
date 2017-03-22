@@ -3,7 +3,7 @@ package org.ligoj.app.plugin.id.model;
 import java.util.function.Function;
 
 import org.apache.commons.lang3.ObjectUtils;
-import org.ligoj.app.api.UserLdap;
+import org.ligoj.app.api.UserOrg;
 
 /**
  * Comparator based on a string attribute.
@@ -23,7 +23,7 @@ public abstract class AbstractNameComparator extends LoginComparator {
 	 *         first argument is less than, equal to, or greater than the
 	 *         second.
 	 */
-	protected int compare(final UserLdap o1, final UserLdap o2, final Function<UserLdap, String> nameProvider) {
+	protected int compare(final UserOrg o1, final UserOrg o2, final Function<UserOrg, String> nameProvider) {
 		final int compareTo = ObjectUtils.defaultIfNull(nameProvider.apply(o1), "")
 				.compareToIgnoreCase(ObjectUtils.defaultIfNull(nameProvider.apply(o2), ""));
 		if (compareTo == 0) {

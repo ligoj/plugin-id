@@ -23,8 +23,8 @@ import org.apache.commons.lang3.CharEncoding;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.joda.time.DateTime;
-import org.ligoj.app.api.SimpleUserLdap;
-import org.ligoj.app.api.UserLdap;
+import org.ligoj.app.api.SimpleUserOrg;
+import org.ligoj.app.api.UserOrg;
 import org.ligoj.app.iam.IUserRepository;
 import org.ligoj.app.iam.IamProvider;
 import org.ligoj.app.plugin.id.dao.PasswordResetRepository;
@@ -143,7 +143,7 @@ public class PasswordResource {
 	@Path("recovery/{uid}/{mail}")
 	public void requestRecovery(@PathParam("uid") final String uid, @PathParam("mail") final String mail) {
 		// Check user exists and is not locked
-		final UserLdap userLdap = getUser().findById(uid);
+		final UserOrg userLdap = getUser().findById(uid);
 		if (userLdap != null && userLdap.getLocked() == null) {
 			// Case insensitive match
 			final Set<String> mails = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
@@ -158,7 +158,7 @@ public class PasswordResource {
 	/**
 	 * Create a password reset. Previous token are kept.
 	 */
-	private void createPasswordReset(final String uid, final String mail, final UserLdap userLdap, final String token) {
+	private void createPasswordReset(final String uid, final String mail, final UserOrg userLdap, final String token) {
 		final PasswordReset passwordReset = new PasswordReset();
 		passwordReset.setLogin(uid);
 		passwordReset.setToken(token);
@@ -177,7 +177,7 @@ public class PasswordResource {
 	 * @param token
 	 *            Random token.
 	 */
-	protected void sendMailReset(final UserLdap user, final String mailTo, final String token) {
+	protected void sendMailReset(final UserOrg user, final String mailTo, final String token) {
 		sendMail(mimeMessage -> {
 			final String fullName = user.getFirstName() + " " + user.getLastName();
 			final InternetAddress internetAddress = new InternetAddress(mailTo, fullName, CharEncoding.UTF_8);
@@ -256,7 +256,7 @@ public class PasswordResource {
 	 * @return the clear generated password.
 	 */
 	protected String create(final String uid, final String password, final boolean sendMail) {
-		final UserLdap userLdap = checkUser(uid);
+		final UserOrg userLdap = checkUser(uid);
 
 		// Replace the old or create a new one
 		getUser().setPassword(userLdap, password);
@@ -271,10 +271,10 @@ public class PasswordResource {
 	 * 
 	 * @param uid
 	 *            UID of user to lookup.
-	 * @return {@link UserLdap} LDAP entry.
+	 * @return {@link UserOrg} LDAP entry.
 	 */
-	private UserLdap checkUser(final String uid) {
-		final UserLdap userLdap = getUser().findById(uid);
+	private UserOrg checkUser(final String uid) {
+		final UserOrg userLdap = getUser().findById(uid);
 		if (userLdap == null || userLdap.getLocked() != null) {
 			throw new BusinessException(BusinessException.KEY_UNKNOW_ID, uid);
 		}
@@ -284,7 +284,7 @@ public class PasswordResource {
 	/**
 	 * Send the mail of password to the user.
 	 */
-	protected void sendMailPassword(final SimpleUserLdap user, final String password) {
+	protected void sendMailPassword(final SimpleUserOrg user, final String password) {
 		log.info("Sending mail to '{}' at {}", user.getId(), user.getMails());
 		sendMail(mimeMessage -> {
 			final InternetAddress[] internetAddresses = new InternetAddress[user.getMails().size()];

@@ -1,6 +1,6 @@
 package org.ligoj.app.plugin.id.model;
 
-import org.ligoj.app.api.UserLdap;
+import org.ligoj.app.api.UserOrg;
 
 /**
  * Order by company.
@@ -8,8 +8,8 @@ import org.ligoj.app.api.UserLdap;
 public class CompanyComparator extends AbstractNameComparator {
 
 	@Override
-	public int compare(final UserLdap o1, final UserLdap o2) {
-		return compare(o1, o2, UserLdap::getCompany);
+	public int compare(final UserOrg o1, final UserOrg o2) {
+		return compare(o1, o2, UserOrg::getCompany);
 	}
 
 }
