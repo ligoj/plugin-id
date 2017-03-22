@@ -16,7 +16,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.ligoj.app.AbstractJpaTest;
+import org.ligoj.app.AbstractAppTest;
 import org.ligoj.app.MatcherUtil;
 import org.ligoj.app.api.UserOrg;
 import org.ligoj.app.iam.IUserRepository;
@@ -46,7 +46,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 @ContextConfiguration(locations = "classpath:/META-INF/spring/application-context-test.xml")
 @Rollback
 @Transactional
-public class PasswordResourceTest extends AbstractJpaTest {
+public class PasswordResourceTest extends AbstractAppTest {
 
 	private Exception exOnPrepare = null;
 	private MimeMessage mockMessage;
