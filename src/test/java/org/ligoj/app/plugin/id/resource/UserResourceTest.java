@@ -33,7 +33,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import net.sf.ehcache.CacheManager;
 
 /**
- * Test of {@link UserLdapResource}<br>
+ * Test of {@link UserOrgResource}<br>
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations = "classpath:/META-INF/spring/application-context-test.xml")
@@ -43,7 +43,7 @@ import net.sf.ehcache.CacheManager;
 public class UserResourceTest extends AbstractAppTest {
 
 	@Autowired
-	private UserLdapResource resource;
+	private UserOrgResource resource;
 
 	/**
 	 * Check the result : expects one entry
@@ -473,7 +473,7 @@ public class UserResourceTest extends AbstractAppTest {
 
 	@Test
 	public void zcreateUser() {
-		final UserLdapEdition user = new UserLdapEdition();
+		final UserOrgEditionVo user = new UserOrgEditionVo();
 		user.setId("flasta");
 		user.setFirstName("FirstA ");
 		user.setLastName(" LASTA");
@@ -500,7 +500,7 @@ public class UserResourceTest extends AbstractAppTest {
 	public void createUserAlreadyExists() {
 		thrown.expect(ValidationJsonException.class);
 		thrown.expect(MatcherUtil.validationMatcher("id", "already-exist"));
-		final UserLdapEdition user = new UserLdapEdition();
+		final UserOrgEditionVo user = new UserOrgEditionVo();
 		user.setId("flast1");
 		user.setFirstName("FirstA");
 		user.setLastName("LastA");
@@ -517,7 +517,7 @@ public class UserResourceTest extends AbstractAppTest {
 	public void zcreateUserDelegateCompanyNotExist() {
 		thrown.expect(ValidationJsonException.class);
 		thrown.expect(MatcherUtil.validationMatcher("company", BusinessException.KEY_UNKNOW_ID));
-		final UserLdapEdition user = new UserLdapEdition();
+		final UserOrgEditionVo user = new UserOrgEditionVo();
 		user.setId("flastc");
 		user.setFirstName("FirstC");
 		user.setLastName("LastC");
@@ -531,7 +531,7 @@ public class UserResourceTest extends AbstractAppTest {
 	public void zcreateUserNoDelegate() {
 		thrown.expect(ValidationJsonException.class);
 		thrown.expect(MatcherUtil.validationMatcher("company", BusinessException.KEY_UNKNOW_ID));
-		final UserLdapEdition user = new UserLdapEdition();
+		final UserOrgEditionVo user = new UserOrgEditionVo();
 		user.setId("flastd");
 		user.setFirstName("FirstD");
 		user.setLastName("LastD");
@@ -546,7 +546,7 @@ public class UserResourceTest extends AbstractAppTest {
 	public void zcreateUserNoDelegateCompany() {
 		thrown.expect(ValidationJsonException.class);
 		thrown.expect(MatcherUtil.validationMatcher("company", BusinessException.KEY_UNKNOW_ID));
-		final UserLdapEdition user = new UserLdapEdition();
+		final UserOrgEditionVo user = new UserOrgEditionVo();
 		user.setId("flastc");
 		user.setFirstName("FirstC");
 		user.setLastName("LastC");
@@ -560,7 +560,7 @@ public class UserResourceTest extends AbstractAppTest {
 	public void zcreateUserNoDelegateGroup() {
 		thrown.expect(ValidationJsonException.class);
 		thrown.expect(MatcherUtil.validationMatcher("groups", BusinessException.KEY_UNKNOW_ID));
-		final UserLdapEdition user = new UserLdapEdition();
+		final UserOrgEditionVo user = new UserOrgEditionVo();
 		user.setId("flastg");
 		user.setFirstName("FirstG");
 		user.setLastName("LastG");
@@ -631,7 +631,7 @@ public class UserResourceTest extends AbstractAppTest {
 	 */
 	@Test
 	public void update() {
-		final UserLdapEdition user = new UserLdapEdition();
+		final UserOrgEditionVo user = new UserOrgEditionVo();
 		user.setId("flast1");
 		user.setFirstName("FirstA");
 		user.setLastName("LastA");
@@ -669,7 +669,7 @@ public class UserResourceTest extends AbstractAppTest {
 	@Test
 	public void updateFirstName() {
 		// First name change only
-		final UserLdapEdition user = new UserLdapEdition();
+		final UserOrgEditionVo user = new UserOrgEditionVo();
 		user.setId("jlast3");
 		user.setFirstName("John31");
 		user.setLastName("Last3");
@@ -696,7 +696,7 @@ public class UserResourceTest extends AbstractAppTest {
 	@Test
 	public void updateLastName() {
 		// Last name change only
-		final UserLdapEdition user = new UserLdapEdition();
+		final UserOrgEditionVo user = new UserOrgEditionVo();
 		user.setId("jlast3");
 		user.setFirstName("John31");
 		user.setLastName("Last31");
@@ -723,7 +723,7 @@ public class UserResourceTest extends AbstractAppTest {
 	@Test
 	public void updateMail() {
 		// Mail change only
-		final UserLdapEdition user = new UserLdapEdition();
+		final UserOrgEditionVo user = new UserOrgEditionVo();
 		user.setId("jlast3");
 		user.setFirstName("John31");
 		user.setLastName("Last31");
@@ -748,7 +748,7 @@ public class UserResourceTest extends AbstractAppTest {
 	}
 
 	private void rollbackUser() {
-		final UserLdapEdition user = new UserLdapEdition();
+		final UserOrgEditionVo user = new UserOrgEditionVo();
 		user.setId("jlast3");
 		user.setFirstName("John3");
 		user.setLastName("Last3");
@@ -774,7 +774,7 @@ public class UserResourceTest extends AbstractAppTest {
 	@Test
 	public void updateUserChangeCompanyAndBackAgain() {
 
-		final UserLdapEdition user = new UserLdapEdition();
+		final UserOrgEditionVo user = new UserOrgEditionVo();
 		user.setId("flast0");
 		user.setFirstName("First0"); // Unchanged
 		user.setLastName("Last0"); // Unchanged
@@ -790,7 +790,7 @@ public class UserResourceTest extends AbstractAppTest {
 	public void updateUserChangeDepartmentNotVisible() {
 		initSpringSecurityContext("assist");
 
-		final UserLdapEdition user = new UserLdapEdition();
+		final UserOrgEditionVo user = new UserOrgEditionVo();
 		user.setId("flast0");
 		user.setFirstName("First0"); // Unchanged
 		user.setLastName("Last0"); // Unchanged
@@ -804,7 +804,7 @@ public class UserResourceTest extends AbstractAppTest {
 
 	@Test
 	public void updateUserChangeDepartmentAndBackAgain() {
-		final UserLdapEdition user = new UserLdapEdition();
+		final UserOrgEditionVo user = new UserOrgEditionVo();
 		user.setId("flast0");
 		user.setFirstName("First0"); // Unchanged
 		user.setLastName("Last0"); // Unchanged
@@ -818,7 +818,7 @@ public class UserResourceTest extends AbstractAppTest {
 
 	@Test
 	public void updateUserChangeDepartmentNotExists() {
-		final UserLdapEdition user = new UserLdapEdition();
+		final UserOrgEditionVo user = new UserOrgEditionVo();
 		user.setId("flast0");
 		user.setFirstName("First0"); // Unchanged
 		user.setLastName("Last0"); // Unchanged
@@ -835,7 +835,7 @@ public class UserResourceTest extends AbstractAppTest {
 	public void updateUserCompanyNotExists() {
 		thrown.expect(ValidationJsonException.class);
 		thrown.expect(MatcherUtil.validationMatcher("company", BusinessException.KEY_UNKNOW_ID));
-		final UserLdapEdition user = new UserLdapEdition();
+		final UserOrgEditionVo user = new UserOrgEditionVo();
 		user.setId("flast0");
 		user.setFirstName("FirstA");
 		user.setLastName("LastA");
@@ -851,7 +851,7 @@ public class UserResourceTest extends AbstractAppTest {
 	public void updateUserGroupNotExists() {
 		thrown.expect(ValidationJsonException.class);
 		thrown.expect(MatcherUtil.validationMatcher("groups", BusinessException.KEY_UNKNOW_ID));
-		final UserLdapEdition user = new UserLdapEdition();
+		final UserOrgEditionVo user = new UserOrgEditionVo();
 		user.setId("flast1");
 		user.setFirstName("FirstA");
 		user.setLastName("LastA");
@@ -866,7 +866,7 @@ public class UserResourceTest extends AbstractAppTest {
 
 	@Test
 	public void updateUserNoChange() {
-		final UserLdapEdition user = new UserLdapEdition();
+		final UserOrgEditionVo user = new UserOrgEditionVo();
 		user.setId("jlast3");
 		user.setFirstName("John3");
 		user.setLastName("Last3");
@@ -896,7 +896,7 @@ public class UserResourceTest extends AbstractAppTest {
 	public void updateUserNoDelegate() {
 		thrown.expect(ValidationJsonException.class);
 		thrown.expect(MatcherUtil.validationMatcher("company", BusinessException.KEY_UNKNOW_ID));
-		final UserLdapEdition user = new UserLdapEdition();
+		final UserOrgEditionVo user = new UserOrgEditionVo();
 		user.setId("flast1");
 		user.setFirstName("FirstW");
 		user.setLastName("LastW");
@@ -914,7 +914,7 @@ public class UserResourceTest extends AbstractAppTest {
 	public void updateUserReadOnly() {
 		thrown.expect(ValidationJsonException.class);
 		thrown.expect(MatcherUtil.validationMatcher("groups", BusinessException.KEY_UNKNOW_ID));
-		final UserLdapEdition user = new UserLdapEdition();
+		final UserOrgEditionVo user = new UserOrgEditionVo();
 		user.setId("flast0");
 		user.setFirstName("First0");
 		user.setLastName("Last0");
@@ -931,7 +931,7 @@ public class UserResourceTest extends AbstractAppTest {
 	public void updateUserNoDelegateCompany() {
 		thrown.expect(ValidationJsonException.class);
 		thrown.expect(MatcherUtil.validationMatcher("company", BusinessException.KEY_UNKNOW_ID));
-		final UserLdapEdition user = new UserLdapEdition();
+		final UserOrgEditionVo user = new UserOrgEditionVo();
 		user.setId("flast0");
 		user.setFirstName("FirstA");
 		user.setLastName("LastA");
@@ -948,7 +948,7 @@ public class UserResourceTest extends AbstractAppTest {
 	public void updateUserNoDelegateCompanyChangeFirstName() {
 		thrown.expect(ValidationJsonException.class);
 		thrown.expect(MatcherUtil.validationMatcher("company", BusinessException.KEY_UNKNOW_ID));
-		final UserLdapEdition user = new UserLdapEdition();
+		final UserOrgEditionVo user = new UserOrgEditionVo();
 		user.setId("flast0");
 		user.setFirstName("FirstA");
 		user.setLastName("Last0");
@@ -962,7 +962,7 @@ public class UserResourceTest extends AbstractAppTest {
 	public void updateUserNoDelegateCompanyChangeMail() {
 		thrown.expect(ValidationJsonException.class);
 		thrown.expect(MatcherUtil.validationMatcher("company", BusinessException.KEY_UNKNOW_ID));
-		final UserLdapEdition user = new UserLdapEdition();
+		final UserOrgEditionVo user = new UserOrgEditionVo();
 		user.setId("flast0");
 		user.setFirstName("First0");
 		user.setLastName("Last0");
@@ -974,7 +974,7 @@ public class UserResourceTest extends AbstractAppTest {
 
 	@Test
 	public void updateUserNoDelegateCompanyNoChange() {
-		final UserLdapEdition user = new UserLdapEdition();
+		final UserOrgEditionVo user = new UserOrgEditionVo();
 		user.setId("flast0");
 		user.setFirstName("First0");
 		user.setLastName("Last0");
@@ -988,7 +988,7 @@ public class UserResourceTest extends AbstractAppTest {
 	public void updateUserNoDelegateGroupForTarget() {
 		thrown.expect(ValidationJsonException.class);
 		thrown.expect(MatcherUtil.validationMatcher("groups", BusinessException.KEY_UNKNOW_ID));
-		final UserLdapEdition user = new UserLdapEdition();
+		final UserOrgEditionVo user = new UserOrgEditionVo();
 		user.setId("flast1");
 		user.setFirstName("FirstA");
 		user.setLastName("LastA");
@@ -1003,7 +1003,7 @@ public class UserResourceTest extends AbstractAppTest {
 
 	@Test
 	public void zupdateUserHadNoMail() {
-		final UserLdapEdition user = new UserLdapEdition();
+		final UserOrgEditionVo user = new UserOrgEditionVo();
 		user.setId("jdoe5");
 		user.setFirstName("John5");
 		user.setLastName("Doe5");
@@ -1031,7 +1031,7 @@ public class UserResourceTest extends AbstractAppTest {
 
 	@Test
 	public void zupdateUserHasNoMail() {
-		final UserLdapEdition user = new UserLdapEdition();
+		final UserOrgEditionVo user = new UserOrgEditionVo();
 		user.setId("jdoe5");
 		user.setFirstName("John5");
 		user.setLastName("Doe5");
@@ -1059,7 +1059,7 @@ public class UserResourceTest extends AbstractAppTest {
 
 	@Test
 	public void zupdateUserNoPassword() {
-		final UserLdapEdition user = new UserLdapEdition();
+		final UserOrgEditionVo user = new UserOrgEditionVo();
 		user.setId("jdoe4");
 		user.setFirstName("John4");
 		user.setLastName("Doe4");
@@ -1089,7 +1089,7 @@ public class UserResourceTest extends AbstractAppTest {
 	public void updateUserNotExists() {
 		thrown.expect(ValidationJsonException.class);
 		thrown.expect(MatcherUtil.validationMatcher("id", BusinessException.KEY_UNKNOW_ID));
-		final UserLdapEdition user = new UserLdapEdition();
+		final UserOrgEditionVo user = new UserOrgEditionVo();
 		user.setId("flast11");
 		user.setFirstName("FirstA");
 		user.setLastName("LastA");
@@ -1114,7 +1114,7 @@ public class UserResourceTest extends AbstractAppTest {
 		Assert.assertTrue(initialResult.getData().get(0).getGroups().get(1).isManaged());
 
 		// Remove group "Biz Agency"
-		final UserLdapEdition user = new UserLdapEdition();
+		final UserOrgEditionVo user = new UserOrgEditionVo();
 		user.setId("fdoe2");
 		user.setFirstName("First2");
 		user.setLastName("Doe2");
@@ -1173,7 +1173,7 @@ public class UserResourceTest extends AbstractAppTest {
 
 		// Add a new valid group "DIG RHA" to "wuser" by "fdaugan"
 		initSpringSecurityContext("fdaugan");
-		final UserLdapEdition user = new UserLdapEdition();
+		final UserOrgEditionVo user = new UserOrgEditionVo();
 		user.setId("wuser");
 		user.setFirstName("William");
 		user.setLastName("User");
@@ -1208,7 +1208,7 @@ public class UserResourceTest extends AbstractAppTest {
 
 		// Restore the old state
 		initSpringSecurityContext("fdaugan");
-		final UserLdapEdition user2 = new UserLdapEdition();
+		final UserOrgEditionVo user2 = new UserOrgEditionVo();
 		user2.setId("wuser");
 		user2.setFirstName("William");
 		user2.setLastName("User");
@@ -1411,6 +1411,6 @@ public class UserResourceTest extends AbstractAppTest {
 	@Test
 	public void setIamProviderForTest() {
 		// There for test by other plugin/application
-		new UserLdapResource().setIamProvider(Mockito.mock(IamProvider.class));
+		new UserOrgResource().setIamProvider(Mockito.mock(IamProvider.class));
 	}
 }

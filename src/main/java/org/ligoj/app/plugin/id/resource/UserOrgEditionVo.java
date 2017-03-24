@@ -16,7 +16,7 @@ import lombok.Setter;
  */
 @Getter
 @Setter
-public class UserLdapEdition extends SimpleUser {
+public class UserOrgEditionVo extends SimpleUser {
 
 	/**
 	 * SID

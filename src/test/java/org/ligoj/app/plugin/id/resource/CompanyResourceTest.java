@@ -34,7 +34,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 @Rollback
 @Transactional
 @org.junit.FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class CompanyResourceTest extends AbstractContainerLdapResourceTest {
+public class CompanyResourceTest extends AbstractContainerResourceTest {
 
 	private CompanyResource resource;
 
@@ -46,7 +46,7 @@ public class CompanyResourceTest extends AbstractContainerLdapResourceTest {
 	}
 
 	@Autowired
-	private ContainerScopeRepository containerTypeLdapRepository;
+	private ContainerScopeRepository containerScopeRepository;
 
 	/**
 	 * Check managed companies is filtered against available groups.
@@ -156,7 +156,7 @@ public class CompanyResourceTest extends AbstractContainerLdapResourceTest {
 
 	@Test(expected = ValidationJsonException.class)
 	public void createNoRight() {
-		final ContainerScope typeLdap = containerTypeLdapRepository.findByName("France");
+		final ContainerScope typeLdap = containerScopeRepository.findByName("France");
 		final ContainerEditionVo group = new ContainerEditionVo();
 		group.setName("New-Ax-1-z:Z 0");
 		group.setType(typeLdap.getId());
@@ -205,7 +205,7 @@ public class CompanyResourceTest extends AbstractContainerLdapResourceTest {
 
 	@Test(expected = ValidationJsonException.class)
 	public void createAlreadyExists() {
-		final ContainerScope typeLdap = containerTypeLdapRepository.findByName("France");
+		final ContainerScope typeLdap = containerScopeRepository.findByName("France");
 		final ContainerEditionVo group = new ContainerEditionVo();
 		group.setName("orange");
 		group.setType(typeLdap.getId());
@@ -215,7 +215,7 @@ public class CompanyResourceTest extends AbstractContainerLdapResourceTest {
 
 	@Test(expected = ValidationJsonException.class)
 	public void createInvalidType() {
-		final ContainerScope typeLdap = containerTypeLdapRepository.findByName("Fonction");
+		final ContainerScope typeLdap = containerScopeRepository.findByName("Fonction");
 		final ContainerEditionVo company = new ContainerEditionVo();
 		company.setName("New-Ax-1-z:Z 0");
 		company.setType(typeLdap.getId());
@@ -286,7 +286,7 @@ public class CompanyResourceTest extends AbstractContainerLdapResourceTest {
 		.thenReturn(new PageImpl<>(Collections.emptyList()));
 
 		initSpringSecurityContext("mlavoine");
-		containerTypeLdapRepository.deleteAllBy("name", "Root");
+		containerScopeRepository.deleteAllBy("name", "Root");
 		final TableItem<ContainerCountVo> groups = resource.findAll(newUriInfoAsc("name"));
 		Assert.assertEquals(2, groups.getRecordsTotal());
 		final ContainerCountVo group0 = groups.getData().get(0);

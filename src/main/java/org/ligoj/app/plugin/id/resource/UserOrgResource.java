@@ -37,6 +37,7 @@ import org.apache.cxf.message.MessageImpl;
 import org.ligoj.app.api.CompanyOrg;
 import org.ligoj.app.api.ContainerOrg;
 import org.ligoj.app.api.GroupOrg;
+import org.ligoj.app.api.IPasswordGenerator;
 import org.ligoj.app.api.Normalizer;
 import org.ligoj.app.api.SimpleUser;
 import org.ligoj.app.api.UserOrg;
@@ -48,6 +49,7 @@ import org.ligoj.app.iam.dao.DelegateOrgRepository;
 import org.ligoj.app.iam.model.DelegateOrg;
 import org.ligoj.app.iam.model.DelegateType;
 import org.ligoj.app.plugin.id.LdapUtils;
+import org.ligoj.bootstrap.core.SpringUtils;
 import org.ligoj.bootstrap.core.json.PaginationJson;
 import org.ligoj.bootstrap.core.json.TableItem;
 import org.ligoj.bootstrap.core.json.datatable.DataTableAttributes;
@@ -70,7 +72,7 @@ import lombok.extern.slf4j.Slf4j;
 @Produces(MediaType.APPLICATION_JSON)
 @Slf4j
 @Transactional
-public class UserLdapResource {
+public class UserOrgResource {
 
 	/**
 	 * The primary business key
@@ -91,13 +93,10 @@ public class UserLdapResource {
 	private PaginationJson paginationJson;
 
 	@Autowired
-	protected PasswordResource passwordRessource;
-
-	@Autowired
 	private CompanyResource organizationResource;
 
 	@Autowired
-	private GroupLdapResource groupResource;
+	private GroupResource groupResource;
 
 	@Autowired
 	private SecurityHelper securityHelper;
@@ -237,8 +236,7 @@ public class UserLdapResource {
 	/**
 	 * Computed visible groups
 	 */
-	private Collection<GroupOrg> computeFilteredGroups(final String group, final Set<GroupOrg> managedGroups,
-			final Map<String, GroupOrg> allGroups) {
+	private Collection<GroupOrg> computeFilteredGroups(final String group, final Set<GroupOrg> managedGroups, final Map<String, GroupOrg> allGroups) {
 		final Collection<GroupOrg> filteredGroups;
 		// Restrict access to delegated groups
 		if (StringUtils.isBlank(group)) {
@@ -350,7 +348,7 @@ public class UserLdapResource {
 	 *            checked.
 	 */
 	@PUT
-	public void update(final UserLdapEdition user) {
+	public void update(final UserOrgEditionVo user) {
 		// Check the right on the company and the groups
 		validateChanges(securityHelper.getLogin(), user);
 
@@ -367,7 +365,7 @@ public class UserLdapResource {
 	 *            The user definition, and associated groups. Initial groups are checked.User definition is checked.
 	 */
 	@POST
-	public void create(final UserLdapEdition user) {
+	public void create(final UserOrgEditionVo user) {
 		// Check the right on the company and the groups
 		validateChanges(securityHelper.getLogin(), user);
 
@@ -395,7 +393,7 @@ public class UserLdapResource {
 	 * <li>Company of user cannot be changed</li>
 	 * </ul>
 	 */
-	private void validateChanges(final String principal, final UserLdapEdition importEntry) {
+	private void validateChanges(final String principal, final UserOrgEditionVo importEntry) {
 		// First cleanup the entry
 		normalize(importEntry);
 
@@ -444,7 +442,7 @@ public class UserLdapResource {
 	/**
 	 * Validate assigned groups, and return corresponding group identifiers.
 	 */
-	private List<String> validateAndGroupsCN(final UserOrg userLdap, final UserLdapEdition importEntry, final List<DelegateOrg> delegates,
+	private List<String> validateAndGroupsCN(final UserOrg userLdap, final UserOrgEditionVo importEntry, final List<DelegateOrg> delegates,
 			final Map<String, GroupOrg> allGroups) {
 
 		// First complete the groups with the implicit ones from department
@@ -513,7 +511,7 @@ public class UserLdapResource {
 	/**
 	 * Normalize the entry : capitalize and trimming.
 	 */
-	private void normalize(final UserLdapEdition importEntry) {
+	private void normalize(final UserOrgEditionVo importEntry) {
 		// Normalize the identifiers
 		importEntry.setCompany(Normalizer.normalize(importEntry.getCompany()));
 		importEntry.setId(StringUtils.trimToNull(Normalizer.normalize(importEntry.getId())));
@@ -539,7 +537,7 @@ public class UserLdapResource {
 	 * Indicate the two user details have attribute differences
 	 */
 	@SuppressWarnings("unchecked")
-	private boolean hasAttributeChange(final UserLdapEdition importEntry, final UserOrg userLdap) {
+	private boolean hasAttributeChange(final UserOrgEditionVo importEntry, final UserOrg userLdap) {
 		return userLdap == null || hasAttributeChange(importEntry, userLdap, SimpleUser::getFirstName, SimpleUser::getLastName,
 				SimpleUser::getCompany, SimpleUser::getLocalId, SimpleUser::getDepartment) || !userLdap.getMails().contains(importEntry.getMail());
 	}
@@ -563,7 +561,7 @@ public class UserLdapResource {
 	 * @param importEntry
 	 *            The entry to save or to update.
 	 */
-	public void saveOrUpdate(final UserLdapEdition importEntry) {
+	public void saveOrUpdate(final UserOrgEditionVo importEntry) {
 
 		// Create as needed the user, groups will be proceeded after.
 		final IUserRepository repository = getRepository();
@@ -607,7 +605,7 @@ public class UserLdapResource {
 			// Mail has been added, set a new password
 			log.info("{} already exists, but a mail has been created", newUser.getId());
 			updatePassword(newUser);
-		} else if (oldUser.isNoPassword()) {
+		} else if (!oldUser.isSecured()) {
 			// Override the password
 			log.info("{} had no password, a mail will be sent", newUser.getId());
 			updatePassword(newUser);
@@ -622,7 +620,7 @@ public class UserLdapResource {
 	 *            The raw imported user.
 	 * @return The internal format of the user.
 	 */
-	private UserOrg toUserLdap(final UserLdapEdition importEntry) {
+	private UserOrg toUserLdap(final UserOrgEditionVo importEntry) {
 		final UserOrg user = new UserOrg();
 		importEntry.copy(user);
 		user.setGroups(new ArrayList<>());
@@ -791,18 +789,19 @@ public class UserLdapResource {
 	}
 
 	/**
-	 * Get the password of given entry. If there is no password, a new one will be generated.
+	 * Generate a new password of given user. The password generation is delegated to the first password plug-in
+	 * available.
 	 *
 	 * @param user
 	 *            then LDAP user.
 	 */
-	private String updatePassword(final UserOrg user) {
+	private void updatePassword(final UserOrg user) {
 		// Have to generate a new password
-		final String password = passwordRessource.generate(user.getId());
+		SpringUtils.getApplicationContext().getBeansOfType(IPasswordGenerator.class).values().stream().findFirst()
+				.ifPresent(p -> p.generate(user.getId()));
 
-		// This user has a password now
-		user.setNoPassword(false);
-		return password;
+		// This user is now secured
+		user.setSecured(true);
 	}
 
 	/**

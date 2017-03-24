@@ -10,7 +10,7 @@ import lombok.Setter;
  */
 @Getter
 @Setter
-public class GroupLdapEditionVo extends ContainerEditionVo {
+public class GroupEditionVo extends ContainerEditionVo {
 
 	/**
 	 * Optional parent group name. Must exists.

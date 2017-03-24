@@ -43,7 +43,7 @@ import org.springframework.stereotype.Service;
 @Service
 @Produces(MediaType.APPLICATION_JSON)
 @Transactional
-public class GroupLdapResource extends AbstractContainerResource<GroupOrg, GroupLdapEditionVo, CacheGroup> {
+public class GroupResource extends AbstractContainerResource<GroupOrg, GroupEditionVo, CacheGroup> {
 
 	/**
 	 * Attribute name used as filter and path.
@@ -59,7 +59,7 @@ public class GroupLdapResource extends AbstractContainerResource<GroupOrg, Group
 	/**
 	 * Default constructor specifying the type as {@link ContainerType#GROUP}
 	 */
-	public GroupLdapResource() {
+	public GroupResource() {
 		super(ContainerType.GROUP);
 	}
 
@@ -119,7 +119,7 @@ public class GroupLdapResource extends AbstractContainerResource<GroupOrg, Group
 	}
 
 	@Override
-	protected String toDn(final GroupLdapEditionVo container, final ContainerScope type) {
+	protected String toDn(final GroupEditionVo container, final ContainerScope type) {
 		String parentDn = type.getDn();
 		container.setParent(StringUtils.trimToNull(container.getParent()));
 		if (container.getParent() != null) {
@@ -156,7 +156,7 @@ public class GroupLdapResource extends AbstractContainerResource<GroupOrg, Group
 	}
 
 	@Override
-	protected GroupOrg create(final GroupLdapEditionVo container, final ContainerScope type, final String newDn) {
+	protected GroupOrg create(final GroupEditionVo container, final ContainerScope type, final String newDn) {
 		// Check the related objects
 		final List<String> assistants = toDn(container.getAssistants());
 		final List<String> owners = toDn(container.getOwners());

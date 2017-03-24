@@ -28,7 +28,7 @@ import net.sf.ehcache.CacheManager;
 /**
  * Common test class for LDAP
  */
-public abstract class AbstractContainerLdapResourceTest extends AbstractAppTest {
+public abstract class AbstractContainerResourceTest extends AbstractAppTest {
 
 	@Autowired
 	protected ContainerScopeRepository containerScopeRepository;

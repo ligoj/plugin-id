@@ -20,20 +20,20 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 /**
- * Test class of {@link GroupLdapResource}
+ * Test class of {@link GroupResource}
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations = "classpath:/META-INF/spring/application-context-test.xml")
 @Rollback
 @Transactional
 @org.junit.FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class GroupResourceTest extends AbstractContainerLdapResourceTest {
+public class GroupResourceTest extends AbstractContainerResourceTest {
 
 	@Autowired
-	private GroupLdapResource resource;
+	private GroupResource resource;
 
 	@Autowired
-	private UserLdapResource userLdapResource;
+	private UserOrgResource userResource;
 
 	@Test
 	public void findAll() {
@@ -205,7 +205,7 @@ public class GroupResourceTest extends AbstractContainerLdapResourceTest {
 	@Test(expected = ValidationJsonException.class)
 	public void createNoRight() {
 		final ContainerScope typeLdap = containerScopeRepository.findByName("Fonction");
-		final GroupLdapEditionVo group = new GroupLdapEditionVo();
+		final GroupEditionVo group = new GroupEditionVo();
 		group.setName("New-Ax-1-z:Z 0");
 		group.setType(typeLdap.getId());
 		initSpringSecurityContext("mmartin");
@@ -215,7 +215,7 @@ public class GroupResourceTest extends AbstractContainerLdapResourceTest {
 	@Test(expected = ValidationJsonException.class)
 	public void createAlreadyExists() {
 		final ContainerScope scope = containerScopeRepository.findByName("Fonction");
-		final GroupLdapEditionVo group = new GroupLdapEditionVo();
+		final GroupEditionVo group = new GroupEditionVo();
 		group.setName("DIG");
 		group.setType(scope.getId());
 		resource.create(group);
@@ -223,28 +223,28 @@ public class GroupResourceTest extends AbstractContainerLdapResourceTest {
 
 	@Test(expected = ValidationJsonException.class)
 	public void createInvalidParent() {
-		final GroupLdapEditionVo group = new GroupLdapEditionVo();
+		final GroupEditionVo group = new GroupEditionVo();
 		group.setParent("any");
 		createInternal(group, null);
 	}
 
 	@Test(expected = ValidationJsonException.class)
 	public void createInvalidAssistant() {
-		final GroupLdapEditionVo group = new GroupLdapEditionVo();
+		final GroupEditionVo group = new GroupEditionVo();
 		group.setAssistants(Collections.singletonList("any"));
 		createInternal(group, null);
 	}
 
 	@Test(expected = ValidationJsonException.class)
 	public void createInvalidOwner() {
-		final GroupLdapEditionVo group = new GroupLdapEditionVo();
+		final GroupEditionVo group = new GroupEditionVo();
 		group.setOwners(Collections.singletonList("any"));
 		createInternal(group, null);
 	}
 
 	@Test(expected = ValidationJsonException.class)
 	public void createInvalidTypeOfParent() {
-		final GroupLdapEditionVo group = new GroupLdapEditionVo();
+		final GroupEditionVo group = new GroupEditionVo();
 		group.setDepartments(Collections.singletonList("SOME"));
 		group.setOwners(Collections.singletonList("fdaugan"));
 		group.setAssistants(Collections.singletonList("wuser"));
@@ -255,7 +255,7 @@ public class GroupResourceTest extends AbstractContainerLdapResourceTest {
 
 	@Test
 	public void createEmptyDeleteWithParent() {
-		final GroupLdapEditionVo group = new GroupLdapEditionVo();
+		final GroupEditionVo group = new GroupEditionVo();
 		group.setDepartments(Collections.singletonList("SOME"));
 		group.setOwners(Collections.singletonList("fdaugan"));
 		group.setAssistants(Collections.singletonList("wuser"));
@@ -263,7 +263,7 @@ public class GroupResourceTest extends AbstractContainerLdapResourceTest {
 
 		createInternal(group, "cn=new-ax-1-z:z 0,cn=dig,ou=fonction,ou=groups,dc=sample,dc=com");
 
-		userLdapResource.addUserToGroup("wuser", "New-Ax-1-z:Z 0");
+		userResource.addUserToGroup("wuser", "New-Ax-1-z:Z 0");
 
 		// Pre check
 		final TableItem<ContainerCountVo> groups = resource.findAll(newUriInfoAscSearch("name", "New-Ax-1-z:Z 0"));
@@ -286,10 +286,10 @@ public class GroupResourceTest extends AbstractContainerLdapResourceTest {
 
 	@Test
 	public void createEmptyDelete() {
-		final GroupLdapEditionVo group = new GroupLdapEditionVo();
+		final GroupEditionVo group = new GroupEditionVo();
 		createInternal(group, "cn=new-ax-1-z:z 0,ou=fonction,ou=groups,dc=sample,dc=com");
 
-		userLdapResource.addUserToGroup("wuser", "New-Ax-1-z:Z 0");
+		userResource.addUserToGroup("wuser", "New-Ax-1-z:Z 0");
 
 		// Pre check
 		final TableItem<ContainerCountVo> groups = resource.findAll(newUriInfoAscSearch("name", "New-Ax-1-z:Z 0"));
@@ -310,7 +310,7 @@ public class GroupResourceTest extends AbstractContainerLdapResourceTest {
 		Assert.assertEquals(0, groupsDelete.getRecordsTotal());
 	}
 
-	private void createInternal(final GroupLdapEditionVo group, final String expected) {
+	private void createInternal(final GroupEditionVo group, final String expected) {
 		final ContainerScope typeLdap = containerScopeRepository.findByName("Fonction");
 		group.setName("New-Ax-1-z:Z 0");
 		group.setType(typeLdap.getId());

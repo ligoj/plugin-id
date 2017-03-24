@@ -1,8 +1,7 @@
 package org.ligoj.app.plugin.id.resource;
 
-import org.springframework.security.core.Authentication;
-
 import org.ligoj.app.api.ServicePlugin;
+import org.springframework.security.core.Authentication;
 
 /**
  * Features of identity implementations.
