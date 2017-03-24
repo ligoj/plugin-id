@@ -84,11 +84,11 @@ public class GroupResource extends AbstractContainerResource<GroupOrg, GroupEdit
 	@GET
 	public TableItem<ContainerCountVo> findAll(@Context final UriInfo uriInfo) {
 		final List<ContainerScope> types = containerScopeResource.findAllDescOrder(ContainerType.GROUP);
-		final Map<String, CompanyOrg> companies = organizationResource.getRepository().findAll();
+		final Map<String, CompanyOrg> companies = getCompany().findAll();
 		final Collection<CompanyOrg> managedCompanies = organizationResource.getContainers();
 		final Set<GroupOrg> managedGroupsWrite = getContainersForWrite();
 		final Set<GroupOrg> managedGroupsAdmin = getContainersForAdmin();
-		final Map<String, UserOrg> ldapUsers = getUser().findAll();
+		final Map<String, UserOrg> users = getUser().findAll();
 
 		// Search the groups
 		final Page<GroupOrg> findAll = getContainers(DataTableAttributes.getSearch(uriInfo), paginationJson.getPageRequest(uriInfo, ORDERED_COLUMNS));
@@ -97,9 +97,8 @@ public class GroupResource extends AbstractContainerResource<GroupOrg, GroupEdit
 		return paginationJson.applyPagination(uriInfo, findAll, rawGroupLdap -> {
 			final ContainerCountVo securedUserLdap = newContainerCountVo(rawGroupLdap, managedGroupsWrite, managedGroupsAdmin, types);
 			securedUserLdap.setCount(rawGroupLdap.getMembers().size());
-			// [jdoe4, jdoe5, fdoe2, jlast3] // companies.get(ldapUsers.get("jdoe4").getCompany()).getCompanyTree()
 			// Computed the visible members
-			securedUserLdap.setCountVisible((int) rawGroupLdap.getMembers().stream().map(ldapUsers::get).map(UserOrg::getCompany).map(companies::get)
+			securedUserLdap.setCountVisible((int) rawGroupLdap.getMembers().stream().map(users::get).map(UserOrg::getCompany).map(companies::get)
 					.map(CompanyOrg::getCompanyTree).filter(c -> CollectionUtils.containsAny(managedCompanies, c)).count());
 			return securedUserLdap;
 		});
@@ -121,7 +120,7 @@ public class GroupResource extends AbstractContainerResource<GroupOrg, GroupEdit
 	@Override
 	protected String toDn(final GroupEditionVo container, final ContainerScope type) {
 		String parentDn = type.getDn();
-		container.setParent(StringUtils.trimToNull(container.getParent()));
+		container.setParent(StringUtils.trimToNull(Normalizer.normalize(container.getParent())));
 		if (container.getParent() != null) {
 			// Check the parent is also inside the type, a new DN will be built
 			final GroupOrg parent = findByIdExpected(container.getParent());

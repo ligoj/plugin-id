@@ -279,8 +279,7 @@ public abstract class AbstractContainerResource<T extends ContainerOrg, V extend
 	 * @return The container from its identifier.
 	 */
 	public T findByIdExpected(final String id) {
-		return Optional.ofNullable(findById(id))
-				.orElseThrow(() -> new ValidationJsonException(getTypeName(), BusinessException.KEY_UNKNOW_ID, "0", getTypeName(), "1", id));
+		return getRepository().findByIdExpected(securityHelper.getLogin(), id);
 	}
 
 	/**
@@ -472,8 +471,7 @@ public abstract class AbstractContainerResource<T extends ContainerOrg, V extend
 	 * @return The internal representation of container set. Ordered is kept.
 	 */
 	protected Set<T> toInternal(final Collection<C> cacheItems) {
-		final Map<String, T> groups = getRepository().findAll();
-		return cacheItems.stream().map(CacheContainer::getId).map(groups::get).filter(Objects::nonNull)
+		return cacheItems.stream().map(CacheContainer::getId).map(getRepository().findAll()::get).filter(Objects::nonNull)
 				.collect(Collectors.toCollection(LinkedHashSet::new));
 	}
 
@@ -485,7 +483,8 @@ public abstract class AbstractContainerResource<T extends ContainerOrg, V extend
 	 * @return The internal representation of {@link org.ligoj.app.iam.model.CacheCompany} set. Ordered by the name.
 	 */
 	protected Page<T> toInternal(final Page<C> cacheItems) {
-		return new PageImpl<>(new ArrayList<>(toInternal(cacheItems.getContent())), null, cacheItems.getTotalElements());
+		final List<T> content = new ArrayList<>(toInternal(cacheItems.getContent()));
+		return new PageImpl<>(content, null, content.size());
 	}
 
 	protected String getTypeName() {

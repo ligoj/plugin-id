@@ -37,6 +37,24 @@ public abstract class AbstractContainerResourceTest extends AbstractAppTest {
 	protected IGroupRepository groupRepository;
 	protected ICompanyRepository companyRepository;
 
+	@Before
+	public void prepareData() throws IOException {
+		persistEntities("csv/app-test",
+				new Class[] { DelegateOrg.class, ContainerScope.class, CacheCompany.class, CacheUser.class, CacheGroup.class, CacheMembership.class },
+				StandardCharsets.UTF_8.name());
+		CacheManager.getInstance().getCache("container-scopes").removeAll();
+
+		iamProvider = Mockito.mock(IamProvider.class);
+		final IamConfiguration configuration = Mockito.mock(IamConfiguration.class);
+		Mockito.when(iamProvider.getConfiguration()).thenReturn(configuration);
+		userRepository = Mockito.mock(IUserRepository.class);
+		groupRepository = Mockito.mock(IGroupRepository.class);
+		companyRepository = Mockito.mock(ICompanyRepository.class);
+		Mockito.when(configuration.getUserRepository()).thenReturn(userRepository);
+		Mockito.when(configuration.getCompanyRepository()).thenReturn(companyRepository);
+		Mockito.when(configuration.getGroupRepository()).thenReturn(groupRepository);
+	}
+
 	protected UriInfo newUriInfoAsc(final String orderedProperty) {
 		return newUriInfo(orderedProperty, "asc");
 	}
@@ -64,23 +82,5 @@ public abstract class AbstractContainerResourceTest extends AbstractAppTest {
 		uriInfo.getQueryParameters().add("columns[2][data]", orderedProperty);
 		uriInfo.getQueryParameters().add(DataTableAttributes.SORT_DIRECTION, order);
 		return uriInfo;
-	}
-
-	@Before
-	public void prepareData() throws IOException {
-		persistEntities("csv/app-test",
-				new Class[] { DelegateOrg.class, ContainerScope.class, CacheCompany.class, CacheUser.class, CacheGroup.class, CacheMembership.class },
-				StandardCharsets.UTF_8.name());
-		CacheManager.getInstance().getCache("container-scopes").removeAll();
-
-		iamProvider = Mockito.mock(IamProvider.class);
-		final IamConfiguration configuration = Mockito.mock(IamConfiguration.class);
-		Mockito.when(iamProvider.getConfiguration()).thenReturn(configuration);
-		userRepository = Mockito.mock(IUserRepository.class);
-		groupRepository = Mockito.mock(IGroupRepository.class);
-		companyRepository = Mockito.mock(ICompanyRepository.class);
-		Mockito.when(configuration.getUserRepository()).thenReturn(userRepository);
-		Mockito.when(configuration.getCompanyRepository()).thenReturn(companyRepository);
-		Mockito.when(configuration.getGroupRepository()).thenReturn(groupRepository);
 	}
 }

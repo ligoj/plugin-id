@@ -1,9 +1,11 @@
 package org.ligoj.app.plugin.id.resource;
 
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.transaction.Transactional;
-import javax.ws.rs.core.UriInfo;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -11,12 +13,12 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
 import org.ligoj.app.MatcherUtil;
-import org.ligoj.app.api.GroupOrg;
+import org.ligoj.app.api.CompanyOrg;
+import org.ligoj.app.api.UserOrg;
 import org.ligoj.app.model.ContainerType;
 import org.ligoj.app.plugin.id.dao.ContainerScopeRepository;
 import org.ligoj.app.plugin.id.model.ContainerScope;
 import org.ligoj.bootstrap.core.json.TableItem;
-import org.ligoj.bootstrap.core.json.datatable.DataTableAttributes;
 import org.ligoj.bootstrap.core.validation.ValidationJsonException;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
@@ -43,6 +45,7 @@ public class CompanyResourceTest extends AbstractContainerResourceTest {
 		resource = new CompanyResource();
 		applicationContext.getAutowireCapableBeanFactory().autowireBean(resource);
 		resource.iamProvider = iamProvider;
+		Mockito.when(companyRepository.getTypeName()).thenReturn("company");
 	}
 
 	@Autowired
@@ -107,18 +110,6 @@ public class CompanyResourceTest extends AbstractContainerResourceTest {
 		Assert.assertEquals("ing-internal", managed.getData().get(1));
 	}
 
-	@Test(expected = ValidationJsonException.class)
-	public void findByIdExpectedNotExist() {
-		initSpringSecurityContext("fdaugan");
-		resource.findByIdExpected("any");
-	}
-
-	@Test(expected = ValidationJsonException.class)
-	public void findByIdExpectedNotDelegate() {
-		initSpringSecurityContext("fdaugan");
-		resource.findByIdExpected("socygan");
-	}
-
 	@Test
 	public void findByIdNotExists() {
 		initSpringSecurityContext("fdaugan");
@@ -127,13 +118,9 @@ public class CompanyResourceTest extends AbstractContainerResourceTest {
 
 	@Test
 	public void findByIdExpected() {
+		Mockito.when(companyRepository.findByIdExpected(DEFAULT_USER, "ing"))
+				.thenReturn(new CompanyOrg("ou=ing,ou=external,ou=people,dc=sample,dc=com", "ing"));
 		Assert.assertEquals("ou=ing,ou=external,ou=people,dc=sample,dc=com", resource.findByIdExpected("ing").getDn());
-	}
-
-	@Test
-	public void findByIdExpectedMyCompany() {
-		initSpringSecurityContext("mmartin");
-		Assert.assertEquals("ou=gfi,ou=france,ou=people,dc=sample,dc=com", resource.findByIdExpected("gfi").getDn());
 	}
 
 	/**
@@ -154,12 +141,14 @@ public class CompanyResourceTest extends AbstractContainerResourceTest {
 		Assert.assertEquals("socygan", managed.getData().get(3));
 	}
 
-	@Test(expected = ValidationJsonException.class)
+	@Test
 	public void createNoRight() {
-		final ContainerScope typeLdap = containerScopeRepository.findByName("France");
+		thrown.expect(ValidationJsonException.class);
+		thrown.expect(MatcherUtil.validationMatcher("name", "already-exist"));
+		final ContainerScope scope = containerScopeRepository.findByName("France");
 		final ContainerEditionVo group = new ContainerEditionVo();
 		group.setName("New-Ax-1-z:Z 0");
-		group.setType(typeLdap.getId());
+		group.setType(scope.getId());
 		initSpringSecurityContext("mmartin");
 		resource.create(group);
 	}
@@ -169,6 +158,8 @@ public class CompanyResourceTest extends AbstractContainerResourceTest {
 		thrown.expect(ValidationJsonException.class);
 		thrown.expect(MatcherUtil.validationMatcher("company", "unknown-id"));
 		initSpringSecurityContext("mmartin");
+		final CompanyOrg companyOrg1 = new CompanyOrg("ou=gfi,ou=france,ou=people,dc=sample,dc=com", "gfi");
+		Mockito.when(companyRepository.findByIdExpected("mmartin", "gfi")).thenReturn(companyOrg1);
 		resource.delete("gfi");
 	}
 
@@ -179,101 +170,77 @@ public class CompanyResourceTest extends AbstractContainerResourceTest {
 	public void deleteLocked() {
 		thrown.expect(ValidationJsonException.class);
 		thrown.expect(MatcherUtil.validationMatcher("company", "locked"));
+		final CompanyOrg company = new CompanyOrg("ou=quarantine,ou=ing,ou=external,ou=people,dc=sample,dc=com", "quarantine");
+		company.setLocked(true);
+		Mockito.when(companyRepository.findByIdExpected(DEFAULT_USER, "quarantine")).thenReturn(company);
 		resource.delete("quarantine");
-	}
-
-	@Test
-	public void deleteNotExists() {
-		thrown.expect(ValidationJsonException.class);
-		thrown.expect(MatcherUtil.validationMatcher("company", "unknown-id"));
-		resource.delete("any-any");
-	}
-
-	@Test
-	public void deleteNotEmptyLeaf() {
-		thrown.expect(ValidationJsonException.class);
-		thrown.expect(MatcherUtil.validationMatcher("company", "not-empty-company"));
-		resource.delete("gfi");
 	}
 
 	@Test
 	public void deleteNotEmptyParent() {
 		thrown.expect(ValidationJsonException.class);
 		thrown.expect(MatcherUtil.validationMatcher("company", "not-empty-company"));
+		final CompanyOrg companyOrg1 = new CompanyOrg("ou=france,ou=people,dc=sample,dc=com", "france");
+		final CompanyOrg companyOrg2 = new CompanyOrg("ou=ing-internal,ou=ing,ou=external,ou=people,dc=sample,dc=com", "ing-internal");
+		final Map<String, CompanyOrg> companies = new HashMap<>();
+		companies.put("france", companyOrg1);
+		companies.put("ing-internal", companyOrg2);
+
+		final Map<String, UserOrg> users = new HashMap<>();
+		final UserOrg user1 = new UserOrg();
+		user1.setCompany("france");
+		users.put("user1", user1);
+
+
+		Mockito.when(userRepository.findAll()).thenReturn(users);
+		Mockito.when(companyRepository.findByIdExpected(DEFAULT_USER, "france")).thenReturn(companyOrg1);
+		Mockito.when(companyRepository.findAll()).thenReturn(companies);
 		resource.delete("france");
 	}
 
-	@Test(expected = ValidationJsonException.class)
+	@Test
 	public void createAlreadyExists() {
-		final ContainerScope typeLdap = containerScopeRepository.findByName("France");
+		thrown.expect(ValidationJsonException.class);
+		thrown.expect(MatcherUtil.validationMatcher("name", "already-exist"));
+		final ContainerScope scope = containerScopeRepository.findByName("France");
 		final ContainerEditionVo group = new ContainerEditionVo();
 		group.setName("orange");
-		group.setType(typeLdap.getId());
-		Mockito.when(groupRepository.findById(DEFAULT_USER, "orange")).thenReturn(new GroupOrg("", "", Collections.emptySet()));
+		group.setType(scope.getId());
+		Mockito.when(companyRepository.findById("orange")).thenReturn(new CompanyOrg("", ""));
 		resource.create(group);
 	}
 
 	@Test(expected = ValidationJsonException.class)
 	public void createInvalidType() {
-		final ContainerScope typeLdap = containerScopeRepository.findByName("Fonction");
+		final ContainerScope scope = containerScopeRepository.findByName("Fonction");
 		final ContainerEditionVo company = new ContainerEditionVo();
 		company.setName("New-Ax-1-z:Z 0");
-		company.setType(typeLdap.getId());
+		company.setType(scope.getId());
 		resource.create(company);
 	}
 
-	/**
-	 * Create, then delete an empty company.
-	 */
 	@Test
-	public void createDelete() {
-		resource.delete("New-Ax-1-z:Z 0");
+	public void create() {
+		final ContainerScope scope = containerScopeRepository.findByName("France");
+		final ContainerEditionVo company = new ContainerEditionVo();
+		company.setName("new-company");
+		company.setType(scope.getId());
+		final CompanyOrg companyOrg1 = new CompanyOrg("ou=new-company,ou=france,ou=people,dc=sample,dc=com", "new-company");
+		Mockito.when(companyRepository.create("ou=new-company,ou=france,ou=people,dc=sample,dc=com", "new-company")).thenReturn(companyOrg1);
+		Assert.assertEquals("new-company", resource.create(company));
 	}
 
 	@Test
-	public void findAllOnlyMyCompany() {
-		Mockito.when(companyRepository.findAll(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
-		.thenReturn(new PageImpl<>(Collections.emptyList()));
-
-		initSpringSecurityContext("mmartin");
-		final TableItem<ContainerCountVo> groups = resource.findAll(newUriInfoAscSearch("name", "gfi"));
-		Assert.assertEquals(1, groups.getRecordsTotal());
-		final ContainerCountVo group0 = groups.getData().get(0);
-		Assert.assertEquals("gfi", group0.getName());
-		Assert.assertEquals(7, group0.getCount());
-		Assert.assertEquals(7, group0.getCountVisible());
-		Assert.assertFalse(group0.isCanAdmin());
-		Assert.assertFalse(group0.isCanWrite());
-		Assert.assertEquals("France", group0.getType());
-		Assert.assertEquals("gfi", group0.getId());
-		Assert.assertEquals(ContainerType.COMPANY, group0.getContainerType());
-	}
-
-	@Test
-	public void findAllOnlyMyCompanyDesc() {
-		Mockito.when(companyRepository.findAll(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
-		.thenReturn(new PageImpl<>(Collections.emptyList()));
-
-		initSpringSecurityContext("mmartin");
-		final UriInfo uriInfo = newUriInfo("name", "desc");
-		uriInfo.getQueryParameters().add(DataTableAttributes.SEARCH, "gfi");
-		final TableItem<ContainerCountVo> groups = resource.findAll(uriInfo);
-		Assert.assertEquals(1, groups.getRecordsTotal());
-		final ContainerCountVo group0 = groups.getData().get(0);
-		Assert.assertEquals("gfi", group0.getName());
-		Assert.assertEquals(7, group0.getCount());
-		Assert.assertEquals(7, group0.getCountVisible());
-		Assert.assertFalse(group0.isCanAdmin());
-		Assert.assertFalse(group0.isCanWrite());
-		Assert.assertEquals("France", group0.getType());
-		Assert.assertEquals("gfi", group0.getId());
-		Assert.assertEquals(ContainerType.COMPANY, group0.getContainerType());
+	public void delete() {
+		final CompanyOrg companyOrg1 = new CompanyOrg("ou=gfi,ou=france,ou=people,dc=sample,dc=com", "gfi");
+		Mockito.when(companyRepository.findByIdExpected(DEFAULT_USER, "gfi")).thenReturn(companyOrg1);
+		resource.delete("gfi");
 	}
 
 	@Test
 	public void findAllExternal() {
 		Mockito.when(companyRepository.findAll(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
-		.thenReturn(new PageImpl<>(Collections.emptyList()));
+				.thenReturn(new PageImpl<>(Collections.emptyList()));
 
 		initSpringSecurityContext("mtuyer");
 		final TableItem<ContainerCountVo> groups = resource.findAll(newUriInfoAscSearch("name", "gfi"));
@@ -281,39 +248,31 @@ public class CompanyResourceTest extends AbstractContainerResourceTest {
 	}
 
 	@Test
-	public void findAllNoCriteriaNoType() {
-		Mockito.when(companyRepository.findAll(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
-		.thenReturn(new PageImpl<>(Collections.emptyList()));
-
-		initSpringSecurityContext("mlavoine");
-		containerScopeRepository.deleteAllBy("name", "Root");
-		final TableItem<ContainerCountVo> groups = resource.findAll(newUriInfoAsc("name"));
-		Assert.assertEquals(2, groups.getRecordsTotal());
-		final ContainerCountVo group0 = groups.getData().get(0);
-		Assert.assertEquals("ing", group0.getName());
-		Assert.assertEquals(7, group0.getCount());
-		Assert.assertEquals(7, group0.getCountVisible());
-		Assert.assertFalse(group0.isCanAdmin());
-		Assert.assertFalse(group0.isCanWrite());
-		Assert.assertNull(group0.getType());
-		Assert.assertEquals("ing", group0.getId());
-		Assert.assertEquals(ContainerType.COMPANY, group0.getContainerType());
-		Assert.assertEquals("ing-internal", groups.getData().get(1).getName());
-	}
-
-	@Test
 	public void findAll() {
+		final CompanyOrg companyOrg1 = new CompanyOrg("ou=gfi,ou=france,ou=people,dc=sample,dc=com", "gfi");
+		final CompanyOrg companyOrg2 = new CompanyOrg("ou=ing-internal,ou=ing,ou=external,ou=people,dc=sample,dc=com", "ing-internal");
+		companyOrg2.setLocked(true);
+		final Map<String, UserOrg> users = new HashMap<>();
+		final UserOrg user1 = new UserOrg();
+		user1.setCompany("france");
+		users.put("user1", user1);
+		final UserOrg user2 = new UserOrg();
+		user2.setCompany("france");
+		users.put("user2", user2);
+		user2.setCompany("ing-internal");
+
+		Mockito.when(userRepository.findAll()).thenReturn(users);
 		Mockito.when(companyRepository.findAll(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
-				.thenReturn(new PageImpl<>(Collections.emptyList()));
+				.thenReturn(new PageImpl<>(Arrays.asList(companyOrg1, companyOrg2)));
 
 		final TableItem<ContainerCountVo> groups = resource.findAll(newUriInfoAscSearch("name", "g"));
-		Assert.assertEquals(5, groups.getRecordsTotal());
+		Assert.assertEquals(2, groups.getRecordsTotal());
 		final ContainerCountVo group0 = groups.getData().get(0);
 		Assert.assertEquals("gfi", group0.getName());
-		Assert.assertEquals(7, group0.getCount());
-		Assert.assertEquals(7, group0.getCountVisible());
-		Assert.assertTrue(group0.isCanAdmin());
-		Assert.assertTrue(group0.isCanWrite());
+		Assert.assertEquals(0, group0.getCount());
+		Assert.assertEquals(0, group0.getCountVisible());
+		Assert.assertFalse(group0.isCanAdmin());
+		Assert.assertFalse(group0.isCanWrite());
 		Assert.assertFalse(group0.isLocked());
 		Assert.assertEquals("France", group0.getType());
 		Assert.assertEquals("gfi", group0.getId());
@@ -322,10 +281,10 @@ public class CompanyResourceTest extends AbstractContainerResourceTest {
 		// No group type case
 		final ContainerCountVo group2 = groups.getData().get(2);
 		Assert.assertEquals("ing-internal", group2.getName());
-		Assert.assertEquals(1, group2.getCount());
+		Assert.assertEquals(0, group2.getCount());
 		Assert.assertEquals(1, group2.getCountVisible());
-		Assert.assertTrue(group2.isCanAdmin());
-		Assert.assertTrue(group2.isCanWrite());
+		Assert.assertFalse(group2.isCanAdmin());
+		Assert.assertFalse(group2.isCanWrite());
 		Assert.assertTrue(group2.isLocked());
 		Assert.assertEquals("Root", group2.getType());
 		Assert.assertEquals("ing-internal", group2.getId());
@@ -333,39 +292,34 @@ public class CompanyResourceTest extends AbstractContainerResourceTest {
 	}
 
 	@Test
-	public void findAllLocked() {
-		Mockito.when(companyRepository.findAll(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
-		.thenReturn(new PageImpl<>(Collections.emptyList()));
-
-		final TableItem<ContainerCountVo> groups = resource.findAll(newUriInfoAscSearch("name", "quarantine"));
-		Assert.assertEquals(1, groups.getRecordsTotal());
-		final ContainerCountVo group0 = groups.getData().get(0);
-		Assert.assertEquals("quarantine", group0.getName());
-		Assert.assertEquals(0, group0.getCount());
-		Assert.assertEquals(0, group0.getCountVisible());
-		Assert.assertTrue(group0.isCanAdmin());
-		Assert.assertTrue(group0.isCanWrite());
-		Assert.assertTrue(group0.isLocked());
-		Assert.assertNull(group0.getType());
-		Assert.assertEquals("quarantine", group0.getId());
-		Assert.assertEquals(ContainerType.COMPANY, group0.getContainerType());
-	}
-
-	@Test
 	public void isUserInternalCommpanyExternal() {
 		initSpringSecurityContext("mlavoine");
+		final UserOrg user = new UserOrg();
+		user.setCompany("ext");
+		final CompanyOrg company = new CompanyOrg("ou=external,dc=sample,dc=com", "sub");
+		Mockito.when(userRepository.findById("mlavoine")).thenReturn(user);
+		Mockito.when(companyRepository.findById("ext")).thenReturn(company);
+		Mockito.when(userRepository.getPeopleInternalBaseDn()).thenReturn("ou=internal,dc=sample,dc=com");
 		Assert.assertFalse(resource.isUserInternalCommpany());
 	}
 
 	@Test
 	public void isUserInternalCommpanyAny() {
 		initSpringSecurityContext("any");
+		Mockito.when(userRepository.findById("any")).thenReturn(null);
+		Mockito.when(userRepository.getPeopleInternalBaseDn()).thenReturn("ou=internal,dc=sample,dc=com");
 		Assert.assertFalse(resource.isUserInternalCommpany());
 	}
 
 	@Test
 	public void isUserInternalCommpany() {
 		initSpringSecurityContext("mmartin");
+		final UserOrg user = new UserOrg();
+		user.setCompany("sub");
+		final CompanyOrg company = new CompanyOrg("ou=sub,ou=internal,dc=sample,dc=com", "sub");
+		Mockito.when(userRepository.findById("mmartin")).thenReturn(user);
+		Mockito.when(companyRepository.findById("sub")).thenReturn(company);
+		Mockito.when(userRepository.getPeopleInternalBaseDn()).thenReturn("ou=internal,dc=sample,dc=com");
 		Assert.assertTrue(resource.isUserInternalCommpany());
 	}
 

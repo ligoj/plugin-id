@@ -1,20 +1,30 @@
 package org.ligoj.app.plugin.id.resource;
 
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.transaction.Transactional;
 import javax.ws.rs.core.UriInfo;
 
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
+import org.ligoj.app.MatcherUtil;
+import org.ligoj.app.api.CompanyOrg;
+import org.ligoj.app.api.GroupOrg;
+import org.ligoj.app.api.UserOrg;
 import org.ligoj.app.model.ContainerType;
 import org.ligoj.app.plugin.id.model.ContainerScope;
 import org.ligoj.bootstrap.core.json.TableItem;
 import org.ligoj.bootstrap.core.json.datatable.DataTableAttributes;
 import org.ligoj.bootstrap.core.validation.ValidationJsonException;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.mockito.ArgumentMatchers;
+import org.mockito.Mockito;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
@@ -29,20 +39,55 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 @org.junit.FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class GroupResourceTest extends AbstractContainerResourceTest {
 
-	@Autowired
 	private GroupResource resource;
 
-	@Autowired
-	private UserOrgResource userResource;
+	@Before
+	public void mock() {
+		resource = new GroupResource();
+		applicationContext.getAutowireCapableBeanFactory().autowireBean(resource);
+		resource.iamProvider = iamProvider;
+		Mockito.when(groupRepository.getTypeName()).thenReturn("group");
+	}
 
 	@Test
 	public void findAll() {
+		final GroupOrg groupOrg1 = new GroupOrg("cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com", "DIG", Collections.singleton("user1"));
+		final GroupOrg groupOrg2 = new GroupOrg("cn=DIG RHA,cn=DIG AS,cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com", "DIG RHA",
+				Collections.singleton("user2"));
+		groupOrg2.setLocked(true);
+		final Map<String, GroupOrg> groupsMap = new HashMap<>();
+		groupsMap.put("dig", groupOrg1);
+		groupsMap.put("dig rha", groupOrg2);
+
+		final Map<String, UserOrg> users = new HashMap<>();
+		final UserOrg user1 = new UserOrg();
+		user1.setCompany("france");
+		users.put("user1", user1);
+		final UserOrg user2 = new UserOrg();
+		user2.setCompany("france");
+		users.put("user2", user2);
+		user2.setCompany("ing-internal");
+
+		final CompanyOrg companyOrg1 = new CompanyOrg("ou=france,ou=people,dc=sample,dc=com", "france");
+		final CompanyOrg companyOrg2 = new CompanyOrg("ou=ing-internal,ou=ing,ou=external,ou=people,dc=sample,dc=com", "ing-internal");
+		final Map<String, CompanyOrg> companies = new HashMap<>();
+		companies.put("france", companyOrg1);
+		companies.put("ing-internal", companyOrg2);
+
+		Mockito.when(companyRepository.findAll()).thenReturn(companies);
+		Mockito.when(userRepository.findAll()).thenReturn(users);
+		Mockito.when(groupRepository.findAll()).thenReturn(groupsMap);
+		Mockito.when(groupRepository.findAll(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
+				.thenReturn(new PageImpl<>(Arrays.asList(groupOrg1, groupOrg2)));
+
 		final TableItem<ContainerCountVo> groups = resource.findAll(newUriInfoAscSearch("name", "d"));
-		Assert.assertEquals(6, groups.getRecordsTotal());
+		Assert.assertEquals(2, groups.getRecordsTotal());
+		Assert.assertEquals(2, groups.getRecordsFiltered());
+		Assert.assertEquals(2, groups.getData().size());
 
 		final ContainerCountVo group0 = groups.getData().get(0);
 		Assert.assertEquals("DIG", group0.getName());
-		Assert.assertEquals(0, group0.getCount());
+		Assert.assertEquals(1, group0.getCount());
 		Assert.assertEquals(0, group0.getCountVisible());
 		Assert.assertTrue(group0.isCanAdmin());
 		Assert.assertTrue(group0.isCanWrite());
@@ -50,102 +95,22 @@ public class GroupResourceTest extends AbstractContainerResourceTest {
 		Assert.assertEquals("dig", group0.getId());
 		Assert.assertFalse(group0.isLocked());
 
-		final ContainerCountVo group10 = groups.getData().get(3);
+		final ContainerCountVo group10 = groups.getData().get(1);
 		Assert.assertEquals("DIG RHA", group10.getName());
-		Assert.assertEquals(4, group10.getCount());
-		Assert.assertEquals(4, group10.getCountVisible());
+		Assert.assertEquals(1, group10.getCount());
+		Assert.assertEquals(0, group10.getCountVisible());
 		Assert.assertTrue(group10.isCanAdmin());
 		Assert.assertTrue(group10.isCanWrite());
 		Assert.assertEquals("Fonction", group10.getType());
 		Assert.assertEquals(ContainerType.GROUP, group10.getContainerType());
-		Assert.assertFalse(group10.isLocked());
+		Assert.assertTrue(group10.isLocked());
 
-		// No group type case
-		final ContainerCountVo group20 = groups.getData().get(4);
-		Assert.assertEquals("Production", group20.getName());
-		Assert.assertEquals(1, group20.getCount());
-		Assert.assertEquals(1, group20.getCountVisible());
-		Assert.assertTrue(group20.isCanAdmin());
-		Assert.assertTrue(group20.isCanWrite());
-		Assert.assertNull(group20.getType());
-		Assert.assertEquals(ContainerType.GROUP, group20.getContainerType());
-		Assert.assertFalse(group20.isLocked());
-	}
-
-	@Test
-	public void findAll2() {
-		final TableItem<ContainerCountVo> groups = resource.findAll(newUriInfoAscSearch("name", "sea-octopus"));
-		Assert.assertEquals(1, groups.getRecordsTotal());
-
-		final ContainerCountVo group0 = groups.getData().get(0);
-		Assert.assertEquals("sea-octopus", group0.getName());
-		Assert.assertEquals(0, group0.getCount());
-		Assert.assertEquals(0, group0.getCountVisible());
-		Assert.assertTrue(group0.isCanAdmin());
-		Assert.assertTrue(group0.isCanWrite());
-		Assert.assertEquals("Project", group0.getType());
-		Assert.assertEquals("sea-octopus", group0.getId());
-		Assert.assertTrue(group0.isLocked());
-	}
-
-	@Test
-	public void findAllDescNoCriteria() {
-		final TableItem<ContainerCountVo> groups = resource.findAll(newUriInfoDesc("name"));
-		Assert.assertTrue(groups.getRecordsTotal() > 20);
-
-		// No group type case
-		final ContainerCountVo group0 = groups.getData().get(0);
-		Assert.assertEquals("VigiReport", group0.getName());
-	}
-
-	@Test
-	public void findAllNotExistingGroup() {
-		initSpringSecurityContext("any");
-		final TableItem<ContainerCountVo> groups = resource.findAll(newUriInfoAscSearch("name", "d"));
-		Assert.assertEquals(0, groups.getRecordsTotal());
-	}
-
-	/**
-	 * User "mmartin" is member of group "Production", so can see this group and all sub-groups. Including the 7 groups
-	 * "Hub *".
-	 * These groups are only visible because of the membership of group "Production" and does not involve delegates.
-	 */
-	@Test
-	public void findAllFromMembership() {
-		initSpringSecurityContext("mmartin");
-		final TableItem<ContainerCountVo> groups = resource.findAll(newUriInfoAscSearch("name", "hub"));
-		Assert.assertEquals(2, groups.getRecordsTotal());
-		Assert.assertEquals("Hub France", groups.getData().get(0).getName());
-		Assert.assertEquals("Hub Paris", groups.getData().get(1).getName());
-	}
-
-	/**
-	 * User "jlast3" has no delegate and is not member of a group owning any "Hub *" group.
-	 */
-	@Test
-	public void findAllNoRight() {
-		initSpringSecurityContext("jlast3");
-		final TableItem<ContainerCountVo> groups = resource.findAll(newUriInfoAscSearch("name", "hub"));
-		Assert.assertEquals(0, groups.getRecordsTotal());
-	}
-
-	@Test
-	public void findAllLimitedRights() {
-		initSpringSecurityContext("mmartin");
-		final TableItem<ContainerCountVo> groups = resource.findAll(newUriInfoAscSearch("name", "dig as"));
-		Assert.assertEquals(1, groups.getRecordsTotal());
-
-		final ContainerCountVo group0 = groups.getData().get(0);
-		Assert.assertEquals("DIG AS", group0.getName());
-		Assert.assertEquals(1, group0.getCount());
-		Assert.assertEquals(1, group0.getCountVisible());
-		Assert.assertFalse(group0.isCanAdmin());
-		Assert.assertFalse(group0.isCanWrite());
-		Assert.assertEquals("Fonction", group0.getType());
 	}
 
 	@Test
 	public void findByNameNoType() {
+		Mockito.when(groupRepository.findById(DEFAULT_USER, "business solution"))
+				.thenReturn(new GroupOrg("cn=Business Solution,ou=groups,dc=sample,dc=com", "Business Solution", null));
 		final ContainerWithTypeVo group = resource.findByName("business solution");
 		Assert.assertEquals("Business Solution", group.getName());
 		Assert.assertNull(group.getType());
@@ -157,7 +122,9 @@ public class GroupResourceTest extends AbstractContainerResourceTest {
 	}
 
 	@Test
-	public void findById() {
+	public void findByName() {
+		Mockito.when(groupRepository.findById(DEFAULT_USER, "dig as"))
+				.thenReturn(new GroupOrg("cn=DIG AS,cn=DIG AS,cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com", "DIG AS", null));
 		final ContainerWithTypeVo group = resource.findByName("dig as");
 		Assert.assertEquals("DIG AS", group.getName());
 		Assert.assertEquals("Fonction", group.getType());
@@ -178,22 +145,9 @@ public class GroupResourceTest extends AbstractContainerResourceTest {
 	}
 
 	@Test
-	public void findByNameNoRight() {
-		initSpringSecurityContext("any");
-		Assert.assertNull(resource.findByName("dig as"));
-	}
-
-	@Test
-	public void findByNameLimitedRights() {
-		initSpringSecurityContext("mmartin");
-		final ContainerWithTypeVo group = resource.findByName("dig as");
-		Assert.assertEquals("DIG AS", group.getName());
-		Assert.assertEquals("Fonction", group.getType());
-	}
-
-	@Test
 	public void exists() {
-		initSpringSecurityContext("mmartin");
+		Mockito.when(groupRepository.findById(DEFAULT_USER, "dig as"))
+				.thenReturn(new GroupOrg("cn=DIG AS,cn=DIG AS,cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com", "dig as", null));
 		Assert.assertTrue(resource.exists("dig as"));
 	}
 
@@ -202,149 +156,96 @@ public class GroupResourceTest extends AbstractContainerResourceTest {
 		Assert.assertFalse(resource.exists("any"));
 	}
 
-	@Test(expected = ValidationJsonException.class)
-	public void createNoRight() {
-		final ContainerScope typeLdap = containerScopeRepository.findByName("Fonction");
-		final GroupEditionVo group = new GroupEditionVo();
-		group.setName("New-Ax-1-z:Z 0");
-		group.setType(typeLdap.getId());
-		initSpringSecurityContext("mmartin");
-		resource.create(group);
-	}
-
-	@Test(expected = ValidationJsonException.class)
-	public void createAlreadyExists() {
-		final ContainerScope scope = containerScopeRepository.findByName("Fonction");
-		final GroupEditionVo group = new GroupEditionVo();
-		group.setName("DIG");
-		group.setType(scope.getId());
-		resource.create(group);
-	}
-
-	@Test(expected = ValidationJsonException.class)
-	public void createInvalidParent() {
-		final GroupEditionVo group = new GroupEditionVo();
-		group.setParent("any");
-		createInternal(group, null);
-	}
-
-	@Test(expected = ValidationJsonException.class)
-	public void createInvalidAssistant() {
-		final GroupEditionVo group = new GroupEditionVo();
-		group.setAssistants(Collections.singletonList("any"));
-		createInternal(group, null);
-	}
-
-	@Test(expected = ValidationJsonException.class)
-	public void createInvalidOwner() {
-		final GroupEditionVo group = new GroupEditionVo();
-		group.setOwners(Collections.singletonList("any"));
-		createInternal(group, null);
-	}
-
-	@Test(expected = ValidationJsonException.class)
-	public void createInvalidTypeOfParent() {
-		final GroupEditionVo group = new GroupEditionVo();
-		group.setDepartments(Collections.singletonList("SOME"));
-		group.setOwners(Collections.singletonList("fdaugan"));
-		group.setAssistants(Collections.singletonList("wuser"));
-		group.setParent("Jira");
-
-		createInternal(group, null);
-	}
-
 	@Test
-	public void createEmptyDeleteWithParent() {
+	public void createWithParent() {
 		final GroupEditionVo group = new GroupEditionVo();
 		group.setDepartments(Collections.singletonList("SOME"));
 		group.setOwners(Collections.singletonList("fdaugan"));
 		group.setAssistants(Collections.singletonList("wuser"));
 		group.setParent("DIG");
 
-		createInternal(group, "cn=new-ax-1-z:z 0,cn=dig,ou=fonction,ou=groups,dc=sample,dc=com");
+		final UserOrg user = new UserOrg();
+		user.setCompany("ext");
+		user.setDn("uid=wuser");
+		final UserOrg user2 = new UserOrg();
+		user2.setCompany("internal");
+		user2.setDn("uid=fdaugan");
+		Mockito.when(userRepository.findByIdExpected("wuser")).thenReturn(user);
+		Mockito.when(userRepository.findByIdExpected("fdaugan")).thenReturn(user2);
+		Mockito.when(groupRepository.findByIdExpected(DEFAULT_USER, "dig"))
+				.thenReturn(new GroupOrg("cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com", "DIG", null));
 
-		userResource.addUserToGroup("wuser", "New-Ax-1-z:Z 0");
-
-		// Pre check
-		final TableItem<ContainerCountVo> groups = resource.findAll(newUriInfoAscSearch("name", "New-Ax-1-z:Z 0"));
-		Assert.assertEquals(1, groups.getRecordsTotal());
-		Assert.assertEquals(1, groups.getData().get(0).getCount());
-
-		resource.empty("New-Ax-1-z:Z 0");
-
-		// Post check
-		final TableItem<ContainerCountVo> groupsEmpty = resource.findAll(newUriInfoAscSearch("name", "New-Ax-1-z:Z 0"));
-		Assert.assertEquals(1, groupsEmpty.getRecordsTotal());
-		Assert.assertEquals(0, groupsEmpty.getData().get(0).getCount());
-
-		resource.delete("New-Ax-1-z:Z 0");
-
-		// Post check
-		final TableItem<ContainerCountVo> groupsDelete = resource.findAll(newUriInfoAscSearch("name", "New-Ax-1-z:Z 0"));
-		Assert.assertEquals(0, groupsDelete.getRecordsTotal());
+		createInternal(group, "cn=new-group,cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com");
 	}
 
 	@Test
-	public void createEmptyDelete() {
-		final GroupEditionVo group = new GroupEditionVo();
-		createInternal(group, "cn=new-ax-1-z:z 0,ou=fonction,ou=groups,dc=sample,dc=com");
-
-		userResource.addUserToGroup("wuser", "New-Ax-1-z:Z 0");
-
-		// Pre check
-		final TableItem<ContainerCountVo> groups = resource.findAll(newUriInfoAscSearch("name", "New-Ax-1-z:Z 0"));
-		Assert.assertEquals(1, groups.getRecordsTotal());
-		Assert.assertEquals(1, groups.getData().get(0).getCount());
-
-		resource.empty("New-Ax-1-z:Z 0");
-
-		// Post check
-		final TableItem<ContainerCountVo> groupsEmpty = resource.findAll(newUriInfoAscSearch("name", "New-Ax-1-z:Z 0"));
-		Assert.assertEquals(1, groupsEmpty.getRecordsTotal());
-		Assert.assertEquals(0, groupsEmpty.getData().get(0).getCount());
-
-		resource.delete("New-Ax-1-z:Z 0");
-
-		// Post check
-		final TableItem<ContainerCountVo> groupsDelete = resource.findAll(newUriInfoAscSearch("name", "New-Ax-1-z:Z 0"));
-		Assert.assertEquals(0, groupsDelete.getRecordsTotal());
+	public void create() {
+		createInternal(new GroupEditionVo(), "cn=new-group,ou=fonction,ou=groups,dc=sample,dc=com");
 	}
 
 	private void createInternal(final GroupEditionVo group, final String expected) {
-		final ContainerScope typeLdap = containerScopeRepository.findByName("Fonction");
-		group.setName("New-Ax-1-z:Z 0");
-		group.setType(typeLdap.getId());
-		resource.create(group);
-
-		// Check the creation from cache
-		final TableItem<ContainerCountVo> groups = resource.findAll(newUriInfoAscSearch("name", "ew-Ax"));
-		Assert.assertEquals(1, groups.getRecordsTotal());
-
-		final ContainerCountVo group0 = groups.getData().get(0);
-		Assert.assertEquals("New-Ax-1-z:Z 0", group0.getName());
-		Assert.assertEquals(0, group0.getCount());
-		Assert.assertEquals(0, group0.getCountVisible());
-		Assert.assertTrue(group0.isCanAdmin());
-		Assert.assertTrue(group0.isCanWrite());
-		Assert.assertEquals("Fonction", group0.getType());
+		final ContainerScope scope = containerScopeRepository.findByName("Fonction");
+		group.setName("new-group");
+		group.setType(scope.getId());
+		final GroupOrg groupOrg1 = new GroupOrg("cn=new-group", "new-group", null);
+		Mockito.when(groupRepository.create(expected, "new-group")).thenReturn(groupOrg1);
+		Assert.assertEquals("new-group", resource.create(group));
 	}
 
-	@Test(expected = ValidationJsonException.class)
-	public void deleteNotExists() {
-		initSpringSecurityContext("mmartin");
-		resource.delete("Any");
-	}
-
-	@Test(expected = ValidationJsonException.class)
+	@Test
 	public void deleteNoRight() {
+		thrown.expect(ValidationJsonException.class);
+		thrown.expect(MatcherUtil.validationMatcher("group", "unknown-id"));
 		initSpringSecurityContext("mmartin");
+		Mockito.when(groupRepository.findByIdExpected("mmartin", "dig rha"))
+				.thenReturn(new GroupOrg("cn=DIG RHA,cn=DIG AS,cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com", "dig rha", null));
 		resource.delete("dig rha");
 	}
 
-	@Test(expected = ValidationJsonException.class)
-	public void emptyNotExists() {
-		initSpringSecurityContext("mmartin");
-		resource.empty("Any");
+	@Test
+	public void empty() {
+		final GroupOrg groupOrg1 = new GroupOrg("cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com", "DIG", Collections.emptySet());
+		final GroupOrg groupOrg2 = new GroupOrg("cn=DIG RHA,cn=DIG AS,cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com", "DIG RHA",
+				Collections.emptySet());
+		groupOrg2.setLocked(true);
+		final Map<String, GroupOrg> groupsMap = new HashMap<>();
+		groupsMap.put("dig", groupOrg1);
+		groupsMap.put("dig rha", groupOrg2);
+		Mockito.when(groupRepository.findAll()).thenReturn(groupsMap);
+		Mockito.when(groupRepository.findByIdExpected(DEFAULT_USER, "dig rha"))
+				.thenReturn(new GroupOrg("cn=DIG RHA,cn=DIG AS,cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com", "dig rha", null));
+		resource.empty("dig rha");
+	}
+
+	@Test
+	public void toDnParent() {
+		final ContainerScope scope = containerScopeRepository.findByName("Fonction");
+		final GroupEditionVo group = new GroupEditionVo();
+		group.setName("new-group");
+		group.setParent(" DiG ");
+		Mockito.when(groupRepository.findByIdExpected(DEFAULT_USER, "dig"))
+				.thenReturn(new GroupOrg("cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com", "DIG", null));
+		Assert.assertEquals("cn=new-group,cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com", resource.toDn(group, scope));
+	}
+
+	@Test
+	public void toDnParentInvalid() {
+		thrown.expect(ValidationJsonException.class);
+		thrown.expect(MatcherUtil.validationMatcher("parent", "container-parent-type-match"));
+		final ContainerScope scope = containerScopeRepository.findByName("Fonction");
+		final GroupEditionVo group = new GroupEditionVo();
+		group.setName("new-group");
+		group.setParent(" DiG ");
+		Mockito.when(groupRepository.findByIdExpected(DEFAULT_USER, "dig")).thenReturn(new GroupOrg("cn=ext,dc=sample,dc=com", "DIG", null));
+		Assert.assertEquals("cn=new-group", resource.toDn(group, scope));
+	}
+
+	@Test
+	public void toDn() {
+		final ContainerScope scope = containerScopeRepository.findByName("Fonction");
+		final GroupEditionVo group = new GroupEditionVo();
+		group.setName("new-group");
+		Assert.assertEquals("cn=new-group,ou=fonction,ou=groups,dc=sample,dc=com", resource.toDn(group, scope));
 	}
 
 	@Test(expected = ValidationJsonException.class)
@@ -444,28 +345,6 @@ public class GroupResourceTest extends AbstractContainerResourceTest {
 		Assert.assertEquals(1, managed.getRecordsTotal());
 		Assert.assertEquals(1, managed.getData().size());
 		Assert.assertTrue(managed.getData().contains("DIG RHA"));
-	}
-
-	/**
-	 * flast1 is member of company "ing".<br>
-	 * There is a delegation to members of company "ing" to see the group "business solution",
-	 * and its sub group "Sub Business Solution"
-	 */
-	@Test
-	public void findAllUsingDelegateReceiverCompany() {
-		initSpringSecurityContext("flast1");
-		final TableItem<ContainerCountVo> tableItem = resource.findAll(newUriInfoAsc("id"));
-		Assert.assertEquals(2, tableItem.getRecordsTotal());
-		Assert.assertEquals(2, tableItem.getRecordsFiltered());
-		Assert.assertEquals(2, tableItem.getData().size());
-
-		// Check the groups "Business Solution"
-		Assert.assertEquals("Business Solution", tableItem.getData().get(0).getName());
-		Assert.assertEquals("Sub Business Solution", tableItem.getData().get(1).getName());
-
-		// Check the groups
-		Assert.assertEquals(0, tableItem.getData().get(0).getCountVisible());
-		Assert.assertEquals(1, tableItem.getData().get(0).getCount());
 	}
 
 }

@@ -35,7 +35,6 @@ import org.apache.cxf.jaxrs.impl.UriInfoImpl;
 import org.apache.cxf.message.Message;
 import org.apache.cxf.message.MessageImpl;
 import org.ligoj.app.api.CompanyOrg;
-import org.ligoj.app.api.ContainerOrg;
 import org.ligoj.app.api.GroupOrg;
 import org.ligoj.app.api.IPasswordGenerator;
 import org.ligoj.app.api.Normalizer;
@@ -261,11 +260,7 @@ public class UserOrgResource {
 	@GET
 	@Path("{user:" + SimpleUser.USER_PATTERN + "}")
 	public UserOrg findById(@PathParam("user") final String user) {
-		final UserOrg rawUserLdap = getRepository().findByIdExpected(Normalizer.normalize(user));
-		if (organizationResource.findById(rawUserLdap.getCompany()) == null) {
-			// No available delegation -> no result
-			throw new ValidationJsonException(USER_KEY, BusinessException.KEY_UNKNOW_ID, "0", "user", "1", user);
-		}
+		final UserOrg rawUserLdap = getRepository().findByIdExpected(securityHelper.getLogin(), Normalizer.normalize(user));
 
 		// User has been found, secure the object regarding the visible groups
 		final UserOrg securedUserLdap = new UserOrg();
@@ -325,15 +320,14 @@ public class UserOrgResource {
 		final UserOrg userLdap = getRepository().findByIdExpected(user);
 
 		// Check the implied group
-		final Map<String, GroupOrg> allGroups = getGroup().findAll();
-		validateAndGroupsCN(Collections.singletonList(group), delegates, allGroups);
+		validateAndGroupsCN(Collections.singletonList(group), delegates);
 
 		// Compute the new groups
 		final Set<String> newGroups = new HashSet<>(userLdap.getGroups());
 		if (updater.apply(newGroups, group)) {
 
 			// Replace the user groups by the normalized groups including the one we have just update
-			final Collection<String> mergedGroups = mergeGroups(delegates, userLdap, allGroups, newGroups);
+			final Collection<String> mergedGroups = mergeGroups(delegates, userLdap, newGroups);
 
 			// Update membership
 			getRepository().updateMembership(new ArrayList<>(mergedGroups), userLdap);
@@ -405,7 +399,7 @@ public class UserOrgResource {
 
 		// Check the implied company and request changes
 		final String cleanCompany = Normalizer.normalize(importEntry.getCompany());
-		final String companyDn = ContainerOrg.getSafeDn(getCompany().findById(cleanCompany));
+		final String companyDn = getCompany().findByIdExpected(securityHelper.getLogin(), cleanCompany).getDn();
 		final boolean hasAttributeChange = hasAttributeChange(importEntry, userLdap);
 		if (!isGrantedAccess(delegates, companyDn, DelegateType.COMPANY, hasAttributeChange)) {
 			// No right at all, unknown company, no (write|admin) right on this company, or no delegate on this company
@@ -419,9 +413,7 @@ public class UserOrgResource {
 		importEntry.setCompany(cleanCompany);
 
 		// Check the groups : one group failed implies entry creation to fail
-		final Map<String, GroupOrg> allGroups = getGroup().findAll();
-
-		final List<String> groups = validateAndGroupsCN(userLdap, importEntry, delegates, allGroups);
+		final List<String> groups = validateAndGroupsCN(userLdap, importEntry, delegates);
 
 		// Replace the user groups by the normalized groups including the ones the user does not see
 		if (userLdap == null) {
@@ -434,7 +426,7 @@ public class UserOrgResource {
 			}
 
 			// Compute merged group identifiers
-			final Collection<String> mergedGroups = mergeGroups(delegates, userLdap, allGroups, groups);
+			final Collection<String> mergedGroups = mergeGroups(delegates, userLdap, groups);
 			importEntry.setGroups(new ArrayList<>(mergedGroups));
 		}
 	}
@@ -442,8 +434,7 @@ public class UserOrgResource {
 	/**
 	 * Validate assigned groups, and return corresponding group identifiers.
 	 */
-	private List<String> validateAndGroupsCN(final UserOrg userLdap, final UserOrgEditionVo importEntry, final List<DelegateOrg> delegates,
-			final Map<String, GroupOrg> allGroups) {
+	private List<String> validateAndGroupsCN(final UserOrg userLdap, final UserOrgEditionVo importEntry, final List<DelegateOrg> delegates) {
 
 		// First complete the groups with the implicit ones from department
 		final String previous = Optional.ofNullable(userLdap).map(UserOrg::getDepartment).orElse(null);
@@ -451,20 +442,19 @@ public class UserOrgResource {
 			Optional.ofNullable(toDepartmentGroup(previous)).map(GroupOrg::getId).ifPresent(importEntry.getGroups()::remove);
 			Optional.ofNullable(toDepartmentGroup(importEntry.getDepartment())).map(GroupOrg::getId).ifPresent(importEntry.getGroups()::add);
 		}
-		return validateAndGroupsCN(importEntry.getGroups(), delegates, allGroups);
+		return validateAndGroupsCN(importEntry.getGroups(), delegates);
 	}
 
 	/**
 	 * Validate assigned groups, and return corresponding group identifiers.
 	 */
-	private List<String> validateAndGroupsCN(final Collection<String> newGroups, final List<DelegateOrg> delegates,
-			final Map<String, GroupOrg> allGroups) {
+	private List<String> validateAndGroupsCN(final Collection<String> newGroups, final List<DelegateOrg> delegates) {
 		final List<String> groupsCn = new ArrayList<>();
 		for (final String group : CollectionUtils.emptyIfNull(newGroups)) {
-			final GroupOrg groupLdap = allGroups.get(Normalizer.normalize(group));
-			if (groupLdap == null || !isGrantedAccess(delegates, groupLdap.getDn(), DelegateType.GROUP, true)) {
+			final GroupOrg groupLdap = getGroup().findByIdExpected(securityHelper.getLogin(), Normalizer.normalize(group));
+			if (!isGrantedAccess(delegates, groupLdap.getDn(), DelegateType.GROUP, true)) {
 				// No right on this group, or unknown LDAP group
-				throw new ValidationJsonException("groups", BusinessException.KEY_UNKNOW_ID, "0", "groups", "1", group);
+				throw new ValidationJsonException("group", BusinessException.KEY_UNKNOW_ID, "0", "group", "1", group);
 			}
 
 			groupsCn.add(groupLdap.getId());
@@ -487,19 +477,16 @@ public class UserOrgResource {
 	 *            the available delegates of current user.
 	 * @param userLdap
 	 *            The internal user entry to update.
-	 * @param allGroups
-	 *            The available groups.
 	 * @param groups
 	 *            The visible and writable groups identifiers to be set to the LDAP entry.
 	 * @return the merged group identifiers to be set internally.
 	 */
-	private Collection<String> mergeGroups(final List<DelegateOrg> delegates, final UserOrg userLdap, final Map<String, GroupOrg> allGroups,
-			final Collection<String> groups) {
+	private Collection<String> mergeGroups(final List<DelegateOrg> delegates, final UserOrg userLdap, final Collection<String> groups) {
 		// Compute the groups merged groups
 		final Collection<String> newGroups = new HashSet<>(userLdap.getGroups());
 		newGroups.addAll(groups);
 		for (final String oldGroup : userLdap.getGroups()) {
-			final String oldGroupDn = allGroups.get(oldGroup).getDn();
+			final String oldGroupDn = getGroup().findById(oldGroup).getDn();
 			if (!groups.contains(oldGroup) && isGrantedAccess(delegates, oldGroupDn, DelegateType.GROUP, true)) {
 				// This group is visible, so it has been explicitly removed by the current user
 				newGroups.remove(oldGroup);
@@ -759,12 +746,11 @@ public class UserOrgResource {
 	 */
 	private UserOrg checkDeletionRight(final String user, final String mode) {
 		// Check the user exists
-		final UserOrg userLdap = getRepository().findByIdExpected(Normalizer.normalize(user));
+		final UserOrg userLdap = getRepository().findByIdExpected(securityHelper.getLogin(), Normalizer.normalize(user));
 
 		// Check the company
-		final String companyDn = ContainerOrg.getSafeDn(getCompany().findById(Normalizer.normalize(userLdap.getCompany())));
-		final List<Integer> ids = delegateRepository.findByMatchingDnForWrite(securityHelper.getLogin(), companyDn, DelegateType.COMPANY);
-		if (ids.isEmpty()) {
+		final String companyDn = getCompany().findById(userLdap.getCompany()).getDn();
+		if (delegateRepository.findByMatchingDnForWrite(securityHelper.getLogin(), companyDn, DelegateType.COMPANY).isEmpty()) {
 			// Report this attempt to delete a non managed user
 			log.warn("Attempt to {} a user '{}' out of scope", mode, user);
 			throw new ValidationJsonException(USER_KEY, BusinessException.KEY_UNKNOW_ID, "0", "user", "1", user);
