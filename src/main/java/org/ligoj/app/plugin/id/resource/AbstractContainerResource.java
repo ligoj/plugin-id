@@ -388,10 +388,10 @@ public abstract class AbstractContainerResource<T extends ContainerOrg, V extend
 		securedUserLdap.setContainerType(type);
 
 		// Find the closest type
-		final ContainerScope type = toScope(types, rawContainer);
-		if (type != null) {
-			securedUserLdap.setType(type.getName());
-			securedUserLdap.setLocked(type.isLocked());
+		final ContainerScope scope = toScope(types, rawContainer);
+		if (scope != null) {
+			securedUserLdap.setType(scope.getName());
+			securedUserLdap.setLocked(scope.isLocked());
 		}
 		securedUserLdap.setLocked(securedUserLdap.isLocked() || rawContainer.isLocked());
 		return securedUserLdap;
