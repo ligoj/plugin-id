@@ -10,6 +10,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 
 import javax.transaction.Transactional;
 import javax.ws.rs.core.UriInfo;
@@ -95,16 +96,19 @@ public class UserOrgResourceTest extends AbstractAppTest {
 	public void findById() {
 		final CompanyOrg company = new CompanyOrg("ou=ing,ou=france,ou=people,dc=sample,dc=com", "ing");
 		final GroupOrg groupOrg1 = new GroupOrg("cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com", "DIG", Collections.singleton("wuser"));
+		resource.groupResource = Mockito.mock(GroupResource.class);
 		Mockito.when(companyRepository.findByIdExpected(DEFAULT_USER, "ing")).thenReturn(company);
 		Mockito.when(groupRepository.findByIdExpected(DEFAULT_USER, "dig")).thenReturn(groupOrg1);
 		Mockito.when(userRepository.findByIdExpected(DEFAULT_USER, "wuser")).thenReturn(newUser());
-		checkUser(resource.findById("WuSER"));
+		Mockito.when(resource.groupResource.getContainers()).thenReturn(Collections.singleton(groupOrg1));
+		Mockito.when(resource.groupResource.getContainersForWrite()).thenReturn(Collections.singleton(groupOrg1));
+		Assert.assertNull(checkUser(resource.findById("WuSER")).getDn()); // Secured data
 	}
 
 	@Test
 	public void findByIdNoCache() {
 		Mockito.when(userRepository.findByIdNoCache("wuser")).thenReturn(newUser());
-		checkUser(resource.findByIdNoCache("WusER"));
+		Assert.assertEquals("uid=wuser,ou=ing,ou=france,ou=people,dc=sample,dc=com", checkUser(resource.findByIdNoCache("WusER")).getDn());
 	}
 
 	@Test
@@ -131,12 +135,15 @@ public class UserOrgResourceTest extends AbstractAppTest {
 		final GroupOrg groupOrg1 = new GroupOrg("cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com", "DIG", Collections.singleton("wuser"));
 		final Map<String, GroupOrg> groupsMap = new HashMap<>();
 		groupsMap.put("dig", groupOrg1);
+		resource.groupResource = Mockito.mock(GroupResource.class);
 		final CompanyOrg company = new CompanyOrg("ou=ing,ou=france,ou=people,dc=sample,dc=com", "ing");
 		Mockito.when(companyRepository.findByIdExpected(DEFAULT_USER, "ing")).thenReturn(company);
 		Mockito.when(groupRepository.findByIdExpected(DEFAULT_USER, "dig")).thenReturn(groupOrg1);
 		Mockito.when(groupRepository.findById("dig")).thenReturn(groupOrg1);
 		Mockito.when(userRepository.findAll(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
 				.thenReturn(new PageImpl<>(new ArrayList<>(users.values())));
+		Mockito.when(resource.groupResource.getContainers()).thenReturn(new HashSet<>(groupsMap.values()));
+		Mockito.when(resource.groupResource.getContainersForWrite()).thenReturn(new HashSet<>(groupsMap.values()));
 
 		final TableItem<UserOrgVo> tableItem = resource.findAll("ing", "dig rha", "iRsT", newUriInfoAsc("id"));
 		Assert.assertEquals(2, tableItem.getRecordsTotal());
@@ -144,11 +151,17 @@ public class UserOrgResourceTest extends AbstractAppTest {
 
 		// Check the users
 		checkUser(tableItem.getData().get(0));
-		Assert.assertEquals("user2", tableItem.getData().get(1).getId());
+	}
+
+	private UserOrg newUser(final Consumer<UserOrg> consumerOld) {
+		final UserOrg user1 = newUser();
+		consumerOld.accept(user1);
+		return user1;
 	}
 
 	private UserOrg newUser() {
 		final UserOrg user1 = new UserOrg();
+		user1.setDn("uid=wuser,ou=ing,ou=france,ou=people,dc=sample,dc=com");
 		user1.setId("wuser");
 		user1.setFirstName("First2");
 		user1.setLastName("Doe2");
@@ -174,9 +187,9 @@ public class UserOrgResourceTest extends AbstractAppTest {
 		Assert.assertEquals("wuser", user.getId());
 		Assert.assertEquals("local1", user.getLocalId());
 		Assert.assertNotNull(user.getLocked());
-		Assert.assertEquals("locker", user.getLockedBy());
-		Assert.assertEquals("Doe2", user.getIsolated());
-		Assert.assertEquals("Doe2", user.getName());
+		Assert.assertEquals("user2", user.getLockedBy());
+		Assert.assertEquals("old-company", user.getIsolated());
+		Assert.assertEquals("wuser", user.getName());
 		Assert.assertEquals("first2.doe2@ing.fr", user.getMails().get(0));
 	}
 
@@ -188,12 +201,12 @@ public class UserOrgResourceTest extends AbstractAppTest {
 		Assert.assertEquals("DIG", groups.get(0).getName());
 	}
 
-	private void checkUser(UserOrg user) {
+	private UserOrg checkUser(UserOrg user) {
 		checkUser((SimpleUserOrg) user);
-		Assert.assertEquals("dn", user.getDn());
 		final List<String> groups = new ArrayList<>(user.getGroups());
 		Assert.assertEquals(1, groups.size());
-		Assert.assertEquals("DIG", groups.get(0));
+		Assert.assertEquals("dig", groups.get(0).toLowerCase());
+		return user;
 	}
 
 	@Test
@@ -320,32 +333,66 @@ public class UserOrgResourceTest extends AbstractAppTest {
 
 	@Test
 	public void mergeUserNoChange() {
-		final UserOrg userLdap2 = getUser().findById("flast1");
-		Assert.assertNull(userLdap2.getDepartment());
-		Assert.assertNull(userLdap2.getLocalId());
+		final GroupOrg groupOrg1 = new GroupOrg("cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com", "DIG", Collections.singleton("wuser"));
+		final GroupOrg groupOrg2 = new GroupOrg("cn=DIG RHA,cn=DIG AS,cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com", "DIG RHA",
+				Collections.singleton("user2"));
+		groupOrg2.setLocked(true);
+		final Map<String, GroupOrg> groupsMap = new HashMap<>();
+		groupsMap.put("dig", groupOrg1);
+		groupsMap.put("dig rha", groupOrg2);
+		Mockito.when(groupRepository.findAll()).thenReturn(groupsMap);
+		Mockito.when(groupRepository.findByDepartment("department1")).thenReturn(groupOrg1);
+		Mockito.when(groupRepository.findByDepartment("department2")).thenReturn(groupOrg2);
 
-		resource.mergeUser(userLdap2, new UserOrg());
+		final UserOrg newUser = newUser();
+
+		resource.mergeUser(newUser(), newUser);
+		Assert.assertEquals("department1", newUser.getDepartment());
+		Assert.assertEquals("local1", newUser.getLocalId());
+	}
+
+	@Test
+	public void mergeUserNoDepartment() {
+		final GroupOrg groupOrg1 = new GroupOrg("cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com", "DIG", Collections.singleton("wuser"));
+		final GroupOrg groupOrg2 = new GroupOrg("cn=DIG RHA,cn=DIG AS,cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com", "DIG RHA",
+				Collections.singleton("user2"));
+		groupOrg2.setLocked(true);
+		final Map<String, GroupOrg> groupsMap = new HashMap<>();
+		groupsMap.put("dig", groupOrg1);
+		groupsMap.put("dig rha", groupOrg2);
+		Mockito.when(groupRepository.findAll()).thenReturn(groupsMap);
+		Mockito.when(groupRepository.findByDepartment("department1")).thenReturn(groupOrg1);
+		Mockito.when(groupRepository.findByDepartment("department2")).thenReturn(groupOrg2);
+
+		final UserOrg userLdap2 = newUser();
+		final UserOrg newUser = newUser();
+		newUser.setDepartment(null);
+		newUser.setLocalId(null);
+		resource.mergeUser(userLdap2, newUser);
 		Assert.assertNull(userLdap2.getDepartment());
 		Assert.assertNull(userLdap2.getLocalId());
 	}
 
 	@Test
 	public void mergeUser() {
-		final UserOrg userLdap2 = getUser().findById("flast1");
-		Assert.assertNull(userLdap2.getDepartment());
-		Assert.assertNull(userLdap2.getLocalId());
+		final GroupOrg groupOrg1 = new GroupOrg("cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com", "DIG", Collections.singleton("wuser"));
+		final GroupOrg groupOrg2 = new GroupOrg("cn=DIG RHA,cn=DIG AS,cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com", "DIG RHA",
+				Collections.singleton("user2"));
+		groupOrg2.setLocked(true);
+		final Map<String, GroupOrg> groupsMap = new HashMap<>();
+		groupsMap.put("dig", groupOrg1);
+		groupsMap.put("dig rha", groupOrg2);
+		Mockito.when(groupRepository.findAll()).thenReturn(groupsMap);
+		Mockito.when(groupRepository.findByDepartment("department1")).thenReturn(groupOrg1);
+		Mockito.when(groupRepository.findByDepartment("department2")).thenReturn(groupOrg2);
 
-		final UserOrg newUser = new UserOrg();
-		newUser.setDepartment("any");
-		newUser.setLocalId("some");
+		final UserOrg userLdap2 = newUser();
+		final UserOrg newUser = newUser();
+		newUser.setDepartment("department2");
+		newUser.setLocalId("local2");
 		resource.mergeUser(userLdap2, newUser);
-		Assert.assertEquals("any", userLdap2.getDepartment());
-		Assert.assertEquals("some", userLdap2.getLocalId());
-
-		// Revert to previous state (null)
-		resource.mergeUser(userLdap2, new UserOrg());
-		Assert.assertNull(userLdap2.getDepartment());
-		Assert.assertNull(userLdap2.getLocalId());
+		Assert.assertEquals("department2", userLdap2.getDepartment());
+		Assert.assertEquals("local2", userLdap2.getLocalId());
 	}
 
 	/**
@@ -361,9 +408,7 @@ public class UserOrgResourceTest extends AbstractAppTest {
 		final Map<String, GroupOrg> groupsMap = new HashMap<>();
 		groupsMap.put("dig", groupOrg1);
 		groupsMap.put("dig rha", groupOrg2);
-		final UserOrg user = new UserOrg();
-		user.setCompany("ing");
-		user.setGroups(Collections.singleton("dig"));
+		final UserOrg user = newUser();
 		Mockito.when(userRepository.findByIdExpected(DEFAULT_USER, "wuser")).thenReturn(user);
 		Mockito.when(companyRepository.findById("ing")).thenReturn(company);
 		Mockito.when(companyRepository.findByIdExpected(DEFAULT_USER, "ing")).thenReturn(company);
@@ -378,363 +423,257 @@ public class UserOrgResourceTest extends AbstractAppTest {
 		final List<String> groups = new ArrayList<>();
 		groups.add("dig rha");
 		user.setGroups(groups);
-		initSpringSecurityContext("fdaugan");
 		resource.update(userVo);
 	}
 
 	@Test
 	public void updateFirstName() {
 		// First name change only
-		final UserOrgEditionVo user = new UserOrgEditionVo();
-		user.setId("jlast3");
-		user.setFirstName("John31");
-		user.setLastName("Last3");
-		user.setCompany("ing");
-		user.setMail("john3.last3@ing.com");
-		user.setGroups(null);
-		initSpringSecurityContext("assist");
-		resource.update(user);
+		update2(userVo -> userVo.setFirstName("XFirst2"));
+	}
+
+	private void update2(Consumer<UserOrgEditionVo> consumer) {
+		update2(consumer, c -> {
+			// No change
+		});
+	}
+
+	private void update2(Consumer<UserOrgEditionVo> consumerNew, Consumer<UserOrg> consumerOld) {
+
+		final CompanyOrg company = new CompanyOrg("ou=ing,ou=france,ou=people,dc=sample,dc=com", "ing");
+		final CompanyOrg company2 = new CompanyOrg("ou=gfi,ou=france,ou=people,dc=sample,dc=com", "gfi");
+		final GroupOrg groupOrg1 = new GroupOrg("cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com", "DIG", Collections.singleton("wuser"));
+		final GroupOrg groupOrg2 = new GroupOrg("cn=DIG RHA,cn=DIG AS,cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com", "DIG RHA",
+				Collections.singleton("user2"));
+		groupOrg2.setLocked(true);
+		final Map<String, GroupOrg> groupsMap = new HashMap<>();
+		groupsMap.put("dig", groupOrg1);
+		groupsMap.put("dig rha", groupOrg2);
+		final UserOrg user = newUser(consumerOld);
+		Mockito.when(userRepository.findByIdExpected(DEFAULT_USER, "wuser")).thenReturn(user);
+		Mockito.when(userRepository.findById("wuser")).thenReturn(user);
+		Mockito.when(companyRepository.findById("ing")).thenReturn(company);
+		Mockito.when(companyRepository.findByIdExpected(DEFAULT_USER, "ing")).thenReturn(company);
+		Mockito.when(companyRepository.findById("gfi")).thenReturn(company2);
+		Mockito.when(companyRepository.findByIdExpected(DEFAULT_USER, "gfi")).thenReturn(company2);
+		Mockito.when(groupRepository.findAll()).thenReturn(groupsMap);
+		Mockito.when(groupRepository.findById("dig")).thenReturn(groupOrg1);
+		Mockito.when(groupRepository.findById("dig rha")).thenReturn(groupOrg2);
+		Mockito.when(groupRepository.findByIdExpected(DEFAULT_USER, "dig")).thenReturn(groupOrg1);
+		Mockito.when(groupRepository.findByIdExpected(DEFAULT_USER, "dig rha")).thenReturn(groupOrg2);
+		Mockito.when(groupRepository.findByDepartment("department1")).thenReturn(groupOrg1);
+		Mockito.when(groupRepository.findByDepartment("department2")).thenReturn(groupOrg2);
+
+		final UserOrgEditionVo userVo = new UserOrgEditionVo();
+		userVo.setId("wuser");
+		userVo.setFirstName("First2");
+		userVo.setLastName("Doe2");
+		userVo.setDepartment("department1");
+		userVo.setLocalId("local1");
+		userVo.setMail("first2.doe2@ing.fr");
+		userVo.setCompany("ing");
+		userVo.setGroups(Collections.singletonList("dig"));
+		consumerNew.accept(userVo);
+		resource.update(userVo);
 	}
 
 	@Test
 	public void updateLastName() {
 		// Last name change only
-		final UserOrgEditionVo user = new UserOrgEditionVo();
-		user.setId("jlast3");
-		user.setFirstName("John31");
-		user.setLastName("Last31");
-		user.setCompany("ing");
-		user.setMail("john3.last3@ing.com");
-		user.setGroups(null);
-		user.setGroups(null);
-		resource.update(user);
+		update2(userVo -> userVo.setLastName("XDoe2"));
 	}
 
 	@Test
 	public void updateMail() {
 		// Mail change only
-		final UserOrgEditionVo user = new UserOrgEditionVo();
-		user.setId("jlast3");
-		user.setFirstName("John31");
-		user.setLastName("Last31");
-		user.setCompany("ing");
-		user.setMail("john31.last31@ing.com");
-		user.setGroups(null);
-		resource.update(user);
+		update2(userVo -> userVo.setMail("john31.last31@ing.com"));
 	}
 
 	@Test
-	public void updateUserChangeCompanyAndBackAgain() {
-
-		final UserOrgEditionVo user = new UserOrgEditionVo();
-		user.setId("flast0");
-		user.setFirstName("First0"); // Unchanged
-		user.setLastName("Last0"); // Unchanged
-		user.setCompany("ing"); // Previous is "socygan"
-		user.setMail("first0.last0@socygan.fr"); // Unchanged
-		final List<String> groups = new ArrayList<>();
-		user.setGroups(groups);
-		initSpringSecurityContext("assist");
-		resource.update(user);
-	}
-
-	@Test(expected = ValidationJsonException.class)
-	public void updateUserChangeDepartmentNotVisible() {
-		initSpringSecurityContext("assist");
-
-		final UserOrgEditionVo user = new UserOrgEditionVo();
-		user.setId("flast0");
-		user.setFirstName("First0"); // Unchanged
-		user.setLastName("Last0"); // Unchanged
-		user.setCompany("socygan"); // Unchanged
-		user.setDepartment("456987"); // Previous is null -> "DIG AS" (not visible)
-		user.setMail("first0.last0@socygan.fr"); // Unchanged
-		final List<String> groups = new ArrayList<>();
-		user.setGroups(groups);
-		resource.update(user);
+	public void updateCompany() {
+		update2(userVo -> userVo.setCompany("gfi"));
 	}
 
 	@Test
-	public void updateUserChangeDepartmentAndBackAgain() {
-		final UserOrgEditionVo user = new UserOrgEditionVo();
-		user.setId("flast0");
-		user.setFirstName("First0"); // Unchanged
-		user.setLastName("Last0"); // Unchanged
-		user.setCompany("socygan"); // Unchanged
-		user.setDepartment("456987"); // Previous is null -> "DIG AS"
-		user.setMail("first0.last0@socygan.fr"); // Unchanged
-		final List<String> groups = new ArrayList<>();
-		user.setGroups(groups);
-		resource.update(user);
+	public void updateUserChangeDepartment() {
+		update2(userVo -> userVo.setDepartment("department2"));
 	}
 
 	@Test
 	public void updateUserChangeDepartmentNotExists() {
-		final UserOrgEditionVo user = new UserOrgEditionVo();
-		user.setId("flast0");
-		user.setFirstName("First0"); // Unchanged
-		user.setLastName("Last0"); // Unchanged
-		user.setCompany("socygan"); // Unchanged
-		user.setDepartment("any"); // Previous is null -> No linked group exists
-		user.setMail("first0.last0@socygan.fr"); // Unchanged
-		final List<String> groups = new ArrayList<>();
-		user.setGroups(groups);
-		initSpringSecurityContext("assist");
-		resource.update(user);
-	}
-
-	@Test
-	public void updateUserCompanyNotExists() {
-		thrown.expect(ValidationJsonException.class);
-		thrown.expect(MatcherUtil.validationMatcher("company", BusinessException.KEY_UNKNOW_ID));
-		final UserOrgEditionVo user = new UserOrgEditionVo();
-		user.setId("flast0");
-		user.setFirstName("FirstA");
-		user.setLastName("LastA");
-		user.setCompany("any");
-		user.setMail("flasta@ing.com");
-		final List<String> groups = new ArrayList<>();
-		user.setGroups(groups);
-		initSpringSecurityContext("fdaugan");
-		resource.update(user);
-	}
-
-	@Test
-	public void updateUserGroupNotExists() {
-		thrown.expect(ValidationJsonException.class);
-		thrown.expect(MatcherUtil.validationMatcher("groups", BusinessException.KEY_UNKNOW_ID));
-		final UserOrgEditionVo user = new UserOrgEditionVo();
-		user.setId("flast1");
-		user.setFirstName("FirstA");
-		user.setLastName("LastA");
-		user.setCompany("ing");
-		user.setMail("flasta@ing.com");
-		final List<String> groups = new ArrayList<>();
-		groups.add("any");
-		user.setGroups(groups);
-		initSpringSecurityContext("fdaugan");
-		resource.update(user);
+		update2(userVo -> userVo.setDepartment("any"));
 	}
 
 	@Test
 	public void updateUserNoChange() {
-		final UserOrgEditionVo user = new UserOrgEditionVo();
-		user.setId("jlast3");
-		user.setFirstName("John3");
-		user.setLastName("Last3");
-		user.setCompany("ing");
-		user.setMail("jlast3@ing.com");
-		final List<String> groups = new ArrayList<>();
-		groups.add("dig rha");
-		user.setGroups(groups);
-		initSpringSecurityContext("fdaugan");
-		resource.update(user);
-	}
-
-	@Test
-	public void updateUserNoDelegate() {
-		thrown.expect(ValidationJsonException.class);
-		thrown.expect(MatcherUtil.validationMatcher("company", BusinessException.KEY_UNKNOW_ID));
-		final UserOrgEditionVo user = new UserOrgEditionVo();
-		user.setId("flast1");
-		user.setFirstName("FirstW");
-		user.setLastName("LastW");
-		user.setCompany("ing");
-		user.setMail("flastw@ing.com");
-		final List<String> groups = new ArrayList<>();
-		groups.add("dig rha");
-		user.setGroups(groups);
-		initSpringSecurityContext("any");
-
-		resource.update(user);
-	}
-
-	@Test
-	public void updateUserReadOnly() {
-		thrown.expect(ValidationJsonException.class);
-		thrown.expect(MatcherUtil.validationMatcher("groups", BusinessException.KEY_UNKNOW_ID));
-		final UserOrgEditionVo user = new UserOrgEditionVo();
-		user.setId("flast0");
-		user.setFirstName("First0");
-		user.setLastName("Last0");
-		user.setCompany("socygan");
-		user.setMail("first0.last0@socygan.fr");
-		final List<String> groups = new ArrayList<>();
-		groups.add("Biz Agency");
-		user.setGroups(groups);
-		initSpringSecurityContext("mlavoine");
-		resource.update(user);
-	}
-
-	@Test
-	public void updateUserNoDelegateCompany() {
-		thrown.expect(ValidationJsonException.class);
-		thrown.expect(MatcherUtil.validationMatcher("company", BusinessException.KEY_UNKNOW_ID));
-		final UserOrgEditionVo user = new UserOrgEditionVo();
-		user.setId("flast0");
-		user.setFirstName("FirstA");
-		user.setLastName("LastA");
-		user.setCompany("socygan");
-		user.setMail("flasta@ing.com");
-		final List<String> groups = new ArrayList<>();
-		user.setGroups(groups);
-		initSpringSecurityContext("any");
-
-		resource.update(user);
-	}
-
-	@Test
-	public void updateUserNoDelegateCompanyChangeFirstName() {
-		thrown.expect(ValidationJsonException.class);
-		thrown.expect(MatcherUtil.validationMatcher("company", BusinessException.KEY_UNKNOW_ID));
-		final UserOrgEditionVo user = new UserOrgEditionVo();
-		user.setId("flast0");
-		user.setFirstName("FirstA");
-		user.setLastName("Last0");
-		user.setCompany("socygan");
-		user.setMail("first0.last0@socygan.fr");
-		initSpringSecurityContext("fdaugan");
-		resource.update(user);
-	}
-
-	@Test
-	public void updateUserNoDelegateCompanyChangeMail() {
-		thrown.expect(ValidationJsonException.class);
-		thrown.expect(MatcherUtil.validationMatcher("company", BusinessException.KEY_UNKNOW_ID));
-		final UserOrgEditionVo user = new UserOrgEditionVo();
-		user.setId("flast0");
-		user.setFirstName("First0");
-		user.setLastName("Last0");
-		user.setCompany("socygan");
-		user.setMail("first0.lastA@socygan.fr");
-		initSpringSecurityContext("fdaugan");
-		resource.update(user);
-	}
-
-	@Test
-	public void updateUserNoDelegateCompanyNoChange() {
-		final UserOrgEditionVo user = new UserOrgEditionVo();
-		user.setId("flast0");
-		user.setFirstName("First0");
-		user.setLastName("Last0");
-		user.setCompany("socygan");
-		user.setMail("first0.last0@socygan.fr");
-		initSpringSecurityContext("assist");
-		resource.update(user);
-	}
-
-	@Test
-	public void updateUserNoDelegateGroupForTarget() {
-		thrown.expect(ValidationJsonException.class);
-		thrown.expect(MatcherUtil.validationMatcher("groups", BusinessException.KEY_UNKNOW_ID));
-		final UserOrgEditionVo user = new UserOrgEditionVo();
-		user.setId("flast1");
-		user.setFirstName("FirstA");
-		user.setLastName("LastA");
-		user.setCompany("ing");
-		user.setMail("flasta@ing.com");
-		final List<String> groups = new ArrayList<>();
-		groups.add("dig sud ouest"); // no right on this group
-		user.setGroups(groups);
-		initSpringSecurityContext("fdaugan");
-		resource.update(user);
+		update2(userVo -> {
+			// No change
+		});
 	}
 
 	@Test
 	public void updateUserHadNoMail() {
-		final UserOrgEditionVo user = new UserOrgEditionVo();
-		user.setId("jdoe5");
-		user.setFirstName("John5");
-		user.setLastName("Doe5");
-		user.setCompany("ing");
-		user.setMail("first5.last5@ing.fr");
-		final List<String> groups = new ArrayList<>();
-		groups.add("dig rha");
-		user.setGroups(groups);
-		initSpringSecurityContext("fdaugan");
-		resource.update(user);
+		update2(userVo -> {
+			userVo.setFirstName("XFirstA");
+		}, userVo -> userVo.setMails(new ArrayList<>()));
 	}
 
 	@Test
 	public void updateUserHasNoMail() {
-		final UserOrgEditionVo user = new UserOrgEditionVo();
-		user.setId("jdoe5");
-		user.setFirstName("John5");
-		user.setLastName("Doe5");
-		user.setCompany("ing");
-		user.setMail(null);
-		final List<String> groups = new ArrayList<>();
-		groups.add("dig rha");
-		user.setGroups(groups);
-		initSpringSecurityContext("fdaugan");
-		resource.update(user);
+		update2(userVo -> userVo.setMail(null));
 	}
 
 	@Test
-	public void updateUserNoPassword() {
-		final UserOrgEditionVo user = new UserOrgEditionVo();
-		user.setId("jdoe4");
-		user.setFirstName("John4");
-		user.setLastName("Doe4");
-		user.setCompany("ing");
-		user.setMail("fohn4.doe4@ing.fr");
-		final List<String> groups = new ArrayList<>();
-		groups.add("dig rha");
-		user.setGroups(groups);
-		initSpringSecurityContext("fdaugan");
-		resource.update(user);
+	public void updateUserWasNotSecured() {
+		update2(userVo -> {
+			userVo.setFirstName("XFirstA");
+		}, userVo -> userVo.setSecured(false));
 	}
 
 	@Test
-	public void updateUserNotExists() {
-		thrown.expect(ValidationJsonException.class);
-		thrown.expect(MatcherUtil.validationMatcher("id", BusinessException.KEY_UNKNOW_ID));
-		final UserOrgEditionVo user = new UserOrgEditionVo();
-		user.setId("flast11");
-		user.setFirstName("FirstA");
-		user.setLastName("LastA");
-		user.setCompany("ing");
-		user.setMail("flasta@ing.com");
-		final List<String> groups = new ArrayList<>();
-		user.setGroups(groups);
-		initSpringSecurityContext("assist");
-		resource.update(user);
+	public void updateChangeGroup() {
+		// Remove group "dig"
+		update2(userVo -> userVo.setGroups(Collections.singletonList("DIG RHA")));
 	}
 
 	@Test
-	public void updateRemoveGroup() {
-		// Remove group "Biz Agency"
-		final UserOrgEditionVo user = new UserOrgEditionVo();
-		user.setId("fdoe2");
-		user.setFirstName("First2");
-		user.setLastName("Doe2");
-		user.setCompany("ing");
-		user.setMail("fdoe2@ing.com");
-		final List<String> groups = new ArrayList<>();
-		groups.add("DIG RHA");
-		user.setGroups(groups);
-		resource.update(user);
+	public void findAllNotSecureByCompany() {
+		final Map<String, UserOrg> users = new HashMap<>();
+		final UserOrg user1 = newUser();
+		users.put("wuser", user1);
+		final UserOrg user2 = new UserOrg();
+		user2.setCompany("ing");
+		user2.setGroups(Collections.singletonList("any"));
+		users.put("user2", user2);
+		final GroupOrg groupOrg1 = new GroupOrg("cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com", "DIG", Collections.singleton("wuser"));
+		final Map<String, GroupOrg> groupsMap = new HashMap<>();
+		groupsMap.put("dig", groupOrg1);
+		resource.groupResource = Mockito.mock(GroupResource.class);
+		final CompanyOrg company = new CompanyOrg("ou=ing,ou=france,ou=people,dc=sample,dc=com", "ing");
+		Mockito.when(companyRepository.findByIdExpected(DEFAULT_USER, "ing")).thenReturn(company);
+		Mockito.when(groupRepository.findByIdExpected(DEFAULT_USER, "dig")).thenReturn(groupOrg1);
+		Mockito.when(groupRepository.findById("dig")).thenReturn(groupOrg1);
+		Mockito.when(userRepository.findAll(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
+				.thenReturn(new PageImpl<>(new ArrayList<>(users.values())));
+		Mockito.when(resource.groupResource.getContainers()).thenReturn(new HashSet<>(groupsMap.values()));
+		Mockito.when(resource.groupResource.getContainersForWrite()).thenReturn(new HashSet<>(groupsMap.values()));
+
+		final List<UserOrg> data = resource.findAllNotSecure("ing", null);
+
+		// Check the users
+		checkUser(data.get(0));
 	}
 
-	/**
-	 * Add a group to user having already some groups but not visible from the current user.
-	 */
 	@Test
-	public void updateUserAddGroup() {
+	public void findAllNotSecureByManagedCompany() {
+		final Map<String, UserOrg> users = new HashMap<>();
+		final UserOrg user1 = newUser();
+		users.put("wuser", user1);
+		final UserOrg user2 = new UserOrg();
+		user2.setCompany("ing");
+		user2.setGroups(Collections.singletonList("any"));
+		users.put("user2", user2);
+		final GroupOrg groupOrg1 = new GroupOrg("cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com", "DIG", Collections.singleton("wuser"));
+		final Map<String, GroupOrg> groupsMap = new HashMap<>();
+		groupsMap.put("dig", groupOrg1);
+		resource.companyResource = Mockito.mock(CompanyResource.class);
+		final CompanyOrg company = new CompanyOrg("ou=ing,ou=france,ou=people,dc=sample,dc=com", "ing");
+		Mockito.when(companyRepository.findByIdExpected(DEFAULT_USER, "ing")).thenReturn(company);
+		Mockito.when(groupRepository.findByIdExpected(DEFAULT_USER, "dig")).thenReturn(groupOrg1);
+		Mockito.when(groupRepository.findById("dig")).thenReturn(groupOrg1);
+		Mockito.when(userRepository.findAll(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
+				.thenReturn(new PageImpl<>(new ArrayList<>(users.values())));
+		Mockito.when(resource.companyResource.getContainers()).thenReturn(Collections.singleton(company));
+		Mockito.when(resource.companyResource.getContainersForWrite()).thenReturn(Collections.singleton(company));
 
-		// Add a new valid group "DIG RHA" to "wuser" by "fdaugan"
-		initSpringSecurityContext("fdaugan");
-		final UserOrgEditionVo user = new UserOrgEditionVo();
-		user.setId("wuser");
-		user.setFirstName("William");
-		user.setLastName("User");
-		user.setCompany("ing");
-		user.setMail("wuser.wuser@ing.fr");
-		final List<String> groups = new ArrayList<>();
-		groups.add("DIG RHA");
-		groups.add("Biz Agency Manager");
-		user.setGroups(groups);
-		resource.update(user);
+		final List<UserOrg> data = resource.findAllNotSecure("ing", null);
+
+		// Check the users
+		checkUser(data.get(0));
+	}
+
+	@Test
+	public void findAllNotSecureByGroup() {
+		final Map<String, UserOrg> users = new HashMap<>();
+		final UserOrg user1 = newUser();
+		users.put("wuser", user1);
+		final UserOrg user2 = new UserOrg();
+		user2.setCompany("ing");
+		user2.setGroups(Collections.singletonList("any"));
+		users.put("user2", user2);
+		final GroupOrg groupOrg1 = new GroupOrg("cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com", "DIG", Collections.singleton("wuser"));
+		final Map<String, GroupOrg> groupsMap = new HashMap<>();
+		groupsMap.put("dig", groupOrg1);
+		resource.groupResource = Mockito.mock(GroupResource.class);
+		final CompanyOrg company = new CompanyOrg("ou=ing,ou=france,ou=people,dc=sample,dc=com", "ing");
+		Mockito.when(companyRepository.findByIdExpected(DEFAULT_USER, "ing")).thenReturn(company);
+		Mockito.when(groupRepository.findByIdExpected(DEFAULT_USER, "dig")).thenReturn(groupOrg1);
+		Mockito.when(groupRepository.findById("dig")).thenReturn(groupOrg1);
+		Mockito.when(userRepository.findAll(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
+				.thenReturn(new PageImpl<>(new ArrayList<>(users.values())));
+		Mockito.when(resource.groupResource.getContainers()).thenReturn(new HashSet<>(groupsMap.values()));
+		Mockito.when(resource.groupResource.getContainersForWrite()).thenReturn(new HashSet<>(groupsMap.values()));
+
+		final List<UserOrg> data = resource.findAllNotSecure(null, "dig");
+
+		// Check the users
+		checkUser(data.get(0));
+	}
+
+	@Test
+	public void findAllNotSecureByManagedGroup() {
+		final Map<String, UserOrg> users = new HashMap<>();
+		final UserOrg user1 = newUser();
+		users.put("wuser", user1);
+		final UserOrg user2 = new UserOrg();
+		user2.setCompany("ing");
+		user2.setGroups(Collections.singletonList("any"));
+		users.put("user2", user2);
+		final GroupOrg groupOrg1 = new GroupOrg("cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com", "DIG", Collections.singleton("wuser"));
+		final Map<String, GroupOrg> groupsMap = new HashMap<>();
+		groupsMap.put("dig", groupOrg1);
+		resource.groupResource = Mockito.mock(GroupResource.class);
+		final CompanyOrg company = new CompanyOrg("ou=ing,ou=france,ou=people,dc=sample,dc=com", "ing");
+		Mockito.when(companyRepository.findByIdExpected(DEFAULT_USER, "ing")).thenReturn(company);
+		Mockito.when(groupRepository.findByIdExpected(DEFAULT_USER, "dig")).thenReturn(groupOrg1);
+		Mockito.when(groupRepository.findById("dig")).thenReturn(groupOrg1);
+		Mockito.when(userRepository.findAll(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
+				.thenReturn(new PageImpl<>(new ArrayList<>(users.values())));
+		Mockito.when(resource.groupResource.getContainers()).thenReturn(new HashSet<>(groupsMap.values()));
+		Mockito.when(resource.groupResource.getContainersForWrite()).thenReturn(new HashSet<>(groupsMap.values()));
+
+		final List<UserOrg> data = resource.findAllNotSecure(null, "dig");
+
+		// Check the users
+		checkUser(data.get(0));
+	}
+
+	@Test
+	public void findAllNotSecure() {
+		final Map<String, UserOrg> users = new HashMap<>();
+		final UserOrg user1 = newUser();
+		users.put("wuser", user1);
+		final UserOrg user2 = new UserOrg();
+		user2.setCompany("ing");
+		user2.setGroups(Collections.singletonList("any"));
+		users.put("user2", user2);
+		final GroupOrg groupOrg1 = new GroupOrg("cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com", "DIG", Collections.singleton("wuser"));
+		final Map<String, GroupOrg> groupsMap = new HashMap<>();
+		groupsMap.put("dig", groupOrg1);
+		resource.groupResource = Mockito.mock(GroupResource.class);
+		final CompanyOrg company = new CompanyOrg("ou=ing,ou=france,ou=people,dc=sample,dc=com", "ing");
+		Mockito.when(companyRepository.findByIdExpected(DEFAULT_USER, "ing")).thenReturn(company);
+		Mockito.when(groupRepository.findByIdExpected(DEFAULT_USER, "dig")).thenReturn(groupOrg1);
+		Mockito.when(groupRepository.findById("dig")).thenReturn(groupOrg1);
+		Mockito.when(userRepository.findAll(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
+				.thenReturn(new PageImpl<>(new ArrayList<>(users.values())));
+		Mockito.when(resource.groupResource.getContainers()).thenReturn(new HashSet<>(groupsMap.values()));
+		Mockito.when(resource.groupResource.getContainersForWrite()).thenReturn(new HashSet<>(groupsMap.values()));
+
+		final List<UserOrg> data = resource.findAllNotSecure(null, null);
+
+		// Check the users
+		checkUser(data.get(0));
 	}
 
 	@Test
@@ -795,7 +734,7 @@ public class UserOrgResourceTest extends AbstractAppTest {
 		Mockito.when(userRepository.findByIdExpected(DEFAULT_USER, "wuser")).thenReturn(user);
 		Mockito.when(companyRepository.findById("ing")).thenReturn(company);
 		Mockito.when(groupRepository.findAll()).thenReturn(groupsMap);
-		resource.unlock("wuuser");
+		resource.unlock("wuser");
 	}
 
 	@Test
@@ -825,17 +764,17 @@ public class UserOrgResourceTest extends AbstractAppTest {
 		groupOrg2.setLocked(true);
 		final Map<String, GroupOrg> groupsMap = new HashMap<>();
 		groupsMap.put("dig rha", groupOrg2);
-		final UserOrg user = new UserOrg();
-		user.setCompany("gfi");
-		user.setGroups(Collections.singleton("dig rha"));
-		final CompanyOrg company = new CompanyOrg("ou=gfi,ou=france,ou=people,dc=sample,dc=com", "gfi");
-		Mockito.when(companyRepository.findById("gfi")).thenReturn(company);
+		groupsMap.put("dig", groupOrg1);
+		final UserOrg user = newUser(u -> u.setGroups(Arrays.asList("dig")));
+		final CompanyOrg company = new CompanyOrg("ou=ing,ou=france,ou=people,dc=sample,dc=com", "gfi");
+		Mockito.when(companyRepository.findById("ing")).thenReturn(company);
 		Mockito.when(userRepository.findByIdExpected("wuser")).thenReturn(user);
 		Mockito.when(userRepository.findById("wuser")).thenReturn(user);
 		Mockito.when(groupRepository.findByIdExpected(DEFAULT_USER, "dig")).thenReturn(groupOrg1);
 		Mockito.when(groupRepository.findByIdExpected(DEFAULT_USER, "dig rha")).thenReturn(groupOrg2);
+		Mockito.when(groupRepository.findById("dig")).thenReturn(groupOrg1);
 		Mockito.when(groupRepository.findById("dig rha")).thenReturn(groupOrg2);
-		resource.addUserToGroup("wuser", "dig");
+		resource.addUserToGroup("wuser", "dig rha");
 	}
 
 	/**
@@ -850,9 +789,7 @@ public class UserOrgResourceTest extends AbstractAppTest {
 		final Map<String, GroupOrg> groupsMap = new HashMap<>();
 		groupsMap.put("dig", groupOrg1);
 		groupsMap.put("dig rha", groupOrg2);
-		final UserOrg user = new UserOrg();
-		user.setCompany("gfi");
-		user.setGroups(Collections.singleton("dig"));
+		final UserOrg user = newUser();
 		Mockito.when(userRepository.findByIdExpected("wuser")).thenReturn(user);
 		Mockito.when(userRepository.findById("wuser")).thenReturn(user);
 		Mockito.when(groupRepository.findByIdExpected(DEFAULT_USER, "dig")).thenReturn(groupOrg2);
@@ -884,8 +821,56 @@ public class UserOrgResourceTest extends AbstractAppTest {
 	 * Test user addition to a group.
 	 */
 	@Test
-	public void removeUser() {
-		resource.removeUser("wuser", "dig rha");
+	public void removeUserFromGroup() {
+		final GroupOrg groupOrg1 = new GroupOrg("cn=DIG RHA,cn=DIG AS,cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com", "DIG RHA",
+				Collections.singleton("wuser"));
+		final GroupOrg groupOrg2 = new GroupOrg("cn=DIG AS,cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com", "DIG AS", Collections.singleton("wuser"));
+		groupOrg2.setLocked(true);
+		final Map<String, GroupOrg> groupsMap = new HashMap<>();
+		groupsMap.put("dig rha", groupOrg1);
+		groupsMap.put("dig as", groupOrg2);
+		final UserOrg user = newUser(u -> u.setGroups(Arrays.asList("dig rha", "dig as")));
+		final CompanyOrg company = new CompanyOrg("ou=gfi,ou=france,ou=people,dc=sample,dc=com", "gfi");
+		Mockito.when(companyRepository.findById("ing")).thenReturn(company);
+		Mockito.when(userRepository.findByIdExpected("wuser")).thenReturn(user);
+		Mockito.when(userRepository.findById("wuser")).thenReturn(user);
+		Mockito.when(groupRepository.findByIdExpected(DEFAULT_USER, "dig rha")).thenReturn(groupOrg1);
+		Mockito.when(groupRepository.findByIdExpected(DEFAULT_USER, "dig as")).thenReturn(groupOrg2);
+		Mockito.when(groupRepository.findById("dig rha")).thenReturn(groupOrg1);
+		Mockito.when(groupRepository.findById("dig as")).thenReturn(groupOrg2);
+		resource.removeUserFromGroup("wuser", "dig rha");
+	}
+
+	/**
+	 * Test user addition to a group.
+	 */
+	@Test
+	public void removeUserFromGroupNotVisible() {
+		final GroupOrg groupOrg1 = new GroupOrg("cn=DIG RHA,cn=DIG AS,cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com", "DIG RHA",
+				Collections.singleton("wuser"));
+		final GroupOrg groupOrg2 = new GroupOrg("cn=DIG AS,cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com", "DIG AS", Collections.singleton("wuser"));
+		final GroupOrg groupOrg3 = new GroupOrg("cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com", "DIG", Collections.singleton("wuser"));
+		final GroupOrg groupOrg4 = new GroupOrg("cn=Other,dc=other,dc=com", "Other", Collections.singleton("wuser"));
+		groupOrg2.setLocked(true);
+		final Map<String, GroupOrg> groupsMap = new HashMap<>();
+		groupsMap.put("dig rha", groupOrg1);
+		groupsMap.put("dig as", groupOrg2);
+		groupsMap.put("dig", groupOrg3);
+		groupsMap.put("other", groupOrg4);
+		final UserOrg user = newUser(u -> u.setGroups(Arrays.asList("dig rha", "dig", "dig as", "other")));
+		final CompanyOrg company = new CompanyOrg("ou=gfi,ou=france,ou=people,dc=sample,dc=com", "gfi");
+		Mockito.when(companyRepository.findById("ing")).thenReturn(company);
+		Mockito.when(userRepository.findByIdExpected("wuser")).thenReturn(user);
+		Mockito.when(userRepository.findById("wuser")).thenReturn(user);
+		Mockito.when(groupRepository.findByIdExpected(DEFAULT_USER, "dig rha")).thenReturn(groupOrg1);
+		Mockito.when(groupRepository.findByIdExpected(DEFAULT_USER, "dig as")).thenReturn(groupOrg2);
+		Mockito.when(groupRepository.findByIdExpected(DEFAULT_USER, "dig")).thenReturn(groupOrg3);
+		Mockito.when(groupRepository.findByIdExpected(DEFAULT_USER, "other")).thenReturn(groupOrg4);
+		Mockito.when(groupRepository.findById("dig rha")).thenReturn(groupOrg1);
+		Mockito.when(groupRepository.findById("dig as")).thenReturn(groupOrg2);
+		Mockito.when(groupRepository.findById("dig")).thenReturn(groupOrg3);
+		Mockito.when(groupRepository.findById("other")).thenReturn(groupOrg4);
+		resource.removeUserFromGroup("wuser", "other");
 	}
 
 	@Test

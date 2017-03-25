@@ -92,10 +92,10 @@ public class UserOrgResource {
 	private PaginationJson paginationJson;
 
 	@Autowired
-	private CompanyResource organizationResource;
+	protected CompanyResource companyResource;
 
 	@Autowired
-	private GroupResource groupResource;
+	protected GroupResource groupResource;
 
 	@Autowired
 	private SecurityHelper securityHelper;
@@ -119,10 +119,10 @@ public class UserOrgResource {
 	 * of each user depends on the groups the user can see. The result is not secured : it contains DN.
 	 * 
 	 * @param company
-	 *            the optional company name to match.
+	 *            The optional company name to match.
 	 * @param group
-	 *            the optional group name to match.
-	 * @return found users.
+	 *            The optional group name to match.
+	 * @return All matched users.
 	 */
 	public List<UserOrg> findAllNotSecure(final String company, final String group) {
 		final Set<GroupOrg> managedGroups = groupResource.getContainers();
@@ -155,7 +155,7 @@ public class UserOrgResource {
 			@Context final UriInfo uriInfo) {
 		final PageRequest pageRequest = paginationJson.getPageRequest(uriInfo, ORDERED_COLUMNS);
 
-		final Collection<String> managedCompanies = organizationResource.getContainers().stream().map(CompanyOrg::getId).collect(Collectors.toSet());
+		final Collection<String> managedCompanies = companyResource.getContainers().stream().map(CompanyOrg::getId).collect(Collectors.toSet());
 		final Map<String, GroupOrg> allGroups = getGroup().findAll();
 
 		// The companies to use
@@ -188,7 +188,7 @@ public class UserOrgResource {
 			@QueryParam(DataTableAttributes.SEARCH) final String criteria, @Context final UriInfo uriInfo) {
 		final Set<GroupOrg> managedGroups = groupResource.getContainers();
 		final Set<GroupOrg> managedGroupsWrite = groupResource.getContainersForWrite();
-		final Collection<String> managedCompaniesWrite = organizationResource.getContainersForWrite().stream().map(CompanyOrg::getId)
+		final Collection<String> managedCompaniesWrite = companyResource.getContainersForWrite().stream().map(CompanyOrg::getId)
 				.collect(Collectors.toList());
 
 		// Search the users
@@ -297,7 +297,7 @@ public class UserOrgResource {
 	 */
 	@DELETE
 	@Path("{user}/group/{group}")
-	public void removeUser(@PathParam("user") final String user, @PathParam("group") final String group) {
+	public void removeUserFromGroup(@PathParam("user") final String user, @PathParam("group") final String group) {
 		updateGroupUser(user, Normalizer.normalize(group), Collection::remove);
 	}
 
@@ -512,7 +512,7 @@ public class UserOrgResource {
 	}
 
 	private boolean isGrantedAccess(final List<DelegateOrg> delegates, final String dn, final DelegateType type, final boolean requestUpdate) {
-		return dn != null && (!requestUpdate || delegates.stream().anyMatch(delegate -> isGrantedAccess(delegate, dn, type, requestUpdate)));
+		return !requestUpdate || delegates.stream().anyMatch(delegate -> isGrantedAccess(delegate, dn, type, requestUpdate));
 	}
 
 	protected boolean isGrantedAccess(final DelegateOrg delegate, final String dn, final DelegateType type, final boolean requestUpdate) {
@@ -542,7 +542,7 @@ public class UserOrgResource {
 	 * The mail of the entry will replace the one of LDAP if LDAP's one does not contain any mail. If LDAP entry did not
 	 * exist or, if there was no password (or a dummy one), it will be set to the one of import of a new generated
 	 * password. <br>
-	 * When mail or password is update a mail is sent to the user with the account, and eventually the new password.<br>
+	 * When mail or password is updated a mail is sent to the user with the account, and eventually the new password.<br>
 	 * Groups of entry will be normalized.
 	 * 
 	 * @param importEntry
