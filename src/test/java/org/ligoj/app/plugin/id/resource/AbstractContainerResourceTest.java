@@ -55,24 +55,10 @@ public abstract class AbstractContainerResourceTest extends AbstractAppTest {
 		Mockito.when(configuration.getGroupRepository()).thenReturn(groupRepository);
 	}
 
-	protected UriInfo newUriInfoAsc(final String orderedProperty) {
-		return newUriInfo(orderedProperty, "asc");
-	}
-
 	protected UriInfo newUriInfoAscSearch(final String orderedProperty, final String search) {
 		final UriInfo uriInfo = newUriInfo(orderedProperty, "asc");
 		uriInfo.getQueryParameters().add(DataTableAttributes.SEARCH, search);
 		return uriInfo;
-	}
-
-	protected UriInfo newUriInfoSearch(final String search) {
-		final UriInfo uriInfo = newUriInfo();
-		uriInfo.getQueryParameters().add(DataTableAttributes.SEARCH, search);
-		return uriInfo;
-	}
-
-	protected UriInfo newUriInfoDesc(final String property) {
-		return newUriInfo(property, "desc");
 	}
 
 	protected UriInfo newUriInfo(final String orderedProperty, final String order) {
