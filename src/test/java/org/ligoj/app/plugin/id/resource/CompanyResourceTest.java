@@ -274,19 +274,19 @@ public class CompanyResourceTest extends AbstractContainerResourceTest {
 		Assert.assertFalse(group0.isCanAdmin());
 		Assert.assertFalse(group0.isCanWrite());
 		Assert.assertFalse(group0.isLocked());
-		Assert.assertEquals("France", group0.getType());
+		Assert.assertEquals("France", group0.getScope());
 		Assert.assertEquals("gfi", group0.getId());
 		Assert.assertEquals(ContainerType.COMPANY, group0.getContainerType());
 
 		// No group type case
-		final ContainerCountVo group2 = groups.getData().get(2);
+		final ContainerCountVo group2 = groups.getData().get(1);
 		Assert.assertEquals("ing-internal", group2.getName());
-		Assert.assertEquals(0, group2.getCount());
-		Assert.assertEquals(1, group2.getCountVisible());
+		Assert.assertEquals(1, group2.getCount());
+		Assert.assertEquals(0, group2.getCountVisible());
 		Assert.assertFalse(group2.isCanAdmin());
 		Assert.assertFalse(group2.isCanWrite());
 		Assert.assertTrue(group2.isLocked());
-		Assert.assertEquals("Root", group2.getType());
+		Assert.assertEquals("Root", group2.getScope());
 		Assert.assertEquals("ing-internal", group2.getId());
 		Assert.assertEquals(ContainerType.COMPANY, group2.getContainerType());
 	}

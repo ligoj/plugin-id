@@ -95,12 +95,12 @@ public class GroupResource extends AbstractContainerResource<GroupOrg, GroupEdit
 
 		// Apply pagination and secure the users data
 		return paginationJson.applyPagination(uriInfo, findAll, rawGroupLdap -> {
-			final ContainerCountVo securedUserLdap = newContainerCountVo(rawGroupLdap, managedGroupsWrite, managedGroupsAdmin, types);
-			securedUserLdap.setCount(rawGroupLdap.getMembers().size());
+			final ContainerCountVo securedUserOrg = newContainerCountVo(rawGroupLdap, managedGroupsWrite, managedGroupsAdmin, types);
+			securedUserOrg.setCount(rawGroupLdap.getMembers().size());
 			// Computed the visible members
-			securedUserLdap.setCountVisible((int) rawGroupLdap.getMembers().stream().map(users::get).map(UserOrg::getCompany).map(companies::get)
+			securedUserOrg.setCountVisible((int) rawGroupLdap.getMembers().stream().map(users::get).map(UserOrg::getCompany).map(companies::get)
 					.map(CompanyOrg::getCompanyTree).filter(c -> CollectionUtils.containsAny(managedCompanies, c)).count());
-			return securedUserLdap;
+			return securedUserOrg;
 		});
 	}
 

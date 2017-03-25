@@ -15,6 +15,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
 import org.ligoj.app.MatcherUtil;
 import org.ligoj.app.api.CompanyOrg;
+import org.ligoj.app.api.ContainerOrg;
 import org.ligoj.app.api.GroupOrg;
 import org.ligoj.app.api.UserOrg;
 import org.ligoj.app.model.ContainerType;
@@ -91,7 +92,7 @@ public class GroupResourceTest extends AbstractContainerResourceTest {
 		Assert.assertEquals(0, group0.getCountVisible());
 		Assert.assertTrue(group0.isCanAdmin());
 		Assert.assertTrue(group0.isCanWrite());
-		Assert.assertEquals("Fonction", group0.getType());
+		Assert.assertEquals("Fonction", group0.getScope());
 		Assert.assertEquals("dig", group0.getId());
 		Assert.assertFalse(group0.isLocked());
 
@@ -101,7 +102,7 @@ public class GroupResourceTest extends AbstractContainerResourceTest {
 		Assert.assertEquals(0, group10.getCountVisible());
 		Assert.assertTrue(group10.isCanAdmin());
 		Assert.assertTrue(group10.isCanWrite());
-		Assert.assertEquals("Fonction", group10.getType());
+		Assert.assertEquals("Fonction", group10.getScope());
 		Assert.assertEquals(ContainerType.GROUP, group10.getContainerType());
 		Assert.assertTrue(group10.isLocked());
 
@@ -111,9 +112,9 @@ public class GroupResourceTest extends AbstractContainerResourceTest {
 	public void findByNameNoType() {
 		Mockito.when(groupRepository.findById(DEFAULT_USER, "business solution"))
 				.thenReturn(new GroupOrg("cn=Business Solution,ou=groups,dc=sample,dc=com", "Business Solution", null));
-		final ContainerWithTypeVo group = resource.findByName("business solution");
+		final ContainerWithScopeVo group = resource.findByName("business solution");
 		Assert.assertEquals("Business Solution", group.getName());
-		Assert.assertNull(group.getType());
+		Assert.assertNull(group.getScope());
 	}
 
 	@Test
@@ -125,9 +126,9 @@ public class GroupResourceTest extends AbstractContainerResourceTest {
 	public void findByName() {
 		Mockito.when(groupRepository.findById(DEFAULT_USER, "dig as"))
 				.thenReturn(new GroupOrg("cn=DIG AS,cn=DIG AS,cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com", "DIG AS", null));
-		final ContainerWithTypeVo group = resource.findByName("dig as");
+		final ContainerWithScopeVo group = resource.findByName("dig as");
 		Assert.assertEquals("DIG AS", group.getName());
-		Assert.assertEquals("Fonction", group.getType());
+		Assert.assertEquals("Fonction", group.getScope());
 	}
 
 	@Test
@@ -347,4 +348,10 @@ public class GroupResourceTest extends AbstractContainerResourceTest {
 		Assert.assertTrue(managed.getData().contains("DIG RHA"));
 	}
 
+	@Test
+	public void newContainerCountVo() {
+		ContainerOrg rawContainer = new ContainerOrg("dn=no-scope", "name");
+		Assert.assertNull(
+				resource.newContainerCountVo(rawContainer, Collections.emptySet(), Collections.emptySet(), Collections.emptyList()).getScope());
+	}
 }

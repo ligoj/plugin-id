@@ -6,17 +6,17 @@ import lombok.Getter;
 import lombok.Setter;
 
 /**
- * Container with type.<br>
+ * Container with scope.<br>
  * DN is not exposed, Original CN (not normalized) is exposed as {@link #name}
  */
 @Getter
 @Setter
-public class ContainerWithTypeVo extends NamedBean<String> {
+public class ContainerWithScopeVo extends NamedBean<String> {
 
 	/**
-	 * Type name.
+	 * Scope name.
 	 */
-	private String type;
+	private String scope;
 
 	/**
 	 * Is this container is locked? A locked container cannot be created or deleted from the UI. It's likely a vital

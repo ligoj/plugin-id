@@ -11,7 +11,7 @@ import lombok.Setter;
  */
 @Getter
 @Setter
-public class ContainerCountVo extends ContainerWithTypeVo {
+public class ContainerCountVo extends ContainerWithScopeVo {
 
 	/**
 	 * Unique visible members count.

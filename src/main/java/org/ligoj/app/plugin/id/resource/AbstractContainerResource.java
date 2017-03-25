@@ -122,16 +122,16 @@ public abstract class AbstractContainerResource<T extends ContainerOrg, V extend
 	/**
 	 * Simple transformer, securing sensible date. DN is not forwarded.
 	 */
-	protected ContainerWithTypeVo toVo(final T rawGroupLdap) {
+	protected ContainerWithScopeVo toVo(final T rawGroupLdap) {
 		// Find the closest type
-		final ContainerWithTypeVo securedUserLdap = new ContainerWithTypeVo();
+		final ContainerWithScopeVo securedUserOrg = new ContainerWithScopeVo();
 		final List<ContainerScope> scopes = containerScopeResource.findAllDescOrder(type);
 		final ContainerScope scope = toScope(scopes, rawGroupLdap);
-		NamedBean.copy(rawGroupLdap, securedUserLdap);
+		NamedBean.copy(rawGroupLdap, securedUserOrg);
 		if (scope != null) {
-			securedUserLdap.setType(scope.getName());
+			securedUserOrg.setScope(scope.getName());
 		}
-		return securedUserLdap;
+		return securedUserOrg;
 	}
 
 	/**
@@ -145,7 +145,7 @@ public abstract class AbstractContainerResource<T extends ContainerOrg, V extend
 	@GET
 	@Path("{container:" + ContainerOrg.NAME_PATTERN + "}")
 	@OnNullReturn404
-	public ContainerWithTypeVo findByName(@PathParam("container") final String name) {
+	public ContainerWithScopeVo findByName(@PathParam("container") final String name) {
 		return Optional.ofNullable(findById(name)).map(this::toVo).orElse(null);
 	}
 
@@ -380,20 +380,20 @@ public abstract class AbstractContainerResource<T extends ContainerOrg, V extend
 	 */
 	protected ContainerCountVo newContainerCountVo(final ContainerOrg rawContainer, final Set<T> managedWrite, final Set<T> managedAdmin,
 			final List<ContainerScope> types) {
-		final ContainerCountVo securedUserLdap = new ContainerCountVo();
-		NamedBean.copy(rawContainer, securedUserLdap);
-		securedUserLdap.setCanWrite(managedWrite.contains(rawContainer));
-		securedUserLdap.setCanAdmin(managedAdmin.contains(rawContainer));
-		securedUserLdap.setContainerType(type);
+		final ContainerCountVo securedUserOrg = new ContainerCountVo();
+		NamedBean.copy(rawContainer, securedUserOrg);
+		securedUserOrg.setCanWrite(managedWrite.contains(rawContainer));
+		securedUserOrg.setCanAdmin(managedAdmin.contains(rawContainer));
+		securedUserOrg.setContainerType(type);
 
 		// Find the closest type
 		final ContainerScope scope = toScope(types, rawContainer);
 		if (scope != null) {
-			securedUserLdap.setType(scope.getName());
-			securedUserLdap.setLocked(scope.isLocked());
+			securedUserOrg.setScope(scope.getName());
+			securedUserOrg.setLocked(scope.isLocked());
 		}
-		securedUserLdap.setLocked(securedUserLdap.isLocked() || rawContainer.isLocked());
-		return securedUserLdap;
+		securedUserOrg.setLocked(securedUserOrg.isLocked() || rawContainer.isLocked());
+		return securedUserOrg;
 	}
 
 	/**
