@@ -20,7 +20,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @Entity
-@Table(name = "SAAS_CONTAINER_SCOPE", uniqueConstraints = { @UniqueConstraint(columnNames = { "name", "type" }),
+@Table(name = "LIGOJ_CONTAINER_SCOPE", uniqueConstraints = { @UniqueConstraint(columnNames = { "name", "type" }),
 		@UniqueConstraint(columnNames = "dn") })
 public class ContainerScope extends AbstractNamedEntity<Integer> {
 
