@@ -1,51 +1,54 @@
-<form id="subscribe-configuration-id" class="hide form-horizontal subscribe-configuration">
-      <fieldset>
-            <legend>
-                  <span class="project-name"></span> / {{service:id:group}} <span id="group-name"></span>
-            </legend>
-            <div class="row">
-                  <div class="col-sm-8 col-md-9 col-lg-10">
-                        <div class="form-group">
-                              <label class="control-label col-xs-3 col-lg-2" for="search-user">{{user}}</label>
-                              <div class="col-xs-9 col-sm-5 col-md-6 col-lg-3">
-                                    <div class="input-group">
-                                          <input type="text" id="search-user" class="form-control" required/>
-                                          <span class="input-group-btn" title="{{service:id:add-member}}" data-toggle="tooltip" data-container="#subscribe-configuration-id">
-                                                <button class="btn btn-primary btn-raised" disabled type="button" id="add-user"><i class="fa fa-user-plus"></i></button>
-                                          </span>
-                                    </div>
-                              </div>
-                        </div>
-                  </div>
-                  <div class="col-sm-4 col-md-3 col-lg-2 text-right">
-      			<div class="form-group has-feedback">
-      				<div class="col-xs-12 has-feedback">
-      					<input type="text" class="form-control" placeholder="{{firstName}},{{lastName}},..." id="subscribe-configuration-id-search" aria-controls="table" />
-      					<span class="fa fa-search form-control-feedback"></span>
-      				</div>
-      			</div>
-      		</div>
-            </div>
-            <table id="members-table" class="table table-striped table-bordered justified">
-                  <thead>
-                        <tr>
-                              <th>{{login}}</th>
-                              <th>{{firstName}}</th>
-                              <th>{{lastName}}</th>
-                              <th class="hidden-xs truncate">{{company}}</th>
-                              <th class="hidden-xs hidden-sm hidden-md truncate">{{mail}}</th>
-                              <th class="hidden-xs hidden-sm truncate">{{groups}}</th>
-                              <th></th>
-                        </tr>
-                  </thead>
-                  <tbody>
-                        <tr>
-                              <td class="dataTables_empty" colspan="7">{{loading}}</td>
-                        </tr>
-                  </tbody>
-            </table>
-      </fieldset>
-      <div class="form-actions">
-		<input class="btn btn-link cancel-subscription" type="button" value="{{back}}">
+<div class="container-fluid">
+	<div class="row">
+		<aside class="col-md-2 retractable">
+			<ul class="nav nav-pills nav-stacked">
+				<li><a href="{{$current.$url}}"><i class="fa fa-user nav-icon" title="{{user}}" data-toggle="tooltip" data-container="body"></i> {{user}}</a></li>
+				<li><a href="{{$current.$url}}/container/group"><i class="fa fa-users nav-icon" title="{{group}}" data-toggle="tooltip" data-container="body"></i> {{group}}</a></li>
+				<li><a href="{{$current.$url}}/container/company"><i class="fa fa-building-o nav-icon" title="{{company}}" data-toggle="tooltip" data-container="body"></i> {{company}}</a></li>
+				<li><a href="{{$current.$url}}/container-scope"><i class="fa fa-tags nav-icon" title="{{container-scope}}" data-toggle="tooltip" data-container="body"></i> {{container-scope}}</a></li>
+				<li><a href="{{$current.$url}}/delegate"><i class="fa fa-key nav-icon" title="{{delegate}}" data-toggle="tooltip" data-container="body"></i> {{delegate}}</a></li>
+				<li><a href="//confluence/pages/viewpage.action?pageId=3211386" target="_blank">
+					<img class="nav-icon" src="main/service/km/confluence/img/confluence.png" alt="confluence" title="Confluence" data-toggle="tooltip" data-container="body"></img> {{menu.manual}}</a></li>
+			</ul>
+			<div class="badge retract hidden-xs hidden-sm"><i class="fa fa-arrow-left retract-close"></i><i class="fa fa-arrow-right retract-open"></i></div>
+		</aside>
+		<div class="col-md-10 col-md-offset-2">
+			<div class="alert alert-info">
+				{{delay-message}}
+				<span id="acceptedAgreement" class="hide">{{{agreement-accepted}}}</span>
+			</div>
+			<div id="_ucDiv" data-cascade-hierarchy="3"></div>
+		</div>
+	</div>
+</div>
+<form id="agreementPopup" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="modal-title">
+	<div class="modal-dialog" role="document">
+		<div class="modal-content">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal" aria-label="{{cancel}}">
+					<span aria-hidden="true">&times;</span>
+				</button>
+				<h4 class="modal-title" id="modal-title">{{agreement}}</h4>
+			</div>
+			<div class="modal-body">
+				<div class="form-horizontal">
+					{{{agreement-details}}}
+					<div class="form-group required">
+						<div class="col-sm-offset-0 col-sm-12">
+							<div class="checkbox">
+								<label class="checkbox" for="agree">
+									<input type="checkbox" id="agree" required="required">
+									<span>{{agree}}</span>
+								</label>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="modal-footer">
+				<input type="submit" class="btn btn-primary btn-raised" value="{{save}}" data-loading-text="{{save}} ..." data-complete-text="{{save}}" />
+				<button type="button" class="btn btn-link" data-dismiss="modal" aria-hidden="true">{{cancel}}</button>
+			</div>
+		</div>
 	</div>
 </form>

@@ -180,7 +180,7 @@ public abstract class AbstractContainerResource<T extends ContainerOrg, V extend
 
 		// Check the type matches with this class' container type
 		if (this.type != scope.getType()) {
-			throw new ValidationJsonException(TYPE_ATTRIBUTE, "container-type-match", TYPE_ATTRIBUTE, this.type, "provided", scope.getType());
+			throw new ValidationJsonException(TYPE_ATTRIBUTE, "container-scope-match", TYPE_ATTRIBUTE, this.type, "provided", scope.getType());
 		}
 
 		// Build the new DN, keeping the case
