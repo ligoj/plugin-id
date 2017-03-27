@@ -22,7 +22,7 @@ import org.ligoj.app.iam.ICompanyRepository;
 import org.ligoj.app.iam.dao.CacheCompanyRepository;
 import org.ligoj.app.iam.model.CacheCompany;
 import org.ligoj.app.model.ContainerType;
-import org.ligoj.app.plugin.id.LdapUtils;
+import org.ligoj.app.plugin.id.DnUtils;
 import org.ligoj.app.plugin.id.model.ContainerScope;
 import org.ligoj.bootstrap.core.json.TableItem;
 import org.ligoj.bootstrap.core.json.datatable.DataTableAttributes;
@@ -145,7 +145,7 @@ public class CompanyResource extends AbstractContainerResource<CompanyOrg, Conta
 
 		// Company deletion is only possible where there is no user inside this company, or inside any sub-company
 		final Map<String, UserOrg> users = getUser().findAll();
-		if (getRepository().findAll().values().stream().filter(c -> LdapUtils.equalsOrParentOf(container.getDn(), c.getDn()))
+		if (getRepository().findAll().values().stream().filter(c -> DnUtils.equalsOrParentOf(container.getDn(), c.getDn()))
 				.anyMatch(c -> users.values().stream().map(UserOrg::getCompany).anyMatch(c.getId()::equals))) {
 			// Locked container is inside the container to delete
 			throw new ValidationJsonException(getTypeName(), "not-empty-company", "0", getTypeName(), "1", container.getId());

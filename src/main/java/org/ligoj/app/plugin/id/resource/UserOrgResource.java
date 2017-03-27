@@ -47,7 +47,7 @@ import org.ligoj.app.iam.IamProvider;
 import org.ligoj.app.iam.dao.DelegateOrgRepository;
 import org.ligoj.app.iam.model.DelegateOrg;
 import org.ligoj.app.iam.model.DelegateType;
-import org.ligoj.app.plugin.id.LdapUtils;
+import org.ligoj.app.plugin.id.DnUtils;
 import org.ligoj.bootstrap.core.json.PaginationJson;
 import org.ligoj.bootstrap.core.json.TableItem;
 import org.ligoj.bootstrap.core.json.datatable.DataTableAttributes;
@@ -244,7 +244,7 @@ public class UserOrgResource {
 			final GroupOrg filteredGroup = allGroups.get(Normalizer.normalize(group));
 			// Filter the group, including the children
 			return allGroups.values().stream().filter(managedGroups::contains)
-					.filter(g -> LdapUtils.equalsOrParentOf(filteredGroup.getDn(), g.getDn())).collect(Collectors.toList());
+					.filter(g -> DnUtils.equalsOrParentOf(filteredGroup.getDn(), g.getDn())).collect(Collectors.toList());
 		}
 		return null;
 	}
@@ -523,7 +523,7 @@ public class UserOrgResource {
 
 	protected boolean isGrantedAccess(final DelegateOrg delegate, final String dn, final DelegateType type, final boolean requestUpdate) {
 		return (delegate.getType() == type || delegate.getType() == DelegateType.TREE)
-				&& (!requestUpdate || delegate.isCanAdmin() || delegate.isCanWrite()) && LdapUtils.equalsOrParentOf(delegate.getDn(), dn);
+				&& (!requestUpdate || delegate.isCanAdmin() || delegate.isCanWrite()) && DnUtils.equalsOrParentOf(delegate.getDn(), dn);
 	}
 
 	/**

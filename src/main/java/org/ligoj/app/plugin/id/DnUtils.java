@@ -8,11 +8,11 @@ import org.apache.commons.lang3.StringUtils;
 import org.ligoj.app.api.Normalizer;
 
 /**
- * LDAP utilities.
+ * Distinguished Name (DN) utilities. Originally designed for LDAP, but now used to match tree data.
  */
-public final class LdapUtils {
+public final class DnUtils {
 
-	private LdapUtils() {
+	private DnUtils() {
 		// Factory pattern
 	}
 
@@ -59,7 +59,7 @@ public final class LdapUtils {
 	 * @param childDn
 	 *            Child DN
 	 * @return <code>true</code> when <code>child=parent</code> or <code>child=.*,parent</code>
-	 * @see LdapUtils#equalsOrParentOf(String, String)
+	 * @see DnUtils#equalsOrParentOf(String, String)
 	 */
 	public static boolean equalsOrParentOf(@NotNull final Collection<String> parentDns, final String childDn) {
 		for (final String dn : parentDns) {

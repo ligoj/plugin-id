@@ -26,7 +26,7 @@ import org.ligoj.app.iam.IGroupRepository;
 import org.ligoj.app.iam.dao.CacheGroupRepository;
 import org.ligoj.app.iam.model.CacheGroup;
 import org.ligoj.app.model.ContainerType;
-import org.ligoj.app.plugin.id.LdapUtils;
+import org.ligoj.app.plugin.id.DnUtils;
 import org.ligoj.app.plugin.id.model.ContainerScope;
 import org.ligoj.bootstrap.core.json.TableItem;
 import org.ligoj.bootstrap.core.json.datatable.DataTableAttributes;
@@ -124,7 +124,7 @@ public class GroupResource extends AbstractContainerResource<GroupOrg, GroupEdit
 		if (container.getParent() != null) {
 			// Check the parent is also inside the type, a new DN will be built
 			final GroupOrg parent = findByIdExpected(container.getParent());
-			if (!LdapUtils.equalsOrParentOf(type.getDn(), parent.getDn())) {
+			if (!DnUtils.equalsOrParentOf(type.getDn(), parent.getDn())) {
 				throw new ValidationJsonException("parent", "container-parent-type-match", TYPE_ATTRIBUTE, this.type, "provided", type.getType());
 			}
 			parentDn = parent.getDn();

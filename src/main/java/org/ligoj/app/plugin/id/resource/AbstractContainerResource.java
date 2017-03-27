@@ -31,7 +31,7 @@ import org.ligoj.app.iam.dao.CacheContainerRepository;
 import org.ligoj.app.iam.dao.DelegateOrgRepository;
 import org.ligoj.app.iam.model.CacheContainer;
 import org.ligoj.app.model.ContainerType;
-import org.ligoj.app.plugin.id.LdapUtils;
+import org.ligoj.app.plugin.id.DnUtils;
 import org.ligoj.app.plugin.id.model.ContainerScope;
 import org.ligoj.bootstrap.core.NamedBean;
 import org.ligoj.bootstrap.core.json.PaginationJson;
@@ -326,7 +326,7 @@ public abstract class AbstractContainerResource<T extends ContainerOrg, V extend
 	 * @return The closest {@link ContainerScope} or <code>null</code> if not found.
 	 */
 	public ContainerScope toScope(final List<ContainerScope> scopes, final ContainerOrg container) {
-		return scopes.stream().filter(s -> LdapUtils.equalsOrParentOf(s.getDn(), container.getDn())).findFirst().orElse(null);
+		return scopes.stream().filter(s -> DnUtils.equalsOrParentOf(s.getDn(), container.getDn())).findFirst().orElse(null);
 	}
 
 	/**
