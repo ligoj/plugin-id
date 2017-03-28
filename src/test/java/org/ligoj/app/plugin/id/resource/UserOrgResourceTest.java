@@ -68,7 +68,7 @@ public class UserOrgResourceTest extends AbstractAppTest {
 
 	@Before
 	public void prepareData() throws IOException {
-		persistEntities("csv/app-test",
+		persistEntities("csv",
 				new Class[] { DelegateOrg.class, CacheCompany.class, CacheGroup.class, CacheUser.class, CacheMembership.class },
 				StandardCharsets.UTF_8.name());
 		iamProvider = Mockito.mock(IamProvider.class);

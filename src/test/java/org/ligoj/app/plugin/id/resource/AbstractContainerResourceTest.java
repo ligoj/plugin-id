@@ -39,7 +39,7 @@ public abstract class AbstractContainerResourceTest extends AbstractAppTest {
 
 	@Before
 	public void prepareData() throws IOException {
-		persistEntities("csv/app-test",
+		persistEntities("csv",
 				new Class[] { DelegateOrg.class, ContainerScope.class, CacheCompany.class, CacheUser.class, CacheGroup.class, CacheMembership.class },
 				StandardCharsets.UTF_8.name());
 		CacheManager.getInstance().getCache("container-scopes").removeAll();

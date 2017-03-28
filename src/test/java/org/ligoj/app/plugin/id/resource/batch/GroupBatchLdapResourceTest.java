@@ -81,7 +81,7 @@ public class GroupBatchLdapResourceTest extends AbstractLdapBatchTest {
 
 	@Before
 	public void prepareData() throws IOException {
-		persistEntities("csv/app-test", new Class[] { DelegateOrg.class }, StandardCharsets.UTF_8.name());
+		persistEntities("csv", new Class[] { DelegateOrg.class }, StandardCharsets.UTF_8.name());
 	}
 
 	@Test

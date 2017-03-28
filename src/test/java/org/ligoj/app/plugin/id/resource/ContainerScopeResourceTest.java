@@ -43,7 +43,7 @@ public class ContainerScopeResourceTest extends AbstractJpaTest {
 
 	@Before
 	public void setUpEntities() throws IOException {
-		persistEntities("csv/app-test", new Class[] { ContainerScope.class }, "UTF-8");
+		persistEntities("csv", new Class[] { ContainerScope.class }, "UTF-8");
 	}
 
 	@Test
