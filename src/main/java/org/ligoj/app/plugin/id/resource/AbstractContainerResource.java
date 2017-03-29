@@ -20,8 +20,8 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.UriInfo;
 
-import org.ligoj.app.api.ContainerOrg;
 import org.ligoj.app.api.Normalizer;
+import org.ligoj.app.iam.ContainerOrg;
 import org.ligoj.app.iam.ICompanyRepository;
 import org.ligoj.app.iam.IContainerRepository;
 import org.ligoj.app.iam.IGroupRepository;
@@ -156,7 +156,7 @@ public abstract class AbstractContainerResource<T extends ContainerOrg, V extend
 	 * 
 	 * @param container
 	 *            The container to create.
-	 * @return The identifier of created {@link org.ligoj.app.api.ContainerOrg}.
+	 * @return The identifier of created {@link org.ligoj.app.iam.ContainerOrg}.
 	 */
 	@POST
 	public String create(final V container) {
@@ -171,7 +171,7 @@ public abstract class AbstractContainerResource<T extends ContainerOrg, V extend
 	 * 
 	 * @param container
 	 *            The container to create.
-	 * @return The created {@link org.ligoj.app.api.ContainerOrg} internal identifier.
+	 * @return The created {@link org.ligoj.app.iam.ContainerOrg} internal identifier.
 	 */
 	public T createInternal(final V container) {
 

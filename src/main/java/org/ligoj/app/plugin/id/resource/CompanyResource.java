@@ -15,10 +15,10 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriInfo;
 
 import org.apache.commons.lang3.ObjectUtils;
-import org.ligoj.app.api.CompanyOrg;
-import org.ligoj.app.api.ContainerOrg;
-import org.ligoj.app.api.UserOrg;
+import org.ligoj.app.iam.CompanyOrg;
+import org.ligoj.app.iam.ContainerOrg;
 import org.ligoj.app.iam.ICompanyRepository;
+import org.ligoj.app.iam.UserOrg;
 import org.ligoj.app.iam.dao.CacheCompanyRepository;
 import org.ligoj.app.iam.model.CacheCompany;
 import org.ligoj.app.model.ContainerType;

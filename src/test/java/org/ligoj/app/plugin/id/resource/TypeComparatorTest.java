@@ -8,7 +8,7 @@ import java.util.List;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.ligoj.app.api.GroupOrg;
+import org.ligoj.app.iam.GroupOrg;
 import org.ligoj.app.iam.IGroupRepository;
 import org.ligoj.app.iam.dao.CacheContainerRepository;
 import org.ligoj.app.iam.model.CacheGroup;

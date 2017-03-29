@@ -3,7 +3,7 @@ package org.ligoj.app.plugin.id.model;
 import java.util.function.Function;
 
 import org.apache.commons.lang3.ObjectUtils;
-import org.ligoj.app.api.UserOrg;
+import org.ligoj.app.iam.UserOrg;
 
 /**
  * Comparator based on a string attribute.

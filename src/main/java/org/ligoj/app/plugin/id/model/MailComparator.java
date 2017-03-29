@@ -1,6 +1,6 @@
 package org.ligoj.app.plugin.id.model;
 
-import org.ligoj.app.api.UserOrg;
+import org.ligoj.app.iam.UserOrg;
 
 /**
  * Order by mail.

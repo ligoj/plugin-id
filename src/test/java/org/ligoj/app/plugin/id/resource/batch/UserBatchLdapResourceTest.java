@@ -19,7 +19,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
 import org.ligoj.app.DefaultVerificationMode;
-import org.ligoj.app.api.UserOrg;
+import org.ligoj.app.iam.UserOrg;
 import org.ligoj.app.iam.model.DelegateOrg;
 import org.ligoj.app.plugin.id.resource.UserOrgEditionVo;
 import org.ligoj.app.plugin.id.resource.UserOrgResource;

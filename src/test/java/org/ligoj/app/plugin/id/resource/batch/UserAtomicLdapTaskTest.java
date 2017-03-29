@@ -9,7 +9,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.ligoj.app.DefaultVerificationMode;
-import org.ligoj.app.api.UserOrg;
+import org.ligoj.app.iam.UserOrg;
 import org.ligoj.app.plugin.id.resource.UserOrgEditionVo;
 import org.ligoj.app.plugin.id.resource.UserOrgResource;
 import org.ligoj.bootstrap.AbstractSecurityTest;

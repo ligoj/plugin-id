@@ -2,7 +2,7 @@ package org.ligoj.app.plugin.id.resource;
 
 import java.util.List;
 
-import org.ligoj.app.api.SimpleUserOrg;
+import org.ligoj.app.iam.SimpleUserOrg;
 
 import lombok.Getter;
 import lombok.Setter;

@@ -6,7 +6,7 @@ import javax.validation.constraints.NotNull;
 
 import org.hibernate.validator.constraints.Email;
 import org.hibernate.validator.constraints.NotBlank;
-import org.ligoj.app.api.SimpleUser;
+import org.ligoj.app.iam.SimpleUser;
 
 import lombok.Getter;
 import lombok.Setter;

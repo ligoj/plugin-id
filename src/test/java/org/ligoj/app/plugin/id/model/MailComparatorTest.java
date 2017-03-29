@@ -6,7 +6,7 @@ import java.util.Collections;
 import org.apache.commons.lang3.ObjectUtils;
 import org.junit.Assert;
 import org.junit.Test;
-import org.ligoj.app.api.UserOrg;
+import org.ligoj.app.iam.UserOrg;
 import org.ligoj.app.plugin.id.model.MailComparator;
 
 /**
