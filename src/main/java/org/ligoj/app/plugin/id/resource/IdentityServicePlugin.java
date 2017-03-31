@@ -4,7 +4,8 @@ import org.ligoj.app.api.ServicePlugin;
 import org.springframework.security.core.Authentication;
 
 /**
- * Features of identity implementations.
+ * Features of identity (authentication) implementations. The Identity and Access Management is covered by IAM features,
+ * not this one.
  */
 public interface IdentityServicePlugin extends ServicePlugin {
 
