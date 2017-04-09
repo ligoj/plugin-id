@@ -2,6 +2,11 @@ package org.ligoj.app.plugin.id.resource;
 
 import org.springframework.stereotype.Component;
 
+import java.util.Arrays;
+import java.util.List;
+
+import org.ligoj.app.model.Node;
+import org.ligoj.app.model.Parameter;
 import org.ligoj.app.resource.plugin.AbstractServicePlugin;
 
 /**
@@ -43,5 +48,10 @@ public class IdentityResource extends AbstractServicePlugin {
 	@Override
 	public String getKey() {
 		return SERVICE_KEY;
+	}
+
+	@Override
+	public List<Class<?>> getInstalledEntities() {
+		return Arrays.asList(Node.class, Parameter.class);
 	}
 }
