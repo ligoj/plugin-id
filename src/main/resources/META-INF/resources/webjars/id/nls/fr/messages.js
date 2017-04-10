@@ -1,4 +1,5 @@
 define({
+	'title': 'Identité',
 	'company': 'Société',
 	'delegate': 'Délégation',
 	'groups': 'Groupes',

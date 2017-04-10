@@ -1,5 +1,5 @@
 /**
- * Manager used to populate and manage LDAP features.
+ * Manager used to populate and manage IAM features.
  */
 define(function () {
 	var current = {

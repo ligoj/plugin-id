@@ -1,6 +1,6 @@
 define({
 	root: {
-		'title': 'LDAP',
+		'title': 'Identity',
 		'company': 'Company',
 		'delegate': 'Delegate',
 		'login': 'Login',

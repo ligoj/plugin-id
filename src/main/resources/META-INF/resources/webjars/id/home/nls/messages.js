@@ -1,6 +1,6 @@
 define({
 	root: {
-		'title': 'LDAP user management',
+		'title': 'User management',
 		'user-clean-message': 'Spaces around inputs will be removed and names will be fully capitalized',
 		'user-import-full-message': 'Import will update existing users, and create the others.',
 		'user-import-atomic-message': 'Import will execute one alter or operation per record.',

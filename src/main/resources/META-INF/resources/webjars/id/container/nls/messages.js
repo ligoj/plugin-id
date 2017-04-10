@@ -1,6 +1,6 @@
 define({
 	root: {
-		'title': 'LDAP Group',
+		'title': 'Group',
 		'create-another': 'Create another group',
 		'locked-details': 'A locked container is a type considered as organizational or vital',
 		'empty-group': 'Remove users from this group',

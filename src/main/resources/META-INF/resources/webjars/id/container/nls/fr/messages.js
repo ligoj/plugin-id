@@ -1,5 +1,5 @@
 define({
-	'title': 'Groupe LDAP',
+	'title': 'Groupe',
 	'create-another': 'Créer un autre groupe',
 	'locked-container-details': 'Un conteneur verrouillé est d\'un type considéré comme organisationnel ou vital',
 	'empty-group': 'Retirer les utilisateurs de ce groupe',

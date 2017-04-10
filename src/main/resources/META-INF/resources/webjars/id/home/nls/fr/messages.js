@@ -1,5 +1,5 @@
 define({
-	'title': 'Gestion des utilisateurs LDAP',
+	'title': 'Gestion des utilisateurs',
 	'user-clean-message': 'Les espaces encadrants seront retirés, et les noms seront capitalisés',
 	'user-import-full-message': 'L\'import met à jour les utilisateurs existants et créera les autres.',
 	'user-import-atomic-message': 'L\'import execute des opérations ou des modifications unitaires.',
