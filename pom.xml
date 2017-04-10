@@ -10,7 +10,7 @@
 
 	<groupId>org.ligoj.plugin</groupId>
 	<artifactId>plugin-id</artifactId>
-	<version>0.0.2-SNAPSHOT</version>
+	<version>0.0.3</version>
 	<packaging>jar</packaging>
 	<name>Ligoj - Plugin ID</name>
 
@@ -18,7 +18,7 @@
 		<dependency>
 			<groupId>org.ligoj.plugin</groupId>
 			<artifactId>plugin-mail-smtp</artifactId>
-			<version>0.0.1</version>
+			<version>0.0.3</version>
 			<scope>provided</scope>
 		</dependency>
 	</dependencies>
