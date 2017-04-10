@@ -1,6 +1,6 @@
 define({
 	root: {
-		'title': 'LDAP Delegate',
+		'title': 'Organizational Delegate',
 		'delegate': 'Delegate',
 		'resourceType': 'Resource type',
 		'resource': 'Resource',

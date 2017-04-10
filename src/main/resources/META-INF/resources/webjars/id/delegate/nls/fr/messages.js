@@ -1,5 +1,5 @@
 define({
-	'title': 'Délégation LDAP',
+	'title': 'Délégation Organisationnelle',
 	'delegate': 'Délégation',
 	'resourceType': 'Type de ressource',
 	'resource': 'Ressource',
