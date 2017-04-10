@@ -8,7 +8,7 @@ define(function () {
 		search: false,
 
 		/**
-		 * Edited users's identifier
+		 * Edited delegates's identifier
 		 */
 		currentId: 0,
 
@@ -35,7 +35,7 @@ define(function () {
 			current.search = true;
 			_('confirmCreate').click(current.save);
 
-			// User edition pop-up
+			// Delegate edition pop-up
 			_('popup').on('shown.bs.modal', function () {
 				_('receiver').select2('focus');
 			}).on('show.bs.modal', function (event) {
@@ -104,7 +104,7 @@ define(function () {
 		},
 
 		/**
-		 * Initialize the users datatables (server AJAX)
+		 * Initialize the delegates datatables (server AJAX)
 		 */
 		initializeDataTable: function () {
 			current.table = _('table').dataTable({
@@ -199,7 +199,7 @@ define(function () {
 		},
 
 		/**
-		 * Delete the selected user after popup confirmation, or directly from its identifier.
+		 * Delete the selected delegate after popup confirmation, or directly from its identifier.
 		 */
 		deleteDelegate: function (id, text) {
 			if ((typeof id) === 'number') {
@@ -215,10 +215,10 @@ define(function () {
 			} else {
 				// Requires a confirmation
 				var entity = current.table.fnGetData($(this).closest('tr')[0]);
-				var display = entity.user.id + '/' + entity.type + '/' + entity.name;
+				var display = current.$main.getResourceLink(entity.receiver, entity.receiverType) + ' <i class="fa fa-arrow-right"></i> ' + current.$main.getResourceLink(entity.name, entity.type);
 				bootbox.confirmDelete(function (confirmed) {
 					confirmed && current.deleteDelegate(entity.id, display);
-				}, text);
+				}, display);
 			}
 		}
 	};
