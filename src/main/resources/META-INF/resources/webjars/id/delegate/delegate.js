@@ -85,7 +85,7 @@ define(function () {
 			$group.find('.dropdown-menu [data-type]').find('.active').removeClass('active').end().find('[data-type="'+type+'"]').addClass('active');;
 
 			// Update the drop down icon
-			$group.find('.dropdown-toggle i').attr('class', current.$main.messageTypeClass[type]);
+			$group.find('.dropdown-toggle i').attr('class', current.$main.targetTypeClass[type]);
 
 			// Invalidate the previous select2
 			$input.removeAttr('placeholder').select2('destroy');
@@ -120,27 +120,17 @@ define(function () {
 				},
 				columns: [
 					{
-						data: 'receiverType',
-						className: 'hidden-xs truncate',
-						render: function (value) {
-							return '<i class="' + current.$main.messageTypeClass[value] + '"></i> ' + current.$messages[value];
-						}
-					}, {
 						data: 'receiver',
-						width: '150px',
 						ordering: false,
 						render: function (_i, _j, data) {
-							return current.$main.getUserLink(data.receiver);
+							return current.$main.getResourceLink(data.receiver, data.receiverType);
 						}
 					}, {
 						data: 'type',
 						className: 'hidden-xs truncate',
-						render: function (value) {
-							return '<i class="' + current.$main.messageTypeClass[value] + '"></i> ' + current.$messages[value];
+						render: function (_i, _j, data) {
+							return current.$main.getResourceLink(data.name, data.type);
 						}
-					}, {
-						data: 'name',
-						className: 'truncate'
 					}, {
 						data: 'canAdmin',
 						width: '16px',
