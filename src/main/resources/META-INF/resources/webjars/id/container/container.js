@@ -139,7 +139,7 @@ define(function () {
 					{
 						data: 'name',
 						render: function (_i, _j, data) {
-							return '<a href="#/service/id/home/' + data.containerType + '=' + data.name + '">' + data.name + '</a>';
+							return '<a href="#/id/home/' + data.containerType + '=' + data.name + '">' + data.name + '</a>';
 						}
 					}, {
 						data: 'type',
