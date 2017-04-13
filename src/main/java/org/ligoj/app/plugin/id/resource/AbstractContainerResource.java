@@ -22,11 +22,7 @@ import javax.ws.rs.core.UriInfo;
 
 import org.ligoj.app.api.Normalizer;
 import org.ligoj.app.iam.ContainerOrg;
-import org.ligoj.app.iam.ICompanyRepository;
 import org.ligoj.app.iam.IContainerRepository;
-import org.ligoj.app.iam.IGroupRepository;
-import org.ligoj.app.iam.IUserRepository;
-import org.ligoj.app.iam.IamProvider;
 import org.ligoj.app.iam.dao.CacheContainerRepository;
 import org.ligoj.app.iam.dao.DelegateOrgRepository;
 import org.ligoj.app.iam.model.CacheContainer;
@@ -60,7 +56,7 @@ import lombok.extern.slf4j.Slf4j;
  *            The container cache type.
  */
 @Slf4j
-public abstract class AbstractContainerResource<T extends ContainerOrg, V extends ContainerEditionVo, C extends CacheContainer> {
+public abstract class AbstractContainerResource<T extends ContainerOrg, V extends ContainerEditionVo, C extends CacheContainer> extends AbstractOrgResource {
 
 	@Autowired
 	protected ContainerScopeResource containerScopeResource;
@@ -74,10 +70,11 @@ public abstract class AbstractContainerResource<T extends ContainerOrg, V extend
 	protected DelegateOrgRepository delegateRepository;
 
 	/**
-	 * IAM provider.
+	 * Return the repository managing the container.
+	 * 
+	 * @return the repository managing the container.
 	 */
-	@Autowired
-	protected IamProvider iamProvider;
+	protected abstract IContainerRepository<T> getRepository();
 
 	@Autowired
 	protected PaginationJson paginationJson;
@@ -106,13 +103,6 @@ public abstract class AbstractContainerResource<T extends ContainerOrg, V extend
 	 * @return the repository managing the container as cache.
 	 */
 	protected abstract CacheContainerRepository<C> getCacheRepository();
-
-	/**
-	 * Return the repository managing the container.
-	 * 
-	 * @return the repository managing the container.
-	 */
-	protected abstract IContainerRepository<T> getRepository();
 
 	/**
 	 * Return the DN from the container and the computed type.
@@ -394,33 +384,6 @@ public abstract class AbstractContainerResource<T extends ContainerOrg, V extend
 		}
 		securedUserOrg.setLocked(securedUserOrg.isLocked() || rawContainer.isLocked());
 		return securedUserOrg;
-	}
-
-	/**
-	 * User repository provider.
-	 * 
-	 * @return User repository provider.
-	 */
-	protected IUserRepository getUser() {
-		return iamProvider.getConfiguration().getUserRepository();
-	}
-
-	/**
-	 * Company repository provider.
-	 * 
-	 * @return Company repository provider.
-	 */
-	protected ICompanyRepository getCompany() {
-		return iamProvider.getConfiguration().getCompanyRepository();
-	}
-
-	/**
-	 * Group repository provider.
-	 * 
-	 * @return Group repository provider.
-	 */
-	protected IGroupRepository getGroup() {
-		return iamProvider.getConfiguration().getGroupRepository();
 	}
 
 	/**

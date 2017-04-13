@@ -17,6 +17,7 @@ import org.ligoj.app.MatcherUtil;
 import org.ligoj.app.iam.CompanyOrg;
 import org.ligoj.app.iam.ContainerOrg;
 import org.ligoj.app.iam.GroupOrg;
+import org.ligoj.app.iam.IamProvider;
 import org.ligoj.app.iam.UserOrg;
 import org.ligoj.app.model.ContainerType;
 import org.ligoj.app.plugin.id.model.ContainerScope;
@@ -46,7 +47,7 @@ public class GroupResourceTest extends AbstractContainerResourceTest {
 	public void mock() {
 		resource = new GroupResource();
 		applicationContext.getAutowireCapableBeanFactory().autowireBean(resource);
-		resource.iamProvider = iamProvider;
+		resource.iamProvider = new IamProvider[] { iamProvider };
 		Mockito.when(groupRepository.getTypeName()).thenReturn("group");
 	}
 

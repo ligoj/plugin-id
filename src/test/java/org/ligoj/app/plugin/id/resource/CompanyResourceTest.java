@@ -14,6 +14,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
 import org.ligoj.app.MatcherUtil;
 import org.ligoj.app.iam.CompanyOrg;
+import org.ligoj.app.iam.IamProvider;
 import org.ligoj.app.iam.UserOrg;
 import org.ligoj.app.model.ContainerType;
 import org.ligoj.app.plugin.id.dao.ContainerScopeRepository;
@@ -44,7 +45,7 @@ public class CompanyResourceTest extends AbstractContainerResourceTest {
 	public void mock() {
 		resource = new CompanyResource();
 		applicationContext.getAutowireCapableBeanFactory().autowireBean(resource);
-		resource.iamProvider = iamProvider;
+		resource.iamProvider = new IamProvider[] { iamProvider };
 		Mockito.when(companyRepository.getTypeName()).thenReturn("company");
 	}
 

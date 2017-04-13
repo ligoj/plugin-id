@@ -82,7 +82,7 @@ public class UserOrgResourceTest extends AbstractAppTest {
 		Mockito.when(configuration.getGroupRepository()).thenReturn(groupRepository);
 		resource = new UserOrgResource();
 		applicationContext.getAutowireCapableBeanFactory().autowireBean(resource);
-		resource.setIamProvider(iamProvider);
+		resource.setIamProvider(new IamProvider[] { iamProvider });
 		Mockito.when(companyRepository.getTypeName()).thenReturn("company");
 	}
 
