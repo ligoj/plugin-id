@@ -58,23 +58,10 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public abstract class AbstractContainerResource<T extends ContainerOrg, V extends ContainerEditionVo, C extends CacheContainer> extends AbstractOrgResource {
 
+	protected static final String TYPE_ATTRIBUTE = "type";
+
 	@Autowired
 	protected ContainerScopeResource containerScopeResource;
-
-	/**
-	 * The container type manager by this instance.
-	 */
-	protected final ContainerType type;
-
-	@Autowired
-	protected DelegateOrgRepository delegateRepository;
-
-	/**
-	 * Return the repository managing the container.
-	 * 
-	 * @return the repository managing the container.
-	 */
-	protected abstract IContainerRepository<T> getRepository();
 
 	@Autowired
 	protected PaginationJson paginationJson;
@@ -82,7 +69,13 @@ public abstract class AbstractContainerResource<T extends ContainerOrg, V extend
 	@Autowired
 	protected SecurityHelper securityHelper;
 
-	protected static final String TYPE_ATTRIBUTE = "type";
+	@Autowired
+	protected DelegateOrgRepository delegateRepository;
+
+	/**
+	 * The container type manager by this instance.
+	 */
+	protected final ContainerType type;
 
 	/**
 	 * Ordered columns.
@@ -96,6 +89,13 @@ public abstract class AbstractContainerResource<T extends ContainerOrg, V extend
 	protected AbstractContainerResource(final ContainerType type) {
 		this.type = type;
 	}
+
+	/**
+	 * Return the repository managing the container.
+	 * 
+	 * @return the repository managing the container.
+	 */
+	protected abstract IContainerRepository<T> getRepository();
 
 	/**
 	 * Return the repository managing the container as cache.
