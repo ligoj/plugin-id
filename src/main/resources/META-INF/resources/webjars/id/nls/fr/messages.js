@@ -6,7 +6,7 @@ define({
 	'group': 'Groupe',
 	'department': 'Département',
 	'localid': 'Identifiant local',
-	'container-scope': 'Type de conteneur',
+	'container-scope': 'Etendue de conteneur',
 	'user': 'Utilisateur',
 	'admin': 'Administration',
 	'write': 'Ecriture',
@@ -20,6 +20,6 @@ define({
 	'error': {
 		'last-member-of-group': 'L\'utilisateur {{user}} ne peut être supprimé, il est le dernier membre du groupe {{group}}',
 		'locked': 'Ce conteneur est verrouillé, il ne peut être supprimé ou modifié',
-		'container-scope-match': 'Type attendu est {{provided}} et le type fourni est {{type}}'
+		'container-scope-match': 'Etendue attendu est {{provided}} et le type fourni est {{scope}}'
 	}
 });

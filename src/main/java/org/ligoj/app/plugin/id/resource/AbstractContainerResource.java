@@ -166,7 +166,7 @@ public abstract class AbstractContainerResource<T extends ContainerOrg, V extend
 	public T createInternal(final V container) {
 
 		// Check the unlocked scope exists
-		final ContainerScope scope = containerScopeResource.findById(container.getType());
+		final ContainerScope scope = containerScopeResource.findById(container.getScope());
 
 		// Check the type matches with this class' container type
 		if (this.type != scope.getType()) {

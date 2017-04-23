@@ -149,7 +149,7 @@ public class CompanyResourceTest extends AbstractContainerResourceTest {
 		final ContainerScope scope = containerScopeRepository.findByName("France");
 		final ContainerEditionVo group = new ContainerEditionVo();
 		group.setName("New-Ax-1-z:Z 0");
-		group.setType(scope.getId());
+		group.setScope(scope.getId());
 		initSpringSecurityContext("mmartin");
 		resource.create(group);
 	}
@@ -206,7 +206,7 @@ public class CompanyResourceTest extends AbstractContainerResourceTest {
 		final ContainerScope scope = containerScopeRepository.findByName("France");
 		final ContainerEditionVo group = new ContainerEditionVo();
 		group.setName("orange");
-		group.setType(scope.getId());
+		group.setScope(scope.getId());
 		Mockito.when(companyRepository.findById("orange")).thenReturn(new CompanyOrg("", ""));
 		resource.create(group);
 	}
@@ -216,7 +216,7 @@ public class CompanyResourceTest extends AbstractContainerResourceTest {
 		final ContainerScope scope = containerScopeRepository.findByName("Fonction");
 		final ContainerEditionVo company = new ContainerEditionVo();
 		company.setName("New-Ax-1-z:Z 0");
-		company.setType(scope.getId());
+		company.setScope(scope.getId());
 		resource.create(company);
 	}
 
@@ -225,7 +225,7 @@ public class CompanyResourceTest extends AbstractContainerResourceTest {
 		final ContainerScope scope = containerScopeRepository.findByName("France");
 		final ContainerEditionVo company = new ContainerEditionVo();
 		company.setName("new-company");
-		company.setType(scope.getId());
+		company.setScope(scope.getId());
 		final CompanyOrg companyOrg1 = new CompanyOrg("ou=new-company,ou=france,ou=people,dc=sample,dc=com", "new-company");
 		Mockito.when(companyRepository.create("ou=new-company,ou=france,ou=people,dc=sample,dc=com", "new-company")).thenReturn(companyOrg1);
 		Assert.assertEquals("new-company", resource.create(company));
