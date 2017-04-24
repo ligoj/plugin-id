@@ -115,11 +115,6 @@ public class UserOrgResourceTest extends AbstractAppTest {
 	}
 
 	@Test
-	public void authenticate() {
-		Assert.assertFalse(resource.authenticate("fdaugan", "-bad-"));
-	}
-
-	@Test
 	public void findAllBy() {
 		final UserOrg userOrg = new UserOrg();
 		Mockito.when(userRepository.findAllBy("mail", "marc.martin@sample.com")).thenReturn(Collections.singletonList(userOrg));
