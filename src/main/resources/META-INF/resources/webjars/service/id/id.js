@@ -30,6 +30,41 @@ define(function () {
 			_('subscribe-configuration-id').removeClass('hide');
 		},
 
+		/**
+		 * Render identity group.
+		 */
+		renderKey: function (subscription) {
+			return current.$super('renderKey')(subscription, 'service:id:group');
+		},
+
+		/**
+		 * Render identity configuration link.
+		 */
+		renderFeatures: function (subscription) {
+			// Add group link
+			var result = current.$super('renderServicelink')('users', '#/home/project/' + subscription.project + '/subscription/' + subscription.id, 'service:id:group-manage');
+
+			// Help
+			result += current.$super('renderServiceHelpLink')(subscription.parameters, 'service:id:help');
+			return result;
+		},
+
+		/**
+		 * Display the amount of members
+		 */
+		renderDetailsFeatures: function (subscription) {
+			if (subscription.data.members) {
+				return '<span data-toggle="tooltip" title="' + current.$messages.members + '" class="label label-default">' + subscription.data.members + '</span>';
+			}
+		},
+
+		/**
+		 * Render identity details : id and amount of members.
+		 */
+		renderDetailsKey: function (subscription) {
+			return current.renderKey(subscription);
+		},
+
 		initializeForm: function () {
 			_('search-user').select2({
 				minimumInputLength: 0,
