@@ -32,6 +32,6 @@ public class ContainerEditionVo {
 	 * The type of this container.
 	 */
 	@NotNull
-	private Integer type;
+	private Integer scope;
 
 }

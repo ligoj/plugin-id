@@ -20,7 +20,7 @@ public class GroupFullLdapTask extends AbstractLdapBatchTask<GroupImportEntry> {
 	protected GroupResource resource;
 
 	@Autowired
-	protected ContainerScopeResource containerTypeLdapResource;
+	protected ContainerScopeResource containerScopeResource;
 
 	@Override
 	protected void doBatch(final GroupImportEntry entry) throws Exception {
@@ -29,7 +29,7 @@ public class GroupFullLdapTask extends AbstractLdapBatchTask<GroupImportEntry> {
 		final GroupEditionVo edition = new GroupEditionVo();
 		edition.setName(entry.getName());
 		edition.setParent(StringUtils.trimToNull(entry.getParent()));
-		edition.setType(containerTypeLdapResource.findByName(entry.getType()).getId());
+		edition.setScope(containerScopeResource.findByName(entry.getType()).getId());
 
 		// Split muti-valued data
 		edition.setAssistants(toList(entry.getAssistant()));

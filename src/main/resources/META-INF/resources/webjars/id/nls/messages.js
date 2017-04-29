@@ -9,7 +9,7 @@ define({
 		'group': 'Group',
 		'department': 'Department',
 		'localid': 'Local identifier',
-		'container-scope': 'Container Type',
+		'container-scope': 'Container scope',
 		'user': 'User',
 		'admin': 'Administration',
 		'write': 'Write',
@@ -24,7 +24,7 @@ define({
 		'error': {
 			'last-member-of-group': 'You can\'t delete user {{user}}, he is the last member of group {{group}}',
 			'locked': 'This container is locked, you cannot create or delete it',
-			'container-scope-match': 'Expected type is {{expected}} and you provided {{type}}'
+			'container-scope-match': 'Expected scope is {{expected}} and you provided {{scope}}'
 		}
 	},
 	fr: true

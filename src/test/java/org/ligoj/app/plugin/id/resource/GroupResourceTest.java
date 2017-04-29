@@ -188,7 +188,7 @@ public class GroupResourceTest extends AbstractContainerResourceTest {
 	private void createInternal(final GroupEditionVo group, final String expected) {
 		final ContainerScope scope = containerScopeRepository.findByName("Fonction");
 		group.setName("new-group");
-		group.setType(scope.getId());
+		group.setScope(scope.getId());
 		final GroupOrg groupOrg1 = new GroupOrg("cn=new-group", "new-group", null);
 		Mockito.when(groupRepository.create(expected, "new-group")).thenReturn(groupOrg1);
 		Assert.assertEquals("new-group", resource.create(group));

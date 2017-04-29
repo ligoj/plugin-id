@@ -84,7 +84,7 @@ define(function () {
 				return false;
 			});
 
-			_('type').select2({
+			_('scope').select2({
 				minimumInputLength: 0,
 				formatSearching: function () {
 					return current.$messages.loading;
@@ -142,7 +142,7 @@ define(function () {
 							return '<a href="#/id/home/' + data.containerType + '=' + data.name + '">' + data.name + '</a>';
 						}
 					}, {
-						data: 'type',
+						data: 'scope',
 						orderable: false
 					}, {
 						data: 'count',
@@ -208,7 +208,7 @@ define(function () {
 		formToObject: function () {
 			var result = {
 				name: _('name').val(),
-				type: _('type').val()
+				scope: _('scope').val()
 			};
 
 			return result;
@@ -249,7 +249,7 @@ define(function () {
 				var entity = current.table.fnGetData($(this).closest('tr')[0]);
 				bootbox.confirmDelete(function (confirmed) {
 					confirmed && current.deleteContainer(entity.name);
-				}, entity.name + '(' + entity.type + ')');
+				}, entity.name + '(' + entity.containerType + '-' + entity.type + ')');
 			}
 		},
 

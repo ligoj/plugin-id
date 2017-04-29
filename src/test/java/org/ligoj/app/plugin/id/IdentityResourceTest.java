@@ -1,4 +1,4 @@
-package IdentityResource;
+package org.ligoj.app.plugin.id;
 
 import javax.transaction.Transactional;
 

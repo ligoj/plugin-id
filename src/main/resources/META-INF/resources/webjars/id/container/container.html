@@ -2,7 +2,7 @@
 	<thead>
 		<tr>
 			<th>{{name}}</th>
-			<th>{{type}}</th>
+			<th>{{container-scope}}</th>
 			<th class="hidden-xs truncate">{{members}}</th>
 			<th><i class="fa fa-wrench" data-toggle="tooltip" title="{{admin}}"></i></th>
 			<th><i class="fa fa-pencil" data-toggle="tooltip" title="{{write}}"></i></th>
@@ -32,8 +32,8 @@
 					<input type="text" id="name" class="form-control" required maxlength="50">
 				</div>
 				<div class="form-group required label-floating">
-					<label class="control-label" for="type">{{type}}</label>
-					<input type="text" id="type" class="form-control" required>
+					<label class="control-label" for="scope">{{container-scope}}</label>
+					<input type="text" id="scope" class="form-control" required>
 				</div>
 			</div>
 			<div class="modal-footer">
@@ -60,11 +60,11 @@
 						{{group-import-message}} <a data-toggle="collapse" href="#more-import-options-atomic" aria-controls="more-import-options-atomic"><i class="fa fa-question-circle faa-wrench animated-hover"></i></a>
 						<div id="more-import-options-atomic" class="collapse">
 							<br/>Implicit CSV headers
-							<code>name;type;parent;owner;assistant;businessCategory
+							<code>name;scope;parent;owner;assistant;businessCategory
 								<br>
 								<strong>user</strong> Group name
 								<br>
-								<strong>type</strong> Container type, see <a href="#/id/container-scope">{{container-scope}}</a>. Case is sensitive.
+								<strong>scope</strong> Container scope, see <a href="#/id/container-scope">{{container-scope}}</a>. Case is sensitive.
 								<br>
 								<strong>parent</strong> Optional parent name, must exists.
 								<br>

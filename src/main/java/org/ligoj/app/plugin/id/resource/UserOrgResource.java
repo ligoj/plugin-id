@@ -836,19 +836,6 @@ public class UserOrgResource extends AbstractOrgResource {
 	}
 
 	/**
-	 * Check the user credentials.
-	 * 
-	 * @param user
-	 *            The user's name.
-	 * @param password
-	 *            The user's password.
-	 * @return <code>true</code> when credentials are correct.
-	 */
-	public boolean authenticate(final String user, final String password) {
-		return getUser().authenticate(user, password);
-	}
-
-	/**
 	 * Return the {@link UserOrg} list corresponding to the given
 	 * attribute/value without using cache for the search, but using it for the
 	 * instances.

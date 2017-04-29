@@ -57,7 +57,7 @@ public class GroupBatchLdapResourceTest extends AbstractLdapBatchTest {
 		final GroupFullLdapTask mockTask = new GroupFullLdapTask();
 		mockTask.resource = mockLdapResource;
 		mockTask.securityHelper = securityHelper;
-		mockTask.containerTypeLdapResource = Mockito.mock(ContainerScopeResource.class);
+		mockTask.containerScopeResource = Mockito.mock(ContainerScopeResource.class);
 		Mockito.when(applicationContext.getBean(SessionSettings.class)).thenReturn(new SessionSettings());
 		Mockito.when(applicationContext.getBean((Class<?>) ArgumentMatchers.any(Class.class))).thenAnswer((Answer<Object>) invocation -> {
 			final Class<?> requiredType = (Class<Object>) invocation.getArguments()[0];
@@ -71,7 +71,7 @@ public class GroupBatchLdapResourceTest extends AbstractLdapBatchTest {
 		container.setId(1);
 		container.setName("Fonction");
 		container.setType(ContainerType.GROUP);
-		Mockito.when(mockTask.containerTypeLdapResource.findByName("Fonction")).thenReturn(container);
+		Mockito.when(mockTask.containerScopeResource.findByName("Fonction")).thenReturn(container);
 	}
 
 	@After
@@ -107,7 +107,7 @@ public class GroupBatchLdapResourceTest extends AbstractLdapBatchTest {
 			final GroupEditionVo group = (GroupEditionVo) data.getAllInvocations().get(0).getArguments()[0];
 			Assert.assertNotNull(group);
 			Assert.assertEquals("Gfi France", group.getName());
-			Assert.assertNotNull(group.getType());
+			Assert.assertNotNull(group.getScope());
 			Assert.assertTrue(group.getDepartments().isEmpty());
 			Assert.assertTrue(group.getOwners().isEmpty());
 			Assert.assertTrue(group.getAssistants().isEmpty());
@@ -139,7 +139,7 @@ public class GroupBatchLdapResourceTest extends AbstractLdapBatchTest {
 			final GroupEditionVo group = (GroupEditionVo) data.getAllInvocations().get(0).getArguments()[0];
 			Assert.assertNotNull(group);
 			Assert.assertEquals("Opérations Spéciales", group.getName());
-			Assert.assertNotNull(group.getType());
+			Assert.assertNotNull(group.getScope());
 			Assert.assertEquals(2, group.getOwners().size());
 			Assert.assertEquals("fdaugan", group.getOwners().get(0));
 			Assert.assertEquals(2, group.getAssistants().size());
