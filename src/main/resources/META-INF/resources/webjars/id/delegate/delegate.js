@@ -40,6 +40,7 @@ define(function () {
 				_('receiver').select2('focus');
 			}).on('show.bs.modal', function (event) {
 				validationManager.reset($(this));
+				validationManager.mapping.name = 'resource';
 				var $source = $(event.relatedTarget);
 				var $tr = $source.closest('tr');
 				var uc = ($tr.length && current.table.fnGetData($tr[0])) || undefined;
