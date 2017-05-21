@@ -85,7 +85,7 @@ define(function () {
 			$group.find('.dropdown-menu [data-type]').find('.active').removeClass('active').end().find('[data-type="'+type+'"]').addClass('active');;
 
 			// Update the drop down icon
-			$group.find('.dropdown-toggle i').attr('class', current.$main.targetTypeClass[type]);
+			$group.find('.dropdown-toggle i').attr('class', current.$main.targetTypeClass[type] + ' fa-fw');
 
 			// Invalidate the previous select2
 			$input.removeAttr('placeholder').select2('destroy');
