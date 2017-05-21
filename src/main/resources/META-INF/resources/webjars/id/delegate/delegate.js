@@ -83,7 +83,8 @@ define(function () {
 			var $group = $input.closest('.form-group');
 
 			// Update the selected drop down item
-			$group.find('.dropdown-menu [data-type]').find('.active').removeClass('active').end().find('[data-type="'+type+'"]').addClass('active');;
+			$group.find('.dropdown-menu [data-type].active').removeClass('active');
+			$group.find('.dropdown-menu [data-type="'+type+'"]').addClass('active');
 
 			// Update the drop down icon
 			$group.find('.dropdown-toggle i').attr('class', current.$main.targetTypeClass[type] + ' fa-fw');
