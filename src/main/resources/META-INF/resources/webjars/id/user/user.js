@@ -84,7 +84,7 @@ define(function () {
 		},
 		initialize: function (parameters) {
 			_('change-password').on('click', function () {
-				require(['i18n!main/public/login/nls/messages', 'text!main/service/id/user/change-password.html'], function (messages, template) {
+				require(['i18n!main/public/login/nls/messages', 'text!main/id/user/change-password.html'], function (messages, template) {
 					$.extend(current.$messages, messages);
 					_('_password-popup-container').html(Handlebars.compile(template)(current.$messages));
 					_('_change').on('show.bs.modal', function () {
