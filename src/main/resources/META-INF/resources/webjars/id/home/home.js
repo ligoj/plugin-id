@@ -24,7 +24,6 @@ define(function () {
 		onHashChange: function (parameters) {
 			// Search mode
 			current.currentId = null;
-			current.initializeSearch();
 
 			if (parameters) {
 				current.suspendSearch = true;
@@ -35,8 +34,8 @@ define(function () {
 					kv.length === 2 && _('search-' + kv[0]).select2('val', kv[1]).change();
 				}
 				current.suspendSearch = false;
-				current.refreshDataTable();
 			}
+			current.initializeSearch();
 			$(function() {
 				_('search').trigger('focus');
 			});
@@ -206,13 +205,6 @@ define(function () {
 		 */
 		refreshDataTable: function () {
 			if (current.table && !current.suspendSearch) {
-				var company = $('#search-company').val();
-				var group = $('#search-group').val();
-				if (company || group) {
-					current.table.fnSettings().ajax = REST_PATH + 'service/id/user?' + (company ? 'company=' + company : '') + ((company && group) ? '&' : '') + (group ? 'group=' + group : '');
-				} else {
-					current.table.fnSettings().ajax = REST_PATH + 'service/id/user';
-				}
 				current.table.api().ajax.reload();
 			}
 		},
@@ -225,7 +217,14 @@ define(function () {
 				dom: 'rt<"row"<"col-xs-6"i><"col-xs-6"p>>',
 				serverSide: true,
 				searching: true,
-				ajax: REST_PATH + 'service/id/user',
+				ajax: function() {
+					var company = $('#search-company').val();
+					var group = $('#search-group').val();
+					if (company || group) {
+						return REST_PATH + 'service/id/user?' + (company ? 'company=' + company : '') + ((company && group) ? '&' : '') + (group ? 'group=' + group : '');
+					}
+					return REST_PATH + 'service/id/user';
+				},
 				columns: [
 					{
 						data: 'id',
