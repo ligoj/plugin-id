@@ -32,7 +32,8 @@ public class UserOrgEditionVo extends SimpleUser {
 	private String mail;
 
 	/**
-	 * Normalized groups aliases.
+	 * Normalized visible groups aliases the principal. Must include writable and
+	 * read-only groups.
 	 */
 	private Collection<String> groups;
 
