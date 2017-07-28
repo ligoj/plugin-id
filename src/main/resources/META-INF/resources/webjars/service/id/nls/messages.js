@@ -4,6 +4,7 @@ define({
 		'mail': 'Mail',
 		'groups': 'Groups',
 		'service:id': 'Identity',
+		'service:id:uid-pattern' : 'Pattern UID',
 		'service:id:group': 'Group',
 		'service:id:group-parent': 'Parent group',
 		'service:id:group-parent-description': 'Optional parent group where the new group will be added',
