@@ -3,14 +3,14 @@ package org.ligoj.app.plugin.id.model;
 import javax.persistence.Entity;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 
 import org.hibernate.validator.constraints.Length;
-import org.hibernate.validator.constraints.NotBlank;
-
-import org.ligoj.bootstrap.core.model.AbstractNamedEntity;
 import org.ligoj.app.model.ContainerType;
 import org.ligoj.app.validation.DistinguishName;
+import org.ligoj.bootstrap.core.model.AbstractNamedEntity;
+
 import lombok.Getter;
 import lombok.Setter;
 

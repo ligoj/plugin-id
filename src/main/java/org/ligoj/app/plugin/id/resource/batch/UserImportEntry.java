@@ -1,9 +1,9 @@
 package org.ligoj.app.plugin.id.resource.batch;
 
+import javax.validation.constraints.Email;
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 
-import org.hibernate.validator.constraints.Email;
-import org.hibernate.validator.constraints.NotBlank;
 import org.ligoj.app.iam.SimpleUser;
 
 import lombok.Getter;
