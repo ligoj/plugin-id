@@ -177,9 +177,11 @@ define(function () {
 				receiverType: $popup.find('[data-group="receiver"]').find('[data-type].active').attr('data-type'),
 				name: _('resource').val(),
 				type: $popup.find('[data-group="resource"]').find('[data-type].active').attr('data-type'),
-				canAdmin: $('#canAdmin:checked').length === 1 || undefined,
-				canWrite: $('#canWrite:checked').length === 1 || undefined
+				canAdmin: $('#canAdmin:checked').length === 1 || null,
+				canWrite: $('#canWrite:checked').length === 1 || null
 			};
+			// Trim the data
+			Object.keys(result).forEach((key) => (result[key] === null || result[key] === '') && delete result[key]);
 
 			return result;
 		},
