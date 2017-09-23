@@ -427,7 +427,7 @@ public abstract class AbstractContainerResource<T extends ContainerOrg, V extend
 	}
 
 	/**
-	 * Return the internal representation of the container set.
+	 * Return the internal representation of the container set. Not existing cache items are removed.
 	 * 
 	 * @param cacheItems
 	 *            The database base cache containers to convert.
@@ -446,8 +446,7 @@ public abstract class AbstractContainerResource<T extends ContainerOrg, V extend
 	 * @return The internal representation of {@link org.ligoj.app.iam.model.CacheCompany} set. Ordered by the name.
 	 */
 	protected Page<T> toInternal(final Page<C> cacheItems) {
-		final List<T> content = new ArrayList<>(toInternal(cacheItems.getContent()));
-		return new PageImpl<>(content, null, content.size());
+		return new PageImpl<>(new ArrayList<>(toInternal(cacheItems.getContent())), null, cacheItems.getTotalElements());
 	}
 
 	protected String getTypeName() {

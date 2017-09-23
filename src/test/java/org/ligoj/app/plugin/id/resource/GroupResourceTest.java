@@ -83,8 +83,8 @@ public class GroupResourceTest extends AbstractContainerResourceTest {
 				.thenReturn(new PageImpl<>(Arrays.asList(groupOrg1, groupOrg2)));
 
 		final TableItem<ContainerCountVo> groups = resource.findAll(newUriInfoAscSearch("name", "d"));
-		Assert.assertEquals(2, groups.getRecordsTotal());
-		Assert.assertEquals(2, groups.getRecordsFiltered());
+		Assert.assertEquals(5, groups.getRecordsTotal());
+		Assert.assertEquals(5, groups.getRecordsFiltered());
 		Assert.assertEquals(2, groups.getData().size());
 
 		final ContainerCountVo group0 = groups.getData().get(0);
