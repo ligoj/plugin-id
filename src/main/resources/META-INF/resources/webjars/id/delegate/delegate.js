@@ -181,7 +181,9 @@ define(function () {
 				canWrite: $('#canWrite:checked').length === 1 || null
 			};
 			// Trim the data
-			Object.keys(result).forEach((key) => (result[key] === null || result[key] === '') && delete result[key]);
+			Object.keys(result).forEach(function(key) {
+				(result[key] === null || result[key] === '') && delete result[key];
+			});
 
 			return result;
 		},
