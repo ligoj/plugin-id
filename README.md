@@ -9,7 +9,6 @@ API plugin used for compatibility check
 [![Coverage Status](https://coveralls.io/repos/github/ligoj/plugin-id/badge.svg?branch=master)](https://coveralls.io/github/ligoj/plugin-id?branch=master)
 [![Dependency Status](https://www.versioneye.com/user/projects/58caeda8dcaf9e0041b5b978/badge.svg?style=flat-square)](https://www.versioneye.com/user/projects/58caeda8dcaf9e0041b5b978)
 [![Quality Gate](https://sonarcloud.io/api/badges/gate?key=org.ligoj.plugin:plugin-id)](https://sonarcloud.io/dashboard/index/org.ligoj.plugin:plugin-id)
-[![Sourcegraph Badge](https://sourcegraph.com/github.com/ligoj/plugin-id/-/badge.svg)](https://sourcegraph.com/github.com/ligoj/plugin-id?badge)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/abf810c094e44c0691f71174c707d6ed)](https://www.codacy.com/app/ligoj/plugin-id?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=ligoj/plugin-id&amp;utm_campaign=Badge_Grade)
 [![CodeFactor](https://www.codefactor.io/repository/github/ligoj/plugin-id/badge)](https://www.codefactor.io/repository/github/ligoj/plugin-id)
 [![License](http://img.shields.io/:license-mit-blue.svg)](http://gus.mit-license.org/)
