@@ -794,7 +794,61 @@ public class UserOrgResource extends AbstractOrgResource {
 	public void restore(@PathParam("user") final String user) {
 		getUser().restore(checkDeletionRight(user, "restore"));
 	}
+		
+	/**
+	 * Reset a user password and send a mail to him and to the user who performed the action.<br>
+	 * Rules, order is important :
+	 * <ul>
+	 * <li>Only users managing the company of this user can perform the enable, if
+	 * not, act as if the user did not exist</li>
+	 * <li>User must exist</li>
+	 * <li>User performing action must be an administrator</li>
+	 * </ul>
+	 * Note : even if the user requesting this enable has no right on the groups the
+	 * involved user, this operation can be performed.
+	 *
+	 * @param user
+	 *            The user to restore. A normalized form of this parameter will be
+	 *            used for this operation.
+	 * @return The generated password.
+	 */
+	@PUT
+	@Path("{user}/reset-password")
+	public void resetPassword(@PathParam("user") final String user) {
+		resetPasswordByAdmin(checkResetRight(user), securityHelper.getLogin());
+	}
+	
+	private void resetPasswordByAdmin(final UserOrg user, final String admin) {
+		// Have to generate a new password
+		applicationContext.getBeansOfType(IPasswordGenerator.class).values().stream().findFirst()
+				.ifPresent(p -> p.generate(user.getId(), admin));
 
+		// This user is now secured
+		user.setSecured(true);
+	}
+	
+	/**
+	 * Check the current user can reset the given user password.
+	 * 
+	 * @param user
+	 *            The user to alter.
+	 * @return The internal representation of found user.
+	 */
+	private UserOrg checkResetRight(final String user) {
+		// Check the user exists
+		final UserOrg userOrg = getUser().findByIdExpected(securityHelper.getLogin(), Normalizer.normalize(user));
+
+		// Check the company
+		final String companyDn = getCompany().findById(userOrg.getCompany()).getDn();
+		if (delegateRepository.findByMatchingDnForWrite(securityHelper.getLogin(), companyDn, DelegateType.TREE)
+				.isEmpty()) {
+			// Report this attempt to delete a non managed user
+			log.warn("Attempt to reset the password of a user '{}' out of scope", user);
+			throw new ValidationJsonException(USER_KEY, BusinessException.KEY_UNKNOW_ID, "0", "user", "1", user);
+		}
+		return userOrg;
+	}
+	
 	/**
 	 * Check the current user can delete, enable or disable the given user entry.
 	 * 
