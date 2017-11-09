@@ -16,16 +16,19 @@ define({
 		'company-help': 'Only companies you manage are available there',
 		'group-help': 'Only groups you manage are available there',
 		'unlock': 'Unlock',
-		'unlocked-confirm': '{{this}} as been unlocked. This user must recover a new password.',
+		'unlocked-confirm': '{{this}} has been unlocked. This user must recover a new password.',
 		'lock': 'Lock',
 		'lock-confirm': 'Are you sure to lock {{this}}?<br>This user will not be able to authenticate anymore or request a new password but still be visible by the tools and will continue to receive some mails from them.<br>In addition the password will be cleared, when unlocking the user, this password will not be restored.',
-		'locked-confirm': '{{this}} as been locked. Password has been cleared',
+		'locked-confirm': '{{this}} has been locked. Password has been cleared',
 		'restore': 'Restore',
-		'restored-confirm': '{{this}} as been restored. This user must recover a new password.',
+		'restored-confirm': '{{this}} has been restored. This user must recover a new password.',
 		'isolate': 'Isolate',
 		'isolated': 'Isolated',
 		'isolate-confirm': 'Are you sure to isolate {{this}}?<br>This account will be locked and will not be more visible by the tools.<br>This user will not be able to authenticate anymore or request a new password or receive mails from the tools.<br>In addition the password will be cleared, when unlocking the user, this password will not be restored.',
-		'isolated-confirm': '{{this}} as been isolated. Password has been cleared'
+		'isolated-confirm': '{{this}} has been isolated. Password has been cleared',
+		'reset': 'Password Reset',
+		'reset-confirm': 'Are you sure to reset the pasword of {{this}}?<br>An email will be sent to this user and you.',
+		'reseted-confirm': '{{this}} password has been reset.'
 	},
 	fr: true
 });

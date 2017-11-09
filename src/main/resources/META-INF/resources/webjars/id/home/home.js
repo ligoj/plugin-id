@@ -192,7 +192,7 @@ define(function () {
 				current.table && current.table.fnFilter($(this).val());
 			});
 
-			_('table').on('click', '.delete', current.deleteUser).on('click', '.lock', current.lockUser).on('click', '.unlock', current.unlockUser).on('click', '.isolate', current.isolateUser).on('click', '.restore', current.restoreUser).on('click', '.update', function () {
+			_('table').on('click', '.reset', current.resetUserPassword).on('click', '.delete', current.deleteUser).on('click', '.lock', current.lockUser).on('click', '.unlock', current.unlockUser).on('click', '.isolate', current.isolateUser).on('click', '.restore', current.restoreUser).on('click', '.update', function () {
 				current.$parent.requireAgreement(current.showPopup, $(this));
 			});
 
@@ -277,6 +277,10 @@ define(function () {
 									// Unlocked -> lock or isolate
 									editlink += '<li><a class="lock"><i class="menu-icon fa fa-lock"></i> ' + current.$messages.lock + '</a></li>';
 									editlink += '<li><a class="isolate"><i class="menu-icon fa fa-sign-out"></i> ' + current.$messages.isolate + '</a></li>';
+								}
+
+								if (data.administrated) {
+									editlink += '<li><a class="reset"><i class="menu-icon fa fa-refresh"></i> ' + current.$messages.reset + '</a></li>';
 								}
 
 								// Delete icon
@@ -414,16 +418,23 @@ define(function () {
 		},
 
 		/**
+		 * Reset the selected user password after popup confirmation, or directly from its identifier.
+		 */
+		resetUserPassword: function(id, name) {
+			current.confirmUserOperation($(this), id, name, 'reset', 'reseted', 'PUT');
+		},
+
+		/**
 		 * Lock the selected user after popup confirmation, or directly from its identifier.
 		 */
 		lockUser: function (id, name) {
-			current.confirmUserOperation($(this), id, name, 'lock', 'locked');
+			current.confirmUserOperation($(this), id, name, 'lock', 'locked', 'DELETE');
 		},
 		/**
 		 * Isolate the selected user after popup confirmation, or directly from its identifier.
 		 */
 		isolateUser: function (id, name) {
-			current.confirmUserOperation($(this), id, name, 'isolate', 'isolated');
+			current.confirmUserOperation($(this), id, name, 'isolate', 'isolated', 'DELETE');
 		},
 
 		/**
@@ -442,11 +453,11 @@ define(function () {
 		/**
 		 * Disable/Lock the selected user after popup confirmation, or directly from its identifier.
 		 */
-		confirmUserOperation: function ($item, id, name, operation, operated) {
+		confirmUserOperation: function ($item, id, name, operation, operated, method) {
 			if ((typeof id) === 'string') {
 				// Process without confirmation
 				$.ajax({
-					type: 'DELETE',
+					type: method,
 					url: REST_PATH + 'service/id/user/' + id + '/' + operation,
 					success: function () {
 						notifyManager.notify(Handlebars.compile(current.$messages[operated + '-confirm'])(name));
@@ -457,7 +468,7 @@ define(function () {
 				// Requires a confirmation
 				var entity = current.table.fnGetData($item.closest('tr')[0]);
 				bootbox.confirm(function (confirmed) {
-					confirmed && current.confirmUserOperation($item, entity.id, entity.firstName + ' ' + entity.lastName, operation, operated);
+					confirmed && current.confirmUserOperation($item, entity.id, entity.firstName + ' ' + entity.lastName, operation, operated, method);
 				}, current.$messages[operation], Handlebars.compile(current.$messages[operation + '-confirm'])(entity.id + ' [' + current.$main.getFullName(entity) + ']'), current.$messages[operation]);
 			}
 		},

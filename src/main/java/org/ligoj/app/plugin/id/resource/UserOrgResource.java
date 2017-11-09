@@ -183,9 +183,11 @@ public class UserOrgResource extends AbstractOrgResource {
 			@Context final UriInfo uriInfo) {
 		final Set<GroupOrg> visibleGroups = groupResource.getContainers();
 		final Set<GroupOrg> writableGroups = groupResource.getContainersForWrite();
-		final Collection<String> writableCompanies = companyResource.getContainersForWrite().stream()
-				.map(CompanyOrg::getId).collect(Collectors.toList());
-
+		
+		final Set<CompanyOrg> companies = companyResource.getContainersForWrite();
+		final Map<String, String> dnByCompanies = companies.stream().collect(Collectors.toMap(CompanyOrg::getId, CompanyOrg::getDn));
+		final Collection<String> writableCompanies = companies.stream().map(CompanyOrg::getId).collect(Collectors.toList());
+		
 		// Search the users
 		final Page<UserOrg> findAll = findAllNotSecure(visibleGroups, company, group, criteria, uriInfo);
 
@@ -195,7 +197,9 @@ public class UserOrgResource extends AbstractOrgResource {
 			final UserOrgVo securedUserOrg = new UserOrgVo();
 			rawUserOrg.copy(securedUserOrg);
 			securedUserOrg.setManaged(writableCompanies.contains(rawUserOrg.getCompany()) || !writableGroups.isEmpty());
-
+			securedUserOrg.setAdministrated(writableCompanies.contains(rawUserOrg.getCompany()) && 
+					!delegateRepository.findByMatchingDnForWrite(securityHelper.getLogin(), dnByCompanies.get(rawUserOrg.getCompany()), DelegateType.TREE).isEmpty());
+			
 			// Show only the groups that are also visible to current user
 			securedUserOrg.setGroups(visibleGroups.stream()
 					.filter(mGroup -> rawUserOrg.getGroups().contains(mGroup.getId())).map(mGroup -> {
@@ -813,12 +817,12 @@ public class UserOrgResource extends AbstractOrgResource {
 	 * @return The generated password.
 	 */
 	@PUT
-	@Path("{user}/reset-password")
+	@Path("{user}/reset")
 	public void resetPassword(@PathParam("user") final String user) {
 		resetPasswordByAdmin(checkResetRight(user), securityHelper.getLogin());
 	}
 	
-	private void resetPasswordByAdmin(final UserOrg user, final String admin) {
+	protected void resetPasswordByAdmin(final UserOrg user, final String admin) {
 		// Have to generate a new password
 		applicationContext.getBeansOfType(IPasswordGenerator.class).values().stream().findFirst()
 				.ifPresent(p -> p.generate(user.getId(), admin));

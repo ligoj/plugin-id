@@ -23,5 +23,8 @@ define({
 	'restored-confirm': '{{this}} a été restauré. Un nouveau mot de passe doit être généré.',
 	'isolate': 'Isoler',
 	'isolate-confirm': 'Êtes-vous certain d\'isoler cet utilisateur {{this}}? <br>Le compte sera verrouillé et ne sera plus visible des outils.<br>Il ne sera plus possible pour ce compte de se connecter ou de changer le mot de passe mais restera visible des outils et continuera à recevoir des notifications sur l\'adresse mail.<br>Son mot de passe sera effacé, et il ne sera pas restauré lorsque ce compte sera déverrouillé.',
-	'isolated-confirm': '{{this}} a été isolé. Le mot de passe a été effacé.'
+	'isolated-confirm': '{{this}} a été isolé. Le mot de passe a été effacé.',
+	'reset': 'Réinitialisation mot de passe',
+	'reset-confirm': 'Êtes-vous certain de réinitialiser le mot de passe de {{{this}}}?<br>Un mail sera envoyé à l\'utilisateur et vous.',
+	'reseted-confirm': 'Le mot de passe de {{this}} a été réinitialisé.'
 });

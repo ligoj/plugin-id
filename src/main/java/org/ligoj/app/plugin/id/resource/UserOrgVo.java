@@ -23,6 +23,11 @@ public class UserOrgVo extends SimpleUserOrg {
 	 * Is this entry can be managed by current user : delete and update all data but groups.
 	 */
 	private boolean managed;
+	
+	/**
+	 * Is this entry can be administrated by current user : reset password.
+	 */
+	private boolean administrated;
 
 	/**
 	 * Membership, CN of groups.
