@@ -114,7 +114,7 @@ public class ContainerScopeResourceTest extends AbstractJpaTest {
 	 */
 	@Test
 	public void findById() {
-		final Integer id = repository.findAll(new Sort("name")).get(3).getId();
+		final Integer id = repository.findAll(Sort.by("name")).get(3).getId();
 		checkType(resource.findById(id));
 	}
 	@Test
@@ -178,7 +178,7 @@ public class ContainerScopeResourceTest extends AbstractJpaTest {
 	 */
 	@Test
 	public void update() {
-		final int id = repository.findAll(new Sort("name")).get(0).getId();
+		final int id = repository.findAll(Sort.by("name")).get(0).getId();
 
 		final ContainerScope vo = new ContainerScope();
 		vo.setId(id);
@@ -200,7 +200,7 @@ public class ContainerScopeResourceTest extends AbstractJpaTest {
 	 */
 	@Test
 	public void deleteLocked() {
-		final ContainerScope typeLdap = repository.findAll(new Sort("name")).get(3);
+		final ContainerScope typeLdap = repository.findAll(Sort.by("name")).get(3);
 		final int id = typeLdap.getId();
 		Assert.assertTrue(typeLdap.isLocked());
 		final long initCount = repository.count();
@@ -218,7 +218,7 @@ public class ContainerScopeResourceTest extends AbstractJpaTest {
 	 */
 	@Test
 	public void delete() {
-		final ContainerScope typeLdap = repository.findAll(new Sort("name")).get(0);
+		final ContainerScope typeLdap = repository.findAll(Sort.by("name")).get(0);
 		final int id = typeLdap.getId();
 		Assert.assertFalse(typeLdap.isLocked());
 		final long initCount = repository.count();

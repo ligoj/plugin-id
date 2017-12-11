@@ -25,11 +25,6 @@ import lombok.Setter;
 public class ContainerScope extends AbstractNamedEntity<Integer> {
 
 	/**
-	 * SID
-	 */
-	private static final long serialVersionUID = 1L;
-
-	/**
 	 * Special name for project for {@link ContainerType#GROUP} type.
 	 */
 	public static final String TYPE_PROJECT = "Project";
