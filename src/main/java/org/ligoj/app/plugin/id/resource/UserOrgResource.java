@@ -71,6 +71,11 @@ import lombok.extern.slf4j.Slf4j;
 public class UserOrgResource extends AbstractOrgResource {
 
 	/**
+	 * Name of "group" attribute.
+	 */
+	private static final String GROUP = "group";
+
+	/**
 	 * The primary business key
 	 */
 	public static final String USER_KEY = "id";
@@ -137,7 +142,7 @@ public class UserOrgResource extends AbstractOrgResource {
 	 * @param company
 	 *            the optional company name to match. Will be normalized.
 	 * @param group
-	 *            the optional group name to match.
+	 *            the optional group name to match. May be <code>null</code>.
 	 * @param criteria
 	 *            the optional criteria to match.
 	 * @param uriInfo
@@ -156,7 +161,7 @@ public class UserOrgResource extends AbstractOrgResource {
 		final Set<String> filteredCompanies = computeFilteredCompanies(Normalizer.normalize(company), visibleCompanies);
 
 		// The groups to use
-		final Collection<GroupOrg> filteredGroups = computeFilteredGroups(group, managedGroups, allGroups);
+		final Collection<GroupOrg> filteredGroups = group == null ? null : computeFilteredGroups(group, managedGroups, allGroups);
 
 		// Search the users
 		return getUser().findAll(filteredGroups, filteredCompanies, StringUtils.trimToNull(criteria), pageRequest);
@@ -178,13 +183,12 @@ public class UserOrgResource extends AbstractOrgResource {
 	 * @return found users.
 	 */
 	@GET
-	public TableItem<UserOrgVo> findAll(@QueryParam(SimpleUser.COMPANY_ALIAS) final String company,
-			@QueryParam("group") final String group, @QueryParam(DataTableAttributes.SEARCH) final String criteria,
-			@Context final UriInfo uriInfo) {
+	public TableItem<UserOrgVo> findAll(@QueryParam(SimpleUser.COMPANY_ALIAS) final String company, @QueryParam(GROUP) final String group,
+			@QueryParam(DataTableAttributes.SEARCH) final String criteria, @Context final UriInfo uriInfo) {
 		final Set<GroupOrg> visibleGroups = groupResource.getContainers();
 		final Set<GroupOrg> writableGroups = groupResource.getContainersForWrite();
-		final Collection<String> writableCompanies = companyResource.getContainersForWrite().stream()
-				.map(CompanyOrg::getId).collect(Collectors.toList());
+		final Collection<String> writableCompanies = companyResource.getContainersForWrite().stream().map(CompanyOrg::getId)
+				.collect(Collectors.toList());
 
 		// Search the users
 		final Page<UserOrg> findAll = findAllNotSecure(visibleGroups, company, group, criteria, uriInfo);
@@ -197,8 +201,8 @@ public class UserOrgResource extends AbstractOrgResource {
 			securedUserOrg.setManaged(writableCompanies.contains(rawUserOrg.getCompany()) || !writableGroups.isEmpty());
 
 			// Show only the groups that are also visible to current user
-			securedUserOrg.setGroups(visibleGroups.stream()
-					.filter(mGroup -> rawUserOrg.getGroups().contains(mGroup.getId())).map(mGroup -> {
+			securedUserOrg
+					.setGroups(visibleGroups.stream().filter(mGroup -> rawUserOrg.getGroups().contains(mGroup.getId())).map(mGroup -> {
 						final GroupLdapVo vo = new GroupLdapVo();
 						vo.setManaged(writableGroups.contains(mGroup));
 						vo.setName(mGroup.getName());
@@ -212,8 +216,7 @@ public class UserOrgResource extends AbstractOrgResource {
 	 * Return a intersection of given set of visible companies and the optional
 	 * requested company.
 	 */
-	private Set<String> computeFilteredCompanies(final String requestedCompany,
-			final Collection<String> managedCompanies) {
+	private Set<String> computeFilteredCompanies(final String requestedCompany, final Collection<String> managedCompanies) {
 		// Restrict access to visible companies
 		final Set<String> filteredCompanies;
 		if (StringUtils.isBlank(requestedCompany)) {
@@ -231,19 +234,16 @@ public class UserOrgResource extends AbstractOrgResource {
 	}
 
 	/**
-	 * Computed visible groups
+	 * Computed visible groups.
 	 */
-	private Collection<GroupOrg> computeFilteredGroups(final String group, final Set<GroupOrg> managedGroups,
+	private List<GroupOrg> computeFilteredGroups(final String group, final Set<GroupOrg> managedGroups,
 			final Map<String, GroupOrg> allGroups) {
 		// Restrict access to delegated groups
-		if (allGroups.containsKey(Normalizer.normalize(group))) {
-			final GroupOrg filteredGroup = allGroups.get(Normalizer.normalize(group));
-			// Filter the group, including the children
-			return allGroups.values().stream().filter(managedGroups::contains)
-					.filter(g -> DnUtils.equalsOrParentOf(filteredGroup.getDn(), g.getDn()))
-					.collect(Collectors.toList());
-		}
-		return null;
+		return Optional.ofNullable(allGroups.get(Normalizer.normalize(group)))
+				.map(fg -> allGroups.values().stream().filter(managedGroups::contains)
+						// Filter the group, including the children
+						.filter(g -> DnUtils.equalsOrParentOf(fg.getDn(), g.getDn())).collect(Collectors.toList()))
+				.orElse(Collections.emptyList());
 	}
 
 	/**
@@ -265,9 +265,8 @@ public class UserOrgResource extends AbstractOrgResource {
 
 		// Show only the groups of user that are also visible to current user
 		final Set<GroupOrg> managedGroups = groupResource.getContainers();
-		securedUserOrg
-				.setGroups(managedGroups.stream().filter(mGroup -> rawUserOrg.getGroups().contains(mGroup.getId()))
-						.sorted().map(GroupOrg::getName).collect(Collectors.toList()));
+		securedUserOrg.setGroups(managedGroups.stream().filter(mGroup -> rawUserOrg.getGroups().contains(mGroup.getId())).sorted()
+				.map(GroupOrg::getName).collect(Collectors.toList()));
 		return securedUserOrg;
 	}
 
@@ -281,7 +280,7 @@ public class UserOrgResource extends AbstractOrgResource {
 	 */
 	@PUT
 	@Path("{user}/group/{group}")
-	public void addUserToGroup(@PathParam("user") final String user, @PathParam("group") final String group) {
+	public void addUserToGroup(@PathParam("user") final String user, @PathParam(GROUP) final String group) {
 		updateGroupUser(user, Normalizer.normalize(group), Collection::add);
 	}
 
@@ -295,7 +294,7 @@ public class UserOrgResource extends AbstractOrgResource {
 	 */
 	@DELETE
 	@Path("{user}/group/{group}")
-	public void removeUserFromGroup(@PathParam("user") final String user, @PathParam("group") final String group) {
+	public void removeUserFromGroup(@PathParam("user") final String user, @PathParam(GROUP) final String group) {
 		updateGroupUser(user, Normalizer.normalize(group), Collection::remove);
 	}
 
@@ -309,8 +308,7 @@ public class UserOrgResource extends AbstractOrgResource {
 	 * @param updater
 	 *            The function to execute on computed groups of current user.
 	 */
-	private void updateGroupUser(final String user, final String group,
-			final BiFunction<Collection<String>, String, Boolean> updater) {
+	private void updateGroupUser(final String user, final String group, final BiFunction<Collection<String>, String, Boolean> updater) {
 
 		// Get all delegates of current user
 		final List<DelegateOrg> delegates = delegateRepository.findAllByUser(securityHelper.getLogin());
@@ -408,10 +406,9 @@ public class UserOrgResource extends AbstractOrgResource {
 			// No right at all, unknown company, no (write|admin) right on this
 			// company, or no delegate on this company
 			// Report this attempt
-			log.warn("Attempt to create/update a user '{}' out of scope, company {}", importEntry.getId(),
-					cleanCompany);
-			throw new ValidationJsonException(SimpleUser.COMPANY_ALIAS, BusinessException.KEY_UNKNOW_ID, "0",
-					SimpleUser.COMPANY_ALIAS, "1", importEntry.getCompany());
+			log.warn("Attempt to create/update a user '{}' out of scope, company {}", importEntry.getId(), cleanCompany);
+			throw new ValidationJsonException(SimpleUser.COMPANY_ALIAS, BusinessException.KEY_UNKNOW_ID, "0", SimpleUser.COMPANY_ALIAS, "1",
+					importEntry.getCompany());
 		}
 
 		// Replace with the normalized company
@@ -445,19 +442,17 @@ public class UserOrgResource extends AbstractOrgResource {
 	 * @param delegates
 	 *            The delegates (read/write) of the principal user.
 	 */
-	private void validateAndGroupsCN(final UserOrg userOrg, final UserOrgEditionVo importEntry,
-			final List<DelegateOrg> delegates) {
+	private void validateAndGroupsCN(final UserOrg userOrg, final UserOrgEditionVo importEntry, final List<DelegateOrg> delegates) {
 
 		// First complete the groups with the implicit ones from department
 		final String previous = Optional.ofNullable(userOrg).map(UserOrg::getDepartment).orElse(null);
 		if (ObjectUtils.notEqual(previous, importEntry.getDepartment())) {
-			Optional.ofNullable(toDepartmentGroup(previous)).map(GroupOrg::getId)
-					.ifPresent(importEntry.getGroups()::remove);
+			Optional.ofNullable(toDepartmentGroup(previous)).map(GroupOrg::getId).ifPresent(importEntry.getGroups()::remove);
 			Optional.ofNullable(toDepartmentGroup(importEntry.getDepartment())).map(GroupOrg::getId)
 					.ifPresent(importEntry.getGroups()::add);
 		}
-		validateAndGroupsCN(Optional.ofNullable(userOrg).map(UserOrg::getGroups).orElse(Collections.emptyList()),
-				importEntry.getGroups(), delegates);
+		validateAndGroupsCN(Optional.ofNullable(userOrg).map(UserOrg::getGroups).orElse(Collections.emptyList()), importEntry.getGroups(),
+				delegates);
 	}
 
 	/**
@@ -497,7 +492,7 @@ public class UserOrgResource extends AbstractOrgResource {
 		// Check the visible updated groups can be edited by the principal
 		Optional.ofNullable(getGroup().findById(securityHelper.getLogin(), updatedGroup)).filter(Objects::nonNull)
 				.filter(g -> !isGrantedAccess(delegates, g.getDn(), DelegateType.GROUP, true)).ifPresent(g -> {
-					throw new ValidationJsonException("group", "read-only", "0", "group", "1", g.getId());
+					throw new ValidationJsonException(GROUP, "read-only", "0", GROUP, "1", g.getId());
 				});
 	}
 
@@ -524,8 +519,7 @@ public class UserOrgResource extends AbstractOrgResource {
 	 *            user..
 	 * @return the merged group identifiers to be set internally.
 	 */
-	private Collection<String> mergeGroups(final List<DelegateOrg> delegates, final UserOrg userOrg,
-			final Collection<String> groups) {
+	private Collection<String> mergeGroups(final List<DelegateOrg> delegates, final UserOrg userOrg, final Collection<String> groups) {
 		// Compute the groups merged groups
 		final Collection<String> newGroups = new HashSet<>(userOrg.getGroups());
 		newGroups.addAll(groups);
@@ -558,15 +552,12 @@ public class UserOrgResource extends AbstractOrgResource {
 
 	private boolean isGrantedAccess(final List<DelegateOrg> delegates, final String dn, final DelegateType type,
 			final boolean requestUpdate) {
-		return !requestUpdate
-				|| delegates.stream().anyMatch(delegate -> isGrantedAccess(delegate, dn, type, requestUpdate));
+		return !requestUpdate || delegates.stream().anyMatch(delegate -> isGrantedAccess(delegate, dn, type, requestUpdate));
 	}
 
-	protected boolean isGrantedAccess(final DelegateOrg delegate, final String dn, final DelegateType type,
-			final boolean requestUpdate) {
+	protected boolean isGrantedAccess(final DelegateOrg delegate, final String dn, final DelegateType type, final boolean requestUpdate) {
 		return (delegate.getType() == type || delegate.getType() == DelegateType.TREE)
-				&& (!requestUpdate || delegate.isCanAdmin() || delegate.isCanWrite())
-				&& DnUtils.equalsOrParentOf(delegate.getDn(), dn);
+				&& (!requestUpdate || delegate.isCanAdmin() || delegate.isCanWrite()) && DnUtils.equalsOrParentOf(delegate.getDn(), dn);
 	}
 
 	/**
@@ -574,9 +565,8 @@ public class UserOrgResource extends AbstractOrgResource {
 	 */
 	@SuppressWarnings("unchecked")
 	private boolean hasAttributeChange(final UserOrgEditionVo importEntry, final UserOrg userOrg) {
-		return userOrg == null
-				|| hasAttributeChange(importEntry, userOrg, SimpleUser::getFirstName, SimpleUser::getLastName,
-						SimpleUser::getCompany, SimpleUser::getLocalId, SimpleUser::getDepartment)
+		return userOrg == null || hasAttributeChange(importEntry, userOrg, SimpleUser::getFirstName, SimpleUser::getLastName,
+				SimpleUser::getCompany, SimpleUser::getLocalId, SimpleUser::getDepartment)
 				|| !userOrg.getMails().contains(importEntry.getMail());
 	}
 
@@ -811,8 +801,7 @@ public class UserOrgResource extends AbstractOrgResource {
 
 		// Check the company
 		final String companyDn = getCompany().findById(userOrg.getCompany()).getDn();
-		if (delegateRepository.findByMatchingDnForWrite(securityHelper.getLogin(), companyDn, DelegateType.COMPANY)
-				.isEmpty()) {
+		if (delegateRepository.findByMatchingDnForWrite(securityHelper.getLogin(), companyDn, DelegateType.COMPANY).isEmpty()) {
 			// Report this attempt to delete a non managed user
 			log.warn("Attempt to {} a user '{}' out of scope", mode, user);
 			throw new ValidationJsonException(USER_KEY, BusinessException.KEY_UNKNOW_ID, "0", "user", "1", user);
@@ -832,8 +821,7 @@ public class UserOrgResource extends AbstractOrgResource {
 	private void checkLastMemberInGroups(final UserOrg userOrg, final Map<String, GroupOrg> allGroups) {
 		for (final String group : userOrg.getGroups()) {
 			if (allGroups.get(group).getMembers().size() == 1) {
-				throw new ValidationJsonException(USER_KEY, "last-member-of-group", "user", userOrg.getId(), "group",
-						group);
+				throw new ValidationJsonException(USER_KEY, "last-member-of-group", "user", userOrg.getId(), GROUP, group);
 			}
 		}
 	}
@@ -847,8 +835,7 @@ public class UserOrgResource extends AbstractOrgResource {
 	 */
 	protected void updatePassword(final UserOrg user) {
 		// Have to generate a new password
-		applicationContext.getBeansOfType(IPasswordGenerator.class).values().stream().findFirst()
-				.ifPresent(p -> p.generate(user.getId()));
+		applicationContext.getBeansOfType(IPasswordGenerator.class).values().stream().findFirst().ifPresent(p -> p.generate(user.getId()));
 
 		// This user is now secured
 		user.setSecured(true);
@@ -925,12 +912,10 @@ public class UserOrgResource extends AbstractOrgResource {
 		// Merge department
 		if (ObjectUtils.notEqual(userOrg.getDepartment(), newUser.getDepartment())) {
 			// Remove membership from the old department if exist
-			Optional.ofNullable(toDepartmentGroup(userOrg.getDepartment()))
-					.ifPresent(g -> getGroup().removeUser(userOrg, g.getId()));
+			Optional.ofNullable(toDepartmentGroup(userOrg.getDepartment())).ifPresent(g -> getGroup().removeUser(userOrg, g.getId()));
 
 			// Add membership to the new department if exist
-			Optional.ofNullable(toDepartmentGroup(newUser.getDepartment()))
-					.ifPresent(g -> getGroup().addUser(userOrg, g.getId()));
+			Optional.ofNullable(toDepartmentGroup(newUser.getDepartment())).ifPresent(g -> getGroup().addUser(userOrg, g.getId()));
 
 			userOrg.setDepartment(newUser.getDepartment());
 			needUpdate = true;
