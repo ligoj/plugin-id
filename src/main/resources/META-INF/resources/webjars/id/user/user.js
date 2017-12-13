@@ -90,7 +90,7 @@ define(function () {
 					_('_change').on('show.bs.modal', function () {
 						validationManager.reset($(this));
 					}).on('shown.bs.modal', function () {
-						_('password').focus();
+						_('password').trigger('focus');
 					}).modal('show');
 					_('save').on('click', current.changePassword);
 				});

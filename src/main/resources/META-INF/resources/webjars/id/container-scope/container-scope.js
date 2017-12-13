@@ -41,7 +41,7 @@ define(function () {
 
 			// User edition pop-up
 			_('popup').on('shown.bs.modal', function () {
-				_('name').focus();
+				_('name').trigger('focus');
 			}).on('show.bs.modal', function (event) {
 				validationManager.reset($(this));
 				var $source = $(event.relatedTarget);

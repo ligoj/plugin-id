@@ -331,7 +331,7 @@ define(function () {
 					if ($('#create-another:checked').length) {
 						// Only reset the popup
 						current.fillPopup({});
-						_('id').focus();
+						_('id').trigger('focus');
 					} else {
 						_('popup').modal('hide');
 					}
