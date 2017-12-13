@@ -24,18 +24,20 @@ define(function () {
 		onHashChange: function (parameters) {
 			// Search mode
 			current.currentId = null;
-
+			current.initializeSearch();
 			if (parameters) {
 				current.suspendSearch = true;
 				var params = parameters.split('/');
 				for (var idx = 0; idx < params.length; idx++) {
 					var kv = params[idx].split('=');
 					// Group/company filtering
-					kv.length === 2 && _('search-' + kv[0]).select2('val', kv[1]).change();
+					kv.length === 2 && _('search-' + kv[0]).select2('data', kv[1]).closest('.form-group').removeClass('is-empty');
 				}
 				current.suspendSearch = false;
 			}
-			current.initializeSearch();
+
+			// Also initialize the datatables component
+			current.initializeDataTable();
 			$(function() {
 				_('search').trigger('focus');
 			});
@@ -195,9 +197,6 @@ define(function () {
 			_('table').on('click', '.delete', current.deleteUser).on('click', '.lock', current.lockUser).on('click', '.unlock', current.unlockUser).on('click', '.isolate', current.isolateUser).on('click', '.restore', current.restoreUser).on('click', '.update', function () {
 				current.$parent.requireAgreement(current.showPopup, $(this));
 			});
-
-			// Also initialize the datatables component
-			current.initializeDataTable();
 		},
 
 		/**
@@ -218,8 +217,8 @@ define(function () {
 				serverSide: true,
 				searching: true,
 				ajax: function() {
-					var company = $('#search-company').val();
-					var group = $('#search-group').val();
+					var company = $('#search-company').select2('data');
+					var group = $('#search-group').select2('data');
 					if (company || group) {
 						return REST_PATH + 'service/id/user?' + (company ? 'company=' + company : '') + ((company && group) ? '&' : '') + (group ? 'group=' + group : '');
 					}
