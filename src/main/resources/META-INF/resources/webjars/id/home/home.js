@@ -34,8 +34,10 @@ define(function () {
 					kv.length === 2 && _('search-' + kv[0]).select2('data', kv[1]).closest('.form-group').removeClass('is-empty');
 				}
 				current.suspendSearch = false;
+			} else {
+			
 			}
-
+			
 			// Also initialize the datatables component
 			current.initializeDataTable();
 			$(function() {
@@ -48,6 +50,8 @@ define(function () {
 		 */
 		initializeSearch: function () {
 			if (current.search) {
+				_('search-company').select2('data', null);
+				_('search-group').select2('data', null);
 				return;
 			}
 			current.search = true;
@@ -212,82 +216,86 @@ define(function () {
 		 * Initialize the users datatables (server AJAX)
 		 */
 		initializeDataTable: function () {
-			current.table = _('table').dataTable({
-				dom: 'rt<"row"<"col-xs-6"i><"col-xs-6"p>>',
-				serverSide: true,
-				searching: true,
-				ajax: function() {
-					var company = $('#search-company').select2('data');
-					var group = $('#search-group').select2('data');
-					if (company || group) {
-						return REST_PATH + 'service/id/user?' + (company ? 'company=' + company : '') + ((company && group) ? '&' : '') + (group ? 'group=' + group : '');
-					}
-					return REST_PATH + 'service/id/user';
-				},
-				columns: [
-					{
-						data: 'id',
-						width: '80px',
-						render: function (_i, _j, data) {
-							return current.$main.getUserLoginLink(data);
+			if (current.table) {
+				current.refreshDataTable();
+			} else {
+				current.table = _('table').dataTable({
+					dom: 'rt<"row"<"col-xs-6"i><"col-xs-6"p>>',
+					serverSide: true,
+					searching: true,
+					ajax: function() {
+						var company = $('#search-company').select2('data');
+						var group = $('#search-group').select2('data');
+						if (company || group) {
+							return REST_PATH + 'service/id/user?' + (company ? 'company=' + company : '') + ((company && group) ? '&' : '') + (group ? 'group=' + group : '');
 						}
-					}, {
-						data: 'firstName',
-						className: 'truncate'
-					}, {
-						data: 'lastName',
-						className: 'truncate'
-					}, {
-						data: 'company',
-						className: 'hidden-xs truncate'
-					}, {
-						data: 'mails',
-						className: 'hidden-md hidden-sm hidden-xs truncate',
-						render: function (mails) {
-							return (mails && mails.length) ? '<a href="mailto:' + mails[0] + '">' + mails[0] + '</a>' : '';
-						}
-					}, {
-						data: 'groups',
-						orderable: false,
-						className: 'hidden-sm hidden-xs truncate',
-						render: function (_i, _j, data) {
-							var groups = [];
-							$(data.groups).each(function () {
-								groups.push(this.name);
-							});
-							return groups;
-						}
-					}, {
-						data: null,
-						width: '32px',
-						orderable: false,
-						render: function (_i, _j, data) {
-							var editlink = '<a class="update"><i class="fa fa-pencil" data-toggle="tooltip" title="' + current.$messages.update + '"></i></a>';
-							if (data.managed) {
-								editlink += '<div class="btn-group"><i data-toggle="dropdown" class="fa fa-cog"></i><ul class="dropdown-menu dropdown-menu-right">';
-								if (data.isolated) {
-									// Isolated -> restore
-									editlink += '<li><a class="restore"><i class="menu-icon fa fa-sign-in"></i> ' + current.$messages.restore + '</a></li>';
-								} else if (data.locked) {
-									// Locked -> unlock or isolate
-									editlink += '<li><a class="unlock"><i class="menu-icon fa fa-unlock"></i> ' + current.$messages.unlock + '</a></li>';
-									editlink += '<li><a class="isolate"><i class="menu-icon fa fa-sign-out"></i> ' + current.$messages.isolate + '</a></li>';
-								} else {
-									// Unlocked -> lock or isolate
-									editlink += '<li><a class="lock"><i class="menu-icon fa fa-lock"></i> ' + current.$messages.lock + '</a></li>';
-									editlink += '<li><a class="isolate"><i class="menu-icon fa fa-sign-out"></i> ' + current.$messages.isolate + '</a></li>';
-								}
-
-								// Delete icon
-								editlink += '<li><a class="delete"><i class="menu-icon fa fa-trash"></i> ' + current.$messages.delete + '</a></li>';
-								editlink += '</ul>';
-								editlink += '</div>';
+						return REST_PATH + 'service/id/user';
+					},
+					columns: [
+						{
+							data: 'id',
+							width: '80px',
+							render: function (_i, _j, data) {
+								return current.$main.getUserLoginLink(data);
 							}
-							return editlink;
+						}, {
+							data: 'firstName',
+							className: 'truncate'
+						}, {
+							data: 'lastName',
+							className: 'truncate'
+						}, {
+							data: 'company',
+							className: 'hidden-xs truncate'
+						}, {
+							data: 'mails',
+							className: 'hidden-md hidden-sm hidden-xs truncate',
+							render: function (mails) {
+								return (mails && mails.length) ? '<a href="mailto:' + mails[0] + '">' + mails[0] + '</a>' : '';
+							}
+						}, {
+							data: 'groups',
+							orderable: false,
+							className: 'hidden-sm hidden-xs truncate',
+							render: function (_i, _j, data) {
+								var groups = [];
+								$(data.groups).each(function () {
+									groups.push(this.name);
+								});
+								return groups;
+							}
+						}, {
+							data: null,
+							width: '32px',
+							orderable: false,
+							render: function (_i, _j, data) {
+								var editlink = '<a class="update"><i class="fa fa-pencil" data-toggle="tooltip" title="' + current.$messages.update + '"></i></a>';
+								if (data.managed) {
+									editlink += '<div class="btn-group"><i data-toggle="dropdown" class="fa fa-cog"></i><ul class="dropdown-menu dropdown-menu-right">';
+									if (data.isolated) {
+										// Isolated -> restore
+										editlink += '<li><a class="restore"><i class="menu-icon fa fa-sign-in"></i> ' + current.$messages.restore + '</a></li>';
+									} else if (data.locked) {
+										// Locked -> unlock or isolate
+										editlink += '<li><a class="unlock"><i class="menu-icon fa fa-unlock"></i> ' + current.$messages.unlock + '</a></li>';
+										editlink += '<li><a class="isolate"><i class="menu-icon fa fa-sign-out"></i> ' + current.$messages.isolate + '</a></li>';
+									} else {
+										// Unlocked -> lock or isolate
+										editlink += '<li><a class="lock"><i class="menu-icon fa fa-lock"></i> ' + current.$messages.lock + '</a></li>';
+										editlink += '<li><a class="isolate"><i class="menu-icon fa fa-sign-out"></i> ' + current.$messages.isolate + '</a></li>';
+									}
+	
+									// Delete icon
+									editlink += '<li><a class="delete"><i class="menu-icon fa fa-trash"></i> ' + current.$messages.delete + '</a></li>';
+									editlink += '</ul>';
+									editlink += '</div>';
+								}
+								return editlink;
+							}
 						}
-					}
-				]
-			});
+					]
+				});
+			}
 		},
 
 		showPopup: function ($context) {
