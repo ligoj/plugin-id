@@ -390,8 +390,8 @@ public class UserOrgResourceTest extends AbstractAppTest {
 		resource.applicationContext = Mockito.mock(ApplicationContext.class);
 		final IPasswordGenerator generator = Mockito.mock(IPasswordGenerator.class);
 		Mockito.when(resource.applicationContext.getBeansOfType(IPasswordGenerator.class)).thenReturn(Collections.singletonMap("bean", generator));
-		resource.resetPasswordByAdmin(newUser(), "wuser");
-		Mockito.verify(generator, VerificationModeFactory.atLeast(1)).generate("wuser", "wuser");
+		resource.resetPasswordByAdmin(newUser());
+		Mockito.verify(generator, VerificationModeFactory.atLeast(1)).generate("wuser");
 	}
 
 	@Test

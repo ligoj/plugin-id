@@ -26,5 +26,7 @@ define({
 	'isolated-confirm': '{{this}} a été isolé. Le mot de passe a été effacé.',
 	'reset': 'Réinitialisation mot de passe',
 	'reset-confirm': 'Êtes-vous certain de réinitialiser le mot de passe de {{{this}}}?<br>Un mail sera envoyé à l\'utilisateur et vous.',
-	'reseted-confirm': 'Le mot de passe de {{this}} a été réinitialisé.'
+	'reseted-confirm': 'Le mot de passe de {{this}} a été réinitialisé.',
+	'show-passwd' : 'Voir le mot de passe',
+	'password' : 'Mot de passe'
 });

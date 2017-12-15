@@ -196,6 +196,19 @@ define(function () {
 				current.$parent.requireAgreement(current.showPopup, $(this));
 			});
 
+			_('showAdminPasswd').on('hidden.bs.modal', function(){ 
+				_('passwd').text('');
+				$('#showpasswd').removeAttr('checked');
+			});
+
+			_('showpasswd').on('change', function (){
+				if (_('showpasswd').is(':checked')) {
+					_('passwd')[0].type = "text";
+				} else {
+					_('passwd')[0].type = "password";
+				}
+			});
+
 			// Also initialize the datatables component
 			current.initializeDataTable();
 		},
@@ -458,10 +471,15 @@ define(function () {
 				// Process without confirmation
 				$.ajax({
 					type: method,
+					contentType: 'text/plain',
 					url: REST_PATH + 'service/id/user/' + id + '/' + operation,
-					success: function () {
+					success: function (data) {
 						notifyManager.notify(Handlebars.compile(current.$messages[operated + '-confirm'])(name));
 						current.table && current.table.api().ajax.reload();
+						if (operation === 'reset') {
+							_('showAdminPasswd').modal('show');
+							_('passwd')[0].value = data;
+						}
 					}
 				});
 			} else {

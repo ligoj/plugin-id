@@ -28,7 +28,9 @@ define({
 		'isolated-confirm': '{{this}} has been isolated. Password has been cleared',
 		'reset': 'Password Reset',
 		'reset-confirm': 'Are you sure to reset the pasword of {{this}}?<br>An email will be sent to this user and you.',
-		'reseted-confirm': '{{this}} password has been reset.'
+		'reseted-confirm': '{{this}} password has been reset.',
+		'show-passwd' : 'Show password',
+		'password' : 'Password'
 	},
 	fr: true
 });
