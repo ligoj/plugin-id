@@ -837,8 +837,10 @@ public class UserOrgResourceTest extends AbstractAppTest {
 		final Map<String, GroupOrg> groupsMap = new HashMap<>();
 		groupsMap.put("dig", groupOrg1);
 		final UserOrg user = new UserOrg();
+		user.setId("wuser");
 		user.setCompany("ing");
 		user.setGroups(Collections.singleton("dig rha"));
+		
 		Mockito.when(userRepository.findByIdExpected(DEFAULT_USER, "wuser")).thenReturn(user);
 		Mockito.when(companyRepository.findById("ing")).thenReturn(company);
 		Mockito.when(groupRepository.findAll()).thenReturn(groupsMap);

@@ -46,6 +46,8 @@ import org.ligoj.app.iam.dao.DelegateOrgRepository;
 import org.ligoj.app.iam.model.DelegateOrg;
 import org.ligoj.app.iam.model.DelegateType;
 import org.ligoj.app.plugin.id.DnUtils;
+import org.ligoj.app.plugin.id.dao.AdminPasswordResetRepository;
+import org.ligoj.app.plugin.id.model.AdminPasswordReset;
 import org.ligoj.bootstrap.core.json.PaginationJson;
 import org.ligoj.bootstrap.core.json.TableItem;
 import org.ligoj.bootstrap.core.json.datatable.DataTableAttributes;
@@ -78,6 +80,9 @@ public class UserOrgResource extends AbstractOrgResource {
 
 	@Autowired
 	private DelegateOrgRepository delegateRepository;
+
+	@Autowired
+	private AdminPasswordResetRepository passwordResetRepository;
 
 	@Autowired
 	private PaginationJson paginationJson;
@@ -844,7 +849,22 @@ public class UserOrgResource extends AbstractOrgResource {
 		// This user is now secured
 		user.setSecured(true);
 
+		// Log the action
+		logAdminReset(user);
+
 		return pwd;
+	}
+
+	/**
+	 * Log password reset action triggered by authenticated and privileged user.
+	 * 
+	 * @param user
+	 *            Target user to log.
+	 */
+	private void logAdminReset(final UserOrg user) {
+		AdminPasswordReset logReset = new AdminPasswordReset();
+		logReset.setLogin(user.getId());
+		passwordResetRepository.saveAndFlush(logReset);
 	}
 
 	/**
