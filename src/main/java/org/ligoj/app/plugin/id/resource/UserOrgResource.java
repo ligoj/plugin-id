@@ -848,7 +848,10 @@ public class UserOrgResource extends AbstractOrgResource {
 				.map(p -> p.generate(user.getId())).orElse(null);
 		// This user is now secured
 		user.setSecured(true);
-
+		
+		// Unlock account if locked
+		getUser().pwdPolicyUnlock(user);
+		
 		// Log the action
 		logAdminReset(user);
 
