@@ -198,9 +198,25 @@ define(function () {
 				current.table && current.table.fnFilter($(this).val());
 			});
 
-			_('table').on('click', '.delete', current.deleteUser).on('click', '.lock', current.lockUser).on('click', '.unlock', current.unlockUser).on('click', '.isolate', current.isolateUser).on('click', '.restore', current.restoreUser).on('click', '.update', function () {
+			_('table').on('click', '.reset', current.resetUserPassword).on('click', '.delete', current.deleteUser).on('click', '.lock', current.lockUser).on('click', '.unlock', current.unlockUser).on('click', '.isolate', current.isolateUser).on('click', '.restore', current.restoreUser).on('click', '.update', function () {
 				current.$parent.requireAgreement(current.showPopup, $(this));
 			});
+
+			_('showAdminPasswd').on('hidden.bs.modal', function(){ 
+				_('passwd').text('');
+				$('#showpasswd').removeAttr('checked');
+			});
+
+			_('showpasswd').on('change', function (){
+				if (_('showpasswd').is(':checked')) {
+					_('passwd')[0].type = "text";
+				} else {
+					_('passwd')[0].type = "password";
+				}
+			});
+
+			// Also initialize the datatables component
+			current.initializeDataTable();
 		},
 
 		/**
@@ -287,9 +303,13 @@ define(function () {
 	
 									// Delete icon
 									editlink += '<li><a class="delete"><i class="menu-icon fa fa-trash"></i> ' + current.$messages.delete + '</a></li>';
+									if (data.admin) {
+										editlink += '<li><a class="reset"><i class="menu-icon fa fa-refresh"></i> ' + current.$messages.reset + '</a></li>';
+									}
 									editlink += '</ul>';
 									editlink += '</div>';
 								}
+
 								return editlink;
 							}
 						}
@@ -421,16 +441,23 @@ define(function () {
 		},
 
 		/**
+		 * Reset the selected user password after popup confirmation, or directly from its identifier.
+		 */
+		resetUserPassword: function(id, name) {
+			current.confirmUserOperation($(this), id, name, 'reset', 'reseted', 'PUT');
+		},
+
+		/**
 		 * Lock the selected user after popup confirmation, or directly from its identifier.
 		 */
 		lockUser: function (id, name) {
-			current.confirmUserOperation($(this), id, name, 'lock', 'locked');
+			current.confirmUserOperation($(this), id, name, 'lock', 'locked', 'DELETE');
 		},
 		/**
 		 * Isolate the selected user after popup confirmation, or directly from its identifier.
 		 */
 		isolateUser: function (id, name) {
-			current.confirmUserOperation($(this), id, name, 'isolate', 'isolated');
+			current.confirmUserOperation($(this), id, name, 'isolate', 'isolated', 'DELETE');
 		},
 
 		/**
@@ -449,22 +476,27 @@ define(function () {
 		/**
 		 * Disable/Lock the selected user after popup confirmation, or directly from its identifier.
 		 */
-		confirmUserOperation: function ($item, id, name, operation, operated) {
+		confirmUserOperation: function ($item, id, name, operation, operated, method) {
 			if ((typeof id) === 'string') {
 				// Process without confirmation
 				$.ajax({
-					type: 'DELETE',
+					type: method,
+					contentType: 'text/plain',
 					url: REST_PATH + 'service/id/user/' + id + '/' + operation,
-					success: function () {
+					success: function (data) {
 						notifyManager.notify(Handlebars.compile(current.$messages[operated + '-confirm'])(name));
 						current.table && current.table.api().ajax.reload();
+						if (operation === 'reset') {
+							_('showAdminPasswd').modal('show');
+							_('passwd')[0].value = data;
+						}
 					}
 				});
 			} else {
 				// Requires a confirmation
 				var entity = current.table.fnGetData($item.closest('tr')[0]);
 				bootbox.confirm(function (confirmed) {
-					confirmed && current.confirmUserOperation($item, entity.id, entity.firstName + ' ' + entity.lastName, operation, operated);
+					confirmed && current.confirmUserOperation($item, entity.id, entity.firstName + ' ' + entity.lastName, operation, operated, method);
 				}, current.$messages[operation], Handlebars.compile(current.$messages[operation + '-confirm'])(entity.id + ' [' + current.$main.getFullName(entity) + ']'), current.$messages[operation]);
 			}
 		},

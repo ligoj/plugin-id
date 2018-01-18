@@ -154,7 +154,9 @@ public class UserOrgResourceTest extends AbstractAppTest {
 		Assert.assertEquals(2, tableItem.getRecordsFiltered());
 
 		// Check the users
-		Assert.assertTrue(checkUser(tableItem.getData().get(0)).getGroups().get(0).isManaged());
+		UserOrgVo userVo = checkUser(tableItem.getData().get(0));
+		Assert.assertTrue(userVo.getGroups().get(0).isManaged());
+		Assert.assertTrue(userVo.isAdmin());
 	}
 
 	@Test
@@ -382,6 +384,15 @@ public class UserOrgResourceTest extends AbstractAppTest {
 		resource.updatePassword(newUser());
 		Mockito.verify(generator, VerificationModeFactory.atLeast(1)).generate("wuser");
 	}
+	
+	@Test
+	public void resetPasswordByAdmin() {
+		resource.applicationContext = Mockito.mock(ApplicationContext.class);
+		final IPasswordGenerator generator = Mockito.mock(IPasswordGenerator.class);
+		Mockito.when(resource.applicationContext.getBeansOfType(IPasswordGenerator.class)).thenReturn(Collections.singletonMap("bean", generator));
+		resource.resetPasswordByAdmin(newUser());
+		Mockito.verify(generator, VerificationModeFactory.atLeast(1)).generate("wuser");
+	}
 
 	@Test
 	public void createUserAlreadyExists() {
@@ -448,6 +459,26 @@ public class UserOrgResourceTest extends AbstractAppTest {
 		Mockito.when(groupRepository.findAll()).thenReturn(groupsMap);
 		resource.delete("wuser");
 	}
+	
+	@Test
+	public void resetPasswordUserNoWriteCompany() {
+		thrown.expect(ValidationJsonException.class);
+		thrown.expect(MatcherUtil.validationMatcher("id", BusinessException.KEY_UNKNOW_ID));
+		initSpringSecurityContext("mtuyer");
+		final CompanyOrg company = new CompanyOrg("ou=ing,ou=france,ou=people,dc=sample,dc=com", "ing");
+		final GroupOrg groupOrg1 = new GroupOrg("cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com", "DIG",
+				new HashSet<>(Arrays.asList("wuser", "user1")));
+		final Map<String, GroupOrg> groupsMap = new HashMap<>();
+		groupsMap.put("dig", groupOrg1);
+		final UserOrg user = new UserOrg();
+		user.setCompany("ing");
+		user.setGroups(Collections.singleton("dig"));
+		Mockito.when(userRepository.findByIdExpected("mtuyer", "wuser")).thenReturn(user);
+		Mockito.when(companyRepository.findById("ing")).thenReturn(company);
+		Mockito.when(groupRepository.findAll()).thenReturn(groupsMap);
+		resource.resetPassword("wuser");
+	}
+	
 
 	@Test
 	public void mergeUserNoChange() {
@@ -799,6 +830,23 @@ public class UserOrgResourceTest extends AbstractAppTest {
 		checkUser(data.get(0));
 	}
 
+	@Test
+	public void resetPassword() {
+		final CompanyOrg company = new CompanyOrg("ou=ing,ou=france,ou=people,dc=sample,dc=com", "ing");
+		final GroupOrg groupOrg1 = new GroupOrg("cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com", "DIG", Collections.singleton("wuser"));
+		final Map<String, GroupOrg> groupsMap = new HashMap<>();
+		groupsMap.put("dig", groupOrg1);
+		final UserOrg user = new UserOrg();
+		user.setId("wuser");
+		user.setCompany("ing");
+		user.setGroups(Collections.singleton("dig rha"));
+		
+		Mockito.when(userRepository.findByIdExpected(DEFAULT_USER, "wuser")).thenReturn(user);
+		Mockito.when(companyRepository.findById("ing")).thenReturn(company);
+		Mockito.when(groupRepository.findAll()).thenReturn(groupsMap);
+		resource.resetPassword("wuser");
+	}
+	
 	@Test
 	public void lock() {
 		final CompanyOrg company = new CompanyOrg("ou=ing,ou=france,ou=people,dc=sample,dc=com", "ing");
