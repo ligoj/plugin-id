@@ -23,6 +23,12 @@ public class UserOrgVo extends SimpleUserOrg {
 	 * Is this entry can be managed by current user : delete and update all data but groups.
 	 */
 	private boolean managed;
+	
+	/**
+	 * Is this entry can be updated (attributes) by current user : reset password. 
+	 * Corresponds to the "ADMIN" right brought be a delegate.
+	 */
+	private boolean admin;
 
 	/**
 	 * Membership, CN of groups.
