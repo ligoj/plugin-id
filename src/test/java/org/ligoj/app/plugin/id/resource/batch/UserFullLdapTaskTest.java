@@ -11,9 +11,9 @@ import org.apache.cxf.jaxrs.model.ProviderInfo;
 import org.apache.cxf.jaxrs.provider.ServerProviderFactory;
 import org.apache.cxf.message.Exchange;
 import org.apache.cxf.message.Message;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.ligoj.app.plugin.id.resource.UserOrgResource;
 import org.ligoj.bootstrap.AbstractSecurityTest;
 import org.ligoj.bootstrap.core.resource.mapper.FailSafeExceptionMapper;
@@ -29,7 +29,7 @@ public class UserFullLdapTaskTest extends AbstractSecurityTest {
 
 	private UserFullLdapTask task;
 
-	@Before
+	@BeforeEach
 	public void setup() {
 		task = new UserFullLdapTask();
 		task.resource = Mockito.mock(UserOrgResource.class);
@@ -46,10 +46,10 @@ public class UserFullLdapTaskTest extends AbstractSecurityTest {
 		importTask.setEntries(Collections.singletonList(entry));
 		task.configure(importTask);
 		task.run();
-		Assert.assertEquals(Boolean.TRUE, importTask.getStatus().getStatus());
+		Assertions.assertEquals(Boolean.TRUE, importTask.getStatus().getStatus());
 		Mockito.verify(entry, Mockito.atLeastOnce()).setStatus(Boolean.FALSE);
-		Assert.assertEquals(1, importTask.getStatus().getDone());
-		Assert.assertEquals(1, importTask.getStatus().getEntries());
+		Assertions.assertEquals(1, importTask.getStatus().getDone());
+		Assertions.assertEquals(1, importTask.getStatus().getEntries());
 	}
 
 	@Test
@@ -60,9 +60,9 @@ public class UserFullLdapTaskTest extends AbstractSecurityTest {
 		importTask.setEntries(Collections.singletonList(entry));
 		task.configure(importTask);
 		task.run();
-		Assert.assertEquals(Boolean.TRUE, importTask.getStatus().getStatus());
-		Assert.assertEquals(1, importTask.getStatus().getDone());
-		Assert.assertEquals(1, importTask.getStatus().getEntries());
+		Assertions.assertEquals(Boolean.TRUE, importTask.getStatus().getStatus());
+		Assertions.assertEquals(1, importTask.getStatus().getDone());
+		Assertions.assertEquals(1, importTask.getStatus().getEntries());
 	}
 
 	@Test
@@ -83,9 +83,9 @@ public class UserFullLdapTaskTest extends AbstractSecurityTest {
 		task.configure(importTask);
 		task.jaxrsFactory = instance;
 		task.run();
-		Assert.assertEquals(Boolean.TRUE, importTask.getStatus().getStatus());
-		Assert.assertEquals(1, importTask.getStatus().getDone());
-		Assert.assertEquals(1, importTask.getStatus().getEntries());
+		Assertions.assertEquals(Boolean.TRUE, importTask.getStatus().getStatus());
+		Assertions.assertEquals(1, importTask.getStatus().getDone());
+		Assertions.assertEquals(1, importTask.getStatus().getEntries());
 	}
 
 	@Test

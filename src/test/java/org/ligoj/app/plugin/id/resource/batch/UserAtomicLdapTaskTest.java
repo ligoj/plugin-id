@@ -3,17 +3,17 @@ package org.ligoj.app.plugin.id.resource.batch;
 import java.util.ArrayList;
 import java.util.function.Function;
 
-import javax.validation.ValidationException;
-
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.ligoj.app.DefaultVerificationMode;
+import org.ligoj.app.MatcherUtil;
 import org.ligoj.app.iam.UserOrg;
 import org.ligoj.app.plugin.id.resource.UserOrgEditionVo;
 import org.ligoj.app.plugin.id.resource.UserOrgResource;
 import org.ligoj.bootstrap.AbstractSecurityTest;
 import org.ligoj.bootstrap.core.security.SecurityHelper;
+import org.ligoj.bootstrap.core.validation.ValidationJsonException;
 import org.mockito.Mockito;
 import org.mockito.exceptions.base.MockitoException;
 
@@ -24,7 +24,7 @@ public class UserAtomicLdapTaskTest extends AbstractSecurityTest {
 
 	private UserAtomicLdapTask task;
 
-	@Before
+	@BeforeEach
 	public void setup() {
 		task = new UserAtomicLdapTask();
 		task.resource = Mockito.mock(UserOrgResource.class);
@@ -43,19 +43,23 @@ public class UserAtomicLdapTaskTest extends AbstractSecurityTest {
 		Mockito.when(task.resource.findById(DEFAULT_USER)).thenReturn(user);
 	}
 
-	@Test(expected = ValidationException.class)
+	@Test
 	public void doBatchInvalidOperation() throws Exception {
 		final UserUpdateEntry entry = new UserUpdateEntry();
 		entry.setOperation("any");
-		task.doBatch(entry);
+		MatcherUtil.assertThrows(Assertions.assertThrows(ValidationJsonException.class, () -> {
+			task.doBatch(entry);
+		}),  "operation", "unsupported-operation");
 	}
 
-	@Test(expected = ValidationException.class)
+	@Test
 	public void doBatchExtraValue() throws Exception {
 		final UserUpdateEntry entry = new UserUpdateEntry();
 		entry.setOperation("lock");
 		entry.setValue("any");
-		task.doBatch(entry);
+		MatcherUtil.assertThrows(Assertions.assertThrows(ValidationJsonException.class, () -> {
+			task.doBatch(entry);
+		}), "value", "null-value-expected");
 	}
 
 	@Test
@@ -92,7 +96,7 @@ public class UserAtomicLdapTaskTest extends AbstractSecurityTest {
 	public void doBatchLocalId() throws Exception {
 		// Only for coverage
 		UserBatchUpdateType.valueOf(UserBatchUpdateType.values()[0].name());
-		
+
 		final UserUpdateEntry entry = new UserUpdateEntry();
 		entry.setOperation("localid");
 		entry.setValue("value");
@@ -174,12 +178,12 @@ public class UserAtomicLdapTaskTest extends AbstractSecurityTest {
 			}
 
 			// "findBy" call
-			Assert.assertEquals(DEFAULT_USER, data.getAllInvocations().get(0).getArguments()[0]);
+			Assertions.assertEquals(DEFAULT_USER, data.getAllInvocations().get(0).getArguments()[0]);
 
 			// "update" call
 			final UserOrgEditionVo userLdap = (UserOrgEditionVo) data.getAllInvocations().get(1).getArguments()[0];
-			Assert.assertNotNull(userLdap);
-			Assert.assertEquals(value, function.apply(userLdap));
+			Assertions.assertNotNull(userLdap);
+			Assertions.assertEquals(value, function.apply(userLdap));
 		})).update(null);
 
 	}

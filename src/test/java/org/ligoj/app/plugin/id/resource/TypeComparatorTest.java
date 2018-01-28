@@ -6,8 +6,8 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.ligoj.app.iam.GroupOrg;
 import org.ligoj.app.iam.IGroupRepository;
 import org.ligoj.app.iam.dao.CacheContainerRepository;
@@ -29,9 +29,9 @@ public class TypeComparatorTest {
 		groups.add(new GroupOrg("cn=NameC,ou=Client1,ou=Project,ou=External,dc=sample,dc=com", "NameC", null));
 		groups.add(new GroupOrg("cn=NameB,ou=Client1,ou=Project,ou=External,dc=sample,dc=com", "NameB", null));
 		groups.sort(comparator);
-		Assert.assertEquals("NameA", groups.get(0).getName());
-		Assert.assertEquals("NameB", groups.get(1).getName());
-		Assert.assertEquals("NameC", groups.get(2).getName());
+		Assertions.assertEquals("NameA", groups.get(0).getName());
+		Assertions.assertEquals("NameB", groups.get(1).getName());
+		Assertions.assertEquals("NameC", groups.get(2).getName());
 	}
 
 	@Test
@@ -47,9 +47,9 @@ public class TypeComparatorTest {
 		groups.add(new GroupOrg("cn=NameC,ou=Client1,ou=Project,ou=Internal,dc=sample,dc=com", "NameC", null));
 		groups.add(new GroupOrg("cn=NameB,ou=Client1,ou=Project,ou=External,dc=sample,dc=com", "NameB", null));
 		groups.sort(comparator);
-		Assert.assertEquals("NameC", groups.get(0).getName());
-		Assert.assertEquals("NameA", groups.get(1).getName());
-		Assert.assertEquals("NameB", groups.get(2).getName());
+		Assertions.assertEquals("NameC", groups.get(0).getName());
+		Assertions.assertEquals("NameA", groups.get(1).getName());
+		Assertions.assertEquals("NameB", groups.get(2).getName());
 	}
 
 	@Test
@@ -65,9 +65,9 @@ public class TypeComparatorTest {
 		groups.add(new GroupOrg("cn=NameC,ou=Client1,ou=Project,ou=Internal,dc=sample,dc=com", "NameC", null));
 		groups.add(new GroupOrg("cn=NameB,ou=Client1,ou=Project,ou=External,dc=sample,dc=com", "NameB", null));
 		groups.sort(comparator);
-		Assert.assertEquals("NameA", groups.get(0).getName());
-		Assert.assertEquals("NameB", groups.get(1).getName());
-		Assert.assertEquals("NameC", groups.get(2).getName());
+		Assertions.assertEquals("NameA", groups.get(0).getName());
+		Assertions.assertEquals("NameB", groups.get(1).getName());
+		Assertions.assertEquals("NameC", groups.get(2).getName());
 	}
 
 	@Test
@@ -87,9 +87,9 @@ public class TypeComparatorTest {
 		groups.add(new GroupOrg("cn=NameC,ou=Client1,ou=Project,ou=Internal,dc=sample,dc=com", "NameC", null));
 		groups.add(new GroupOrg("cn=NameA,ou=Client1,ou=Project,ou=External,dc=sample,dc=com", "NameA", null));
 		groups.sort(comparator);
-		Assert.assertEquals("NameC", groups.get(0).getName());
-		Assert.assertEquals("NameA", groups.get(1).getName());
-		Assert.assertEquals("NameB", groups.get(2).getName());
+		Assertions.assertEquals("NameC", groups.get(0).getName());
+		Assertions.assertEquals("NameA", groups.get(1).getName());
+		Assertions.assertEquals("NameB", groups.get(2).getName());
 	}
 
 	private Comparator<GroupOrg> newComparator(final List<ContainerScope> containerTypes) {

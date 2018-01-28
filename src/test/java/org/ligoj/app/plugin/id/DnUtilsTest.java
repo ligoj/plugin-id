@@ -4,9 +4,8 @@ import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.junit.Assert;
-import org.junit.Test;
-import org.ligoj.app.plugin.id.DnUtils;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 /**
  * Test class of {@link DnUtils}
@@ -19,12 +18,12 @@ public class DnUtilsTest {
 		constructor.setAccessible(true);
 		constructor.newInstance();
 
-		Assert.assertTrue(DnUtils.equalsOrParentOf("a", "a"));
+		Assertions.assertTrue(DnUtils.equalsOrParentOf("a", "a"));
 	}
 
 	@Test
 	public void equalsOrParentOfParent() {
-		Assert.assertTrue(DnUtils.equalsOrParentOf("a", "b,a"));
+		Assertions.assertTrue(DnUtils.equalsOrParentOf("a", "b,a"));
 	}
 
 	@Test
@@ -32,34 +31,34 @@ public class DnUtilsTest {
 		final List<String> strings = new ArrayList<>();
 		strings.add("dummy");
 		strings.add("ou=p2,ou=p1,ou=base");
-		Assert.assertTrue(DnUtils.equalsOrParentOf(strings, "ou=p2,ou=p1,ou=base"));
-		Assert.assertTrue(DnUtils.equalsOrParentOf(strings, "ou=p3,ou=p2,ou=p1,ou=base"));
-		Assert.assertFalse(DnUtils.equalsOrParentOf(strings, "ou=px,ou=p1,ou=base"));
+		Assertions.assertTrue(DnUtils.equalsOrParentOf(strings, "ou=p2,ou=p1,ou=base"));
+		Assertions.assertTrue(DnUtils.equalsOrParentOf(strings, "ou=p3,ou=p2,ou=p1,ou=base"));
+		Assertions.assertFalse(DnUtils.equalsOrParentOf(strings, "ou=px,ou=p1,ou=base"));
 	}
 
 	@Test
 	public void equalsOrParentOfNullParent() {
-		Assert.assertFalse(DnUtils.equalsOrParentOf("a", null));
+		Assertions.assertFalse(DnUtils.equalsOrParentOf("a", null));
 	}
 
 	@Test
 	public void equalsOrParentOfNullChild() {
-		Assert.assertFalse(DnUtils.equalsOrParentOf((String) null, "a"));
-		Assert.assertFalse(DnUtils.equalsOrParentOf((String) null, null));
+		Assertions.assertFalse(DnUtils.equalsOrParentOf((String) null, "a"));
+		Assertions.assertFalse(DnUtils.equalsOrParentOf((String) null, null));
 	}
 
 	@Test
 	public void toRdn() {
-		Assert.assertEquals("b", DnUtils.toRdn("a=b"));
-		Assert.assertEquals("b", DnUtils.toRdn("a=B"));
-		Assert.assertEquals("b", DnUtils.toRdn("a=b,c=d"));
+		Assertions.assertEquals("b", DnUtils.toRdn("a=b"));
+		Assertions.assertEquals("b", DnUtils.toRdn("a=B"));
+		Assertions.assertEquals("b", DnUtils.toRdn("a=b,c=d"));
 	}
 
 	@Test
 	public void toParentRdn() {
-		Assert.assertEquals("d", DnUtils.toParentRdn("a=b,c=d"));
-		Assert.assertEquals("d", DnUtils.toParentRdn(" a = b , c = D "));
-		Assert.assertEquals("d", DnUtils.toParentRdn("a=b,c=d,e=f"));
+		Assertions.assertEquals("d", DnUtils.toParentRdn("a=b,c=d"));
+		Assertions.assertEquals("d", DnUtils.toParentRdn(" a = b , c = D "));
+		Assertions.assertEquals("d", DnUtils.toParentRdn("a=b,c=d,e=f"));
 	}
 
 }

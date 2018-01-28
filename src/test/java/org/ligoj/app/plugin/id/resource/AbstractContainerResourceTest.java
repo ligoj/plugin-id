@@ -5,7 +5,7 @@ import java.nio.charset.StandardCharsets;
 
 import javax.ws.rs.core.UriInfo;
 
-import org.junit.Before;
+import org.junit.jupiter.api.BeforeEach;
 import org.ligoj.app.AbstractAppTest;
 import org.ligoj.app.iam.ICompanyRepository;
 import org.ligoj.app.iam.IGroupRepository;
@@ -37,7 +37,7 @@ public abstract class AbstractContainerResourceTest extends AbstractAppTest {
 	protected IGroupRepository groupRepository;
 	protected ICompanyRepository companyRepository;
 
-	@Before
+	@BeforeEach
 	public void prepareData() throws IOException {
 		persistEntities("csv",
 				new Class[] { DelegateOrg.class, ContainerScope.class, CacheCompany.class, CacheUser.class, CacheGroup.class, CacheMembership.class },

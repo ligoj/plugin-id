@@ -7,14 +7,13 @@ import javax.transaction.Transactional;
 import javax.ws.rs.core.UriInfo;
 
 import org.apache.cxf.jaxrs.impl.MetadataMap;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.ligoj.app.model.ContainerType;
 import org.ligoj.app.plugin.id.dao.ContainerScopeRepository;
 import org.ligoj.app.plugin.id.model.ContainerScope;
-import org.ligoj.app.plugin.id.resource.ContainerScopeResource;
 import org.ligoj.bootstrap.AbstractJpaTest;
 import org.ligoj.bootstrap.core.json.TableItem;
 import org.mockito.Mockito;
@@ -24,12 +23,12 @@ import org.springframework.data.domain.Sort;
 import org.springframework.orm.jpa.JpaObjectRetrievalFailureException;
 import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 /**
  * Test class of {@link ContainerScopeResource}
  */
-@RunWith(SpringJUnit4ClassRunner.class)
+@ExtendWith(SpringExtension.class)
 @ContextConfiguration(locations = "classpath:/META-INF/spring/application-context-test.xml")
 @Rollback
 @Transactional
@@ -41,7 +40,7 @@ public class ContainerScopeResourceTest extends AbstractJpaTest {
 	@Autowired
 	private ContainerScopeRepository repository;
 
-	@Before
+	@BeforeEach
 	public void setUpEntities() throws IOException {
 		persistEntities("csv", new Class[] { ContainerScope.class }, "UTF-8");
 	}
@@ -52,7 +51,7 @@ public class ContainerScopeResourceTest extends AbstractJpaTest {
 		final UriInfo uriInfo = newFindAllParameters();
 
 		final TableItem<ContainerScope> result = resource.findAll(ContainerType.GROUP, uriInfo, null);
-		Assert.assertEquals(4, result.getData().size());
+		Assertions.assertEquals(4, result.getData().size());
 
 		final ContainerScope type = result.getData().get(1);
 		checkType(type);
@@ -61,20 +60,20 @@ public class ContainerScopeResourceTest extends AbstractJpaTest {
 	@Test
 	public void findAll2() {
 		final List<ContainerScope> result = resource.findAllDescOrder(ContainerType.GROUP);
-		Assert.assertEquals(4, result.size());
+		Assertions.assertEquals(4, result.size());
 		final ContainerScope type = result.get(2);
-		Assert.assertEquals("Project", type.getName());
-		Assert.assertEquals("ou=project,dc=sample,dc=com", type.getDn());
+		Assertions.assertEquals("Project", type.getName());
+		Assertions.assertEquals("ou=project,dc=sample,dc=com", type.getDn());
 	}
 
 	@Test
 	public void findAllCompany() {
 		final List<ContainerScope> result = resource.findAllDescOrder(ContainerType.COMPANY);
-		Assert.assertEquals(2, result.size());
+		Assertions.assertEquals(2, result.size());
 		final ContainerScope type = result.get(0);
-		Assert.assertEquals("France", type.getName());
-		Assert.assertEquals("ou=france,ou=people,dc=sample,dc=com", type.getDn());
-		Assert.assertEquals(ContainerType.COMPANY, type.getType());
+		Assertions.assertEquals("France", type.getName());
+		Assertions.assertEquals("ou=france,ou=people,dc=sample,dc=com", type.getDn());
+		Assertions.assertEquals(ContainerType.COMPANY, type.getType());
 	}
 
 	@Test
@@ -83,7 +82,7 @@ public class ContainerScopeResourceTest extends AbstractJpaTest {
 		final UriInfo uriInfo = newFindAllParameters();
 
 		final TableItem<ContainerScope> result = resource.findAll(ContainerType.GROUP, uriInfo, "j");
-		Assert.assertEquals(1, result.getData().size());
+		Assertions.assertEquals(1, result.getData().size());
 
 		final ContainerScope type = result.getData().get(0);
 		checkType(type);
@@ -104,9 +103,11 @@ public class ContainerScopeResourceTest extends AbstractJpaTest {
 	/**
 	 * test {@link ContainerScopeResource#findById(int)}
 	 */
-	@Test(expected = JpaObjectRetrievalFailureException.class)
+	@Test
 	public void findByIdInvalid() {
-		Assert.assertNull(resource.findById(0));
+		Assertions.assertThrows(JpaObjectRetrievalFailureException.class, () -> {
+			Assertions.assertNull(resource.findById(0));
+		});
 	}
 
 	/**
@@ -117,16 +118,17 @@ public class ContainerScopeResourceTest extends AbstractJpaTest {
 		final Integer id = repository.findAll(Sort.by("name")).get(3).getId();
 		checkType(resource.findById(id));
 	}
+
 	@Test
 	public void findByName() {
 		checkType(resource.findByName("Project"));
 	}
-	
+
 	private void checkType(final ContainerScope type) {
-		Assert.assertEquals("Project", type.getName());
-		Assert.assertTrue(type.isLocked());
-		Assert.assertEquals("ou=project,dc=sample,dc=com", type.getDn());
-		Assert.assertEquals(ContainerType.GROUP, type.getType());
+		Assertions.assertEquals("Project", type.getName());
+		Assertions.assertTrue(type.isLocked());
+		Assertions.assertEquals("ou=project,dc=sample,dc=com", type.getDn());
+		Assertions.assertEquals(ContainerType.GROUP, type.getType());
 	}
 
 	/**
@@ -143,34 +145,38 @@ public class ContainerScopeResourceTest extends AbstractJpaTest {
 		em.clear();
 
 		final ContainerScope entity = repository.findOneExpected(id);
-		Assert.assertEquals("Name", entity.getName());
-		Assert.assertEquals("dc=sample,dc=com", entity.getDn());
-		Assert.assertFalse(entity.isLocked());
-		Assert.assertEquals(id, entity.getId().intValue());
+		Assertions.assertEquals("Name", entity.getName());
+		Assertions.assertEquals("dc=sample,dc=com", entity.getDn());
+		Assertions.assertFalse(entity.isLocked());
+		Assertions.assertEquals(id, entity.getId().intValue());
 	}
 
 	/**
 	 * test create duplicate DN
 	 */
-	@Test(expected = DataIntegrityViolationException.class)
+	@Test
 	public void createDuplicateDn() {
 		final ContainerScope vo = new ContainerScope();
 		vo.setName("Name");
 		vo.setType(ContainerType.GROUP);
 		vo.setDn("ou=project,dc=sample,dc=com");
-		resource.create(vo);
+		Assertions.assertThrows(DataIntegrityViolationException.class, () -> {
+			resource.create(vo);
+		});
 	}
 
 	/**
 	 * test create duplicate name
 	 */
-	@Test(expected = DataIntegrityViolationException.class)
+	@Test
 	public void createDuplicateName() {
 		final ContainerScope vo = new ContainerScope();
 		vo.setName("Project");
 		vo.setDn("dc=sample,dc=com");
 		vo.setType(ContainerType.GROUP);
-		resource.create(vo);
+		Assertions.assertThrows(DataIntegrityViolationException.class, () -> {
+			resource.create(vo);
+		});
 	}
 
 	/**
@@ -190,9 +196,9 @@ public class ContainerScopeResourceTest extends AbstractJpaTest {
 		em.clear();
 
 		final ContainerScope entity = repository.findOneExpected(id);
-		Assert.assertEquals("Name", entity.getName());
-		Assert.assertEquals("dc=sample,dc=com", entity.getDn());
-		Assert.assertEquals(id, entity.getId().intValue());
+		Assertions.assertEquals("Name", entity.getName());
+		Assertions.assertEquals("dc=sample,dc=com", entity.getDn());
+		Assertions.assertEquals(id, entity.getId().intValue());
 	}
 
 	/**
@@ -202,7 +208,7 @@ public class ContainerScopeResourceTest extends AbstractJpaTest {
 	public void deleteLocked() {
 		final ContainerScope typeLdap = repository.findAll(Sort.by("name")).get(3);
 		final int id = typeLdap.getId();
-		Assert.assertTrue(typeLdap.isLocked());
+		Assertions.assertTrue(typeLdap.isLocked());
 		final long initCount = repository.count();
 		em.clear();
 		resource.delete(id);
@@ -210,7 +216,7 @@ public class ContainerScopeResourceTest extends AbstractJpaTest {
 		em.clear();
 
 		// Check is not deleted
-		Assert.assertEquals(initCount, repository.count());
+		Assertions.assertEquals(initCount, repository.count());
 	}
 
 	/**
@@ -220,12 +226,12 @@ public class ContainerScopeResourceTest extends AbstractJpaTest {
 	public void delete() {
 		final ContainerScope typeLdap = repository.findAll(Sort.by("name")).get(0);
 		final int id = typeLdap.getId();
-		Assert.assertFalse(typeLdap.isLocked());
+		Assertions.assertFalse(typeLdap.isLocked());
 		final long initCount = repository.count();
 		em.clear();
 		resource.delete(id);
 		em.flush();
 		em.clear();
-		Assert.assertEquals(initCount - 1, repository.count());
+		Assertions.assertEquals(initCount - 1, repository.count());
 	}
 }

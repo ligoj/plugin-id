@@ -11,14 +11,13 @@ import javax.transaction.Transactional;
 import javax.validation.ConstraintViolationException;
 
 import org.apache.cxf.jaxrs.provider.ServerProviderFactory;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.FixMethodOrder;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.MethodSorters;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.ligoj.app.DefaultVerificationMode;
+import org.ligoj.app.MatcherUtil;
 import org.ligoj.app.iam.UserOrg;
 import org.ligoj.app.iam.model.DelegateOrg;
 import org.ligoj.app.plugin.id.resource.UserOrgEditionVo;
@@ -34,15 +33,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 /**
  * Test of {@link UserBatchLdapResource}
  */
-@RunWith(SpringJUnit4ClassRunner.class)
+@ExtendWith(SpringExtension.class)
 @ContextConfiguration(locations = "classpath:/META-INF/spring/application-context-test.xml")
 @Rollback
-@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 @Transactional
 public class UserBatchLdapResourceTest extends AbstractLdapBatchTest {
 
@@ -52,7 +50,7 @@ public class UserBatchLdapResourceTest extends AbstractLdapBatchTest {
 	private UserOrgResource mockLdapResource;
 
 	@SuppressWarnings("unchecked")
-	@Before
+	@BeforeEach
 	public void mockApplicationContext() {
 		final ApplicationContext applicationContext = Mockito.mock(ApplicationContext.class);
 		SpringUtils.setSharedApplicationContext(applicationContext);
@@ -78,12 +76,12 @@ public class UserBatchLdapResourceTest extends AbstractLdapBatchTest {
 		mockTaskUpdate.jaxrsFactory = ServerProviderFactory.createInstance(null);
 	}
 
-	@After
+	@AfterEach
 	public void unmockApplicationContext() {
 		SpringUtils.setSharedApplicationContext(super.applicationContext);
 	}
 
-	@Before
+	@BeforeEach
 	public void prepareData() throws IOException {
 		persistEntities("csv", new Class[] { DelegateOrg.class }, StandardCharsets.UTF_8.name());
 	}
@@ -94,14 +92,14 @@ public class UserBatchLdapResourceTest extends AbstractLdapBatchTest {
 
 		// Check the result
 		final UserImportEntry importEntry = checkImportTask(importTask);
-		Assert.assertEquals("gfi", importEntry.getCompany());
-		Assert.assertEquals("Sébastien", importEntry.getFirstName());
-		Assert.assertEquals("Loubli", importEntry.getLastName());
-		Assert.assertEquals("kloubli", importEntry.getId());
-		Assert.assertEquals("jira", importEntry.getGroups());
-		Assert.assertEquals("my.address@sample.com", importEntry.getMail());
-		Assert.assertTrue(importEntry.getStatus());
-		Assert.assertNull(importEntry.getStatusText());
+		Assertions.assertEquals("gfi", importEntry.getCompany());
+		Assertions.assertEquals("Sébastien", importEntry.getFirstName());
+		Assertions.assertEquals("Loubli", importEntry.getLastName());
+		Assertions.assertEquals("kloubli", importEntry.getId());
+		Assertions.assertEquals("jira", importEntry.getGroups());
+		Assertions.assertEquals("my.address@sample.com", importEntry.getMail());
+		Assertions.assertTrue(importEntry.getStatus());
+		Assertions.assertNull(importEntry.getStatusText());
 
 		// Check LDAP
 		Mockito.verify(mockLdapResource, new DefaultVerificationMode(data -> {
@@ -109,12 +107,12 @@ public class UserBatchLdapResourceTest extends AbstractLdapBatchTest {
 				throw new MockitoException("Expect one call");
 			}
 			final UserOrgEditionVo userLdap = (UserOrgEditionVo) data.getAllInvocations().get(0).getArguments()[0];
-			Assert.assertNotNull(userLdap);
-			Assert.assertEquals("Sébastien", userLdap.getFirstName());
-			Assert.assertEquals("Loubli", userLdap.getLastName());
-			Assert.assertEquals("kloubli", userLdap.getId());
-			Assert.assertEquals("gfi", userLdap.getCompany());
-			Assert.assertEquals("my.address@sample.com", userLdap.getMail());
+			Assertions.assertNotNull(userLdap);
+			Assertions.assertEquals("Sébastien", userLdap.getFirstName());
+			Assertions.assertEquals("Loubli", userLdap.getLastName());
+			Assertions.assertEquals("kloubli", userLdap.getId());
+			Assertions.assertEquals("gfi", userLdap.getCompany());
+			Assertions.assertEquals("my.address@sample.com", userLdap.getMail());
 		})).create(null);
 	}
 
@@ -135,19 +133,19 @@ public class UserBatchLdapResourceTest extends AbstractLdapBatchTest {
 
 		final long id = resource.atomic(new ByteArrayInputStream("fdaugan;mail;any.daugan@sample.com".getBytes("cp1252")),
 				new String[] { "user", "operation", "value" }, "cp1252");
-		Assert.assertNotNull(id);
+		Assertions.assertNotNull(id);
 		@SuppressWarnings("unchecked")
 		BatchTaskVo<UserUpdateEntry> importTask = (BatchTaskVo<UserUpdateEntry>) resource.getImportTask(id);
-		Assert.assertEquals(id, importTask.getId());
+		Assertions.assertEquals(id, importTask.getId());
 		importTask = waitImport(importTask);
 
 		// Check the result
 		final UserUpdateEntry importEntry = checkImportTask(importTask);
-		Assert.assertEquals("mail", importEntry.getOperation());
-		Assert.assertEquals("any.daugan@sample.com", importEntry.getValue());
-		Assert.assertEquals("fdaugan", importEntry.getUser());
-		Assert.assertTrue(importEntry.getStatus());
-		Assert.assertNull(importEntry.getStatusText());
+		Assertions.assertEquals("mail", importEntry.getOperation());
+		Assertions.assertEquals("any.daugan@sample.com", importEntry.getValue());
+		Assertions.assertEquals("fdaugan", importEntry.getUser());
+		Assertions.assertTrue(importEntry.getStatus());
+		Assertions.assertNull(importEntry.getStatusText());
 
 		// Check LDAP
 		Mockito.verify(mockLdapResource, new DefaultVerificationMode(data -> {
@@ -156,18 +154,18 @@ public class UserBatchLdapResourceTest extends AbstractLdapBatchTest {
 			}
 
 			// "findBy" call
-			Assert.assertEquals("fdaugan", data.getAllInvocations().get(0).getArguments()[0]);
+			Assertions.assertEquals("fdaugan", data.getAllInvocations().get(0).getArguments()[0]);
 
 			// "update" call
 			final UserOrgEditionVo userLdap = (UserOrgEditionVo) data.getAllInvocations().get(1).getArguments()[0];
-			Assert.assertNotNull(userLdap);
-			Assert.assertEquals("untouched", userLdap.getFirstName());
-			Assert.assertEquals("untouched", userLdap.getLastName());
-			Assert.assertEquals("fdaugan", userLdap.getId());
-			Assert.assertEquals("untouched", userLdap.getCompany());
-			Assert.assertEquals("untouched", userLdap.getDepartment());
-			Assert.assertEquals("untouched", userLdap.getLocalId());
-			Assert.assertEquals("any.daugan@sample.com", userLdap.getMail());
+			Assertions.assertNotNull(userLdap);
+			Assertions.assertEquals("untouched", userLdap.getFirstName());
+			Assertions.assertEquals("untouched", userLdap.getLastName());
+			Assertions.assertEquals("fdaugan", userLdap.getId());
+			Assertions.assertEquals("untouched", userLdap.getCompany());
+			Assertions.assertEquals("untouched", userLdap.getDepartment());
+			Assertions.assertEquals("untouched", userLdap.getLocalId());
+			Assertions.assertEquals("any.daugan@sample.com", userLdap.getMail());
 		})).update(null);
 	}
 
@@ -177,9 +175,9 @@ public class UserBatchLdapResourceTest extends AbstractLdapBatchTest {
 
 		// Check the result
 		final UserImportEntry importEntry = checkImportTask(importTask);
-		Assert.assertEquals("kloubli9", importEntry.getId());
-		Assert.assertTrue(importEntry.getStatus());
-		Assert.assertNull(importEntry.getStatusText());
+		Assertions.assertEquals("kloubli9", importEntry.getId());
+		Assertions.assertTrue(importEntry.getStatus());
+		Assertions.assertNull(importEntry.getStatusText());
 
 		// Check LDAP
 		Mockito.verify(mockLdapResource, new DefaultVerificationMode(data -> {
@@ -187,20 +185,20 @@ public class UserBatchLdapResourceTest extends AbstractLdapBatchTest {
 				throw new MockitoException("Expect one call");
 			}
 			final UserOrgEditionVo userLdap = (UserOrgEditionVo) data.getAllInvocations().get(0).getArguments()[0];
-			Assert.assertNotNull(userLdap);
-			Assert.assertEquals("kloubli9", userLdap.getId());
-			Assert.assertEquals(1, userLdap.getGroups().size());
-			Assert.assertEquals("jira", userLdap.getGroups().iterator().next());
+			Assertions.assertNotNull(userLdap);
+			Assertions.assertEquals("kloubli9", userLdap.getId());
+			Assertions.assertEquals(1, userLdap.getGroups().size());
+			Assertions.assertEquals("jira", userLdap.getGroups().iterator().next());
 		})).create(null);
 	}
 
 	@Test
 	public void fullInvalidHeaders() throws IOException {
-		thrown.expect(BusinessException.class);
-		thrown.expectMessage("Invalid header");
 		final InputStream input = new ByteArrayInputStream("Loubli;Sébastien;kloubli4;my.address@sample.com;gfi;jira".getBytes("cp1250"));
 		initSpringSecurityContext(DEFAULT_USER);
-		resource.full(input, new String[] { "lastName", "firstName", "id", "mail8", "company", "groups" }, "cp1250");
+		Assertions.assertEquals("Invalid header", Assertions.assertThrows(BusinessException.class, () -> {
+			resource.full(input, new String[] { "lastName", "firstName", "id", "mail8", "company", "groups" }, "cp1250");
+		}).getMessage());
 	}
 
 	@Test
@@ -210,8 +208,8 @@ public class UserBatchLdapResourceTest extends AbstractLdapBatchTest {
 		@SuppressWarnings("unchecked")
 		final BatchTaskVo<UserImportEntry> importTask = (BatchTaskVo<UserImportEntry>) waitImport(
 				resource.getImportTask(resource.full(input, new String[0], "cp1250")));
-		Assert.assertEquals(Boolean.TRUE, importTask.getEntries().get(0).getStatus());
-		Assert.assertNull(importTask.getEntries().get(0).getStatusText());
+		Assertions.assertEquals(Boolean.TRUE, importTask.getEntries().get(0).getStatus());
+		Assertions.assertNull(importTask.getEntries().get(0).getStatusText());
 
 		// Check LDAP
 		Mockito.verify(mockLdapResource, new DefaultVerificationMode(data -> {
@@ -219,21 +217,23 @@ public class UserBatchLdapResourceTest extends AbstractLdapBatchTest {
 				throw new MockitoException("Expect one call");
 			}
 			final UserOrgEditionVo userLdap = (UserOrgEditionVo) data.getAllInvocations().get(0).getArguments()[0];
-			Assert.assertNotNull(userLdap);
-			Assert.assertNotNull(userLdap);
-			Assert.assertEquals("Sébastien", userLdap.getFirstName());
-			Assert.assertEquals("Loubli", userLdap.getLastName());
-			Assert.assertEquals("kloubli5", userLdap.getId());
-			Assert.assertEquals("gfi", userLdap.getCompany());
-			Assert.assertEquals("my.address@sample.com", userLdap.getMail());
+			Assertions.assertNotNull(userLdap);
+			Assertions.assertNotNull(userLdap);
+			Assertions.assertEquals("Sébastien", userLdap.getFirstName());
+			Assertions.assertEquals("Loubli", userLdap.getLastName());
+			Assertions.assertEquals("kloubli5", userLdap.getId());
+			Assertions.assertEquals("gfi", userLdap.getCompany());
+			Assertions.assertEquals("my.address@sample.com", userLdap.getMail());
 		})).create(null);
 	}
 
-	@Test(expected = ConstraintViolationException.class)
+	@Test
 	public void fullMisingLogin() throws IOException {
 		final InputStream input = new ByteArrayInputStream("Loubli;Sébastien;;my.address@sample.com;gfi;jira".getBytes("cp1250"));
 		initSpringSecurityContext(DEFAULT_USER);
-		resource.full(input, new String[0], "cp1250");
+		MatcherUtil.assertThrows(Assertions.assertThrows(ConstraintViolationException.class, () -> {
+			resource.full(input, new String[0], "cp1250");
+		}), "id", "NotBlank");
 	}
 
 	@Test
@@ -244,25 +244,25 @@ public class UserBatchLdapResourceTest extends AbstractLdapBatchTest {
 		@SuppressWarnings("unchecked")
 		final BatchTaskVo<UserImportEntry> importTask = (BatchTaskVo<UserImportEntry>) waitImport(
 				resource.getImportTask(resource.full(input, new String[0], "cp1250")));
-		Assert.assertEquals("message", importTask.getEntries().get(0).getStatusText());
-		Assert.assertEquals(Boolean.FALSE, importTask.getEntries().get(0).getStatus());
+		Assertions.assertEquals("message", importTask.getEntries().get(0).getStatusText());
+		Assertions.assertEquals(Boolean.FALSE, importTask.getEntries().get(0).getStatus());
 	}
 
 	@Test
 	public void getImportTaskFailed() {
-		Assert.assertNull(resource.getImportTask(-1));
+		Assertions.assertNull(resource.getImportTask(-1));
 	}
 
 	@Test
 	public void getImportStatusFailed() {
-		Assert.assertNull(resource.getImportStatus(-1));
+		Assertions.assertNull(resource.getImportStatus(-1));
 	}
 
 	@Test
 	public void getImportStatus() throws InterruptedException, IOException {
 		final BatchTaskVo<UserImportEntry> importTask = full("Loubli;Sébastien;kloubli7;my.address@sample.com;gfi;,jira,");
-		Assert.assertSame(importTask, resource.getImportTask(importTask.getId()));
-		Assert.assertSame(importTask.getStatus(), resource.getImportStatus(importTask.getId()));
+		Assertions.assertSame(importTask, resource.getImportTask(importTask.getId()));
+		Assertions.assertSame(importTask.getStatus(), resource.getImportStatus(importTask.getId()));
 	}
 
 	@Test
@@ -270,8 +270,8 @@ public class UserBatchLdapResourceTest extends AbstractLdapBatchTest {
 		final BatchTaskVo<UserImportEntry> oldTask = full("Loubli;Sébastien;kloubli5a;my.address@sample.com;gfi;,jira,");
 		oldTask.getStatus().setEnd(getDate(1980, 1, 1));
 		final BatchTaskVo<UserImportEntry> importTask = full("Loubli;Sébastien;kloubli5b;my.address@sample.com;gfi;,jira,");
-		Assert.assertSame(importTask, resource.getImportTask(importTask.getId()));
-		Assert.assertSame(importTask.getStatus(), resource.getImportStatus(importTask.getId()));
+		Assertions.assertSame(importTask, resource.getImportTask(importTask.getId()));
+		Assertions.assertSame(importTask.getStatus(), resource.getImportStatus(importTask.getId()));
 	}
 
 	@Test
@@ -279,12 +279,13 @@ public class UserBatchLdapResourceTest extends AbstractLdapBatchTest {
 		final BatchTaskVo<UserImportEntry> oldTask = full("Loubli;Sébastien;kloubli6a;my.address@sample.com;gfi;,jira,");
 		oldTask.getStatus().setEnd(null);
 		final BatchTaskVo<UserImportEntry> importTask = full("Loubli;Sébastien;kloubli6b;my.address@sample.com;gfi;,jira,");
-		Assert.assertSame(importTask, resource.getImportTask(importTask.getId()));
-		Assert.assertSame(importTask.getStatus(), resource.getImportStatus(importTask.getId()));
+		Assertions.assertSame(importTask, resource.getImportTask(importTask.getId()));
+		Assertions.assertSame(importTask.getStatus(), resource.getImportStatus(importTask.getId()));
 		oldTask.getStatus().setEnd(new Date());
 	}
 
-	protected <U extends BatchElement> BatchTaskVo<U> full(final InputStream input, final String[] headers) throws IOException, InterruptedException {
+	protected <U extends BatchElement> BatchTaskVo<U> full(final InputStream input, final String[] headers)
+			throws IOException, InterruptedException {
 		return full(input, headers, "cp1252");
 	}
 
@@ -292,10 +293,10 @@ public class UserBatchLdapResourceTest extends AbstractLdapBatchTest {
 			throws IOException, InterruptedException {
 		initSpringSecurityContext(DEFAULT_USER);
 		final long id = resource.full(input, headers, encoding);
-		Assert.assertNotNull(id);
+		Assertions.assertNotNull(id);
 		@SuppressWarnings("unchecked")
 		final BatchTaskVo<U> importTask = (BatchTaskVo<U>) resource.getImportTask(id);
-		Assert.assertEquals(id, importTask.getId());
+		Assertions.assertEquals(id, importTask.getId());
 		return waitImport(importTask);
 	}
 
@@ -303,9 +304,10 @@ public class UserBatchLdapResourceTest extends AbstractLdapBatchTest {
 		return full(csvData, "cp1252");
 	}
 
-	protected <U extends BatchElement> BatchTaskVo<U> full(final String csvData, final String encoding) throws IOException, InterruptedException {
-		return full(new ByteArrayInputStream(csvData.getBytes(encoding)), new String[] { "lastName", "firstName", "id", "mail", "company", "groups" },
-				encoding);
+	protected <U extends BatchElement> BatchTaskVo<U> full(final String csvData, final String encoding)
+			throws IOException, InterruptedException {
+		return full(new ByteArrayInputStream(csvData.getBytes(encoding)),
+				new String[] { "lastName", "firstName", "id", "mail", "company", "groups" }, encoding);
 	}
 
 }

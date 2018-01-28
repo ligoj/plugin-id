@@ -15,11 +15,10 @@ import java.util.function.Consumer;
 import javax.transaction.Transactional;
 import javax.ws.rs.core.UriInfo;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.MethodSorters;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.ligoj.app.AbstractAppTest;
 import org.ligoj.app.MatcherUtil;
 import org.ligoj.app.iam.CompanyOrg;
@@ -49,16 +48,15 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 /**
  * Test of {@link UserOrgResource}<br>
  */
-@RunWith(SpringJUnit4ClassRunner.class)
+@ExtendWith(SpringExtension.class)
 @ContextConfiguration(locations = "classpath:/META-INF/spring/application-context-test.xml")
 @Rollback
 @Transactional
-@org.junit.FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class UserOrgResourceTest extends AbstractAppTest {
 
 	private UserOrgResource resource;
@@ -66,7 +64,7 @@ public class UserOrgResourceTest extends AbstractAppTest {
 	protected IGroupRepository groupRepository;
 	protected ICompanyRepository companyRepository;
 
-	@Before
+	@BeforeEach
 	public void prepareData() throws IOException {
 		persistEntities("csv",
 				new Class[] { DelegateOrg.class, CacheCompany.class, CacheGroup.class, CacheUser.class, CacheMembership.class },
@@ -101,24 +99,26 @@ public class UserOrgResourceTest extends AbstractAppTest {
 		final GroupOrg groupOrg1 = new GroupOrg("cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com", "DIG", Collections.singleton("wuser"));
 		resource.groupResource = Mockito.mock(GroupResource.class);
 		Mockito.when(companyRepository.findByIdExpected(DEFAULT_USER, "ing")).thenReturn(company);
-		groupFindById(DEFAULT_USER, "dig",groupOrg1);
+		groupFindById(DEFAULT_USER, "dig", groupOrg1);
 		Mockito.when(userRepository.findByIdExpected(DEFAULT_USER, "wuser")).thenReturn(newUser());
 		Mockito.when(resource.groupResource.getContainers()).thenReturn(Collections.singleton(groupOrg1));
 		Mockito.when(resource.groupResource.getContainersForWrite()).thenReturn(Collections.singleton(groupOrg1));
-		Assert.assertNull(checkUser(resource.findById("WuSER")).getDn()); // Secured data
+		Assertions.assertNull(checkUser(resource.findById("WuSER")).getDn()); // Secured
+																				// data
 	}
 
 	@Test
 	public void findByIdNoCache() {
 		Mockito.when(userRepository.findByIdNoCache("wuser")).thenReturn(newUser());
-		Assert.assertEquals("uid=wuser,ou=ing,ou=france,ou=people,dc=sample,dc=com", checkUser(resource.findByIdNoCache("WusER")).getDn());
+		Assertions.assertEquals("uid=wuser,ou=ing,ou=france,ou=people,dc=sample,dc=com",
+				checkUser(resource.findByIdNoCache("WusER")).getDn());
 	}
 
 	@Test
 	public void findAllBy() {
 		final UserOrg userOrg = new UserOrg();
 		Mockito.when(userRepository.findAllBy("mail", "marc.martin@sample.com")).thenReturn(Collections.singletonList(userOrg));
-		Assert.assertSame(userOrg, resource.findAllBy("mail", "marc.martin@sample.com").get(0));
+		Assertions.assertSame(userOrg, resource.findAllBy("mail", "marc.martin@sample.com").get(0));
 	}
 
 	@Test
@@ -140,7 +140,7 @@ public class UserOrgResourceTest extends AbstractAppTest {
 		resource.companyResource = Mockito.mock(CompanyResource.class);
 		final CompanyOrg company = new CompanyOrg("ou=ing,ou=france,ou=people,dc=sample,dc=com", "ing");
 		Mockito.when(companyRepository.findByIdExpected(DEFAULT_USER, "ing")).thenReturn(company);
-		groupFindById(DEFAULT_USER, "dig",groupOrg1);
+		groupFindById(DEFAULT_USER, "dig", groupOrg1);
 		Mockito.when(groupRepository.findAll()).thenReturn(groupsMap);
 		Mockito.when(userRepository.findAll(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
 				.thenReturn(new PageImpl<>(new ArrayList<>(users.values())));
@@ -150,13 +150,13 @@ public class UserOrgResourceTest extends AbstractAppTest {
 		Mockito.when(resource.companyResource.getContainersForWrite()).thenReturn(Collections.singleton(company));
 
 		final TableItem<UserOrgVo> tableItem = resource.findAll("ing", "dig rha", "iRsT", newUriInfoAsc("id"));
-		Assert.assertEquals(2, tableItem.getRecordsTotal());
-		Assert.assertEquals(2, tableItem.getRecordsFiltered());
+		Assertions.assertEquals(2, tableItem.getRecordsTotal());
+		Assertions.assertEquals(2, tableItem.getRecordsFiltered());
 
 		// Check the users
 		UserOrgVo userVo = checkUser(tableItem.getData().get(0));
-		Assert.assertTrue(userVo.getGroups().get(0).isManaged());
-		Assert.assertTrue(userVo.isAdmin());
+		Assertions.assertTrue(userVo.getGroups().get(0).isManaged());
+		Assertions.assertTrue(userVo.isAdmin());
 	}
 
 	@Test
@@ -188,8 +188,8 @@ public class UserOrgResourceTest extends AbstractAppTest {
 		Mockito.when(resource.companyResource.getContainersForWrite()).thenReturn(Collections.singleton(company));
 
 		final TableItem<UserOrgVo> tableItem = resource.findAll("ing", "not exist group", "iRsT", newUriInfoAsc("id"));
-		Assert.assertEquals(2, tableItem.getRecordsTotal());
-		Assert.assertEquals(2, tableItem.getRecordsFiltered());
+		Assertions.assertEquals(2, tableItem.getRecordsTotal());
+		Assertions.assertEquals(2, tableItem.getRecordsFiltered());
 
 		// Check the users
 		checkUser(tableItem.getData().get(0));
@@ -228,12 +228,12 @@ public class UserOrgResourceTest extends AbstractAppTest {
 		Mockito.when(resource.companyResource.getContainersForWrite()).thenReturn(Collections.emptySet());
 
 		final TableItem<UserOrgVo> tableItem = resource.findAll("ing", "not exist group", "iRsT", newUriInfoAsc("id"));
-		Assert.assertEquals(2, tableItem.getRecordsTotal());
-		Assert.assertEquals(2, tableItem.getRecordsFiltered());
+		Assertions.assertEquals(2, tableItem.getRecordsTotal());
+		Assertions.assertEquals(2, tableItem.getRecordsFiltered());
 
 		// Check the users
-		Assert.assertEquals("gfi", tableItem.getData().get(0).getCompany());
-		Assert.assertFalse(tableItem.getData().get(0).getGroups().get(0).isManaged());
+		Assertions.assertEquals("gfi", tableItem.getData().get(0).getCompany());
+		Assertions.assertFalse(tableItem.getData().get(0).getGroups().get(0).isManaged());
 	}
 
 	@Test
@@ -258,8 +258,8 @@ public class UserOrgResourceTest extends AbstractAppTest {
 		Mockito.when(resource.groupResource.getContainersForWrite()).thenReturn(new HashSet<>(groupsMap.values()));
 
 		final TableItem<UserOrgVo> tableItem = resource.findAll("ing", "dig rha", "iRsT", newUriInfoAsc("id"));
-		Assert.assertEquals(2, tableItem.getRecordsTotal());
-		Assert.assertEquals(2, tableItem.getRecordsFiltered());
+		Assertions.assertEquals(2, tableItem.getRecordsTotal());
+		Assertions.assertEquals(2, tableItem.getRecordsFiltered());
 
 		// Check the users
 		checkUser(tableItem.getData().get(0));
@@ -292,41 +292,39 @@ public class UserOrgResourceTest extends AbstractAppTest {
 	private <T extends SimpleUserOrg> T checkUser(T user) {
 
 		// Check the other attributes
-		Assert.assertEquals("ing", user.getCompany());
-		Assert.assertEquals("First2", user.getFirstName());
-		Assert.assertEquals("Doe2", user.getLastName());
-		Assert.assertEquals("department1", user.getDepartment());
-		Assert.assertEquals("wuser", user.getId());
-		Assert.assertEquals("local1", user.getLocalId());
-		Assert.assertNotNull(user.getLocked());
-		Assert.assertEquals("user2", user.getLockedBy());
-		Assert.assertEquals("old-company", user.getIsolated());
-		Assert.assertEquals("wuser", user.getName());
-		Assert.assertEquals("first2.doe2@ing.fr", user.getMails().get(0));
+		Assertions.assertEquals("ing", user.getCompany());
+		Assertions.assertEquals("First2", user.getFirstName());
+		Assertions.assertEquals("Doe2", user.getLastName());
+		Assertions.assertEquals("department1", user.getDepartment());
+		Assertions.assertEquals("wuser", user.getId());
+		Assertions.assertEquals("local1", user.getLocalId());
+		Assertions.assertNotNull(user.getLocked());
+		Assertions.assertEquals("user2", user.getLockedBy());
+		Assertions.assertEquals("old-company", user.getIsolated());
+		Assertions.assertEquals("wuser", user.getName());
+		Assertions.assertEquals("first2.doe2@ing.fr", user.getMails().get(0));
 		return user;
 	}
 
 	private UserOrgVo checkUser(UserOrgVo user) {
 		checkUser((SimpleUserOrg) user);
-		Assert.assertTrue(user.isManaged());
+		Assertions.assertTrue(user.isManaged());
 		final List<GroupLdapVo> groups = new ArrayList<>(user.getGroups());
-		Assert.assertEquals(1, groups.size());
-		Assert.assertEquals("DIG", groups.get(0).getName());
+		Assertions.assertEquals(1, groups.size());
+		Assertions.assertEquals("DIG", groups.get(0).getName());
 		return user;
 	}
 
 	private UserOrg checkUser(UserOrg user) {
 		checkUser((SimpleUserOrg) user);
 		final List<String> groups = new ArrayList<>(user.getGroups());
-		Assert.assertEquals(1, groups.size());
-		Assert.assertEquals("dig", groups.get(0).toLowerCase());
+		Assertions.assertEquals(1, groups.size());
+		Assertions.assertEquals("dig", groups.get(0).toLowerCase());
 		return user;
 	}
 
 	@Test
 	public void createNotWriteInCompany() {
-		thrown.expect(ValidationJsonException.class);
-		thrown.expect(MatcherUtil.validationMatcher("company", "unknown-id"));
 		initSpringSecurityContext("any");
 		final GroupOrg groupOrg1 = new GroupOrg("cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com", "DIG", Collections.singleton("flasta"));
 		final GroupOrg groupOrg2 = new GroupOrg("cn=DIG RHA,cn=DIG AS,cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com", "DIG RHA",
@@ -348,7 +346,9 @@ public class UserOrgResourceTest extends AbstractAppTest {
 		final List<String> groups = new ArrayList<>();
 		groups.add("dig rHA");
 		user.setGroups(groups);
-		resource.create(user);
+		MatcherUtil.assertThrows(Assertions.assertThrows(ValidationJsonException.class, () -> {
+			resource.create(user);
+		}), "company", "unknown-id");
 	}
 
 	@Test
@@ -380,24 +380,24 @@ public class UserOrgResourceTest extends AbstractAppTest {
 	public void updatePassword() {
 		resource.applicationContext = Mockito.mock(ApplicationContext.class);
 		final IPasswordGenerator generator = Mockito.mock(IPasswordGenerator.class);
-		Mockito.when(resource.applicationContext.getBeansOfType(IPasswordGenerator.class)).thenReturn(Collections.singletonMap("bean", generator));
+		Mockito.when(resource.applicationContext.getBeansOfType(IPasswordGenerator.class))
+				.thenReturn(Collections.singletonMap("bean", generator));
 		resource.updatePassword(newUser());
 		Mockito.verify(generator, VerificationModeFactory.atLeast(1)).generate("wuser");
 	}
-	
+
 	@Test
 	public void resetPasswordByAdmin() {
 		resource.applicationContext = Mockito.mock(ApplicationContext.class);
 		final IPasswordGenerator generator = Mockito.mock(IPasswordGenerator.class);
-		Mockito.when(resource.applicationContext.getBeansOfType(IPasswordGenerator.class)).thenReturn(Collections.singletonMap("bean", generator));
+		Mockito.when(resource.applicationContext.getBeansOfType(IPasswordGenerator.class))
+				.thenReturn(Collections.singletonMap("bean", generator));
 		resource.resetPasswordByAdmin(newUser());
 		Mockito.verify(generator, VerificationModeFactory.atLeast(1)).generate("wuser");
 	}
 
 	@Test
 	public void createUserAlreadyExists() {
-		thrown.expect(ValidationJsonException.class);
-		thrown.expect(MatcherUtil.validationMatcher("id", "already-exist"));
 		final GroupOrg groupOrg1 = new GroupOrg("cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com", "DIG", Collections.singleton("flasta"));
 		final GroupOrg groupOrg2 = new GroupOrg("cn=DIG RHA,cn=DIG AS,cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com", "DIG RHA",
 				Collections.singleton("wuser"));
@@ -421,13 +421,13 @@ public class UserOrgResourceTest extends AbstractAppTest {
 		user.setCompany("ing");
 		user.setMail("flasta@ing.com");
 		user.setGroups(new ArrayList<>());
-		resource.create(user);
+		MatcherUtil.assertThrows(Assertions.assertThrows(ValidationJsonException.class, () -> {
+			resource.create(user);
+		}), "id", "already-exist");
 	}
 
 	@Test
 	public void deleteLastMember() {
-		thrown.expect(ValidationJsonException.class);
-		thrown.expect(MatcherUtil.validationMatcher("id", "last-member-of-group"));
 		final GroupOrg groupOrg1 = new GroupOrg("cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com", "DIG", Collections.singleton("wuser"));
 		final Map<String, GroupOrg> groupsMap = new HashMap<>();
 		groupsMap.put("dig", groupOrg1);
@@ -438,13 +438,13 @@ public class UserOrgResourceTest extends AbstractAppTest {
 		Mockito.when(groupRepository.findAll()).thenReturn(groupsMap);
 		final CompanyOrg company = new CompanyOrg("ou=ing,ou=france,ou=people,dc=sample,dc=com", "ing");
 		Mockito.when(companyRepository.findById("ing")).thenReturn(company);
-		resource.delete("wuser");
+		MatcherUtil.assertThrows(Assertions.assertThrows(ValidationJsonException.class, () -> {
+			resource.delete("wuser");
+		}), "id", "last-member-of-group");
 	}
 
 	@Test
 	public void deleteUserNoWriteCompany() {
-		thrown.expect(ValidationJsonException.class);
-		thrown.expect(MatcherUtil.validationMatcher("id", BusinessException.KEY_UNKNOW_ID));
 		initSpringSecurityContext("mtuyer");
 		final CompanyOrg company = new CompanyOrg("ou=ing,ou=france,ou=people,dc=sample,dc=com", "ing");
 		final GroupOrg groupOrg1 = new GroupOrg("cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com", "DIG",
@@ -457,13 +457,13 @@ public class UserOrgResourceTest extends AbstractAppTest {
 		Mockito.when(userRepository.findByIdExpected("mtuyer", "wuser")).thenReturn(user);
 		Mockito.when(companyRepository.findById("ing")).thenReturn(company);
 		Mockito.when(groupRepository.findAll()).thenReturn(groupsMap);
-		resource.delete("wuser");
+		MatcherUtil.assertThrows(Assertions.assertThrows(ValidationJsonException.class, () -> {
+			resource.delete("wuser");
+		}), "id", BusinessException.KEY_UNKNOW_ID);
 	}
-	
+
 	@Test
 	public void resetPasswordUserNoWriteCompany() {
-		thrown.expect(ValidationJsonException.class);
-		thrown.expect(MatcherUtil.validationMatcher("id", BusinessException.KEY_UNKNOW_ID));
 		initSpringSecurityContext("mtuyer");
 		final CompanyOrg company = new CompanyOrg("ou=ing,ou=france,ou=people,dc=sample,dc=com", "ing");
 		final GroupOrg groupOrg1 = new GroupOrg("cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com", "DIG",
@@ -476,9 +476,10 @@ public class UserOrgResourceTest extends AbstractAppTest {
 		Mockito.when(userRepository.findByIdExpected("mtuyer", "wuser")).thenReturn(user);
 		Mockito.when(companyRepository.findById("ing")).thenReturn(company);
 		Mockito.when(groupRepository.findAll()).thenReturn(groupsMap);
-		resource.resetPassword("wuser");
+		MatcherUtil.assertThrows(Assertions.assertThrows(ValidationJsonException.class, () -> {
+			resource.resetPassword("wuser");
+		}), "id", BusinessException.KEY_UNKNOW_ID);
 	}
-	
 
 	@Test
 	public void mergeUserNoChange() {
@@ -496,8 +497,8 @@ public class UserOrgResourceTest extends AbstractAppTest {
 		final UserOrg newUser = newUser();
 
 		resource.mergeUser(newUser(), newUser);
-		Assert.assertEquals("department1", newUser.getDepartment());
-		Assert.assertEquals("local1", newUser.getLocalId());
+		Assertions.assertEquals("department1", newUser.getDepartment());
+		Assertions.assertEquals("local1", newUser.getLocalId());
 	}
 
 	@Test
@@ -518,8 +519,8 @@ public class UserOrgResourceTest extends AbstractAppTest {
 		newUser.setDepartment(null);
 		newUser.setLocalId(null);
 		resource.mergeUser(userOrg2, newUser);
-		Assert.assertNull(userOrg2.getDepartment());
-		Assert.assertNull(userOrg2.getLocalId());
+		Assertions.assertNull(userOrg2.getDepartment());
+		Assertions.assertNull(userOrg2.getLocalId());
 	}
 
 	@Test
@@ -540,8 +541,8 @@ public class UserOrgResourceTest extends AbstractAppTest {
 		newUser.setDepartment("department2");
 		newUser.setLocalId("local2");
 		resource.mergeUser(userOrg2, newUser);
-		Assert.assertEquals("department2", userOrg2.getDepartment());
-		Assert.assertEquals("local2", userOrg2.getLocalId());
+		Assertions.assertEquals("department2", userOrg2.getDepartment());
+		Assertions.assertEquals("local2", userOrg2.getLocalId());
 	}
 
 	/**
@@ -692,7 +693,8 @@ public class UserOrgResourceTest extends AbstractAppTest {
 	@Test
 	public void updateGroupRemoveWithInvisible() {
 		// Remove group "dig" when there is an invisible group
-		update2(userVo -> userVo.setGroups(Arrays.asList("other", "dig rha")), u -> u.setGroups(Arrays.asList("invisible", "other", "dig rha", "dig")));
+		update2(userVo -> userVo.setGroups(Arrays.asList("other", "dig rha")),
+				u -> u.setGroups(Arrays.asList("invisible", "other", "dig rha", "dig")));
 	}
 
 	@Test
@@ -840,13 +842,13 @@ public class UserOrgResourceTest extends AbstractAppTest {
 		user.setId("wuser");
 		user.setCompany("ing");
 		user.setGroups(Collections.singleton("dig rha"));
-		
+
 		Mockito.when(userRepository.findByIdExpected(DEFAULT_USER, "wuser")).thenReturn(user);
 		Mockito.when(companyRepository.findById("ing")).thenReturn(company);
 		Mockito.when(groupRepository.findAll()).thenReturn(groupsMap);
 		resource.resetPassword("wuser");
 	}
-	
+
 	@Test
 	public void lock() {
 		final CompanyOrg company = new CompanyOrg("ou=ing,ou=france,ou=people,dc=sample,dc=com", "ing");
@@ -971,11 +973,10 @@ public class UserOrgResourceTest extends AbstractAppTest {
 	 */
 	@Test
 	public void addUserToGroupNotWritableGroup() {
-		thrown.expect(ValidationJsonException.class);
-		thrown.expect(MatcherUtil.validationMatcher("group", "read-only"));
 		initSpringSecurityContext("mlavoine");
 		final GroupOrg groupOrg1 = new GroupOrg("cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com", "DIG", Collections.singleton("user1"));
-		final GroupOrg groupOrg2 = new GroupOrg("cn=DIG RHA,cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com", "DIG", Collections.singleton("user1"));
+		final GroupOrg groupOrg2 = new GroupOrg("cn=DIG RHA,cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com", "DIG",
+				Collections.singleton("user1"));
 		final UserOrg user = new UserOrg();
 		user.setCompany("gfi");
 		user.setGroups(Collections.singleton("dig rha"));
@@ -985,7 +986,9 @@ public class UserOrgResourceTest extends AbstractAppTest {
 		Mockito.when(userRepository.findById("wuser")).thenReturn(user);
 		groupFindById("mlavoine", "dig", groupOrg1);
 		groupFindById("mlavoine", "dig rha", groupOrg2);
-		resource.addUserToGroup("wuser", "dig");
+		MatcherUtil.assertThrows(Assertions.assertThrows(ValidationJsonException.class, () -> {
+			resource.addUserToGroup("wuser", "dig");
+		}), "group", "read-only");
 	}
 
 	/**
@@ -993,11 +996,10 @@ public class UserOrgResourceTest extends AbstractAppTest {
 	 */
 	@Test
 	public void removeUserFromGroupNotWritableGroup() {
-		thrown.expect(ValidationJsonException.class);
-		thrown.expect(MatcherUtil.validationMatcher("group", "read-only"));
 		initSpringSecurityContext("mlavoine");
 		final GroupOrg groupOrg1 = new GroupOrg("cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com", "DIG", Collections.singleton("user1"));
-		final GroupOrg groupOrg2 = new GroupOrg("cn=DIG RHA,cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com", "DIG", Collections.singleton("user1"));
+		final GroupOrg groupOrg2 = new GroupOrg("cn=DIG RHA,cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com", "DIG",
+				Collections.singleton("user1"));
 		final UserOrg user = new UserOrg();
 		user.setCompany("gfi");
 		user.setGroups(Collections.singleton("dig rha"));
@@ -1007,7 +1009,9 @@ public class UserOrgResourceTest extends AbstractAppTest {
 		Mockito.when(userRepository.findById("wuser")).thenReturn(user);
 		groupFindById("mlavoine", "dig", groupOrg1);
 		groupFindById("mlavoine", "dig rha", groupOrg2);
-		resource.removeUserFromGroup("wuser", "dig rha");
+		MatcherUtil.assertThrows(Assertions.assertThrows(ValidationJsonException.class, () -> {
+			resource.removeUserFromGroup("wuser", "dig rha");
+		}), "group", "read-only");
 	}
 
 	/**
@@ -1017,7 +1021,8 @@ public class UserOrgResourceTest extends AbstractAppTest {
 	public void removeUserFromGroup() {
 		final GroupOrg groupOrg1 = new GroupOrg("cn=DIG RHA,cn=DIG AS,cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com", "DIG RHA",
 				Collections.singleton("wuser"));
-		final GroupOrg groupOrg2 = new GroupOrg("cn=DIG AS,cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com", "DIG AS", Collections.singleton("wuser"));
+		final GroupOrg groupOrg2 = new GroupOrg("cn=DIG AS,cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com", "DIG AS",
+				Collections.singleton("wuser"));
 		groupOrg2.setLocked(true);
 		final Map<String, GroupOrg> groupsMap = new HashMap<>();
 		groupsMap.put("dig rha", groupOrg1);
@@ -1027,11 +1032,11 @@ public class UserOrgResourceTest extends AbstractAppTest {
 		Mockito.when(companyRepository.findById("ing")).thenReturn(company);
 		Mockito.when(userRepository.findByIdExpected("wuser")).thenReturn(user);
 		Mockito.when(userRepository.findById("wuser")).thenReturn(user);
-		groupFindById(DEFAULT_USER, "dig rha",groupOrg1);
-		groupFindById(DEFAULT_USER, "dig as",groupOrg2);
+		groupFindById(DEFAULT_USER, "dig rha", groupOrg1);
+		groupFindById(DEFAULT_USER, "dig as", groupOrg2);
 		resource.removeUserFromGroup("wuser", "dig rha");
 	}
-	
+
 	private void groupFindById(final String user, final String id, final GroupOrg group) {
 		Mockito.when(groupRepository.findByIdExpected(user, id)).thenReturn(group);
 		Mockito.when(groupRepository.findById(user, id)).thenReturn(group);
@@ -1042,21 +1047,21 @@ public class UserOrgResourceTest extends AbstractAppTest {
 	public void isGrantedNotSameType() {
 		final DelegateOrg delegate = new DelegateOrg();
 		delegate.setType(DelegateType.GROUP);
-		Assert.assertFalse(resource.isGrantedAccess(delegate, null, DelegateType.COMPANY, true));
+		Assertions.assertFalse(resource.isGrantedAccess(delegate, null, DelegateType.COMPANY, true));
 	}
 
 	@Test
 	public void isGrantedSameTypeNoRight() {
 		final DelegateOrg delegate = new DelegateOrg();
 		delegate.setType(DelegateType.GROUP);
-		Assert.assertFalse(resource.isGrantedAccess(delegate, null, DelegateType.GROUP, true));
+		Assertions.assertFalse(resource.isGrantedAccess(delegate, null, DelegateType.GROUP, true));
 	}
 
 	@Test
 	public void isGrantedSameTypeNotSameDn() {
 		final DelegateOrg delegate = new DelegateOrg();
 		delegate.setType(DelegateType.GROUP);
-		Assert.assertFalse(resource.isGrantedAccess(delegate, null, DelegateType.GROUP, false));
+		Assertions.assertFalse(resource.isGrantedAccess(delegate, null, DelegateType.GROUP, false));
 	}
 
 	@Test
@@ -1064,7 +1069,7 @@ public class UserOrgResourceTest extends AbstractAppTest {
 		final DelegateOrg delegate = new DelegateOrg();
 		delegate.setType(DelegateType.GROUP);
 		delegate.setDn("rightdn");
-		Assert.assertTrue(resource.isGrantedAccess(delegate, "rightdn", DelegateType.GROUP, false));
+		Assertions.assertTrue(resource.isGrantedAccess(delegate, "rightdn", DelegateType.GROUP, false));
 	}
 
 	@Test
@@ -1073,7 +1078,7 @@ public class UserOrgResourceTest extends AbstractAppTest {
 		delegate.setType(DelegateType.GROUP);
 		delegate.setCanAdmin(true);
 		delegate.setDn("rightdn");
-		Assert.assertTrue(resource.isGrantedAccess(delegate, "rightdn", DelegateType.GROUP, true));
+		Assertions.assertTrue(resource.isGrantedAccess(delegate, "rightdn", DelegateType.GROUP, true));
 	}
 
 	@Test
@@ -1082,7 +1087,7 @@ public class UserOrgResourceTest extends AbstractAppTest {
 		delegate.setType(DelegateType.GROUP);
 		delegate.setCanWrite(true);
 		delegate.setDn("rightdn");
-		Assert.assertTrue(resource.isGrantedAccess(delegate, "rightdn", DelegateType.GROUP, true));
+		Assertions.assertTrue(resource.isGrantedAccess(delegate, "rightdn", DelegateType.GROUP, true));
 	}
 
 }

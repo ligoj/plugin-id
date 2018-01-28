@@ -4,13 +4,12 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.BiConsumer;
 
-import javax.validation.ValidationException;
-
 import org.apache.commons.lang3.StringUtils;
 import org.ligoj.app.iam.UserOrg;
 import org.ligoj.app.iam.dao.DelegateOrgRepository;
 import org.ligoj.app.plugin.id.resource.UserOrgEditionVo;
 import org.ligoj.app.plugin.id.resource.UserOrgResource;
+import org.ligoj.bootstrap.core.validation.ValidationJsonException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Scope;
@@ -70,13 +69,13 @@ public class UserAtomicLdapTask extends AbstractLdapBatchTask<UserUpdateEntry> {
 		final UserBatchUpdateType type = UPDATE_ACTION_TYPES.get(entry.getOperation());
 		if (type == null) {
 			// Non supported operation
-			throw new ValidationException("unsupported-operation");
+			throw new ValidationJsonException("operation", "unsupported-operation");
 		}
 
 		// Check the null value for non attribute operation
 		if (type != UserBatchUpdateType.ATTRIBUTE && StringUtils.isNotBlank(entry.getValue())) {
 			// Non supported operation
-			throw new ValidationException("null-value-expected");
+			throw new ValidationJsonException("value", "null-value-expected");
 		}
 
 		// Update the user

@@ -7,13 +7,11 @@ import java.nio.charset.StandardCharsets;
 
 import javax.transaction.Transactional;
 
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.FixMethodOrder;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.MethodSorters;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.ligoj.app.DefaultVerificationMode;
 import org.ligoj.app.iam.model.DelegateOrg;
 import org.ligoj.app.model.ContainerType;
@@ -31,15 +29,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 /**
  * Test of {@link GroupBatchLdapResource}
  */
-@RunWith(SpringJUnit4ClassRunner.class)
+@ExtendWith(SpringExtension.class)
 @ContextConfiguration(locations = "classpath:/META-INF/spring/application-context-test.xml")
 @Rollback
-@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 @Transactional
 public class GroupBatchLdapResourceTest extends AbstractLdapBatchTest {
 
@@ -49,7 +46,7 @@ public class GroupBatchLdapResourceTest extends AbstractLdapBatchTest {
 	private GroupResource mockLdapResource;
 
 	@SuppressWarnings("unchecked")
-	@Before
+	@BeforeEach
 	public void mockApplicationContext() {
 		final ApplicationContext applicationContext = Mockito.mock(ApplicationContext.class);
 		SpringUtils.setSharedApplicationContext(applicationContext);
@@ -74,12 +71,12 @@ public class GroupBatchLdapResourceTest extends AbstractLdapBatchTest {
 		Mockito.when(mockTask.containerScopeResource.findByName("Fonction")).thenReturn(container);
 	}
 
-	@After
+	@AfterEach
 	public void unmockApplicationContext() {
 		SpringUtils.setSharedApplicationContext(super.applicationContext);
 	}
 
-	@Before
+	@BeforeEach
 	public void prepareData() throws IOException {
 		persistEntities("csv", new Class[] { DelegateOrg.class }, StandardCharsets.UTF_8.name());
 	}
@@ -90,14 +87,14 @@ public class GroupBatchLdapResourceTest extends AbstractLdapBatchTest {
 
 		// Check the result
 		final GroupImportEntry importEntry = checkImportTask(importTask);
-		Assert.assertEquals("Gfi France", importEntry.getName());
-		Assert.assertEquals("Fonction", importEntry.getType());
-		Assert.assertNull(importEntry.getDepartment());
-		Assert.assertNull(importEntry.getOwner());
-		Assert.assertNull(importEntry.getAssistant());
-		Assert.assertNull(importEntry.getParent());
-		Assert.assertTrue(importEntry.getStatus());
-		Assert.assertNull(importEntry.getStatusText());
+		Assertions.assertEquals("Gfi France", importEntry.getName());
+		Assertions.assertEquals("Fonction", importEntry.getType());
+		Assertions.assertNull(importEntry.getDepartment());
+		Assertions.assertNull(importEntry.getOwner());
+		Assertions.assertNull(importEntry.getAssistant());
+		Assertions.assertNull(importEntry.getParent());
+		Assertions.assertTrue(importEntry.getStatus());
+		Assertions.assertNull(importEntry.getStatusText());
 
 		// Check LDAP
 		Mockito.verify(mockLdapResource, new DefaultVerificationMode(data -> {
@@ -105,13 +102,13 @@ public class GroupBatchLdapResourceTest extends AbstractLdapBatchTest {
 				throw new MockitoException("Expect one call");
 			}
 			final GroupEditionVo group = (GroupEditionVo) data.getAllInvocations().get(0).getArguments()[0];
-			Assert.assertNotNull(group);
-			Assert.assertEquals("Gfi France", group.getName());
-			Assert.assertNotNull(group.getScope());
-			Assert.assertTrue(group.getDepartments().isEmpty());
-			Assert.assertTrue(group.getOwners().isEmpty());
-			Assert.assertTrue(group.getAssistants().isEmpty());
-			Assert.assertNull(group.getParent());
+			Assertions.assertNotNull(group);
+			Assertions.assertEquals("Gfi France", group.getName());
+			Assertions.assertNotNull(group.getScope());
+			Assertions.assertTrue(group.getDepartments().isEmpty());
+			Assertions.assertTrue(group.getOwners().isEmpty());
+			Assertions.assertTrue(group.getAssistants().isEmpty());
+			Assertions.assertNull(group.getParent());
 		})).create(null);
 	}
 
@@ -122,14 +119,14 @@ public class GroupBatchLdapResourceTest extends AbstractLdapBatchTest {
 
 		// Check the result
 		final GroupImportEntry importEntry = checkImportTask(importTask);
-		Assert.assertEquals("Opérations Spéciales", importEntry.getName());
-		Assert.assertEquals("Fonction", importEntry.getType());
-		Assert.assertEquals("Operations", importEntry.getParent());
-		Assert.assertEquals("fdaugan,alongchu", importEntry.getOwner());
-		Assert.assertEquals("jdoe5,wuser", importEntry.getAssistant());
-		Assert.assertEquals("700301,700302", importEntry.getDepartment());
-		Assert.assertTrue(importEntry.getStatus());
-		Assert.assertNull(importEntry.getStatusText());
+		Assertions.assertEquals("Opérations Spéciales", importEntry.getName());
+		Assertions.assertEquals("Fonction", importEntry.getType());
+		Assertions.assertEquals("Operations", importEntry.getParent());
+		Assertions.assertEquals("fdaugan,alongchu", importEntry.getOwner());
+		Assertions.assertEquals("jdoe5,wuser", importEntry.getAssistant());
+		Assertions.assertEquals("700301,700302", importEntry.getDepartment());
+		Assertions.assertTrue(importEntry.getStatus());
+		Assertions.assertNull(importEntry.getStatusText());
 
 		// Check LDAP
 		Mockito.verify(mockLdapResource, new DefaultVerificationMode(data -> {
@@ -137,16 +134,16 @@ public class GroupBatchLdapResourceTest extends AbstractLdapBatchTest {
 				throw new MockitoException("Expect one call");
 			}
 			final GroupEditionVo group = (GroupEditionVo) data.getAllInvocations().get(0).getArguments()[0];
-			Assert.assertNotNull(group);
-			Assert.assertEquals("Opérations Spéciales", group.getName());
-			Assert.assertNotNull(group.getScope());
-			Assert.assertEquals(2, group.getOwners().size());
-			Assert.assertEquals("fdaugan", group.getOwners().get(0));
-			Assert.assertEquals(2, group.getAssistants().size());
-			Assert.assertEquals("jdoe5", group.getAssistants().get(0));
-			Assert.assertEquals(2, group.getDepartments().size());
-			Assert.assertEquals("700301", group.getDepartments().get(0));
-			Assert.assertEquals("Operations", group.getParent());
+			Assertions.assertNotNull(group);
+			Assertions.assertEquals("Opérations Spéciales", group.getName());
+			Assertions.assertNotNull(group.getScope());
+			Assertions.assertEquals(2, group.getOwners().size());
+			Assertions.assertEquals("fdaugan", group.getOwners().get(0));
+			Assertions.assertEquals(2, group.getAssistants().size());
+			Assertions.assertEquals("jdoe5", group.getAssistants().get(0));
+			Assertions.assertEquals(2, group.getDepartments().size());
+			Assertions.assertEquals("700301", group.getDepartments().get(0));
+			Assertions.assertEquals("Operations", group.getParent());
 		})).create(null);
 	}
 
@@ -158,10 +155,10 @@ public class GroupBatchLdapResourceTest extends AbstractLdapBatchTest {
 			throws IOException, InterruptedException {
 		initSpringSecurityContext(DEFAULT_USER);
 		final long id = resource.full(input, headers, encoding);
-		Assert.assertNotNull(id);
+		Assertions.assertNotNull(id);
 		@SuppressWarnings("unchecked")
 		final BatchTaskVo<U> importTask = (BatchTaskVo<U>) resource.getImportTask(id);
-		Assert.assertEquals(id, importTask.getId());
+		Assertions.assertEquals(id, importTask.getId());
 		return waitImport(importTask);
 	}
 

@@ -8,11 +8,10 @@ import java.util.Map;
 import javax.transaction.Transactional;
 import javax.ws.rs.core.UriInfo;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.MethodSorters;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.ligoj.app.MatcherUtil;
 import org.ligoj.app.iam.CompanyOrg;
 import org.ligoj.app.iam.ContainerOrg;
@@ -29,21 +28,20 @@ import org.mockito.Mockito;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 /**
  * Test class of {@link GroupResource}
  */
-@RunWith(SpringJUnit4ClassRunner.class)
+@ExtendWith(SpringExtension.class)
 @ContextConfiguration(locations = "classpath:/META-INF/spring/application-context-test.xml")
 @Rollback
 @Transactional
-@org.junit.FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class GroupResourceTest extends AbstractContainerResourceTest {
 
 	private GroupResource resource;
 
-	@Before
+	@BeforeEach
 	public void mock() {
 		resource = new GroupResource();
 		applicationContext.getAutowireCapableBeanFactory().autowireBean(resource);
@@ -79,33 +77,34 @@ public class GroupResourceTest extends AbstractContainerResourceTest {
 		Mockito.when(companyRepository.findAll()).thenReturn(companies);
 		Mockito.when(userRepository.findAll()).thenReturn(users);
 		Mockito.when(groupRepository.findAll()).thenReturn(groupsMap);
-		Mockito.when(groupRepository.findAll(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
+		Mockito.when(
+				groupRepository.findAll(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
 				.thenReturn(new PageImpl<>(Arrays.asList(groupOrg1, groupOrg2)));
 
 		final TableItem<ContainerCountVo> groups = resource.findAll(newUriInfoAscSearch("name", "d"));
-		Assert.assertEquals(2, groups.getRecordsTotal());
-		Assert.assertEquals(2, groups.getRecordsFiltered());
-		Assert.assertEquals(2, groups.getData().size());
+		Assertions.assertEquals(2, groups.getRecordsTotal());
+		Assertions.assertEquals(2, groups.getRecordsFiltered());
+		Assertions.assertEquals(2, groups.getData().size());
 
 		final ContainerCountVo group0 = groups.getData().get(0);
-		Assert.assertEquals("DIG", group0.getName());
-		Assert.assertEquals(1, group0.getCount());
-		Assert.assertEquals(0, group0.getCountVisible());
-		Assert.assertTrue(group0.isCanAdmin());
-		Assert.assertTrue(group0.isCanWrite());
-		Assert.assertEquals("Fonction", group0.getScope());
-		Assert.assertEquals("dig", group0.getId());
-		Assert.assertFalse(group0.isLocked());
+		Assertions.assertEquals("DIG", group0.getName());
+		Assertions.assertEquals(1, group0.getCount());
+		Assertions.assertEquals(0, group0.getCountVisible());
+		Assertions.assertTrue(group0.isCanAdmin());
+		Assertions.assertTrue(group0.isCanWrite());
+		Assertions.assertEquals("Fonction", group0.getScope());
+		Assertions.assertEquals("dig", group0.getId());
+		Assertions.assertFalse(group0.isLocked());
 
 		final ContainerCountVo group10 = groups.getData().get(1);
-		Assert.assertEquals("DIG RHA", group10.getName());
-		Assert.assertEquals(1, group10.getCount());
-		Assert.assertEquals(0, group10.getCountVisible());
-		Assert.assertTrue(group10.isCanAdmin());
-		Assert.assertTrue(group10.isCanWrite());
-		Assert.assertEquals("Fonction", group10.getScope());
-		Assert.assertEquals(ContainerType.GROUP, group10.getContainerType());
-		Assert.assertTrue(group10.isLocked());
+		Assertions.assertEquals("DIG RHA", group10.getName());
+		Assertions.assertEquals(1, group10.getCount());
+		Assertions.assertEquals(0, group10.getCountVisible());
+		Assertions.assertTrue(group10.isCanAdmin());
+		Assertions.assertTrue(group10.isCanWrite());
+		Assertions.assertEquals("Fonction", group10.getScope());
+		Assertions.assertEquals(ContainerType.GROUP, group10.getContainerType());
+		Assertions.assertTrue(group10.isLocked());
 
 	}
 
@@ -114,13 +113,13 @@ public class GroupResourceTest extends AbstractContainerResourceTest {
 		Mockito.when(groupRepository.findById(DEFAULT_USER, "business solution"))
 				.thenReturn(new GroupOrg("cn=Business Solution,ou=groups,dc=sample,dc=com", "Business Solution", null));
 		final ContainerWithScopeVo group = resource.findByName("business solution");
-		Assert.assertEquals("Business Solution", group.getName());
-		Assert.assertNull(group.getScope());
+		Assertions.assertEquals("Business Solution", group.getName());
+		Assertions.assertNull(group.getScope());
 	}
 
 	@Test
 	public void findByNameNotExistingGroup() {
-		Assert.assertNull(resource.findByName("any"));
+		Assertions.assertNull(resource.findByName("any"));
 	}
 
 	@Test
@@ -128,34 +127,35 @@ public class GroupResourceTest extends AbstractContainerResourceTest {
 		Mockito.when(groupRepository.findById(DEFAULT_USER, "dig as"))
 				.thenReturn(new GroupOrg("cn=DIG AS,cn=DIG AS,cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com", "DIG AS", null));
 		final ContainerWithScopeVo group = resource.findByName("dig as");
-		Assert.assertEquals("DIG AS", group.getName());
-		Assert.assertEquals("Fonction", group.getScope());
+		Assertions.assertEquals("DIG AS", group.getName());
+		Assertions.assertEquals("Fonction", group.getScope());
 	}
 
 	@Test
 	public void findByIdNotExists() {
-		Assert.assertNull(resource.findById("any"));
+		Assertions.assertNull(resource.findById("any"));
 	}
 
 	/**
-	 * There is a delegate of "business solution" for this user, but the user does not exist anymore.
+	 * There is a delegate of "business solution" for this user, but the user
+	 * does not exist anymore.
 	 */
 	@Test
 	public void findByIdUserNoRight() {
 		initSpringSecurityContext("assist");
-		Assert.assertNull(resource.findById("business solution"));
+		Assertions.assertNull(resource.findById("business solution"));
 	}
 
 	@Test
 	public void exists() {
 		Mockito.when(groupRepository.findById(DEFAULT_USER, "dig as"))
 				.thenReturn(new GroupOrg("cn=DIG AS,cn=DIG AS,cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com", "dig as", null));
-		Assert.assertTrue(resource.exists("dig as"));
+		Assertions.assertTrue(resource.exists("dig as"));
 	}
 
 	@Test
 	public void existsNot() {
-		Assert.assertFalse(resource.exists("any"));
+		Assertions.assertFalse(resource.exists("any"));
 	}
 
 	@Test
@@ -191,17 +191,17 @@ public class GroupResourceTest extends AbstractContainerResourceTest {
 		group.setScope(scope.getId());
 		final GroupOrg groupOrg1 = new GroupOrg("cn=new-group", "new-group", null);
 		Mockito.when(groupRepository.create(expected, "new-group")).thenReturn(groupOrg1);
-		Assert.assertEquals("new-group", resource.create(group));
+		Assertions.assertEquals("new-group", resource.create(group));
 	}
 
 	@Test
 	public void deleteNoRight() {
-		thrown.expect(ValidationJsonException.class);
-		thrown.expect(MatcherUtil.validationMatcher("group", "unknown-id"));
 		initSpringSecurityContext("mmartin");
 		Mockito.when(groupRepository.findByIdExpected("mmartin", "dig rha"))
 				.thenReturn(new GroupOrg("cn=DIG RHA,cn=DIG AS,cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com", "dig rha", null));
-		resource.delete("dig rha");
+		MatcherUtil.assertThrows(Assertions.assertThrows(ValidationJsonException.class, () -> {
+			resource.delete("dig rha");
+		}), "group", "unknown-id");
 	}
 
 	@Test
@@ -227,19 +227,20 @@ public class GroupResourceTest extends AbstractContainerResourceTest {
 		group.setParent(" DiG ");
 		Mockito.when(groupRepository.findByIdExpected(DEFAULT_USER, "dig"))
 				.thenReturn(new GroupOrg("cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com", "DIG", null));
-		Assert.assertEquals("cn=new-group,cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com", resource.toDn(group, scope));
+		Assertions.assertEquals("cn=new-group,cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com", resource.toDn(group, scope));
 	}
 
 	@Test
 	public void toDnParentInvalid() {
-		thrown.expect(ValidationJsonException.class);
-		thrown.expect(MatcherUtil.validationMatcher("parent", "container-parent-type-match"));
 		final ContainerScope scope = containerScopeRepository.findByName("Fonction");
 		final GroupEditionVo group = new GroupEditionVo();
 		group.setName("new-group");
 		group.setParent(" DiG ");
-		Mockito.when(groupRepository.findByIdExpected(DEFAULT_USER, "dig")).thenReturn(new GroupOrg("cn=ext,dc=sample,dc=com", "DIG", null));
-		Assert.assertEquals("cn=new-group", resource.toDn(group, scope));
+		Mockito.when(groupRepository.findByIdExpected(DEFAULT_USER, "dig"))
+				.thenReturn(new GroupOrg("cn=ext,dc=sample,dc=com", "DIG", null));
+		MatcherUtil.assertThrows(Assertions.assertThrows(ValidationJsonException.class, () -> {
+			resource.toDn(group, scope);
+		}), "parent", "container-parent-type-match");
 	}
 
 	@Test
@@ -247,13 +248,15 @@ public class GroupResourceTest extends AbstractContainerResourceTest {
 		final ContainerScope scope = containerScopeRepository.findByName("Fonction");
 		final GroupEditionVo group = new GroupEditionVo();
 		group.setName("new-group");
-		Assert.assertEquals("cn=new-group,ou=fonction,ou=groups,dc=sample,dc=com", resource.toDn(group, scope));
+		Assertions.assertEquals("cn=new-group,ou=fonction,ou=groups,dc=sample,dc=com", resource.toDn(group, scope));
 	}
 
-	@Test(expected = ValidationJsonException.class)
+	@Test
 	public void emptyNoRight() {
 		initSpringSecurityContext("mmartin");
-		resource.empty("dig rha");
+		MatcherUtil.assertThrows(Assertions.assertThrows(ValidationJsonException.class, () -> {
+			resource.empty("dig rha");
+		}), "group", "unknown-id");
 	}
 
 	/**
@@ -263,13 +266,14 @@ public class GroupResourceTest extends AbstractContainerResourceTest {
 	public void getContainersForWrite() {
 		initSpringSecurityContext("mlavoine");
 		final TableItem<String> managed = resource.getContainersForWrite(newUriInfo());
-		Assert.assertEquals(0, managed.getRecordsFiltered());
-		Assert.assertEquals(0, managed.getRecordsTotal());
-		Assert.assertEquals(0, managed.getData().size());
+		Assertions.assertEquals(0, managed.getRecordsFiltered());
+		Assertions.assertEquals(0, managed.getRecordsTotal());
+		Assertions.assertEquals(0, managed.getData().size());
 	}
 
 	/**
-	 * Check managed group is filtered against available groups for administration.
+	 * Check managed group is filtered against available groups for
+	 * administration.
 	 */
 	@Test
 	public void getContainersForAdmin() {
@@ -277,38 +281,40 @@ public class GroupResourceTest extends AbstractContainerResourceTest {
 		final TableItem<String> managed = resource.getContainersForAdmin(newUriInfo());
 
 		// This user can see 4 groups from the direct admin delegates to him
-		Assert.assertEquals(4, managed.getRecordsFiltered());
-		Assert.assertEquals(4, managed.getRecordsTotal());
-		Assert.assertEquals(4, managed.getData().size());
+		Assertions.assertEquals(4, managed.getRecordsFiltered());
+		Assertions.assertEquals(4, managed.getRecordsTotal());
+		Assertions.assertEquals(4, managed.getData().size());
 	}
 
 	/**
-	 * Check managed group is filtered against available groups for administration.
+	 * Check managed group is filtered against available groups for
+	 * administration.
 	 */
 	@Test
 	public void getContainersForAdminNoRight() {
 		initSpringSecurityContext("mlavoine");
 		final TableItem<String> managed = resource.getContainersForAdmin(newUriInfo());
-		Assert.assertEquals(0, managed.getRecordsFiltered());
-		Assert.assertEquals(0, managed.getRecordsTotal());
-		Assert.assertEquals(0, managed.getData().size());
+		Assertions.assertEquals(0, managed.getRecordsFiltered());
+		Assertions.assertEquals(0, managed.getRecordsTotal());
+		Assertions.assertEquals(0, managed.getData().size());
 	}
 
 	@Test
 	public void getContainersDelegateTreeExactParentDn() {
 		initSpringSecurityContext("mlavoine");
 		final TableItem<String> managed = resource.getContainers(newUriInfo());
-		Assert.assertEquals(4, managed.getRecordsFiltered());
-		Assert.assertEquals(4, managed.getRecordsTotal());
-		Assert.assertEquals(4, managed.getData().size());
+		Assertions.assertEquals(4, managed.getRecordsFiltered());
+		Assertions.assertEquals(4, managed.getRecordsTotal());
+		Assertions.assertEquals(4, managed.getData().size());
 
-		// Brought by a delegate of "cn=biz agency,ou=tools,dc=sample,dc=com" to company user "mlavoine"
-		Assert.assertTrue(managed.getData().contains("Biz Agency"));
-		Assert.assertTrue(managed.getData().contains("Biz Agency Manager"));
+		// Brought by a delegate of "cn=biz agency,ou=tools,dc=sample,dc=com" to
+		// company user "mlavoine"
+		Assertions.assertTrue(managed.getData().contains("Biz Agency"));
+		Assertions.assertTrue(managed.getData().contains("Biz Agency Manager"));
 
 		// Brought by a delegate of "Business Solution" to company "ing"
-		Assert.assertTrue(managed.getData().contains("Business Solution"));
-		Assert.assertTrue(managed.getData().contains("Sub Business Solution"));
+		Assertions.assertTrue(managed.getData().contains("Business Solution"));
+		Assertions.assertTrue(managed.getData().contains("Sub Business Solution"));
 	}
 
 	@Test
@@ -317,42 +323,43 @@ public class GroupResourceTest extends AbstractContainerResourceTest {
 		final UriInfo uriInfo = newUriInfo();
 		uriInfo.getQueryParameters().add(DataTableAttributes.PAGE_LENGTH, "100");
 		final TableItem<String> managed = resource.getContainers(uriInfo);
-		Assert.assertEquals(6, managed.getRecordsFiltered());
-		Assert.assertEquals(6, managed.getRecordsTotal());
-		Assert.assertEquals(6, managed.getData().size());
+		Assertions.assertEquals(6, managed.getRecordsFiltered());
+		Assertions.assertEquals(6, managed.getRecordsTotal());
+		Assertions.assertEquals(6, managed.getData().size());
 
-		// Brought by a delegate of "ou=fonction,ou=groups,dc=sample,dc=com" to company user "mtuyer"
-		Assert.assertTrue(managed.getData().contains("DIG AS"));
-		Assert.assertTrue(managed.getData().contains("DIG"));
+		// Brought by a delegate of "ou=fonction,ou=groups,dc=sample,dc=com" to
+		// company user "mtuyer"
+		Assertions.assertTrue(managed.getData().contains("DIG AS"));
+		Assertions.assertTrue(managed.getData().contains("DIG"));
 
 		// Brought by a delegate of "Business Solution" to company "ing"
-		Assert.assertTrue(managed.getData().contains("Business Solution"));
-		Assert.assertTrue(managed.getData().contains("Sub Business Solution"));
+		Assertions.assertTrue(managed.getData().contains("Business Solution"));
+		Assertions.assertTrue(managed.getData().contains("Sub Business Solution"));
 	}
 
 	@Test
 	public void getContainersNoDelegate() {
 		initSpringSecurityContext("any");
 		final TableItem<String> managed = resource.getContainers(newUriInfo());
-		Assert.assertEquals(0, managed.getRecordsFiltered());
-		Assert.assertEquals(0, managed.getRecordsTotal());
-		Assert.assertEquals(0, managed.getData().size());
+		Assertions.assertEquals(0, managed.getRecordsFiltered());
+		Assertions.assertEquals(0, managed.getRecordsTotal());
+		Assertions.assertEquals(0, managed.getData().size());
 	}
 
 	@Test
 	public void getContainersDelegateGroup() {
 		initSpringSecurityContext("someone");
 		final TableItem<String> managed = resource.getContainers(newUriInfo());
-		Assert.assertEquals(1, managed.getRecordsFiltered());
-		Assert.assertEquals(1, managed.getRecordsTotal());
-		Assert.assertEquals(1, managed.getData().size());
-		Assert.assertTrue(managed.getData().contains("DIG RHA"));
+		Assertions.assertEquals(1, managed.getRecordsFiltered());
+		Assertions.assertEquals(1, managed.getRecordsTotal());
+		Assertions.assertEquals(1, managed.getData().size());
+		Assertions.assertTrue(managed.getData().contains("DIG RHA"));
 	}
 
 	@Test
 	public void newContainerCountVo() {
 		ContainerOrg rawContainer = new ContainerOrg("dn=no-scope", "name");
-		Assert.assertNull(
-				resource.newContainerCountVo(rawContainer, Collections.emptySet(), Collections.emptySet(), Collections.emptyList()).getScope());
+		Assertions.assertNull(resource
+				.newContainerCountVo(rawContainer, Collections.emptySet(), Collections.emptySet(), Collections.emptyList()).getScope());
 	}
 }
