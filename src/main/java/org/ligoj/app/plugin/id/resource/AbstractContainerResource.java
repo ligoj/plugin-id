@@ -446,7 +446,7 @@ public abstract class AbstractContainerResource<T extends ContainerOrg, V extend
 	 * @return The internal representation of {@link org.ligoj.app.iam.model.CacheCompany} set. Ordered by the name.
 	 */
 	protected Page<T> toInternal(final Page<C> cacheItems) {
-		return new PageImpl<>(new ArrayList<>(toInternal(cacheItems.getContent())), cacheItems.getPageable(), 0);
+		return new PageImpl<>(new ArrayList<>(toInternal(cacheItems.getContent())), cacheItems.getPageable(), cacheItems.getTotalElements());
 	}
 
 	protected String getTypeName() {
