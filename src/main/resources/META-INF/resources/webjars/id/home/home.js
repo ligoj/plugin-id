@@ -243,7 +243,7 @@ define(function () {
 						var company = $('#search-company').select2('data');
 						var group = $('#search-group').select2('data');
 						if (company || group) {
-							return REST_PATH + 'service/id/user?' + (company ? 'company=' + company.id : '') + ((company && group) ? '&' : '') + (group ? 'group=' + group.id : '');
+							return REST_PATH + 'service/id/user?' + (company ? 'company=' + (company.id || company) : '') + ((company && group) ? '&' : '') + (group ? 'group=' + (group.id || group) : '');
 						}
 						return REST_PATH + 'service/id/user';
 					},
