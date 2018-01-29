@@ -17,7 +17,6 @@ import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriInfo;
@@ -59,7 +58,8 @@ public class ContainerScopeResource {
 	}
 
 	/**
-	 * Return all {@link ContainerScope} in descendant order by DN in order to match the finest associations first.
+	 * Return all {@link ContainerScope} in descendant order by DN in order to
+	 * match the finest associations first.
 	 * 
 	 * @param type
 	 *            The {@link ContainerType} to filter. Required.
@@ -76,23 +76,16 @@ public class ContainerScopeResource {
 	 * @param type
 	 *            filtered {@link ContainerType}.
 	 * @param uriInfo
-	 *            filter data.
+	 *            Filter data including criteria.
 	 * @param criteria
 	 *            the optional criteria to match.
 	 * @return found group types.
 	 */
 	@GET
 	@Path("{type}")
-	public TableItem<ContainerScope> findAll(@PathParam("type") final ContainerType type, @Context final UriInfo uriInfo,
-			@QueryParam(DataTableAttributes.SEARCH) final String criteria) {
-
-		final Page<ContainerScope> findAll;
-		if (StringUtils.isBlank(criteria)) {
-			findAll = repository.findAllByType(type, paginationJson.getPageRequest(uriInfo, ORDERED_COLUMNS));
-		} else {
-			// Global search support
-			findAll = repository.findAll(type, criteria, paginationJson.getPageRequest(uriInfo, ORDERED_COLUMNS));
-		}
+	public TableItem<ContainerScope> findAll(@PathParam("type") final ContainerType type, @Context final UriInfo uriInfo) {
+		final String criteria = StringUtils.trimToEmpty(DataTableAttributes.getSearch(uriInfo));
+		final Page<ContainerScope> findAll = repository.findAll(type, criteria, paginationJson.getPageRequest(uriInfo, ORDERED_COLUMNS));
 
 		// apply pagination and prevent lazy initialization issue
 		return paginationJson.applyPagination(uriInfo, findAll, Function.identity());
@@ -159,7 +152,8 @@ public class ContainerScopeResource {
 	}
 
 	/**
-	 * Delete {@link ContainerScope} from its identifier. Only non-locked objects can be deleted.
+	 * Delete {@link ContainerScope} from its identifier. Only non-locked
+	 * objects can be deleted.
 	 * 
 	 * @param id
 	 *            Identifier of {@link ContainerScope} to delete.

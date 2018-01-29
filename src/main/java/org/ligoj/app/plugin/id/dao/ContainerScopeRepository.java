@@ -47,19 +47,6 @@ public interface ContainerScopeRepository extends RestRepository<ContainerScope,
 	 *            The {@link Pageable} context.
 	 * @return types of group.
 	 */
-	@Query("SELECT g FROM ContainerScope g WHERE type=:type AND (UPPER(g.name) LIKE UPPER(CONCAT(CONCAT('%',:criteria),'%'))"
-			+ " OR UPPER(g.dn) LIKE UPPER(CONCAT(CONCAT('%',:criteria),'%')))")
+	@Query("SELECT g FROM ContainerScope g WHERE type=:type AND UPPER(g.name) LIKE UPPER(CONCAT(CONCAT('%',:criteria),'%'))")
 	Page<ContainerScope> findAll(@Param("type") ContainerType type, @Param("criteria") String criteria, Pageable page);
-
-	/**
-	 * Return all types by {@link ContainerType}.
-	 * 
-	 * @param type
-	 *            The {@link ContainerType} to filter. Required.
-	 * @param page
-	 *            The {@link Pageable} context.
-	 * @return types of group.
-	 */
-	@Query("SELECT g FROM ContainerScope g WHERE type=:type")
-	Page<ContainerScope> findAllByType(@Param("type") ContainerType type, Pageable page);
 }

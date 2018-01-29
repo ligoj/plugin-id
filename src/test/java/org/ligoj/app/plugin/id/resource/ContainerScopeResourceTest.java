@@ -50,7 +50,7 @@ public class ContainerScopeResourceTest extends AbstractJpaTest {
 		// create a mock URI info with pagination informations
 		final UriInfo uriInfo = newFindAllParameters();
 
-		final TableItem<ContainerScope> result = resource.findAll(ContainerType.GROUP, uriInfo, null);
+		final TableItem<ContainerScope> result = resource.findAll(ContainerType.GROUP, uriInfo);
 		Assertions.assertEquals(4, result.getData().size());
 
 		final ContainerScope type = result.getData().get(1);
@@ -80,8 +80,11 @@ public class ContainerScopeResourceTest extends AbstractJpaTest {
 	public void findAllGlobalSearch() {
 		// create a mock URI info with pagination informations
 		final UriInfo uriInfo = newFindAllParameters();
+		
+		// Add criteria
+		uriInfo.getQueryParameters().add("q", "j");
 
-		final TableItem<ContainerScope> result = resource.findAll(ContainerType.GROUP, uriInfo, "j");
+		final TableItem<ContainerScope> result = resource.findAll(ContainerType.GROUP, uriInfo);
 		Assertions.assertEquals(1, result.getData().size());
 
 		final ContainerScope type = result.getData().get(0);
