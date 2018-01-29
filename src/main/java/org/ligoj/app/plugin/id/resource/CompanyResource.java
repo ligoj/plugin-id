@@ -153,8 +153,8 @@ public class CompanyResource extends AbstractContainerResource<CompanyOrg, Conta
 	}
 
 	@Override
-	protected String toDn(final ContainerEditionVo container, final ContainerScope type) {
-		return "ou=" + container.getName() + "," + type.getDn();
+	protected String toDn(final ContainerEditionVo container, final ContainerScope scope) {
+		return "ou=" + container.getName() + "," + scope.getDn();
 	}
 
 }

@@ -77,9 +77,7 @@ public class ContainerScopeResource {
 	 *            filtered {@link ContainerType}.
 	 * @param uriInfo
 	 *            Filter data including criteria.
-	 * @param criteria
-	 *            the optional criteria to match.
-	 * @return found group types.
+	 * @return Found group types.
 	 */
 	@GET
 	@Path("{type}")
@@ -120,6 +118,10 @@ public class ContainerScopeResource {
 
 	/**
 	 * Validate and clean the type.
+	 * 
+	 * @param entity
+	 *            The entity to check.
+	 * @return The given parameter.
 	 */
 	protected ContainerScope check(final ContainerScope entity) {
 		entity.setDn(StringUtils.trimToNull(entity.getDn()));
@@ -131,8 +133,8 @@ public class ContainerScopeResource {
 	 * Retrieve a type by its identifier.
 	 * 
 	 * @param id
-	 *            type identifier.
-	 * @return corresponding {@link ContainerScope}.
+	 *            Type identifier.
+	 * @return Corresponding {@link ContainerScope}.
 	 */
 	@GET
 	@Path("{id:\\d+}")

@@ -56,7 +56,8 @@ import lombok.extern.slf4j.Slf4j;
  *            The container cache type.
  */
 @Slf4j
-public abstract class AbstractContainerResource<T extends ContainerOrg, V extends ContainerEditionVo, C extends CacheContainer> extends AbstractOrgResource {
+public abstract class AbstractContainerResource<T extends ContainerOrg, V extends ContainerEditionVo, C extends CacheContainer>
+		extends AbstractOrgResource {
 
 	protected static final String TYPE_ATTRIBUTE = "type";
 
@@ -105,19 +106,29 @@ public abstract class AbstractContainerResource<T extends ContainerOrg, V extend
 	protected abstract CacheContainerRepository<C> getCacheRepository();
 
 	/**
-	 * Return the DN from the container and the computed type.
+	 * Return the DN from the container and the computed scope.
+	 * 
+	 * @param container
+	 *            The container to convert.
+	 * @param scope
+	 *            The container scope.
+	 * @return The DN from the container and the computed scope.
 	 */
-	protected abstract String toDn(V container, ContainerScope type);
+	protected abstract String toDn(V container, ContainerScope scope);
 
 	/**
 	 * Simple transformer, securing sensible date. DN is not forwarded.
+	 * 
+	 * @param rawGroup
+	 *            The group to convert.
+	 * @return The container including the scope and without sensible data.
 	 */
-	protected ContainerWithScopeVo toVo(final T rawGroupLdap) {
+	protected ContainerWithScopeVo toVo(final T rawGroup) {
 		// Find the closest type
 		final ContainerWithScopeVo securedUserOrg = new ContainerWithScopeVo();
 		final List<ContainerScope> scopes = containerScopeResource.findAllDescOrder(type);
-		final ContainerScope scope = toScope(scopes, rawGroupLdap);
-		NamedBean.copy(rawGroupLdap, securedUserOrg);
+		final ContainerScope scope = toScope(scopes, rawGroup);
+		NamedBean.copy(rawGroup, securedUserOrg);
 		if (scope != null) {
 			securedUserOrg.setScope(scope.getName());
 		}
@@ -125,11 +136,12 @@ public abstract class AbstractContainerResource<T extends ContainerOrg, V extend
 	}
 
 	/**
-	 * Return the container matching to given name. Case is sensitive. Visibility is checked against security context.
-	 * DN is not exposed.
+	 * Return the container matching to given name. Case is sensitive.
+	 * Visibility is checked against security context. DN is not exposed.
 	 * 
 	 * @param name
-	 *            the container name. Exact match is required, so a normalized version.
+	 *            the container name. Exact match is required, so a normalized
+	 *            version.
 	 * @return Container (CN) with its type.
 	 */
 	@GET
@@ -141,8 +153,8 @@ public abstract class AbstractContainerResource<T extends ContainerOrg, V extend
 
 	/**
 	 * Create the given container.<br>
-	 * The delegation system is involved for this operation and requires administration privilege on the parent tree or
-	 * group/company.
+	 * The delegation system is involved for this operation and requires
+	 * administration privilege on the parent tree or group/company.
 	 * 
 	 * @param container
 	 *            The container to create.
@@ -155,13 +167,15 @@ public abstract class AbstractContainerResource<T extends ContainerOrg, V extend
 
 	/**
 	 * Create the given container.<br>
-	 * The delegation system is involved for this operation and requires administration privilege on the parent tree or
-	 * group/company.<br>
-	 * Note this is for internal use since the returned object corresponds to the internal representation.
+	 * The delegation system is involved for this operation and requires
+	 * administration privilege on the parent tree or group/company.<br>
+	 * Note this is for internal use since the returned object corresponds to
+	 * the internal representation.
 	 * 
 	 * @param container
 	 *            The container to create.
-	 * @return The created {@link org.ligoj.app.iam.ContainerOrg} internal identifier.
+	 * @return The created {@link org.ligoj.app.iam.ContainerOrg} internal
+	 *         identifier.
 	 */
 	public T createInternal(final V container) {
 
@@ -170,15 +184,18 @@ public abstract class AbstractContainerResource<T extends ContainerOrg, V extend
 
 		// Check the type matches with this class' container type
 		if (this.type != scope.getType()) {
-			throw new ValidationJsonException(TYPE_ATTRIBUTE, "container-scope-match", TYPE_ATTRIBUTE, this.type, "provided", scope.getType());
+			throw new ValidationJsonException(TYPE_ATTRIBUTE, "container-scope-match", TYPE_ATTRIBUTE, this.type, "provided",
+					scope.getType());
 		}
 
 		// Build the new DN, keeping the case
 		final String newDn = toDn(container, scope);
 
-		// Check the container can be created by the current user. Used DN will be FQN to match the delegates
+		// Check the container can be created by the current user. Used DN will
+		// be FQN to match the delegates
 		if (!delegateRepository.isAdmin(securityHelper.getLogin(), Normalizer.normalize(newDn), this.type.getDelegateType())) {
-			// Not managed container, report this attempt and act as if this container already exists
+			// Not managed container, report this attempt and act as if this
+			// container already exists
 			log.warn("Attempt to create a {} '{}' out of scope", scope, container.getName());
 			throw new ValidationJsonException("name", "already-exist", "0", getTypeName(), "1", container.getName());
 		}
@@ -199,7 +216,8 @@ public abstract class AbstractContainerResource<T extends ContainerOrg, V extend
 
 	/**
 	 * Delete an existing container.<br>
-	 * The delegation system is involved for this operation and requires administration privilege on this container.
+	 * The delegation system is involved for this operation and requires
+	 * administration privilege on this container.
 	 * 
 	 * @param id
 	 *            The container's identifier.
@@ -246,8 +264,8 @@ public abstract class AbstractContainerResource<T extends ContainerOrg, V extend
 	}
 
 	/**
-	 * Return containers the current user can see. A user always sees his company, as if he had a company
-	 * delegation to see it.
+	 * Return containers the current user can see. A user always sees his
+	 * company, as if he had a company delegation to see it.
 	 * 
 	 * @param uriInfo
 	 *            filter data.
@@ -256,13 +274,15 @@ public abstract class AbstractContainerResource<T extends ContainerOrg, V extend
 	@GET
 	@Path("filter/read")
 	public TableItem<String> getContainers(@Context final UriInfo uriInfo) {
-		return paginationJson.applyPagination(uriInfo, getCacheRepository().findAll(securityHelper.getLogin(), DataTableAttributes.getSearch(uriInfo),
-				paginationJson.getPageRequest(uriInfo, ORDERED_COLUMNS)), CacheContainer::getName);
+		return paginationJson.applyPagination(uriInfo, getCacheRepository().findAll(securityHelper.getLogin(),
+				DataTableAttributes.getSearch(uriInfo), paginationJson.getPageRequest(uriInfo, ORDERED_COLUMNS)), CacheContainer::getName);
 	}
 
 	/**
-	 * Find a container from its identifier. If the container is not found or cannot be seen by the current user, the
-	 * error code {@link org.ligoj.bootstrap.core.resource.BusinessException#KEY_UNKNOW_ID} will be returned.
+	 * Find a container from its identifier. If the container is not found or
+	 * cannot be seen by the current user, the error code
+	 * {@link org.ligoj.bootstrap.core.resource.BusinessException#KEY_UNKNOW_ID}
+	 * will be returned.
 	 * 
 	 * @param id
 	 *            The container's identifier. Will be normalized.
@@ -277,8 +297,8 @@ public abstract class AbstractContainerResource<T extends ContainerOrg, V extend
 	 * 
 	 * @param id
 	 *            The container's identifier. Will be normalized.
-	 * @return The container from its identifier. <code>null</code> if the container is not found or cannot be seen by
-	 *         the current user
+	 * @return The container from its identifier. <code>null</code> if the
+	 *         container is not found or cannot be seen by the current user
 	 */
 	public T findById(final String id) {
 		return getRepository().findById(securityHelper.getLogin(), id);
@@ -292,9 +312,11 @@ public abstract class AbstractContainerResource<T extends ContainerOrg, V extend
 	 */
 	protected void checkForDeletion(final ContainerOrg container) {
 
-		// Check the container can be deleted by the current user. Used DN will be FQN to match the delegates
+		// Check the container can be deleted by the current user. Used DN will
+		// be FQN to match the delegates
 		if (!delegateRepository.isAdmin(securityHelper.getLogin(), Normalizer.normalize(container.getDn()), this.type.getDelegateType())) {
-			// Not managed container, report this attempt and act as if this company did not exist
+			// Not managed container, report this attempt and act as if this
+			// company did not exist
 			log.warn("Attempt to delete a {} '{}' out of scope", type, container.getName());
 			throw new ValidationJsonException(getTypeName(), BusinessException.KEY_UNKNOW_ID, "0", getTypeName(), "1", container.getId());
 		}
@@ -306,14 +328,16 @@ public abstract class AbstractContainerResource<T extends ContainerOrg, V extend
 	}
 
 	/**
-	 * Return the closest {@link ContainerScope} name associated to the given container. Order of scopes is important
-	 * since the first matching item from this list is returned.
+	 * Return the closest {@link ContainerScope} name associated to the given
+	 * container. Order of scopes is important since the first matching item
+	 * from this list is returned.
 	 * 
 	 * @param scopes
 	 *            The available scopes.
 	 * @param container
 	 *            The containers to check.
-	 * @return The closest {@link ContainerScope} or <code>null</code> if not found.
+	 * @return The closest {@link ContainerScope} or <code>null</code> if not
+	 *         found.
 	 */
 	public ContainerScope toScope(final List<ContainerScope> scopes, final ContainerOrg container) {
 		return scopes.stream().filter(s -> DnUtils.equalsOrParentOf(s.getDn(), container.getDn())).findFirst().orElse(null);
@@ -356,7 +380,8 @@ public abstract class AbstractContainerResource<T extends ContainerOrg, V extend
 	}
 
 	/**
-	 * Build a new secured container managing the effective visibility and rights.
+	 * Build a new secured container managing the effective visibility and
+	 * rights.
 	 * 
 	 * @param rawContainer
 	 *            the raw container contained sensitive data.
@@ -366,7 +391,8 @@ public abstract class AbstractContainerResource<T extends ContainerOrg, V extend
 	 *            The containers the current user can administer.
 	 * @param types
 	 *            The defined type with locking information.
-	 * @return A secured container with right and lock information the current user has.
+	 * @return A secured container with right and lock information the current
+	 *         user has.
 	 */
 	protected ContainerCountVo newContainerCountVo(final ContainerOrg rawContainer, final Set<T> managedWrite, final Set<T> managedAdmin,
 			final List<ContainerScope> types) {
@@ -398,7 +424,8 @@ public abstract class AbstractContainerResource<T extends ContainerOrg, V extend
 	/**
 	 * Return containers the given user can manage with administration access.
 	 * 
-	 * @return ordered companies the given user can manage with administration access.
+	 * @return ordered companies the given user can manage with administration
+	 *         access.
 	 */
 	protected Set<T> getContainersForAdmin() {
 		return toInternal(getCacheRepository().findAllAdmin(securityHelper.getLogin()));
@@ -427,7 +454,8 @@ public abstract class AbstractContainerResource<T extends ContainerOrg, V extend
 	}
 
 	/**
-	 * Return the internal representation of the container set. Not existing cache items are removed.
+	 * Return the internal representation of the container set. Not existing
+	 * cache items are removed.
 	 * 
 	 * @param cacheItems
 	 *            The database base cache containers to convert.
@@ -439,14 +467,18 @@ public abstract class AbstractContainerResource<T extends ContainerOrg, V extend
 	}
 
 	/**
-	 * Return the internal representation of the container set as a {@link Page}.
+	 * Return the internal representation of the container set as a
+	 * {@link Page}.
 	 * 
 	 * @param cacheItems
 	 *            The database base page cache containers to convert.
-	 * @return The internal representation of {@link org.ligoj.app.iam.model.CacheCompany} set. Ordered by the name.
+	 * @return The internal representation of
+	 *         {@link org.ligoj.app.iam.model.CacheCompany} set. Ordered by the
+	 *         name.
 	 */
 	protected Page<T> toInternal(final Page<C> cacheItems) {
-		return new PageImpl<>(new ArrayList<>(toInternal(cacheItems.getContent())), cacheItems.getPageable(), cacheItems.getTotalElements());
+		return new PageImpl<>(new ArrayList<>(toInternal(cacheItems.getContent())), cacheItems.getPageable(),
+				cacheItems.getTotalElements());
 	}
 
 	protected String getTypeName() {

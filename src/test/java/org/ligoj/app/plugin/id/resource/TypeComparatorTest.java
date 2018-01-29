@@ -101,7 +101,7 @@ public class TypeComparatorTest {
 			}
 
 			@Override
-			protected String toDn(final GroupEditionVo container, final ContainerScope type) {
+			protected String toDn(final GroupEditionVo container, final ContainerScope scope) {
 				return null;
 			}
 

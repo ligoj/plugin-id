@@ -118,14 +118,14 @@ public class GroupResource extends AbstractContainerResource<GroupOrg, GroupEdit
 	}
 
 	@Override
-	protected String toDn(final GroupEditionVo container, final ContainerScope type) {
-		String parentDn = type.getDn();
+	protected String toDn(final GroupEditionVo container, final ContainerScope scope) {
+		String parentDn = scope.getDn();
 		container.setParent(StringUtils.trimToNull(Normalizer.normalize(container.getParent())));
 		if (container.getParent() != null) {
 			// Check the parent is also inside the type, a new DN will be built
 			final GroupOrg parent = findByIdExpected(container.getParent());
-			if (!DnUtils.equalsOrParentOf(type.getDn(), parent.getDn())) {
-				throw new ValidationJsonException("parent", "container-parent-type-match", TYPE_ATTRIBUTE, this.type, "provided", type.getType());
+			if (!DnUtils.equalsOrParentOf(scope.getDn(), parent.getDn())) {
+				throw new ValidationJsonException("parent", "container-parent-type-match", TYPE_ATTRIBUTE, this.type, "provided", scope.getType());
 			}
 			parentDn = parent.getDn();
 		}
