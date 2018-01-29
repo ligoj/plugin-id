@@ -20,6 +20,7 @@ define({
 	'error': {
 		'last-member-of-group': 'L\'utilisateur {{user}} ne peut être supprimé, il est le dernier membre du groupe {{group}}',
 		'locked': 'Ce conteneur est verrouillé, il ne peut être supprimé ou modifié',
+		'read-only': '{{[1]}} cannot be updated',
 		'container-scope-match': 'Etendue attendu est {{provided}} et le type fourni est {{scope}}'
 	}
 });

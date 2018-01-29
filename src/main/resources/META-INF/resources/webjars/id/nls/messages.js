@@ -24,6 +24,7 @@ define({
 		'error': {
 			'last-member-of-group': 'You can\'t delete user {{user}}, he is the last member of group {{group}}',
 			'locked': 'This container is locked, you cannot create or delete it',
+			'read-only': '{{[1]}} cannot be updated',
 			'container-scope-match': 'Expected scope is {{expected}} and you provided {{scope}}'
 		}
 	},

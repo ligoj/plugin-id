@@ -459,6 +459,26 @@ public class UserOrgResourceTest extends AbstractAppTest {
 		Mockito.when(groupRepository.findAll()).thenReturn(groupsMap);
 		MatcherUtil.assertThrows(Assertions.assertThrows(ValidationJsonException.class, () -> {
 			resource.delete("wuser");
+		}), "id", "read-only");
+	}
+
+	@Test
+	public void deleteUserNotVisibleUser() {
+		initSpringSecurityContext("mtuyer");
+		final CompanyOrg company = new CompanyOrg("ou=ing,ou=france,ou=people,dc=sample,dc=com", "ing");
+		final GroupOrg groupOrg1 = new GroupOrg("cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com", "DIG",
+				new HashSet<>(Arrays.asList("wuser", "user1")));
+		final Map<String, GroupOrg> groupsMap = new HashMap<>();
+		groupsMap.put("dig", groupOrg1);
+		final UserOrg user = new UserOrg();
+		user.setCompany("ing");
+		user.setGroups(Collections.singleton("dig"));
+		Mockito.when(userRepository.findByIdExpected("mtuyer", "wuser"))
+				.thenThrow(new ValidationJsonException("id", BusinessException.KEY_UNKNOW_ID, "0", "user", "1", "mtuyer"));
+		Mockito.when(companyRepository.findById("ing")).thenReturn(company);
+		Mockito.when(groupRepository.findAll()).thenReturn(groupsMap);
+		MatcherUtil.assertThrows(Assertions.assertThrows(ValidationJsonException.class, () -> {
+			resource.delete("wuser");
 		}), "id", BusinessException.KEY_UNKNOW_ID);
 	}
 
@@ -478,7 +498,7 @@ public class UserOrgResourceTest extends AbstractAppTest {
 		Mockito.when(groupRepository.findAll()).thenReturn(groupsMap);
 		MatcherUtil.assertThrows(Assertions.assertThrows(ValidationJsonException.class, () -> {
 			resource.resetPassword("wuser");
-		}), "id", BusinessException.KEY_UNKNOW_ID);
+		}), "id", "read-only");
 	}
 
 	@Test

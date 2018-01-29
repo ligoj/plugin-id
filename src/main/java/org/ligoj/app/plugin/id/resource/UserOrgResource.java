@@ -74,6 +74,11 @@ import lombok.extern.slf4j.Slf4j;
 public class UserOrgResource extends AbstractOrgResource {
 
 	/**
+	 * Message key for read only resource : no "write" right.
+	 */
+	private static final String READ_ONLY = "read-only";
+
+	/**
 	 * Name of "group" attribute.
 	 */
 	private static final String GROUP = "group";
@@ -194,10 +199,8 @@ public class UserOrgResource extends AbstractOrgResource {
 		final Set<GroupOrg> visibleGroups = groupResource.getContainers();
 		final Set<GroupOrg> writableGroups = groupResource.getContainersForWrite();
 		final Set<CompanyOrg> companies = companyResource.getContainersForWrite();
-		final Map<String, String> dnByCompanies = companies.stream()
-				.collect(Collectors.toMap(CompanyOrg::getId, CompanyOrg::getDn));
-		final Collection<String> writableCompanies = companies.stream().map(CompanyOrg::getId)
-				.collect(Collectors.toList());
+		final Map<String, String> dnByCompanies = companies.stream().collect(Collectors.toMap(CompanyOrg::getId, CompanyOrg::getDn));
+		final Collection<String> writableCompanies = companies.stream().map(CompanyOrg::getId).collect(Collectors.toList());
 
 		// Search the users
 		final Page<UserOrg> findAll = findAllNotSecure(visibleGroups, company, group, criteria, uriInfo);
@@ -208,13 +211,9 @@ public class UserOrgResource extends AbstractOrgResource {
 			final UserOrgVo securedUserOrg = new UserOrgVo();
 			rawUserOrg.copy(securedUserOrg);
 			securedUserOrg.setManaged(writableCompanies.contains(rawUserOrg.getCompany()) || !writableGroups.isEmpty());
-			securedUserOrg
-					.setAdmin(
-							writableCompanies.contains(rawUserOrg.getCompany())
-									&& !delegateRepository
-											.findByMatchingDnForWrite(securityHelper.getLogin(),
-													dnByCompanies.get(rawUserOrg.getCompany()), DelegateType.TREE)
-											.isEmpty());
+			securedUserOrg.setAdmin(writableCompanies.contains(rawUserOrg.getCompany()) && !delegateRepository
+					.findByMatchingDnForWrite(securityHelper.getLogin(), dnByCompanies.get(rawUserOrg.getCompany()), DelegateType.TREE)
+					.isEmpty());
 
 			// Show only the groups that are also visible to current user
 			securedUserOrg
@@ -422,11 +421,17 @@ public class UserOrgResource extends AbstractOrgResource {
 		final String companyDn = getCompany().findByIdExpected(securityHelper.getLogin(), cleanCompany).getDn();
 		final boolean hasAttributeChange = hasAttributeChange(importEntry, userOrg);
 		if (!isGrantedAccess(delegates, companyDn, DelegateType.COMPANY, hasAttributeChange)) {
-			// No right at all, unknown company, no (write|admin) right on this
-			// company, or no delegate on this company
-			// Report this attempt
-			log.warn("Attempt to create/update a user '{}' out of scope, company {}", importEntry.getId(), cleanCompany);
-			throw new ValidationJsonException(SimpleUser.COMPANY_ALIAS, BusinessException.KEY_UNKNOW_ID, "0", SimpleUser.COMPANY_ALIAS, "1",
+			// Cannot perform this operation, trigger the right error
+			if (isGrantedAccess(delegates, companyDn, DelegateType.COMPANY, false)) {
+				// No right at all -> unknown company
+				// Illegal access Report this attempt on a non visible resource
+				log.warn("Attempt to create/update a non visible user '{}', company {}", importEntry.getId(), cleanCompany);
+				throw new ValidationJsonException(SimpleUser.COMPANY_ALIAS, BusinessException.KEY_UNKNOW_ID, "0", SimpleUser.COMPANY_ALIAS,
+						"1", importEntry.getCompany());
+			}
+			// Visible but not with WRITE access
+			log.info("Attempt to create/update a read-only user '{}', company {}", importEntry.getId(), cleanCompany);
+			throw new ValidationJsonException(SimpleUser.COMPANY_ALIAS, READ_ONLY, "0", SimpleUser.COMPANY_ALIAS, "1",
 					importEntry.getCompany());
 		}
 
@@ -512,7 +517,7 @@ public class UserOrgResource extends AbstractOrgResource {
 		// Check the visible updated groups can be edited by the principal
 		Optional.ofNullable(getGroup().findById(securityHelper.getLogin(), updatedGroup)).filter(Objects::nonNull)
 				.filter(g -> !isGrantedAccess(delegates, g.getDn(), DelegateType.GROUP, true)).ifPresent(g -> {
-					throw new ValidationJsonException(GROUP, "read-only", "0", GROUP, "1", g.getId());
+					throw new ValidationJsonException(GROUP, READ_ONLY, "0", GROUP, "1", g.getId());
 				});
 	}
 
@@ -837,10 +842,10 @@ public class UserOrgResource extends AbstractOrgResource {
 				.map(p -> p.generate(user.getId())).orElse(null);
 		// This user is now secured
 		user.setSecured(true);
-		
+
 		// Unlock account if locked
 		getUser().unlock(user);
-		
+
 		// Log the action
 		logAdminReset(user);
 
@@ -872,11 +877,10 @@ public class UserOrgResource extends AbstractOrgResource {
 
 		// Check the company
 		final String companyDn = getCompany().findById(userOrg.getCompany()).getDn();
-		if (delegateRepository.findByMatchingDnForWrite(securityHelper.getLogin(), companyDn, DelegateType.TREE)
-				.isEmpty()) {
+		if (delegateRepository.findByMatchingDnForWrite(securityHelper.getLogin(), companyDn, DelegateType.TREE).isEmpty()) {
 			// Report this attempt to delete a non managed user
 			log.warn("Attempt to reset the password of a user '{}' out of scope", user);
-			throw new ValidationJsonException(USER_KEY, BusinessException.KEY_UNKNOW_ID, "0", "user", "1", user);
+			throw new ValidationJsonException(USER_KEY, READ_ONLY, "0", "user", "1", user);
 		}
 		return userOrg;
 	}
@@ -901,7 +905,7 @@ public class UserOrgResource extends AbstractOrgResource {
 		if (delegateRepository.findByMatchingDnForWrite(securityHelper.getLogin(), companyDn, DelegateType.COMPANY).isEmpty()) {
 			// Report this attempt to delete a non managed user
 			log.warn("Attempt to {} a user '{}' out of scope", mode, user);
-			throw new ValidationJsonException(USER_KEY, BusinessException.KEY_UNKNOW_ID, "0", "user", "1", user);
+			throw new ValidationJsonException(USER_KEY, READ_ONLY, "0", "user", "1", user);
 		}
 		return userOrg;
 	}
