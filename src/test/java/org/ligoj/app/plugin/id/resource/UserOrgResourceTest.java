@@ -31,6 +31,7 @@ import org.ligoj.app.iam.IamConfiguration;
 import org.ligoj.app.iam.IamProvider;
 import org.ligoj.app.iam.SimpleUserOrg;
 import org.ligoj.app.iam.UserOrg;
+import org.ligoj.app.iam.dao.DelegateOrgRepository;
 import org.ligoj.app.iam.model.CacheCompany;
 import org.ligoj.app.iam.model.CacheGroup;
 import org.ligoj.app.iam.model.CacheMembership;
@@ -44,6 +45,7 @@ import org.ligoj.bootstrap.core.validation.ValidationJsonException;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
 import org.mockito.internal.verification.VerificationModeFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.test.annotation.Rollback;
@@ -63,6 +65,9 @@ public class UserOrgResourceTest extends AbstractAppTest {
 	protected IUserRepository userRepository;
 	protected IGroupRepository groupRepository;
 	protected ICompanyRepository companyRepository;
+
+	@Autowired
+	private DelegateOrgRepository delegateOrgRepository;
 
 	@BeforeEach
 	public void prepareData() throws IOException {
@@ -154,9 +159,11 @@ public class UserOrgResourceTest extends AbstractAppTest {
 		Assertions.assertEquals(2, tableItem.getRecordsFiltered());
 
 		// Check the users
-		UserOrgVo userVo = checkUser(tableItem.getData().get(0));
+		final UserOrgVo userVo = checkUser(tableItem.getData().get(0));
 		Assertions.assertTrue(userVo.getGroups().get(0).isManaged());
-		Assertions.assertTrue(userVo.isAdmin());
+		Assertions.assertTrue(userVo.isCanAdmin());
+		Assertions.assertTrue(userVo.isCanWrite());
+		Assertions.assertTrue(userVo.isCanWriteGroups());
 	}
 
 	@Test
@@ -192,7 +199,9 @@ public class UserOrgResourceTest extends AbstractAppTest {
 		Assertions.assertEquals(2, tableItem.getRecordsFiltered());
 
 		// Check the users
-		checkUser(tableItem.getData().get(0));
+		final UserOrgVo userVo = checkUser(tableItem.getData().get(0));
+		Assertions.assertTrue(userVo.isCanWrite());
+		Assertions.assertTrue(userVo.isCanWriteGroups());
 	}
 
 	@Test
@@ -262,7 +271,9 @@ public class UserOrgResourceTest extends AbstractAppTest {
 		Assertions.assertEquals(2, tableItem.getRecordsFiltered());
 
 		// Check the users
-		checkUser(tableItem.getData().get(0));
+		final UserOrgVo userVo = checkUser(tableItem.getData().get(0));
+		Assertions.assertFalse(userVo.isCanWrite());
+		Assertions.assertTrue(userVo.isCanWriteGroups());
 	}
 
 	private UserOrg newUser(final Consumer<UserOrg> consumerOld) {
@@ -308,7 +319,6 @@ public class UserOrgResourceTest extends AbstractAppTest {
 
 	private UserOrgVo checkUser(UserOrgVo user) {
 		checkUser((SimpleUserOrg) user);
-		Assertions.assertTrue(user.isManaged());
 		final List<GroupLdapVo> groups = new ArrayList<>(user.getGroups());
 		Assertions.assertEquals(1, groups.size());
 		Assertions.assertEquals("DIG", groups.get(0).getName());
@@ -348,7 +358,35 @@ public class UserOrgResourceTest extends AbstractAppTest {
 		user.setGroups(groups);
 		MatcherUtil.assertThrows(Assertions.assertThrows(ValidationJsonException.class, () -> {
 			resource.create(user);
-		}), "company", "unknown-id");
+		}), "company", "read-only");
+	}
+
+	@Test
+	public void createNotVisibleCompany() {
+		initSpringSecurityContext("any");
+		final GroupOrg groupOrg1 = new GroupOrg("cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com", "DIG", Collections.singleton("flasta"));
+		final GroupOrg groupOrg2 = new GroupOrg("cn=DIG RHA,cn=DIG AS,cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com", "DIG RHA",
+				Collections.singleton("wuser"));
+		groupOrg2.setLocked(true);
+		final Map<String, GroupOrg> groupsMap = new HashMap<>();
+		groupsMap.put("dig rha", groupOrg2);
+		final CompanyOrg company = new CompanyOrg("ou=ing,ou=france,ou=people,dc=sample,dc=com", "ing");
+		Mockito.when(companyRepository.findByIdExpected("any", "ing")).thenReturn(company);
+		groupFindById("any", "dig", groupOrg1);
+		groupFindById("any", "dig rha", groupOrg2);
+
+		final UserOrgEditionVo user = new UserOrgEditionVo();
+		user.setId("flasta");
+		user.setFirstName("FirstA ");
+		user.setLastName(" LASTA");
+		user.setCompany("ing");
+		user.setMail("flasta@ing.com");
+		final List<String> groups = new ArrayList<>();
+		groups.add("dig rHA");
+		user.setGroups(groups);
+		MatcherUtil.assertThrows(Assertions.assertThrows(ValidationJsonException.class, () -> {
+			resource.create(user);
+		}), "company", "read-only");
 	}
 
 	@Test
@@ -594,6 +632,40 @@ public class UserOrgResourceTest extends AbstractAppTest {
 		groups.add("dig rha");
 		user.setGroups(groups);
 		resource.update(userVo);
+	}
+
+	@Test
+	public void updateNotWriteInCompany() {
+		initSpringSecurityContext("mtuyer");
+		final CompanyOrg company = new CompanyOrg("ou=ing,ou=france,ou=people,dc=sample,dc=com", "ing");
+		final GroupOrg groupOrg1 = new GroupOrg("cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com", "DIG", Collections.singleton("wuser"));
+		final GroupOrg groupOrg2 = new GroupOrg("cn=DIG RHA,cn=DIG AS,cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com", "DIG RHA",
+				Collections.singleton("user2"));
+		groupOrg2.setLocked(true);
+		final Map<String, GroupOrg> groupsMap = new HashMap<>();
+		groupsMap.put("dig", groupOrg1);
+		groupsMap.put("dig rha", groupOrg2);
+		final UserOrg user = newUser();
+		Mockito.when(userRepository.findByIdExpected("mtuyer", "wuser")).thenReturn(user);
+		Mockito.when(companyRepository.findById("ing")).thenReturn(company);
+		Mockito.when(companyRepository.findByIdExpected("mtuyer", "ing")).thenReturn(company);
+		Mockito.when(groupRepository.findAll()).thenReturn(groupsMap);
+
+		// Remove all write permission of this user
+		delegateOrgRepository.findAllByUser("mtuyer").forEach(d -> d.setCanWrite(false));
+
+		final UserOrgEditionVo userVo = new UserOrgEditionVo();
+		userVo.setId("wuser");
+		userVo.setFirstName("FirstA");
+		userVo.setLastName("LastA");
+		userVo.setCompany("ing");
+		userVo.setMail("flasta@ing.com");
+		final List<String> groups = new ArrayList<>();
+		groups.add("dig rha");
+		user.setGroups(groups);
+		MatcherUtil.assertThrows(Assertions.assertThrows(ValidationJsonException.class, () -> {
+			resource.update(userVo);
+		}), "company", "read-only");
 	}
 
 	@Test
@@ -1064,50 +1136,46 @@ public class UserOrgResourceTest extends AbstractAppTest {
 	}
 
 	@Test
-	public void isGrantedNotSameType() {
+	public void canWriteNotSameType() {
 		final DelegateOrg delegate = new DelegateOrg();
 		delegate.setType(DelegateType.GROUP);
-		Assertions.assertFalse(resource.isGrantedAccess(delegate, null, DelegateType.COMPANY, true));
+		Assertions.assertFalse(resource.canWrite(delegate, null, DelegateType.COMPANY));
 	}
 
 	@Test
-	public void isGrantedSameTypeNoRight() {
+	public void canWriteSameTypeNoRight() {
 		final DelegateOrg delegate = new DelegateOrg();
 		delegate.setType(DelegateType.GROUP);
-		Assertions.assertFalse(resource.isGrantedAccess(delegate, null, DelegateType.GROUP, true));
+		Assertions.assertFalse(resource.canWrite(delegate, null, DelegateType.GROUP));
 	}
 
 	@Test
-	public void isGrantedSameTypeNotSameDn() {
-		final DelegateOrg delegate = new DelegateOrg();
-		delegate.setType(DelegateType.GROUP);
-		Assertions.assertFalse(resource.isGrantedAccess(delegate, null, DelegateType.GROUP, false));
-	}
-
-	@Test
-	public void isGranted() {
+	public void canWrite() {
 		final DelegateOrg delegate = new DelegateOrg();
 		delegate.setType(DelegateType.GROUP);
 		delegate.setDn("rightdn");
-		Assertions.assertTrue(resource.isGrantedAccess(delegate, "rightdn", DelegateType.GROUP, false));
+		delegate.setCanWrite(true);
+		Assertions.assertTrue(resource.canWrite(delegate, "rightdn", DelegateType.GROUP));
 	}
 
+	/**
+	 * Admin on delegate does not grant write access.
+	 */
 	@Test
-	public void isGrantedAsAdmin() {
+	public void canWriteAsAdmin() {
 		final DelegateOrg delegate = new DelegateOrg();
 		delegate.setType(DelegateType.GROUP);
 		delegate.setCanAdmin(true);
 		delegate.setDn("rightdn");
-		Assertions.assertTrue(resource.isGrantedAccess(delegate, "rightdn", DelegateType.GROUP, true));
+		Assertions.assertFalse(resource.canWrite(delegate, "rightdn", DelegateType.GROUP));
 	}
 
 	@Test
-	public void isGrantedAsWriter() {
+	public void canWriteAsReader() {
 		final DelegateOrg delegate = new DelegateOrg();
 		delegate.setType(DelegateType.GROUP);
-		delegate.setCanWrite(true);
 		delegate.setDn("rightdn");
-		Assertions.assertTrue(resource.isGrantedAccess(delegate, "rightdn", DelegateType.GROUP, true));
+		Assertions.assertFalse(resource.canWrite(delegate, "rightdn", DelegateType.GROUP));
 	}
 
 }

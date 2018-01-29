@@ -20,15 +20,21 @@ public class UserOrgVo extends SimpleUserOrg {
 	private static final long serialVersionUID = 1L;
 
 	/**
-	 * Is this entry can be managed by current user : delete and update all data but groups.
+	 * <code>true</code> when this entry can be updated : delete and update all properties but groups.
+	 * @see #canWriteGroups
 	 */
-	private boolean managed;
+	private boolean canWrite;
+
+	/**
+	 * <code>true</code> when the current principal user manage (write or administer) at least one group.
+	 */
+	private boolean canWriteGroups;
 	
 	/**
 	 * Is this entry can be updated (attributes) by current user : reset password. 
 	 * Corresponds to the "ADMIN" right brought be a delegate.
 	 */
-	private boolean admin;
+	private boolean canAdmin;
 
 	/**
 	 * Membership, CN of groups.

@@ -51,7 +51,6 @@ import org.ligoj.app.plugin.id.model.PasswordResetAudit;
 import org.ligoj.bootstrap.core.json.PaginationJson;
 import org.ligoj.bootstrap.core.json.TableItem;
 import org.ligoj.bootstrap.core.json.datatable.DataTableAttributes;
-import org.ligoj.bootstrap.core.resource.BusinessException;
 import org.ligoj.bootstrap.core.security.SecurityHelper;
 import org.ligoj.bootstrap.core.validation.ValidationJsonException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -210,8 +209,9 @@ public class UserOrgResource extends AbstractOrgResource {
 
 			final UserOrgVo securedUserOrg = new UserOrgVo();
 			rawUserOrg.copy(securedUserOrg);
-			securedUserOrg.setManaged(writableCompanies.contains(rawUserOrg.getCompany()) || !writableGroups.isEmpty());
-			securedUserOrg.setAdmin(writableCompanies.contains(rawUserOrg.getCompany()) && !delegateRepository
+			securedUserOrg.setCanWrite(writableCompanies.contains(rawUserOrg.getCompany()));
+			securedUserOrg.setCanWriteGroups(!writableGroups.isEmpty());
+			securedUserOrg.setCanAdmin(writableCompanies.contains(rawUserOrg.getCompany()) && !delegateRepository
 					.findByMatchingDnForWrite(securityHelper.getLogin(), dnByCompanies.get(rawUserOrg.getCompany()), DelegateType.TREE)
 					.isEmpty());
 
@@ -420,17 +420,9 @@ public class UserOrgResource extends AbstractOrgResource {
 		final String cleanCompany = Normalizer.normalize(importEntry.getCompany());
 		final String companyDn = getCompany().findByIdExpected(securityHelper.getLogin(), cleanCompany).getDn();
 		final boolean hasAttributeChange = hasAttributeChange(importEntry, userOrg);
-		if (!isGrantedAccess(delegates, companyDn, DelegateType.COMPANY, hasAttributeChange)) {
-			// Cannot perform this operation, trigger the right error
-			if (isGrantedAccess(delegates, companyDn, DelegateType.COMPANY, false)) {
-				// No right at all -> unknown company
-				// Illegal access Report this attempt on a non visible resource
-				log.warn("Attempt to create/update a non visible user '{}', company {}", importEntry.getId(), cleanCompany);
-				throw new ValidationJsonException(SimpleUser.COMPANY_ALIAS, BusinessException.KEY_UNKNOW_ID, "0", SimpleUser.COMPANY_ALIAS,
-						"1", importEntry.getCompany());
-			}
-			// Visible but not with WRITE access
-			log.info("Attempt to create/update a read-only user '{}', company {}", importEntry.getId(), cleanCompany);
+		if (hasAttributeChange && !canWrite(delegates, companyDn, DelegateType.COMPANY)) {
+			// Visible but without write access
+			log.info("Attempt to create/update a read-only user '{}', company '{}'", importEntry.getId(), cleanCompany);
 			throw new ValidationJsonException(SimpleUser.COMPANY_ALIAS, READ_ONLY, "0", SimpleUser.COMPANY_ALIAS, "1",
 					importEntry.getCompany());
 		}
@@ -516,7 +508,7 @@ public class UserOrgResource extends AbstractOrgResource {
 
 		// Check the visible updated groups can be edited by the principal
 		Optional.ofNullable(getGroup().findById(securityHelper.getLogin(), updatedGroup)).filter(Objects::nonNull)
-				.filter(g -> !isGrantedAccess(delegates, g.getDn(), DelegateType.GROUP, true)).ifPresent(g -> {
+				.filter(g -> !canWrite(delegates, g.getDn(), DelegateType.GROUP)).ifPresent(g -> {
 					throw new ValidationJsonException(GROUP, READ_ONLY, "0", GROUP, "1", g.getId());
 				});
 	}
@@ -550,7 +542,7 @@ public class UserOrgResource extends AbstractOrgResource {
 		newGroups.addAll(groups);
 		for (final String oldGroup : userOrg.getGroups()) {
 			final String oldGroupDn = getGroup().findById(oldGroup).getDn();
-			if (!groups.contains(oldGroup) && isGrantedAccess(delegates, oldGroupDn, DelegateType.GROUP, true)) {
+			if (!groups.contains(oldGroup) && canWrite(delegates, oldGroupDn, DelegateType.GROUP)) {
 				// This group is writable, so it has been explicitly removed by
 				// the current user
 				newGroups.remove(oldGroup);
@@ -575,14 +567,13 @@ public class UserOrgResource extends AbstractOrgResource {
 		importEntry.setFirstName(WordUtils.capitalizeFully(StringUtils.trimToNull(importEntry.getFirstName())));
 	}
 
-	private boolean isGrantedAccess(final List<DelegateOrg> delegates, final String dn, final DelegateType type,
-			final boolean requestUpdate) {
-		return !requestUpdate || delegates.stream().anyMatch(delegate -> isGrantedAccess(delegate, dn, type, requestUpdate));
+	private boolean canWrite(final List<DelegateOrg> delegates, final String dn, final DelegateType type) {
+		return delegates.stream().anyMatch(delegate -> canWrite(delegate, dn, type));
 	}
 
-	protected boolean isGrantedAccess(final DelegateOrg delegate, final String dn, final DelegateType type, final boolean requestUpdate) {
-		return (delegate.getType() == type || delegate.getType() == DelegateType.TREE)
-				&& (!requestUpdate || delegate.isCanAdmin() || delegate.isCanWrite()) && DnUtils.equalsOrParentOf(delegate.getDn(), dn);
+	protected boolean canWrite(final DelegateOrg delegate, final String dn, final DelegateType type) {
+		return (delegate.getType() == type || delegate.getType() == DelegateType.TREE) && delegate.isCanWrite()
+				&& DnUtils.equalsOrParentOf(delegate.getDn(), dn);
 	}
 
 	/**

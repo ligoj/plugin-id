@@ -286,7 +286,7 @@ define(function () {
 							orderable: false,
 							render: function (_i, _j, data) {
 								var editlink = '<a class="update"><i class="fa fa-pencil" data-toggle="tooltip" title="' + current.$messages.update + '"></i></a>';
-								if (data.managed) {
+								if (data.canWrite) {
 									editlink += '<div class="btn-group"><i data-toggle="dropdown" class="fa fa-cog"></i><ul class="dropdown-menu dropdown-menu-right">';
 									if (data.isolated) {
 										// Isolated -> restore
@@ -390,7 +390,7 @@ define(function () {
 					groupsAsTag.push({
 						id: this.name,
 						text: this.name,
-						locked: !this.managed
+						locked: !this.canWriteGroups
 					});
 				});
 				_('groups').select2('data', groupsAsTag);
@@ -407,7 +407,7 @@ define(function () {
 
 			// Mark as read-only the fields the user cannot update
 			var $inputs = _('popup').find('input[type="text"]').not('#groups').not('.select2-input,.select2-focusser');
-			if (uc.managed || !(uc.id && true)) {
+			if (uc.canWrite || !(uc.id && true)) {
 				$inputs.removeAttr('readonly');
 				if (uc.isolated) {
 					_('company').attr('readonly', 'readonly');
