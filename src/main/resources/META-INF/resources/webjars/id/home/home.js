@@ -303,7 +303,7 @@ define(function () {
 	
 									// Delete icon
 									editlink += '<li><a class="delete"><i class="menu-icon fa fa-trash"></i> ' + current.$messages.delete + '</a></li>';
-									if (data.admin) {
+									if (data.canAdmin) {
 										editlink += '<li><a class="reset"><i class="menu-icon fa fa-refresh"></i> ' + current.$messages.reset + '</a></li>';
 									}
 									editlink += '</ul>';
