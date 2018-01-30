@@ -142,7 +142,7 @@ public class CompanyResourceTest extends AbstractContainerResourceTest {
 	}
 
 	@Test
-	public void createNoRight() {
+	public void createNoWriteRight() {
 		final ContainerScope scope = containerScopeRepository.findByName("France");
 		final ContainerEditionVo group = new ContainerEditionVo();
 		group.setName("New-Ax-1-z:Z 0");
@@ -150,11 +150,11 @@ public class CompanyResourceTest extends AbstractContainerResourceTest {
 		initSpringSecurityContext("mmartin");
 		MatcherUtil.assertThrows(Assertions.assertThrows(ValidationJsonException.class, () -> {
 			resource.create(group);
-		}), "name", "already-exist");
+		}), "name", "read-only");
 	}
 
 	@Test
-	public void deleteNoRight() {
+	public void deleteNotVisile() {
 		initSpringSecurityContext("mmartin");
 		final CompanyOrg companyOrg1 = new CompanyOrg("ou=gfi,ou=france,ou=people,dc=sample,dc=com", "gfi");
 		Mockito.when(companyRepository.findByIdExpected("mmartin", "gfi")).thenReturn(companyOrg1);

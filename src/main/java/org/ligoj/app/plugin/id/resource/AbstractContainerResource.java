@@ -191,21 +191,21 @@ public abstract class AbstractContainerResource<T extends ContainerOrg, V extend
 		// Build the new DN, keeping the case
 		final String newDn = toDn(container, scope);
 
-		// Check the container can be created by the current user. Used DN will
-		// be FQN to match the delegates
+		// Check the container can be created by the current principal.
+		// Used DN will be FQN to match the delegates
 		if (!delegateRepository.isAdmin(securityHelper.getLogin(), Normalizer.normalize(newDn), this.type.getDelegateType())) {
 			// Not managed container, report this attempt and act as if this
 			// container already exists
 			log.warn("Attempt to create a {} '{}' out of scope", scope, container.getName());
-			throw new ValidationJsonException("name", "already-exist", "0", getTypeName(), "1", container.getName());
+			throw new ValidationJsonException("name", "read-only", "0", getTypeName(), "1", container.getName());
 		}
 
-		// Check the group does not exists
+		// Check the container does not exists
 		if (getRepository().findById(Normalizer.normalize(container.getName())) != null) {
 			throw new ValidationJsonException("name", "already-exist", "0", getTypeName(), "1", container.getName());
 		}
 
-		// Create the new group
+		// Create the new container
 		return create(container, scope, newDn);
 	}
 
@@ -344,23 +344,23 @@ public abstract class AbstractContainerResource<T extends ContainerOrg, V extend
 	}
 
 	/**
-	 * Order {@link ContainerScope} by group type.
+	 * Order {@link ContainerScope} by container type.
 	 */
 	@AllArgsConstructor
 	public class TypeComparator implements Comparator<T> {
 
 		/**
-		 * group types
+		 * Container types
 		 */
 		private List<ContainerScope> types;
 
 		@Override
-		public int compare(final T group1, final T group2) {
+		public int compare(final T container1, final T container2) {
 			final int result;
 
 			// First compare the type
-			final ContainerScope type1 = toScope(types, group1);
-			final ContainerScope type2 = toScope(types, group2);
+			final ContainerScope type1 = toScope(types, container1);
+			final ContainerScope type2 = toScope(types, container2);
 			if (Objects.equals(type1, type2)) {
 				result = 0;
 			} else if (type1 == null) {
@@ -371,9 +371,9 @@ public abstract class AbstractContainerResource<T extends ContainerOrg, V extend
 				result = type1.getName().compareToIgnoreCase(type2.getName());
 			}
 
-			// Then the compare the group name
+			// Then the compare the container name
 			if (result == 0) {
-				return group1.getName().compareToIgnoreCase(group2.getName());
+				return container1.getName().compareToIgnoreCase(container2.getName());
 			}
 			return result;
 		}
