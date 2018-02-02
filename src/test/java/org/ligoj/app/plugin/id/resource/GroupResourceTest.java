@@ -260,61 +260,61 @@ public class GroupResourceTest extends AbstractContainerResourceTest {
 	}
 
 	/**
-	 * Check managed group is filtered against available groups for write.
+	 * Check visible group is filtered against available groups for write.
 	 */
 	@Test
 	public void getContainersForWrite() {
 		initSpringSecurityContext("mlavoine");
-		final TableItem<String> managed = resource.getContainersForWrite(newUriInfo());
-		Assertions.assertEquals(0, managed.getRecordsFiltered());
-		Assertions.assertEquals(0, managed.getRecordsTotal());
-		Assertions.assertEquals(0, managed.getData().size());
+		final TableItem<String> items = resource.getContainersForWrite(newUriInfo());
+		Assertions.assertEquals(0, items.getRecordsFiltered());
+		Assertions.assertEquals(0, items.getRecordsTotal());
+		Assertions.assertEquals(0, items.getData().size());
 	}
 
 	/**
-	 * Check managed group is filtered against available groups for
+	 * Check visible group is filtered against available groups for
 	 * administration.
 	 */
 	@Test
 	public void getContainersForAdmin() {
 		initSpringSecurityContext("mtuyer");
-		final TableItem<String> managed = resource.getContainersForAdmin(newUriInfo());
+		final TableItem<String> items = resource.getContainersForAdmin(newUriInfo());
 
 		// This user can see 4 groups from the direct admin delegates to him
-		Assertions.assertEquals(4, managed.getRecordsFiltered());
-		Assertions.assertEquals(4, managed.getRecordsTotal());
-		Assertions.assertEquals(4, managed.getData().size());
+		Assertions.assertEquals(4, items.getRecordsFiltered());
+		Assertions.assertEquals(4, items.getRecordsTotal());
+		Assertions.assertEquals(4, items.getData().size());
 	}
 
 	/**
-	 * Check managed group is filtered against available groups for
+	 * Check visible group is filtered against available groups for
 	 * administration.
 	 */
 	@Test
 	public void getContainersForAdminNoRight() {
 		initSpringSecurityContext("mlavoine");
-		final TableItem<String> managed = resource.getContainersForAdmin(newUriInfo());
-		Assertions.assertEquals(0, managed.getRecordsFiltered());
-		Assertions.assertEquals(0, managed.getRecordsTotal());
-		Assertions.assertEquals(0, managed.getData().size());
+		final TableItem<String> items = resource.getContainersForAdmin(newUriInfo());
+		Assertions.assertEquals(0, items.getRecordsFiltered());
+		Assertions.assertEquals(0, items.getRecordsTotal());
+		Assertions.assertEquals(0, items.getData().size());
 	}
 
 	@Test
 	public void getContainersDelegateTreeExactParentDn() {
 		initSpringSecurityContext("mlavoine");
-		final TableItem<String> managed = resource.getContainers(newUriInfo());
-		Assertions.assertEquals(4, managed.getRecordsFiltered());
-		Assertions.assertEquals(4, managed.getRecordsTotal());
-		Assertions.assertEquals(4, managed.getData().size());
+		final TableItem<String> items = resource.getContainers(newUriInfo());
+		Assertions.assertEquals(4, items.getRecordsFiltered());
+		Assertions.assertEquals(4, items.getRecordsTotal());
+		Assertions.assertEquals(4, items.getData().size());
 
 		// Brought by a delegate of "cn=biz agency,ou=tools,dc=sample,dc=com" to
 		// company user "mlavoine"
-		Assertions.assertTrue(managed.getData().contains("Biz Agency"));
-		Assertions.assertTrue(managed.getData().contains("Biz Agency Manager"));
+		Assertions.assertTrue(items.getData().contains("Biz Agency"));
+		Assertions.assertTrue(items.getData().contains("Biz Agency Manager"));
 
 		// Brought by a delegate of "Business Solution" to company "ing"
-		Assertions.assertTrue(managed.getData().contains("Business Solution"));
-		Assertions.assertTrue(managed.getData().contains("Sub Business Solution"));
+		Assertions.assertTrue(items.getData().contains("Business Solution"));
+		Assertions.assertTrue(items.getData().contains("Sub Business Solution"));
 	}
 
 	@Test
@@ -322,38 +322,38 @@ public class GroupResourceTest extends AbstractContainerResourceTest {
 		initSpringSecurityContext("mtuyer");
 		final UriInfo uriInfo = newUriInfo();
 		uriInfo.getQueryParameters().add(DataTableAttributes.PAGE_LENGTH, "100");
-		final TableItem<String> managed = resource.getContainers(uriInfo);
-		Assertions.assertEquals(6, managed.getRecordsFiltered());
-		Assertions.assertEquals(6, managed.getRecordsTotal());
-		Assertions.assertEquals(6, managed.getData().size());
+		final TableItem<String> items = resource.getContainers(uriInfo);
+		Assertions.assertEquals(6, items.getRecordsFiltered());
+		Assertions.assertEquals(6, items.getRecordsTotal());
+		Assertions.assertEquals(6, items.getData().size());
 
 		// Brought by a delegate of "ou=fonction,ou=groups,dc=sample,dc=com" to
 		// company user "mtuyer"
-		Assertions.assertTrue(managed.getData().contains("DIG AS"));
-		Assertions.assertTrue(managed.getData().contains("DIG"));
+		Assertions.assertTrue(items.getData().contains("DIG AS"));
+		Assertions.assertTrue(items.getData().contains("DIG"));
 
 		// Brought by a delegate of "Business Solution" to company "ing"
-		Assertions.assertTrue(managed.getData().contains("Business Solution"));
-		Assertions.assertTrue(managed.getData().contains("Sub Business Solution"));
+		Assertions.assertTrue(items.getData().contains("Business Solution"));
+		Assertions.assertTrue(items.getData().contains("Sub Business Solution"));
 	}
 
 	@Test
 	public void getContainersNoDelegate() {
 		initSpringSecurityContext("any");
-		final TableItem<String> managed = resource.getContainers(newUriInfo());
-		Assertions.assertEquals(0, managed.getRecordsFiltered());
-		Assertions.assertEquals(0, managed.getRecordsTotal());
-		Assertions.assertEquals(0, managed.getData().size());
+		final TableItem<String> items = resource.getContainers(newUriInfo());
+		Assertions.assertEquals(0, items.getRecordsFiltered());
+		Assertions.assertEquals(0, items.getRecordsTotal());
+		Assertions.assertEquals(0, items.getData().size());
 	}
 
 	@Test
 	public void getContainersDelegateGroup() {
 		initSpringSecurityContext("someone");
-		final TableItem<String> managed = resource.getContainers(newUriInfo());
-		Assertions.assertEquals(1, managed.getRecordsFiltered());
-		Assertions.assertEquals(1, managed.getRecordsTotal());
-		Assertions.assertEquals(1, managed.getData().size());
-		Assertions.assertTrue(managed.getData().contains("DIG RHA"));
+		final TableItem<String> items = resource.getContainers(newUriInfo());
+		Assertions.assertEquals(1, items.getRecordsFiltered());
+		Assertions.assertEquals(1, items.getRecordsTotal());
+		Assertions.assertEquals(1, items.getData().size());
+		Assertions.assertTrue(items.getData().contains("DIG RHA"));
 	}
 
 	@Test

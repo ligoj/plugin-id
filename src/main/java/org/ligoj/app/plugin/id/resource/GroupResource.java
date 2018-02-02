@@ -74,7 +74,7 @@ public class GroupResource extends AbstractContainerResource<GroupOrg, GroupEdit
 	}
 
 	/**
-	 * Return groups matching to given criteria. The managed groups, trees and companies are checked. The returned
+	 * Return groups matching to given criteria. The visible groups, trees and companies are checked. The returned
 	 * groups of each user depends on the groups the user can see/write in CN form.
 	 * 
 	 * @param uriInfo
@@ -85,9 +85,9 @@ public class GroupResource extends AbstractContainerResource<GroupOrg, GroupEdit
 	public TableItem<ContainerCountVo> findAll(@Context final UriInfo uriInfo) {
 		final List<ContainerScope> types = containerScopeResource.findAllDescOrder(ContainerType.GROUP);
 		final Map<String, CompanyOrg> companies = getCompany().findAll();
-		final Collection<CompanyOrg> managedCompanies = organizationResource.getContainers();
-		final Set<GroupOrg> managedGroupsWrite = getContainersForWrite();
-		final Set<GroupOrg> managedGroupsAdmin = getContainersForAdmin();
+		final Collection<CompanyOrg> visibleCompanies = organizationResource.getContainers();
+		final Set<GroupOrg> writeGroups = getContainersForWrite();
+		final Set<GroupOrg> adminGroups = getContainersForAdmin();
 		final Map<String, UserOrg> users = getUser().findAll();
 
 		// Search the groups
@@ -95,11 +95,11 @@ public class GroupResource extends AbstractContainerResource<GroupOrg, GroupEdit
 
 		// Apply pagination and secure the users data
 		return paginationJson.applyPagination(uriInfo, findAll, rawGroupLdap -> {
-			final ContainerCountVo securedUserOrg = newContainerCountVo(rawGroupLdap, managedGroupsWrite, managedGroupsAdmin, types);
+			final ContainerCountVo securedUserOrg = newContainerCountVo(rawGroupLdap, writeGroups, adminGroups, types);
 			securedUserOrg.setCount(rawGroupLdap.getMembers().size());
 			// Computed the visible members
 			securedUserOrg.setCountVisible((int) rawGroupLdap.getMembers().stream().map(users::get).map(UserOrg::getCompany).map(companies::get)
-					.map(CompanyOrg::getCompanyTree).filter(c -> CollectionUtils.containsAny(managedCompanies, c)).count());
+					.map(CompanyOrg::getCompanyTree).filter(c -> CollectionUtils.containsAny(visibleCompanies, c)).count());
 			return securedUserOrg;
 		});
 	}

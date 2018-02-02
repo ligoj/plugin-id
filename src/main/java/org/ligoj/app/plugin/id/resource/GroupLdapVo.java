@@ -16,8 +16,8 @@ public class GroupLdapVo {
 	private String name;
 
 	/**
-	 * Is this group is managed by the current user.
+	 * Is this group can be written by the current principal user.
 	 */
-	private boolean managed;
+	private boolean canWrite;
 
 }
