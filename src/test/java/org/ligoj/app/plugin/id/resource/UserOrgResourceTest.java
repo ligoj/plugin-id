@@ -242,11 +242,11 @@ public class UserOrgResourceTest extends AbstractAppTest {
 
 		// Check the users
 		Assertions.assertEquals("gfi", tableItem.getData().get(0).getCompany());
-		Assertions.assertFalse(tableItem.getData().get(0).getGroups().get(0).isManaged());
+		Assertions.assertFalse(tableItem.getData().get(0).getGroups().get(0).isCanWrite());
 	}
 
 	@Test
-	public void findAllNotManagedCompany() {
+	public void findAllNotVisibleCompany() {
 		final Map<String, UserOrg> users = new HashMap<>();
 		final UserOrg user1 = newUser();
 		users.put("wuser", user1);
@@ -817,7 +817,7 @@ public class UserOrgResourceTest extends AbstractAppTest {
 	}
 
 	@Test
-	public void findAllNotSecureByManagedCompany() {
+	public void findAllNotSecureByVisibleCompany() {
 		final Map<String, UserOrg> users = new HashMap<>();
 		final UserOrg user1 = newUser();
 		users.put("wuser", user1);
@@ -871,7 +871,7 @@ public class UserOrgResourceTest extends AbstractAppTest {
 	}
 
 	@Test
-	public void findAllNotSecureByManagedGroup() {
+	public void findAllNotSecureByVisibleGroup() {
 		final Map<String, UserOrg> users = new HashMap<>();
 		final UserOrg user1 = newUser();
 		users.put("wuser", user1);
@@ -1061,7 +1061,7 @@ public class UserOrgResourceTest extends AbstractAppTest {
 	}
 
 	/**
-	 * Add a user to a group the principal does not manage.
+	 * Add a user to a group the principal does not visible.
 	 */
 	@Test
 	public void addUserToGroupNotWritableGroup() {
@@ -1084,7 +1084,7 @@ public class UserOrgResourceTest extends AbstractAppTest {
 	}
 
 	/**
-	 * Remove a user to a group the principal does not manage.
+	 * Remove a user to a group the principal does not visible.
 	 */
 	@Test
 	public void removeUserFromGroupNotWritableGroup() {

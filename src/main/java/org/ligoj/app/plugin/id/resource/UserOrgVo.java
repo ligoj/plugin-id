@@ -26,7 +26,7 @@ public class UserOrgVo extends SimpleUserOrg {
 	private boolean canWrite;
 
 	/**
-	 * <code>true</code> when the current principal user manage (write or administer) at least one group.
+	 * <code>true</code> when the current principal user can write at least one group.
 	 */
 	private boolean canWriteGroups;
 	

@@ -102,7 +102,7 @@ public class CompanyResource extends AbstractContainerResource<CompanyOrg, Conta
 	}
 
 	/**
-	 * Return groups matching to given criteria. The managed groups, trees and companies are checked. The returned
+	 * Return groups matching to given criteria. The visible groups, trees and companies are checked. The returned
 	 * groups of each user depends on the groups the user can see/write in CN form.
 	 * 
 	 * @param uriInfo
@@ -114,27 +114,27 @@ public class CompanyResource extends AbstractContainerResource<CompanyOrg, Conta
 		final PageRequest pageRequest = paginationJson.getPageRequest(uriInfo, ORDERED_COLUMNS);
 
 		final List<ContainerScope> types = containerScopeResource.findAllDescOrder(ContainerType.COMPANY);
-		final Set<CompanyOrg> managedCompanies = getContainers();
-		final Set<String> managedCompaniesAsString = managedCompanies.stream().map(CompanyOrg::getId).collect(Collectors.toSet());
-		final Set<CompanyOrg> managedCompaniesWrite = getContainersForWrite();
-		final Set<CompanyOrg> managedCompaniesAdmin = getContainersForAdmin();
+		final Set<CompanyOrg> visibleCompanies = getContainers();
+		final Set<String> visibleCompaniesAsString = visibleCompanies.stream().map(CompanyOrg::getId).collect(Collectors.toSet());
+		final Set<CompanyOrg> writeCompanies = getContainersForWrite();
+		final Set<CompanyOrg> adminCompanies = getContainersForAdmin();
 		final Map<String, UserOrg> users = getUser().findAll();
 
 		// Search the companies
-		final Page<CompanyOrg> findAll = getRepository().findAll(managedCompanies, DataTableAttributes.getSearch(uriInfo), pageRequest,
+		final Page<CompanyOrg> findAll = getRepository().findAll(visibleCompanies, DataTableAttributes.getSearch(uriInfo), pageRequest,
 				Collections.singletonMap(TYPE_ATTRIBUTE, new TypeComparator(types)));
 
 		// Apply pagination and secure the users data
 		return paginationJson.applyPagination(uriInfo, findAll, rawCompanyLdap -> {
 			// Build the secured company with counter
-			final ContainerCountVo securedUser = newContainerCountVo(rawCompanyLdap, managedCompaniesWrite, managedCompaniesAdmin, types);
+			final ContainerCountVo securedUser = newContainerCountVo(rawCompanyLdap, writeCompanies, adminCompanies, types);
 
 			// Computed the total members, unrestricted visibility
 			securedUser.setCount((int) users.values().stream().filter(user -> rawCompanyLdap.getId().equals(user.getCompany())).count());
 
 			// Computed the visible members : same company and visible company
 			securedUser.setCountVisible((int) users.values().stream().filter(user -> rawCompanyLdap.getId().equals(user.getCompany()))
-					.filter(user -> managedCompaniesAsString.contains(user.getCompany())).count());
+					.filter(user -> visibleCompaniesAsString.contains(user.getCompany())).count());
 			return securedUser;
 		});
 	}

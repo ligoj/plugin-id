@@ -55,11 +55,11 @@ public class CompanyResourceTest extends AbstractContainerResourceTest {
 	 */
 	@Test
 	public void getContainers() {
-		final TableItem<String> managed = resource.getContainers(newUriInfo());
-		Assertions.assertEquals(9, managed.getRecordsFiltered());
-		Assertions.assertEquals(9, managed.getRecordsTotal());
-		Assertions.assertEquals(9, managed.getData().size());
-		Assertions.assertEquals("external", managed.getData().get(0));
+		final TableItem<String> items = resource.getContainers(newUriInfo());
+		Assertions.assertEquals(9, items.getRecordsFiltered());
+		Assertions.assertEquals(9, items.getRecordsTotal());
+		Assertions.assertEquals(9, items.getData().size());
+		Assertions.assertEquals("external", items.getData().get(0));
 	}
 
 	/**
@@ -67,11 +67,11 @@ public class CompanyResourceTest extends AbstractContainerResourceTest {
 	 */
 	@Test
 	public void getContainersForWrite() {
-		final TableItem<String> managed = resource.getContainersForWrite(newUriInfo());
-		Assertions.assertEquals(9, managed.getRecordsFiltered());
-		Assertions.assertEquals(9, managed.getRecordsTotal());
-		Assertions.assertEquals(9, managed.getData().size());
-		Assertions.assertEquals("external", managed.getData().get(0));
+		final TableItem<String> items = resource.getContainersForWrite(newUriInfo());
+		Assertions.assertEquals(9, items.getRecordsFiltered());
+		Assertions.assertEquals(9, items.getRecordsTotal());
+		Assertions.assertEquals(9, items.getData().size());
+		Assertions.assertEquals("external", items.getData().get(0));
 	}
 
 	/**
@@ -80,10 +80,10 @@ public class CompanyResourceTest extends AbstractContainerResourceTest {
 	@Test
 	public void getContainersForWrite2() {
 		initSpringSecurityContext("mtuyer");
-		final TableItem<String> managed = resource.getContainersForWrite(newUriInfo());
-		Assertions.assertEquals(0, managed.getRecordsFiltered());
-		Assertions.assertEquals(0, managed.getRecordsTotal());
-		Assertions.assertEquals(0, managed.getData().size());
+		final TableItem<String> items = resource.getContainersForWrite(newUriInfo());
+		Assertions.assertEquals(0, items.getRecordsFiltered());
+		Assertions.assertEquals(0, items.getRecordsTotal());
+		Assertions.assertEquals(0, items.getData().size());
 	}
 
 	/**
@@ -93,21 +93,21 @@ public class CompanyResourceTest extends AbstractContainerResourceTest {
 	@Test
 	public void getContainersForAdmin() {
 		initSpringSecurityContext("mlavoine");
-		final TableItem<String> managed = resource.getContainersForAdmin(newUriInfo());
-		Assertions.assertEquals(0, managed.getRecordsFiltered());
-		Assertions.assertEquals(0, managed.getRecordsTotal());
-		Assertions.assertEquals(0, managed.getData().size());
+		final TableItem<String> items = resource.getContainersForAdmin(newUriInfo());
+		Assertions.assertEquals(0, items.getRecordsFiltered());
+		Assertions.assertEquals(0, items.getRecordsTotal());
+		Assertions.assertEquals(0, items.getData().size());
 	}
 
 	@Test
 	public void getContainersForAdmin2() {
 		initSpringSecurityContext("fdaugan");
-		final TableItem<String> managed = resource.getContainersForAdmin(newUriInfo());
-		Assertions.assertEquals(2, managed.getRecordsFiltered());
-		Assertions.assertEquals(2, managed.getRecordsTotal());
-		Assertions.assertEquals(2, managed.getData().size());
-		Assertions.assertEquals("ing", managed.getData().get(0));
-		Assertions.assertEquals("ing-internal", managed.getData().get(1));
+		final TableItem<String> items = resource.getContainersForAdmin(newUriInfo());
+		Assertions.assertEquals(2, items.getRecordsFiltered());
+		Assertions.assertEquals(2, items.getRecordsTotal());
+		Assertions.assertEquals(2, items.getData().size());
+		Assertions.assertEquals("ing", items.getData().get(0));
+		Assertions.assertEquals("ing-internal", items.getData().get(1));
 	}
 
 	@Test
@@ -129,16 +129,16 @@ public class CompanyResourceTest extends AbstractContainerResourceTest {
 	@Test
 	public void getContainersMyCompany() {
 		initSpringSecurityContext("mmartin");
-		final TableItem<String> managed = resource.getContainers(newUriInfo());
-		Assertions.assertEquals(4, managed.getRecordsFiltered());
-		Assertions.assertEquals(4, managed.getRecordsTotal());
-		Assertions.assertEquals(4, managed.getData().size());
+		final TableItem<String> items = resource.getContainers(newUriInfo());
+		Assertions.assertEquals(4, items.getRecordsFiltered());
+		Assertions.assertEquals(4, items.getRecordsTotal());
+		Assertions.assertEquals(4, items.getData().size());
 
 		// gfi, ing, socygan
-		Assertions.assertEquals("gfi", managed.getData().get(0));
-		Assertions.assertEquals("ing", managed.getData().get(1));
-		Assertions.assertEquals("ing-internal", managed.getData().get(2));
-		Assertions.assertEquals("socygan", managed.getData().get(3));
+		Assertions.assertEquals("gfi", items.getData().get(0));
+		Assertions.assertEquals("ing", items.getData().get(1));
+		Assertions.assertEquals("ing-internal", items.getData().get(2));
+		Assertions.assertEquals("socygan", items.getData().get(3));
 	}
 
 	@Test

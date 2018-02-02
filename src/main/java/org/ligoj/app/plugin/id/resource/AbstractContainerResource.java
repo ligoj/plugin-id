@@ -385,21 +385,21 @@ public abstract class AbstractContainerResource<T extends ContainerOrg, V extend
 	 * 
 	 * @param rawContainer
 	 *            the raw container contained sensitive data.
-	 * @param managedWrite
-	 *            The containers the current user can write.
-	 * @param managedAdmin
-	 *            The containers the current user can administer.
+	 * @param canWrite
+	 *            The containers the principal user can write.
+	 * @param canAdmin
+	 *            The containers the principal user can administer.
 	 * @param types
 	 *            The defined type with locking information.
 	 * @return A secured container with right and lock information the current
 	 *         user has.
 	 */
-	protected ContainerCountVo newContainerCountVo(final ContainerOrg rawContainer, final Set<T> managedWrite, final Set<T> managedAdmin,
+	protected ContainerCountVo newContainerCountVo(final ContainerOrg rawContainer, final Set<T> canWrite, final Set<T> canAdmin,
 			final List<ContainerScope> types) {
 		final ContainerCountVo securedUserOrg = new ContainerCountVo();
 		NamedBean.copy(rawContainer, securedUserOrg);
-		securedUserOrg.setCanWrite(managedWrite.contains(rawContainer));
-		securedUserOrg.setCanAdmin(managedAdmin.contains(rawContainer));
+		securedUserOrg.setCanWrite(canWrite.contains(rawContainer));
+		securedUserOrg.setCanAdmin(canAdmin.contains(rawContainer));
 		securedUserOrg.setContainerType(type);
 
 		// Find the closest type

@@ -122,7 +122,7 @@ public class UserOrgResource extends AbstractOrgResource {
 	}
 
 	/**
-	 * Return users matching the given criteria. The managed groups, trees and
+	 * Return users matching the given criteria. The visible groups, trees and
 	 * companies are checked. The returned groups of each user depends on the
 	 * groups the user can see. The result is not secured : it contains DN.
 	 * 
@@ -133,22 +133,22 @@ public class UserOrgResource extends AbstractOrgResource {
 	 * @return All matched users.
 	 */
 	public List<UserOrg> findAllNotSecure(final String company, final String group) {
-		final Set<GroupOrg> managedGroups = groupResource.getContainers();
+		final Set<GroupOrg> visibleGroups = groupResource.getContainers();
 
 		// Search the users
 		final MessageImpl message = new MessageImpl();
 		message.put(Message.QUERY_STRING, DataTableAttributes.PAGE_LENGTH + "=10000000");
-		return findAllNotSecure(managedGroups, company, group, null, new UriInfoImpl(message)).getContent();
+		return findAllNotSecure(visibleGroups, company, group, null, new UriInfoImpl(message)).getContent();
 	}
 
 	/**
-	 * Return users matching the given criteria. The managed groups, trees and
+	 * Return users matching the given criteria. The visible groups, trees and
 	 * companies are checked. The returned groups of each user depends on the
 	 * groups the user can see and are in normalized CN form. The result is not
 	 * secured, it contains DN.
 	 * 
-	 * @param managedGroups
-	 *            the visible groups.
+	 * @param visibleGroups
+	 *            The visible groups by the principal user.
 	 * @param company
 	 *            the optional company name to match. Will be normalized.
 	 * @param group
@@ -159,7 +159,7 @@ public class UserOrgResource extends AbstractOrgResource {
 	 *            filter data.
 	 * @return found users.
 	 */
-	private Page<UserOrg> findAllNotSecure(final Set<GroupOrg> managedGroups, final String company, final String group,
+	private Page<UserOrg> findAllNotSecure(final Set<GroupOrg> visibleGroups, final String company, final String group,
 			final String criteria, @Context final UriInfo uriInfo) {
 		final PageRequest pageRequest = paginationJson.getPageRequest(uriInfo, ORDERED_COLUMNS);
 
@@ -171,14 +171,14 @@ public class UserOrgResource extends AbstractOrgResource {
 		final Set<String> filteredCompanies = computeFilteredCompanies(Normalizer.normalize(company), visibleCompanies);
 
 		// The groups to use
-		final Collection<GroupOrg> filteredGroups = group == null ? null : computeFilteredGroups(group, managedGroups, allGroups);
+		final Collection<GroupOrg> filteredGroups = group == null ? null : computeFilteredGroups(group, visibleGroups, allGroups);
 
 		// Search the users
 		return getUser().findAll(filteredGroups, filteredCompanies, StringUtils.trimToNull(criteria), pageRequest);
 	}
 
 	/**
-	 * Return users matching the given criteria. The managed groups, trees and
+	 * Return users matching the given criteria. The visible groups, trees and
 	 * companies are checked. The returned groups of each user depends on the
 	 * groups the user can see/write, and are in CN form.
 	 * 
@@ -219,7 +219,7 @@ public class UserOrgResource extends AbstractOrgResource {
 			securedUserOrg
 					.setGroups(visibleGroups.stream().filter(mGroup -> rawUserOrg.getGroups().contains(mGroup.getId())).map(mGroup -> {
 						final GroupLdapVo vo = new GroupLdapVo();
-						vo.setManaged(writableGroups.contains(mGroup));
+						vo.setCanWrite(writableGroups.contains(mGroup));
 						vo.setName(mGroup.getName());
 						return vo;
 					}).collect(Collectors.toList()));
@@ -231,13 +231,13 @@ public class UserOrgResource extends AbstractOrgResource {
 	 * Return a intersection of given set of visible companies and the optional
 	 * requested company.
 	 */
-	private Set<String> computeFilteredCompanies(final String requestedCompany, final Collection<String> managedCompanies) {
+	private Set<String> computeFilteredCompanies(final String requestedCompany, final Collection<String> visibleCompanies) {
 		// Restrict access to visible companies
 		final Set<String> filteredCompanies;
 		if (StringUtils.isBlank(requestedCompany)) {
 			// No requested company, use all of them
-			filteredCompanies = new HashSet<>(managedCompanies);
-		} else if (managedCompanies.contains(requestedCompany)) {
+			filteredCompanies = new HashSet<>(visibleCompanies);
+		} else if (visibleCompanies.contains(requestedCompany)) {
 			// Requested company is visible, return it
 			filteredCompanies = Collections.singleton(requestedCompany);
 		} else {
@@ -251,11 +251,11 @@ public class UserOrgResource extends AbstractOrgResource {
 	/**
 	 * Computed visible groups.
 	 */
-	private List<GroupOrg> computeFilteredGroups(final String group, final Set<GroupOrg> managedGroups,
+	private List<GroupOrg> computeFilteredGroups(final String group, final Set<GroupOrg> visibleGroups,
 			final Map<String, GroupOrg> allGroups) {
 		// Restrict access to delegated groups
 		return Optional.ofNullable(allGroups.get(Normalizer.normalize(group)))
-				.map(fg -> allGroups.values().stream().filter(managedGroups::contains)
+				.map(fg -> allGroups.values().stream().filter(visibleGroups::contains)
 						// Filter the group, including the children
 						.filter(g -> DnUtils.equalsOrParentOf(fg.getDn(), g.getDn())).collect(Collectors.toList()))
 				.orElse(Collections.emptyList());
@@ -263,7 +263,7 @@ public class UserOrgResource extends AbstractOrgResource {
 
 	/**
 	 * Return a specific user from his/her login. When user does not exist or is
-	 * within a non managed company, return a 404.
+	 * within a non visible company, return a 404.
 	 *
 	 * @param user
 	 *            The user to find. A normalized form will be used for the
@@ -280,8 +280,8 @@ public class UserOrgResource extends AbstractOrgResource {
 		rawUserOrg.copy(securedUserOrg);
 
 		// Show only the groups of user that are also visible to current user
-		final Set<GroupOrg> managedGroups = groupResource.getContainers();
-		securedUserOrg.setGroups(managedGroups.stream().filter(mGroup -> rawUserOrg.getGroups().contains(mGroup.getId())).sorted()
+		final Set<GroupOrg> visibleGroups = groupResource.getContainers();
+		securedUserOrg.setGroups(visibleGroups.stream().filter(mGroup -> rawUserOrg.getGroups().contains(mGroup.getId())).sorted()
 				.map(GroupOrg::getName).collect(Collectors.toList()));
 		return securedUserOrg;
 	}
@@ -395,15 +395,18 @@ public class UserOrgResource extends AbstractOrgResource {
 	 * <ul>
 	 * <li>At least one valid delegate must exist (valid or not against the
 	 * involved user). If not, act as if the company does not exist.</li>
-	 * <li>Involved company must be managed by the current user, if one
-	 * attribute is changed act as if it does not exist.</li>
 	 * <li>Involved company must exist</li>
-	 * <li>Involved groups must be managed by the current user, if not, act as
-	 * if it does not exist So the user can only involve groups he/she manages.
-	 * These groups are completed with the other groups the user may already
-	 * have.</li>
+	 * <li>Involved company must be visible by the principal user. If not at if
+	 * it does not exist, one</li>
+	 * <li>Involved company must be writable by the principal user when there
+	 * is one updated attribute. Otherwise indicate the read-only state.</li>
 	 * <li>Involved groups must exist</li>
-	 * <li>Company of user cannot be changed</li>
+	 * <li>Involved groups must be visible by the current user, if not, act as
+	 * if it does not exist. So the user can only involve visible groups he/she.
+	 * These groups are completed with the other invisible groups the user may
+	 * already have.</li>
+	 * <li>Involved changed groups must writable by the principal user.
+	 * Otherwise indicate the read-only state.</li>
 	 * </ul>
 	 */
 	private void validateChanges(final String principal, final UserOrgEditionVo importEntry) {
@@ -869,7 +872,7 @@ public class UserOrgResource extends AbstractOrgResource {
 		// Check the company
 		final String companyDn = getCompany().findById(userOrg.getCompany()).getDn();
 		if (delegateRepository.findByMatchingDnForWrite(securityHelper.getLogin(), companyDn, DelegateType.TREE).isEmpty()) {
-			// Report this attempt to delete a non managed user
+			// Report this attempt to delete a non writable user
 			log.warn("Attempt to reset the password of a user '{}' out of scope", user);
 			throw new ValidationJsonException(USER_KEY, READ_ONLY, "0", "user", "1", user);
 		}
@@ -894,7 +897,7 @@ public class UserOrgResource extends AbstractOrgResource {
 		// Check the company
 		final String companyDn = getCompany().findById(userOrg.getCompany()).getDn();
 		if (delegateRepository.findByMatchingDnForWrite(securityHelper.getLogin(), companyDn, DelegateType.COMPANY).isEmpty()) {
-			// Report this attempt to delete a non managed user
+			// Report this attempt to delete a non writable user
 			log.warn("Attempt to {} a user '{}' out of scope", mode, user);
 			throw new ValidationJsonException(USER_KEY, READ_ONLY, "0", "user", "1", user);
 		}
