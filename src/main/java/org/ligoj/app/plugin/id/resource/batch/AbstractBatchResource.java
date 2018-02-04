@@ -33,7 +33,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 /**
  * LDAP batch resource.
  */
-public abstract class AbstractBatchResource {
+public abstract class AbstractBatchResource<B extends BatchElement> {
 
 	@Autowired
 	protected TaskExecutor executor;
@@ -45,7 +45,7 @@ public abstract class AbstractBatchResource {
 	 * Hold pending and previous imports. Key is an identifier built from the user name requesting the import, and a
 	 * random String. This table is clean before each import.
 	 */
-	private final Map<String, BatchTaskVo<?>> imports = new ConcurrentHashMap<>();
+	private final Map<String, BatchTaskVo<B>> imports = new ConcurrentHashMap<>();
 
 	@Autowired
 	private ValidatorBean validator;
@@ -61,7 +61,7 @@ public abstract class AbstractBatchResource {
 	@GET
 	@Path("{id:\\d+}")
 	@OnNullReturn404
-	public BatchTaskVo<? extends BatchElement> getImportTask(@PathParam("id") final long id) {
+	public BatchTaskVo<B> getImportTask(@PathParam("id") final long id) {
 		return imports.get(SecurityContextHolder.getContext().getAuthentication().getName() + "-" + id);
 	}
 
@@ -83,7 +83,7 @@ public abstract class AbstractBatchResource {
 	 * Cleanup the previous tasks.
 	 */
 	private void cleanup() {
-		for (final Entry<String, BatchTaskVo<?>> entry : imports.entrySet()) {
+		for (final Entry<String, BatchTaskVo<B>> entry : imports.entrySet()) {
 			if (isFinished(entry.getValue())) {
 				// This task is finished since yesterday
 				imports.remove(entry.getKey());
@@ -98,7 +98,7 @@ public abstract class AbstractBatchResource {
 		return task.getStatus().getEnd() != null && task.getStatus().getEnd().getTime() + DateUtils.MILLIS_PER_DAY < System.currentTimeMillis();
 	}
 
-	protected <B extends BatchElement, T extends AbstractLdapBatchTask<B>> long batch(final InputStream uploadedFile, final String[] columns,
+	protected <T extends AbstractLdapBatchTask<B>> long batch(final InputStream uploadedFile, final String[] columns,
 			final String encoding, final String[] defaultColumns, final Class<B> batchType, final Class<T> taskType) throws IOException {
 
 		// Public identifier is based on system date

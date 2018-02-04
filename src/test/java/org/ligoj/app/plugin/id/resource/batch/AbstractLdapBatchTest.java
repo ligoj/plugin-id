@@ -5,7 +5,7 @@ import org.ligoj.app.AbstractAppTest;
 import org.ligoj.bootstrap.core.security.SecurityHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 
-public abstract class  AbstractLdapBatchTest extends AbstractAppTest {
+public abstract class AbstractLdapBatchTest extends AbstractAppTest {
 
 	@Autowired
 	protected SecurityHelper securityHelper;
@@ -20,7 +20,8 @@ public abstract class  AbstractLdapBatchTest extends AbstractAppTest {
 		return importTask.getEntries().get(0);
 	}
 
-	protected <U extends BatchElement> BatchTaskVo<U> waitImport(final BatchTaskVo<U> importTask) throws InterruptedException {
+	protected <U extends BatchElement> BatchTaskVo<U> waitImport(final BatchTaskVo<U> importTask)
+			throws InterruptedException {
 		Assertions.assertNotNull(importTask);
 		Assertions.assertNotNull(importTask.getStatus().getStart());
 

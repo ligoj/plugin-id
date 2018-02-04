@@ -14,20 +14,20 @@ import org.ligoj.app.plugin.id.resource.IdentityResource;
 import org.springframework.stereotype.Service;
 
 /**
- * LDAP batch resource for group.
+ * LDAP batch resource for user.
  */
-@Path(IdentityResource.SERVICE_URL + "/group/batch")
+@Path(IdentityResource.SERVICE_URL + "/user/batch")
 @Service
 @Produces(MediaType.APPLICATION_JSON)
-public class GroupBatchLdapResource extends AbstractBatchResource<GroupImportEntry> {
+public class UserBatchUpdateLdapResource extends AbstractBatchResource<UserUpdateEntry> {
 
 	/**
-	 * Default CSV headers for imports.
+	 * Default CSV headers for actions.
 	 */
-	private static final String[] DEFAULT_IMPORT_CSV_HEADERS = { "name", "type", "parent", "owner", "assistant", "department" };
+	private static final String[] DEFAULT_CSV_HEADERS = { "user", "operation", "value" };
 
 	/**
-	 * Upload a file of LDAP entries to create or update groups. The whole entry is replaced.
+	 * Upload a file of LDAP entries to execute atomic operations on existing users.
 	 * 
 	 * @param uploadedFile
 	 *            LDAP entries files to import. Currently support only CSV format.
@@ -39,10 +39,10 @@ public class GroupBatchLdapResource extends AbstractBatchResource<GroupImportEnt
 	 */
 	@POST
 	@Consumes(MediaType.MULTIPART_FORM_DATA)
-	@Path("full")
-	public long full(@Multipart(value = "csv-file") final InputStream uploadedFile,
+	@Path("atomic")
+	public long execute(@Multipart(value = "csv-file") final InputStream uploadedFile,
 			@Multipart(value = "columns", required = false) final String[] columns,
 			@Multipart(value = "encoding", required = false) final String encoding) throws IOException {
-		return batch(uploadedFile, columns, encoding, DEFAULT_IMPORT_CSV_HEADERS, GroupImportEntry.class, GroupFullLdapTask.class);
+		return batch(uploadedFile, columns, encoding, DEFAULT_CSV_HEADERS, UserUpdateEntry.class, UserAtomicLdapTask.class);
 	}
 }
