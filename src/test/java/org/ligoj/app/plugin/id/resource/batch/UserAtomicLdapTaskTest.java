@@ -44,7 +44,7 @@ public class UserAtomicLdapTaskTest extends AbstractSecurityTest {
 	}
 
 	@Test
-	public void doBatchInvalidOperation() throws Exception {
+	public void doBatchInvalidOperation() {
 		final UserUpdateEntry entry = new UserUpdateEntry();
 		entry.setOperation("any");
 		MatcherUtil.assertThrows(Assertions.assertThrows(ValidationJsonException.class, () -> {
@@ -53,7 +53,7 @@ public class UserAtomicLdapTaskTest extends AbstractSecurityTest {
 	}
 
 	@Test
-	public void doBatchExtraValue() throws Exception {
+	public void doBatchExtraValue() {
 		final UserUpdateEntry entry = new UserUpdateEntry();
 		entry.setOperation("lock");
 		entry.setValue("any");

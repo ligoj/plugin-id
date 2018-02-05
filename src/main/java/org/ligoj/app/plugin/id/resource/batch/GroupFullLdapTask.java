@@ -23,7 +23,7 @@ public class GroupFullLdapTask extends AbstractLdapBatchTask<GroupImportEntry> {
 	protected ContainerScopeResource containerScopeResource;
 
 	@Override
-	protected void doBatch(final GroupImportEntry entry) throws Exception {
+	protected void doBatch(final GroupImportEntry entry) {
 
 		// Copy the group information
 		final GroupEditionVo edition = new GroupEditionVo();

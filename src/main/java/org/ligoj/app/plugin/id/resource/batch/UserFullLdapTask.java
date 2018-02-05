@@ -19,7 +19,7 @@ public class UserFullLdapTask extends AbstractLdapBatchTask<UserImportEntry> {
 	protected UserOrgResource resource;
 
 	@Override
-	protected void doBatch(final UserImportEntry entry) throws Exception {
+	protected void doBatch(final UserImportEntry entry) {
 
 		// Copy the user information
 		final UserOrgEditionVo user = new UserOrgEditionVo();
