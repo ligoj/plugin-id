@@ -38,6 +38,8 @@ import org.ligoj.app.iam.model.CacheMembership;
 import org.ligoj.app.iam.model.CacheUser;
 import org.ligoj.app.iam.model.DelegateOrg;
 import org.ligoj.app.iam.model.DelegateType;
+import org.ligoj.app.plugin.id.dao.PasswordResetAuditRepository;
+import org.ligoj.app.plugin.id.model.PasswordResetAudit;
 import org.ligoj.bootstrap.core.json.TableItem;
 import org.ligoj.bootstrap.core.json.datatable.DataTableAttributes;
 import org.ligoj.bootstrap.core.resource.BusinessException;
@@ -65,6 +67,8 @@ public class UserOrgResourceTest extends AbstractAppTest {
 	protected IUserRepository userRepository;
 	protected IGroupRepository groupRepository;
 	protected ICompanyRepository companyRepository;
+	protected PasswordResetAuditRepository passwordResetAuditRepository;
+
 
 	@Autowired
 	private DelegateOrgRepository delegateOrgRepository;
@@ -80,6 +84,7 @@ public class UserOrgResourceTest extends AbstractAppTest {
 		userRepository = Mockito.mock(IUserRepository.class);
 		groupRepository = Mockito.mock(IGroupRepository.class);
 		companyRepository = Mockito.mock(ICompanyRepository.class);
+		passwordResetAuditRepository = Mockito.mock(PasswordResetAuditRepository.class);
 		Mockito.when(configuration.getUserRepository()).thenReturn(userRepository);
 		Mockito.when(configuration.getCompanyRepository()).thenReturn(companyRepository);
 		Mockito.when(configuration.getGroupRepository()).thenReturn(groupRepository);
@@ -935,10 +940,16 @@ public class UserOrgResourceTest extends AbstractAppTest {
 		user.setCompany("ing");
 		user.setGroups(Collections.singleton("dig rha"));
 
+		final PasswordResetAudit audit = new PasswordResetAudit();
+		audit.setLogin("wuser");
+		
 		Mockito.when(userRepository.findByIdExpected(DEFAULT_USER, "wuser")).thenReturn(user);
+		Mockito.when(passwordResetAuditRepository.findByExpected("login", "wuser")).thenReturn(audit);
 		Mockito.when(companyRepository.findById("ing")).thenReturn(company);
 		Mockito.when(groupRepository.findAll()).thenReturn(groupsMap);
 		resource.resetPassword("wuser");
+		final PasswordResetAudit audited = passwordResetAuditRepository.findByExpected("login", "wuser");
+		Assertions.assertEquals("wuser", audited.getLogin());
 	}
 
 	@Test

@@ -193,7 +193,7 @@ public abstract class AbstractContainerResource<T extends ContainerOrg, V extend
 
 		// Check the container can be created by the current principal.
 		// Used DN will be FQN to match the delegates
-		if (!delegateRepository.isAdmin(securityHelper.getLogin(), Normalizer.normalize(newDn), this.type.getDelegateType())) {
+		if (!delegateRepository.canCreate(securityHelper.getLogin(), Normalizer.normalize(newDn), this.type.getDelegateType())) {
 			// Not managed container, report this attempt and act as if this
 			// container already exists
 			log.warn("Attempt to create a {} '{}' out of scope", scope, container.getName());
@@ -314,7 +314,7 @@ public abstract class AbstractContainerResource<T extends ContainerOrg, V extend
 
 		// Check the container can be deleted by the current user. Used DN will
 		// be FQN to match the delegates
-		if (!delegateRepository.isAdmin(securityHelper.getLogin(), Normalizer.normalize(container.getDn()), this.type.getDelegateType())) {
+		if (!delegateRepository.canCreate(securityHelper.getLogin(), Normalizer.normalize(container.getDn()), this.type.getDelegateType())) {
 			// Not managed container, report this attempt and act as if this
 			// company did not exist
 			log.warn("Attempt to delete a {} '{}' out of scope", type, container.getName());
