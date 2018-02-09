@@ -15,13 +15,14 @@ import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
-//http://docs.spring.io/spring/docs/3.2.x/spring-framework-reference/html/scheduling.html
 /**
- * LDAP import from list of bean entries.
+ * Import from list of bean entries.
+ * 
+ * @see <a href="http://docs.spring.io/spring/docs/3.2.x/spring-framework-reference/html/scheduling.html">scheduling</a>
  */
 @Component
 @Scope(value = ConfigurableBeanFactory.SCOPE_PROTOTYPE)
-public class UserAtomicLdapTask extends AbstractLdapBatchTask<UserUpdateEntry> {
+public class UserAtomicTask extends AbstractBatchTask<UserUpdateEntry> {
 
 	@Autowired
 	protected UserOrgResource resource;
@@ -49,14 +50,14 @@ public class UserAtomicLdapTask extends AbstractLdapBatchTask<UserUpdateEntry> {
 	/**
 	 * Function for update action.
 	 */
-	private static final Map<String, BiConsumer<UserAtomicLdapTask, UserUpdateEntry>> FUNCTIONS = new HashMap<>();
+	private static final Map<String, BiConsumer<UserAtomicTask, UserUpdateEntry>> FUNCTIONS = new HashMap<>();
 	static {
-		FUNCTIONS.put("firstname", (u, e) -> e.getUserLdap().setFirstName(e.getValue()));
-		FUNCTIONS.put("lastname", (u, e) -> e.getUserLdap().setLastName(e.getValue()));
-		FUNCTIONS.put("department", (u, e) -> e.getUserLdap().setDepartment(e.getValue()));
-		FUNCTIONS.put("localid", (u, e) -> e.getUserLdap().setLocalId(e.getValue()));
-		FUNCTIONS.put("company", (u, e) -> e.getUserLdap().setCompany(e.getValue()));
-		FUNCTIONS.put("mail", (u, e) -> e.getUserLdap().setMail(e.getValue()));
+		FUNCTIONS.put("firstname", (u, e) -> e.getUserEdit().setFirstName(e.getValue()));
+		FUNCTIONS.put("lastname", (u, e) -> e.getUserEdit().setLastName(e.getValue()));
+		FUNCTIONS.put("department", (u, e) -> e.getUserEdit().setDepartment(e.getValue()));
+		FUNCTIONS.put("localid", (u, e) -> e.getUserEdit().setLocalId(e.getValue()));
+		FUNCTIONS.put("company", (u, e) -> e.getUserEdit().setCompany(e.getValue()));
+		FUNCTIONS.put("mail", (u, e) -> e.getUserEdit().setMail(e.getValue()));
 		FUNCTIONS.put("isolate", (u, e) -> u.resource.isolate(e.getUser()));
 		FUNCTIONS.put("restore", (u, e) -> u.resource.restore(e.getUser()));
 		FUNCTIONS.put("lock", (u, e) -> u.resource.lock(e.getUser()));
@@ -96,11 +97,11 @@ public class UserAtomicLdapTask extends AbstractLdapBatchTask<UserUpdateEntry> {
 			editUser.setGroups(user.getGroups());
 
 			// Save the initial state user
-			entry.setUserLdap(editUser);
+			entry.setUserEdit(editUser);
 
 			// Execute atomic operation
 			FUNCTIONS.get(entry.getOperation()).accept(this, entry);
-			resource.update(entry.getUserLdap());
+			resource.update(entry.getUserEdit());
 		} else {
 			// Other self managed operation
 			FUNCTIONS.get(entry.getOperation()).accept(this, entry);

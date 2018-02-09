@@ -33,7 +33,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 
 /**
- * LDAP Group type resource.
+ * Container scope resource.
  */
 @Path(IdentityResource.SERVICE_URL + "/container-scope")
 @Service

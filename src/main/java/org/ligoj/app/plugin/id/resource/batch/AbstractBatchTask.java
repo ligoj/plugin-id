@@ -18,13 +18,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * LDAP batch processor.
+ * Base batch processor.
  * 
  * @param <B>
  *            The batch element type.
  */
 @Slf4j
-public abstract class AbstractLdapBatchTask<B extends BatchElement> implements Runnable { // NOPMD
+public abstract class AbstractBatchTask<B extends BatchElement> implements Runnable { // NOPMD
 
 	@Autowired
 	protected SecurityHelper securityHelper;
@@ -79,7 +79,8 @@ public abstract class AbstractLdapBatchTask<B extends BatchElement> implements R
 				log.info("Import of {} failed : {}", importEntry, ne.getMessage());
 				importEntry.setStatus(Boolean.FALSE);
 				final ExceptionMapper<Throwable> mapper = jaxrsFactory.createExceptionMapper(ne.getClass(), null);
-				importEntry.setStatusText(mapper == null ? ne.getMessage() : mapper.toResponse(ne).getEntity().toString());
+				importEntry
+						.setStatusText(mapper == null ? ne.getMessage() : mapper.toResponse(ne).getEntity().toString());
 			}
 			task.getStatus().setDone(task.getStatus().getDone() + 1);
 		}
@@ -89,7 +90,7 @@ public abstract class AbstractLdapBatchTask<B extends BatchElement> implements R
 	 * Configure the task.
 	 * 
 	 * @param task
-	 *            the LDAP batch task.
+	 *            The batch task.
 	 */
 	public void configure(final BatchTaskVo<B> task) {
 		this.task = task;
@@ -98,7 +99,8 @@ public abstract class AbstractLdapBatchTask<B extends BatchElement> implements R
 
 		// Save the CXF factory for JSON serialization
 		this.jaxrsFactory = getMessage() == null ? ServerProviderFactory.getInstance()
-				: (ServerProviderFactory) getMessage().getExchange().getEndpoint().get("org.apache.cxf.jaxrs.provider.ServerProviderFactory");
+				: (ServerProviderFactory) getMessage().getExchange().getEndpoint()
+						.get("org.apache.cxf.jaxrs.provider.ServerProviderFactory");
 	}
 
 	protected Message getMessage() {
@@ -113,8 +115,8 @@ public abstract class AbstractLdapBatchTask<B extends BatchElement> implements R
 	 * @return A collection from the raw string.
 	 */
 	protected List<String> toList(final String rawValue) {
-		return Pattern.compile(",").splitAsStream(StringUtils.trimToEmpty(rawValue)).map(Normalizer::normalize).filter(StringUtils::isNotBlank)
-				.collect(Collectors.toList());
+		return Pattern.compile(",").splitAsStream(StringUtils.trimToEmpty(rawValue)).map(Normalizer::normalize)
+				.filter(StringUtils::isNotBlank).collect(Collectors.toList());
 	}
 
 }

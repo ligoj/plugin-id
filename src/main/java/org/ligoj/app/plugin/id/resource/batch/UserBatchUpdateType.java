@@ -1,7 +1,7 @@
 package org.ligoj.app.plugin.id.resource.batch;
 
 /**
- * LDAP action type.
+ * Batch action type.
  */
 public enum UserBatchUpdateType {
 

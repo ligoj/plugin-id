@@ -14,12 +14,12 @@ import org.mockito.exceptions.base.MockitoException;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
- * Test of {@link UserBatchLdapResource}
+ * Test of {@link UserBatchUpdateResource}
  */
-public class UserBatchUpdateLdapResourceTest extends AbstractUserBatchLdapResourceTest {
+public class UserBatchUpdateResourceTest extends AbstractUserBatchResourceTest {
 
 	@Autowired
-	protected UserBatchUpdateLdapResource resource;
+	protected UserBatchUpdateResource resource;
 
 	@Test
 	public void execute() throws IOException, InterruptedException {
@@ -34,7 +34,7 @@ public class UserBatchUpdateLdapResourceTest extends AbstractUserBatchLdapResour
 		user.setLocalId("untouched");
 		user.setMails(new ArrayList<>());
 		user.setGroups(new ArrayList<>());
-		Mockito.when(mockLdapResource.findById("fdaugan")).thenReturn(user);
+		Mockito.when(mockResource.findById("fdaugan")).thenReturn(user);
 
 		final long id = resource.execute(
 				new ByteArrayInputStream("fdaugan;mail;any.daugan@sample.com".getBytes("cp1252")),
@@ -52,8 +52,8 @@ public class UserBatchUpdateLdapResourceTest extends AbstractUserBatchLdapResour
 		Assertions.assertTrue(importEntry.getStatus());
 		Assertions.assertNull(importEntry.getStatusText());
 
-		// Check LDAP
-		Mockito.verify(mockLdapResource, new DefaultVerificationMode(data -> {
+		// Check user
+		Mockito.verify(mockResource, new DefaultVerificationMode(data -> {
 			if (data.getAllInvocations().size() != 2) {
 				throw new MockitoException("Expect two calls");
 			}
@@ -62,15 +62,15 @@ public class UserBatchUpdateLdapResourceTest extends AbstractUserBatchLdapResour
 			Assertions.assertEquals("fdaugan", data.getAllInvocations().get(0).getArguments()[0]);
 
 			// "update" call
-			final UserOrgEditionVo userLdap = (UserOrgEditionVo) data.getAllInvocations().get(1).getArguments()[0];
-			Assertions.assertNotNull(userLdap);
-			Assertions.assertEquals("untouched", userLdap.getFirstName());
-			Assertions.assertEquals("untouched", userLdap.getLastName());
-			Assertions.assertEquals("fdaugan", userLdap.getId());
-			Assertions.assertEquals("untouched", userLdap.getCompany());
-			Assertions.assertEquals("untouched", userLdap.getDepartment());
-			Assertions.assertEquals("untouched", userLdap.getLocalId());
-			Assertions.assertEquals("any.daugan@sample.com", userLdap.getMail());
+			final UserOrgEditionVo userEdit = (UserOrgEditionVo) data.getAllInvocations().get(1).getArguments()[0];
+			Assertions.assertNotNull(userEdit);
+			Assertions.assertEquals("untouched", userEdit.getFirstName());
+			Assertions.assertEquals("untouched", userEdit.getLastName());
+			Assertions.assertEquals("fdaugan", userEdit.getId());
+			Assertions.assertEquals("untouched", userEdit.getCompany());
+			Assertions.assertEquals("untouched", userEdit.getDepartment());
+			Assertions.assertEquals("untouched", userEdit.getLocalId());
+			Assertions.assertEquals("any.daugan@sample.com", userEdit.getMail());
 		})).update(null);
 	}
 

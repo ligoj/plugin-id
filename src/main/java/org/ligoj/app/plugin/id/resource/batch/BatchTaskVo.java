@@ -7,7 +7,7 @@ import lombok.Setter;
 import lombok.ToString;
 
 /**
- * LDAP import bean
+ * Task import bean.
  */
 @Getter
 @ToString(of = "id")

@@ -26,7 +26,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import net.sf.ehcache.CacheManager;
 
 /**
- * Common test class for LDAP
+ * Common test class for containers.
  */
 public abstract class AbstractContainerResourceTest extends AbstractAppTest {
 

@@ -50,6 +50,6 @@ public class UserUpdateEntry implements BatchElement {
 	 */
 	@Transient
 	@JsonIgnore
-	private UserOrgEditionVo userLdap;
+	private UserOrgEditionVo userEdit;
 
 }

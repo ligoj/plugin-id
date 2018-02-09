@@ -7,7 +7,7 @@ import org.ligoj.app.iam.ContainerOrg;
 /**
  * Test class of {@link ContainerOrg}
  */
-public class ContainerLdapTest {
+public class ContainerOrgTest {
 
 	@Test
 	public void valid() {

@@ -319,7 +319,7 @@ public class UserOrgResourceTest extends AbstractAppTest {
 
 	private UserOrgVo checkUser(UserOrgVo user) {
 		checkUser((SimpleUserOrg) user);
-		final List<GroupLdapVo> groups = new ArrayList<>(user.getGroups());
+		final List<GroupVo> groups = new ArrayList<>(user.getGroups());
 		Assertions.assertEquals(1, groups.size());
 		Assertions.assertEquals("DIG", groups.get(0).getName());
 		return user;

@@ -6,7 +6,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 /**
- * LDAP Group/company for edition.
+ * Group bean for edition.
  */
 @Getter
 @Setter

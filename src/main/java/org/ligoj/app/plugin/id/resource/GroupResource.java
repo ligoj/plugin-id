@@ -37,7 +37,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 
 /**
- * LDAP Group resource.
+ * Group resource.
  */
 @Path(IdentityResource.SERVICE_URL + "/group")
 @Service
@@ -91,15 +91,17 @@ public class GroupResource extends AbstractContainerResource<GroupOrg, GroupEdit
 		final Map<String, UserOrg> users = getUser().findAll();
 
 		// Search the groups
-		final Page<GroupOrg> findAll = getContainers(DataTableAttributes.getSearch(uriInfo), paginationJson.getPageRequest(uriInfo, ORDERED_COLUMNS));
+		final Page<GroupOrg> findAll = getContainers(DataTableAttributes.getSearch(uriInfo),
+				paginationJson.getPageRequest(uriInfo, ORDERED_COLUMNS));
 
 		// Apply pagination and secure the users data
-		return paginationJson.applyPagination(uriInfo, findAll, rawGroupLdap -> {
-			final ContainerCountVo securedUserOrg = newContainerCountVo(rawGroupLdap, writeGroups, adminGroups, types);
-			securedUserOrg.setCount(rawGroupLdap.getMembers().size());
+		return paginationJson.applyPagination(uriInfo, findAll, rawGroup -> {
+			final ContainerCountVo securedUserOrg = newContainerCountVo(rawGroup, writeGroups, adminGroups, types);
+			securedUserOrg.setCount(rawGroup.getMembers().size());
 			// Computed the visible members
-			securedUserOrg.setCountVisible((int) rawGroupLdap.getMembers().stream().map(users::get).map(UserOrg::getCompany).map(companies::get)
-					.map(CompanyOrg::getCompanyTree).filter(c -> CollectionUtils.containsAny(visibleCompanies, c)).count());
+			securedUserOrg.setCountVisible((int) rawGroup.getMembers().stream().map(users::get).map(UserOrg::getCompany)
+					.map(companies::get).map(CompanyOrg::getCompanyTree)
+					.filter(c -> CollectionUtils.containsAny(visibleCompanies, c)).count());
 			return securedUserOrg;
 		});
 	}
@@ -125,7 +127,8 @@ public class GroupResource extends AbstractContainerResource<GroupOrg, GroupEdit
 			// Check the parent is also inside the type, a new DN will be built
 			final GroupOrg parent = findByIdExpected(container.getParent());
 			if (!DnUtils.equalsOrParentOf(scope.getDn(), parent.getDn())) {
-				throw new ValidationJsonException("parent", "container-parent-type-match", TYPE_ATTRIBUTE, this.type, "provided", scope.getType());
+				throw new ValidationJsonException("parent", "container-parent-type-match", TYPE_ATTRIBUTE, this.type,
+						"provided", scope.getType());
 			}
 			parentDn = parent.getDn();
 		}
@@ -134,7 +137,7 @@ public class GroupResource extends AbstractContainerResource<GroupOrg, GroupEdit
 	}
 
 	/**
-	 * Empty this group by removing all members if supported by the LDAP schema<br>
+	 * Empty this group by removing all members if supported by the repository.
 	 * 
 	 * @param id
 	 *            The group to empty.
@@ -147,7 +150,8 @@ public class GroupResource extends AbstractContainerResource<GroupOrg, GroupEdit
 
 		// Check the group can be updated by the current user
 		if (!getContainersForWrite().contains(container)) {
-			throw new ValidationJsonException(getTypeName(), BusinessException.KEY_UNKNOW_ID, "0", getTypeName(), "1", id);
+			throw new ValidationJsonException(getTypeName(), BusinessException.KEY_UNKNOW_ID, "0", getTypeName(), "1",
+					id);
 		}
 
 		// Perform the update
@@ -161,20 +165,21 @@ public class GroupResource extends AbstractContainerResource<GroupOrg, GroupEdit
 		final List<String> owners = toDn(container.getOwners());
 
 		// Create the group
-		final GroupOrg groupLdap = super.create(container, type, newDn);
+		final GroupOrg group = super.create(container, type, newDn);
 
 		// Nesting management
 		if (container.getParent() != null) {
 			// This group will be added as "uniqueMember" of its parent
-			getRepository().addGroup(groupLdap, Normalizer.normalize(container.getParent()));
+			getRepository().addGroup(group, Normalizer.normalize(container.getParent()));
 		}
 
 		// Assistant/Owner/Department management
 		getRepository().addAttributes(newDn, "seeAlso", assistants);
 		getRepository().addAttributes(newDn, "owner", owners);
-		getRepository().addAttributes(newDn, "businessCategory", CollectionUtils.emptyIfNull(container.getDepartments()));
+		getRepository().addAttributes(newDn, "businessCategory",
+				CollectionUtils.emptyIfNull(container.getDepartments()));
 
-		return groupLdap;
+		return group;
 	}
 
 	/**
@@ -185,6 +190,7 @@ public class GroupResource extends AbstractContainerResource<GroupOrg, GroupEdit
 	 * @return The corresponding DN.
 	 */
 	private List<String> toDn(final List<String> uids) {
-		return CollectionUtils.emptyIfNull(uids).stream().map(getUser()::findByIdExpected).map(UserOrg::getDn).collect(Collectors.toList());
+		return CollectionUtils.emptyIfNull(uids).stream().map(getUser()::findByIdExpected).map(UserOrg::getDn)
+				.collect(Collectors.toList());
 	}
 }

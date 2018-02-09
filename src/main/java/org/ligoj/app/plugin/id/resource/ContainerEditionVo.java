@@ -12,7 +12,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 /**
- * LDAP Group/company for edition.
+ * Group/company for edition.
  */
 @Getter
 @Setter

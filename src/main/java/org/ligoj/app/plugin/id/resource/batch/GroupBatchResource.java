@@ -14,24 +14,23 @@ import org.ligoj.app.plugin.id.resource.IdentityResource;
 import org.springframework.stereotype.Service;
 
 /**
- * LDAP batch resource for user.
+ * Batch resource for group.
  */
-@Path(IdentityResource.SERVICE_URL + "/user/batch")
+@Path(IdentityResource.SERVICE_URL + "/group/batch")
 @Service
 @Produces(MediaType.APPLICATION_JSON)
-public class UserBatchImportLdapResource extends AbstractBatchResource<UserImportEntry> {
+public class GroupBatchResource extends AbstractBatchResource<GroupImportEntry> {
 
 	/**
 	 * Default CSV headers for imports.
 	 */
-	private static final String[] DEFAULT_CSV_HEADERS = { "lastName", "firstName", "id", "mail", "company", "groups", "department",
-			"localId" };
+	private static final String[] DEFAULT_IMPORT_CSV_HEADERS = { "name", "type", "parent", "owner", "assistant", "department" };
 
 	/**
-	 * Upload a file of LDAP entries to create or update users. The whole entry is replaced.
+	 * Upload a file of entries to create or update groups. The whole entry is replaced.
 	 * 
 	 * @param uploadedFile
-	 *            LDAP entries files to import. Currently support only CSV format.
+	 *            Entries file to import. Currently support only CSV format.
 	 * @param columns
 	 *            the CSV header names.
 	 * @param encoding
@@ -41,9 +40,9 @@ public class UserBatchImportLdapResource extends AbstractBatchResource<UserImpor
 	@POST
 	@Consumes(MediaType.MULTIPART_FORM_DATA)
 	@Path("full")
-	public long execute(@Multipart(value = "csv-file") final InputStream uploadedFile,
+	public long full(@Multipart(value = "csv-file") final InputStream uploadedFile,
 			@Multipart(value = "columns", required = false) final String[] columns,
 			@Multipart(value = "encoding", required = false) final String encoding) throws IOException {
-		return batch(uploadedFile, columns, encoding, DEFAULT_CSV_HEADERS, UserImportEntry.class, UserFullLdapTask.class);
+		return batch(uploadedFile, columns, encoding, DEFAULT_IMPORT_CSV_HEADERS, GroupImportEntry.class, GroupFullTask.class);
 	}
 }

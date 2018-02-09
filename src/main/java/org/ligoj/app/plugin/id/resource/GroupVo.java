@@ -4,11 +4,11 @@ import lombok.Getter;
 import lombok.Setter;
 
 /**
- * LDAP Group details.
+ * Group details.
  */
 @Getter
 @Setter
-public class GroupLdapVo {
+public class GroupVo {
 
 	/**
 	 * Group name, original CN.

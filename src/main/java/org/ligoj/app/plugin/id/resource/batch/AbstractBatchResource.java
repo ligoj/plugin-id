@@ -31,7 +31,7 @@ import org.springframework.core.task.TaskExecutor;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 /**
- * LDAP batch resource.
+ * Base batch resource class.
  */
 public abstract class AbstractBatchResource<B extends BatchElement> {
 
@@ -95,11 +95,13 @@ public abstract class AbstractBatchResource<B extends BatchElement> {
 	 * Is the current task is finished.
 	 */
 	private boolean isFinished(final BatchTaskVo<?> task) {
-		return task.getStatus().getEnd() != null && task.getStatus().getEnd().getTime() + DateUtils.MILLIS_PER_DAY < System.currentTimeMillis();
+		return task.getStatus().getEnd() != null
+				&& task.getStatus().getEnd().getTime() + DateUtils.MILLIS_PER_DAY < System.currentTimeMillis();
 	}
 
-	protected <T extends AbstractLdapBatchTask<B>> long batch(final InputStream uploadedFile, final String[] columns,
-			final String encoding, final String[] defaultColumns, final Class<B> batchType, final Class<T> taskType) throws IOException {
+	protected <T extends AbstractBatchTask<B>> long batch(final InputStream uploadedFile, final String[] columns,
+			final String encoding, final String[] defaultColumns, final Class<B> batchType, final Class<T> taskType)
+			throws IOException {
 
 		// Public identifier is based on system date
 		final long id = System.currentTimeMillis();
@@ -109,13 +111,18 @@ public abstract class AbstractBatchResource<B extends BatchElement> {
 		checkHeaders(defaultColumns, sanitizeColumns);
 
 		// Build CSV header from array
-		final String csvHeaders = StringUtils.chop(ArrayUtils.toString(sanitizeColumns)).substring(1).replace(',', ';') + "\n";
+		final String csvHeaders = StringUtils.chop(ArrayUtils.toString(sanitizeColumns)).substring(1).replace(',', ';')
+				+ "\n";
 
 		// Build entries
-		final List<B> entries = csvForBean.toBean(batchType,
-				new InputStreamReader(new SequenceInputStream(
-						new ByteArrayInputStream(csvHeaders.getBytes(ObjectUtils.defaultIfNull(encoding, StandardCharsets.UTF_8.name()))),
-						uploadedFile), ObjectUtils.defaultIfNull(encoding, StandardCharsets.UTF_8.name())));
+		final List<B> entries = csvForBean
+				.toBean(batchType,
+						new InputStreamReader(
+								new SequenceInputStream(
+										new ByteArrayInputStream(csvHeaders.getBytes(
+												ObjectUtils.defaultIfNull(encoding, StandardCharsets.UTF_8.name()))),
+										uploadedFile),
+								ObjectUtils.defaultIfNull(encoding, StandardCharsets.UTF_8.name())));
 		entries.removeIf(Objects::isNull);
 
 		// Validate them

@@ -33,7 +33,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 /**
- * LDAP resource for companies.
+ * Resource for companies.
  */
 @Path(IdentityResource.SERVICE_URL + "/company")
 @Service
@@ -69,7 +69,7 @@ public class CompanyResource extends AbstractContainerResource<CompanyOrg, Conta
 	/**
 	 * Return the company name of current user.
 	 * 
-	 * @return The company name of current user or <code>null</code> if the current user is not in LDAP.
+	 * @return The company name of current user or <code>null</code> if the current user is not in the repository.
 	 */
 	public CompanyOrg getUserCompany() {
 		final UserOrg user = getUser().findById(securityHelper.getLogin());
@@ -82,7 +82,7 @@ public class CompanyResource extends AbstractContainerResource<CompanyOrg, Conta
 	/**
 	 * Return the company DN of current user.
 	 * 
-	 * @return the company DN of current user or <code>null</code> if the current user is not in LDAP.
+	 * @return the company DN of current user or <code>null</code> if the current user is not in the repository.
 	 */
 	private String getUserCompanyDn() {
 		final CompanyOrg company = getUserCompany();
@@ -98,7 +98,8 @@ public class CompanyResource extends AbstractContainerResource<CompanyOrg, Conta
 	 * @return <code>true</code> when the current user is inside the internal scope of people.
 	 */
 	public boolean isUserInternalCommpany() {
-		return ObjectUtils.defaultIfNull(getUserCompanyDn(), "").endsWith(ObjectUtils.defaultIfNull(getUser().getPeopleInternalBaseDn(), ""));
+		return ObjectUtils.defaultIfNull(getUserCompanyDn(), "")
+				.endsWith(ObjectUtils.defaultIfNull(getUser().getPeopleInternalBaseDn(), ""));
 	}
 
 	/**
@@ -115,26 +116,30 @@ public class CompanyResource extends AbstractContainerResource<CompanyOrg, Conta
 
 		final List<ContainerScope> types = containerScopeResource.findAllDescOrder(ContainerType.COMPANY);
 		final Set<CompanyOrg> visibleCompanies = getContainers();
-		final Set<String> visibleCompaniesAsString = visibleCompanies.stream().map(CompanyOrg::getId).collect(Collectors.toSet());
+		final Set<String> visibleCompaniesAsString = visibleCompanies.stream().map(CompanyOrg::getId)
+				.collect(Collectors.toSet());
 		final Set<CompanyOrg> writeCompanies = getContainersForWrite();
 		final Set<CompanyOrg> adminCompanies = getContainersForAdmin();
 		final Map<String, UserOrg> users = getUser().findAll();
 
 		// Search the companies
-		final Page<CompanyOrg> findAll = getRepository().findAll(visibleCompanies, DataTableAttributes.getSearch(uriInfo), pageRequest,
+		final Page<CompanyOrg> findAll = getRepository().findAll(visibleCompanies,
+				DataTableAttributes.getSearch(uriInfo), pageRequest,
 				Collections.singletonMap(TYPE_ATTRIBUTE, new TypeComparator(types)));
 
 		// Apply pagination and secure the users data
-		return paginationJson.applyPagination(uriInfo, findAll, rawCompanyLdap -> {
+		return paginationJson.applyPagination(uriInfo, findAll, rawCompany -> {
 			// Build the secured company with counter
-			final ContainerCountVo securedUser = newContainerCountVo(rawCompanyLdap, writeCompanies, adminCompanies, types);
+			final ContainerCountVo securedUser = newContainerCountVo(rawCompany, writeCompanies, adminCompanies, types);
 
 			// Computed the total members, unrestricted visibility
-			securedUser.setCount((int) users.values().stream().filter(user -> rawCompanyLdap.getId().equals(user.getCompany())).count());
+			securedUser.setCount(
+					(int) users.values().stream().filter(user -> rawCompany.getId().equals(user.getCompany())).count());
 
 			// Computed the visible members : same company and visible company
-			securedUser.setCountVisible((int) users.values().stream().filter(user -> rawCompanyLdap.getId().equals(user.getCompany()))
-					.filter(user -> visibleCompaniesAsString.contains(user.getCompany())).count());
+			securedUser.setCountVisible(
+					(int) users.values().stream().filter(user -> rawCompany.getId().equals(user.getCompany()))
+							.filter(user -> visibleCompaniesAsString.contains(user.getCompany())).count());
 			return securedUser;
 		});
 	}
@@ -145,10 +150,12 @@ public class CompanyResource extends AbstractContainerResource<CompanyOrg, Conta
 
 		// Company deletion is only possible where there is no user inside this company, or inside any sub-company
 		final Map<String, UserOrg> users = getUser().findAll();
-		if (getRepository().findAll().values().stream().filter(c -> DnUtils.equalsOrParentOf(container.getDn(), c.getDn()))
+		if (getRepository().findAll().values().stream()
+				.filter(c -> DnUtils.equalsOrParentOf(container.getDn(), c.getDn()))
 				.anyMatch(c -> users.values().stream().map(UserOrg::getCompany).anyMatch(c.getId()::equals))) {
 			// Locked container is inside the container to delete
-			throw new ValidationJsonException(getTypeName(), "not-empty-company", "0", getTypeName(), "1", container.getId());
+			throw new ValidationJsonException(getTypeName(), "not-empty-company", "0", getTypeName(), "1",
+					container.getId());
 		}
 	}
 
