@@ -840,7 +840,7 @@ public class UserOrgResource extends AbstractOrgResource {
 	 *            Target user to log.
 	 */
 	private void logAdminReset(final UserOrg user) {
-		PasswordResetAudit logReset = new PasswordResetAudit();
+		final PasswordResetAudit logReset = new PasswordResetAudit();
 		logReset.setLogin(user.getId());
 		passwordResetRepository.saveAndFlush(logReset);
 	}

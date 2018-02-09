@@ -38,6 +38,8 @@ import org.ligoj.app.iam.model.CacheMembership;
 import org.ligoj.app.iam.model.CacheUser;
 import org.ligoj.app.iam.model.DelegateOrg;
 import org.ligoj.app.iam.model.DelegateType;
+import org.ligoj.app.plugin.id.dao.PasswordResetAuditRepository;
+import org.ligoj.app.plugin.id.model.PasswordResetAudit;
 import org.ligoj.bootstrap.core.json.TableItem;
 import org.ligoj.bootstrap.core.json.datatable.DataTableAttributes;
 import org.ligoj.bootstrap.core.resource.BusinessException;
@@ -65,6 +67,9 @@ public class UserOrgResourceTest extends AbstractAppTest {
 	protected IUserRepository userRepository;
 	protected IGroupRepository groupRepository;
 	protected ICompanyRepository companyRepository;
+
+	@Autowired
+	private PasswordResetAuditRepository passwordResetAuditRepository;
 
 	@Autowired
 	private DelegateOrgRepository delegateOrgRepository;
@@ -426,12 +431,21 @@ public class UserOrgResourceTest extends AbstractAppTest {
 
 	@Test
 	public void resetPasswordByAdmin() {
+		Assertions.assertEquals(0, passwordResetAuditRepository.countBy("login", "wuser"));
 		resource.applicationContext = Mockito.mock(ApplicationContext.class);
 		final IPasswordGenerator generator = Mockito.mock(IPasswordGenerator.class);
 		Mockito.when(resource.applicationContext.getBeansOfType(IPasswordGenerator.class))
 				.thenReturn(Collections.singletonMap("bean", generator));
 		resource.resetPasswordByAdmin(newUser());
-		Mockito.verify(generator, VerificationModeFactory.atLeast(1)).generate("wuser");
+		resource.resetPasswordByAdmin(newUser());
+		Mockito.verify(generator, VerificationModeFactory.atLeast(2)).generate("wuser");
+
+		// Check the audit
+		Assertions.assertEquals(2, passwordResetAuditRepository.countBy("login", "wuser"));
+		final PasswordResetAudit last = passwordResetAuditRepository.findBy("login", "wuser");
+		Assertions.assertEquals(getAuthenticationName(), last.getCreatedBy());
+		Assertions.assertNotNull(last.getCreatedDate());
+		Assertions.assertEquals("wuser", last.getLogin());
 	}
 
 	@Test
