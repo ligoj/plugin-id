@@ -23,7 +23,7 @@ public class GroupFullTask extends AbstractBatchTask<GroupImportEntry> {
 	protected ContainerScopeResource containerScopeResource;
 
 	@Override
-	protected void doBatch(final GroupImportEntry entry) {
+	protected void doBatch(final GroupImportEntry entry, final boolean quiet) {
 
 		// Copy the group information
 		final GroupEditionVo edition = new GroupEditionVo();

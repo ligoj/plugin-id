@@ -36,4 +36,6 @@ public class BatchTaskVo<B extends BatchElement> {
 	@Setter
 	private String principal;
 
+	@Setter
+	private boolean quiet;
 }

@@ -65,7 +65,7 @@ public class UserAtomicTask extends AbstractBatchTask<UserUpdateEntry> {
 	}
 
 	@Override
-	protected void doBatch(final UserUpdateEntry entry) throws Exception {
+	protected void doBatch(final UserUpdateEntry entry, final boolean quiet) throws Exception {
 
 		final UserBatchUpdateType type = UPDATE_ACTION_TYPES.get(entry.getOperation());
 		if (type == null) {

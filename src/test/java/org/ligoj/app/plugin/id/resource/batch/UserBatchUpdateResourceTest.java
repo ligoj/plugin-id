@@ -38,7 +38,7 @@ public class UserBatchUpdateResourceTest extends AbstractUserBatchResourceTest {
 
 		final long id = resource.execute(
 				new ByteArrayInputStream("fdaugan;mail;any.daugan@sample.com".getBytes("cp1252")),
-				new String[] { "user", "operation", "value" }, "cp1252");
+				new String[] { "user", "operation", "value" }, "cp1252", false);
 		Assertions.assertNotNull(id);
 		BatchTaskVo<UserUpdateEntry> importTask = resource.getImportTask(id);
 		Assertions.assertEquals(id, importTask.getId());

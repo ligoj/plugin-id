@@ -24,8 +24,8 @@ public class UserBatchImportResource extends AbstractBatchResource<UserImportEnt
 	/**
 	 * Default CSV headers for imports.
 	 */
-	private static final String[] DEFAULT_CSV_HEADERS = { "lastName", "firstName", "id", "mail", "company", "groups", "department",
-			"localId" };
+	private static final String[] DEFAULT_CSV_HEADERS = { "lastName", "firstName", "id", "mail", "company", "groups",
+			"department", "localId" };
 
 	/**
 	 * Upload a file of entries to create or update users. The whole entry is replaced.
@@ -36,6 +36,8 @@ public class UserBatchImportResource extends AbstractBatchResource<UserImportEnt
 	 *            the CSV header names.
 	 * @param encoding
 	 *            CSV encoding. Default is UTF-8.
+	 * @param quiet
+	 *            Optional flag to turn-off the possible notification such as mail. Default value is <code>false</code>.
 	 * @return the import identifier.
 	 */
 	@POST
@@ -43,7 +45,9 @@ public class UserBatchImportResource extends AbstractBatchResource<UserImportEnt
 	@Path("full")
 	public long execute(@Multipart(value = "csv-file") final InputStream uploadedFile,
 			@Multipart(value = "columns", required = false) final String[] columns,
-			@Multipart(value = "encoding", required = false) final String encoding) throws IOException {
-		return batch(uploadedFile, columns, encoding, DEFAULT_CSV_HEADERS, UserImportEntry.class, UserFullTask.class);
+			@Multipart(value = "encoding", required = false) final String encoding,
+			@Multipart(value = "quiet", required = false) final Boolean quiet) throws IOException {
+		return batch(uploadedFile, columns, encoding, DEFAULT_CSV_HEADERS, UserImportEntry.class, UserFullTask.class,
+				quiet);
 	}
 }

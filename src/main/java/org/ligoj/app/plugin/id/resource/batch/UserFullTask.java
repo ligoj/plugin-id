@@ -18,7 +18,7 @@ public class UserFullTask extends AbstractBatchTask<UserImportEntry> {
 	protected UserOrgResource resource;
 
 	@Override
-	protected void doBatch(final UserImportEntry entry) {
+	protected void doBatch(final UserImportEntry entry, final boolean quiet) {
 
 		// Copy the user information
 		final UserOrgEditionVo user = new UserOrgEditionVo();
@@ -32,7 +32,7 @@ public class UserFullTask extends AbstractBatchTask<UserImportEntry> {
 		user.setGroups(toList(entry.getGroups()));
 
 		// Create the user
-		resource.create(user);
+		resource.create(user, quiet);
 	}
 
 }

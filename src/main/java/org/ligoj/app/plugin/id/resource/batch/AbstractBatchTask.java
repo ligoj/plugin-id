@@ -55,10 +55,24 @@ public abstract class AbstractBatchTask<B extends BatchElement> implements Runna
 	 * 
 	 * @param entry
 	 *            A batch entry.
+	 * @param quiet
+	 *            Flag to turn-off the possible notification such as mail.
 	 * @throws Exception
 	 *             Any error cause the abortion for this entry.
 	 */
-	protected abstract void doBatch(B entry) throws Exception; // NOSONAR Allow global error there
+	protected abstract void doBatch(B entry, boolean quiet) throws Exception; // NOSONAR Allow global error there
+
+	/**
+	 * Process an entry.
+	 * 
+	 * @param entry
+	 *            A batch entry.
+	 * @throws Exception
+	 *             Any error cause the abortion for this entry.
+	 */
+	protected void doBatch(B entry) throws Exception {
+		doBatch(entry, false);
+	}
 
 	/**
 	 * Process the entries
@@ -69,7 +83,7 @@ public abstract class AbstractBatchTask<B extends BatchElement> implements Runna
 			importEntry.setStatus(null);
 			importEntry.setStatusText(null);
 			try {
-				doBatch(importEntry);
+				doBatch(importEntry, task.isQuiet());
 
 				// Success
 				importEntry.setStatus(Boolean.TRUE);

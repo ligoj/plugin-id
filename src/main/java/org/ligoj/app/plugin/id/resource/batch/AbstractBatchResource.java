@@ -18,6 +18,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateUtils;
@@ -100,8 +101,8 @@ public abstract class AbstractBatchResource<B extends BatchElement> {
 	}
 
 	protected <T extends AbstractBatchTask<B>> long batch(final InputStream uploadedFile, final String[] columns,
-			final String encoding, final String[] defaultColumns, final Class<B> batchType, final Class<T> taskType)
-			throws IOException {
+			final String encoding, final String[] defaultColumns, final Class<B> batchType, final Class<T> taskType,
+			final Boolean quiet) throws IOException {
 
 		// Public identifier is based on system date
 		final long id = System.currentTimeMillis();
@@ -114,15 +115,11 @@ public abstract class AbstractBatchResource<B extends BatchElement> {
 		final String csvHeaders = StringUtils.chop(ArrayUtils.toString(sanitizeColumns)).substring(1).replace(',', ';')
 				+ "\n";
 
-		// Build entries
-		final List<B> entries = csvForBean
-				.toBean(batchType,
-						new InputStreamReader(
-								new SequenceInputStream(
-										new ByteArrayInputStream(csvHeaders.getBytes(
-												ObjectUtils.defaultIfNull(encoding, StandardCharsets.UTF_8.name()))),
-										uploadedFile),
-								ObjectUtils.defaultIfNull(encoding, StandardCharsets.UTF_8.name())));
+		// Build entries with prepended CSV header
+		final String encSafe = ObjectUtils.defaultIfNull(encoding, StandardCharsets.UTF_8.name());
+		final ByteArrayInputStream input = new ByteArrayInputStream(csvHeaders.getBytes(encSafe));
+		final List<B> entries = csvForBean.toBean(batchType,
+				new InputStreamReader(new SequenceInputStream(input, uploadedFile), encSafe));
 		entries.removeIf(Objects::isNull);
 
 		// Validate them
@@ -133,6 +130,7 @@ public abstract class AbstractBatchResource<B extends BatchElement> {
 		importTask.setEntries(entries);
 		importTask.setPrincipal(SecurityContextHolder.getContext().getAuthentication().getName());
 		importTask.setId(id);
+		importTask.setQuiet(BooleanUtils.isTrue(quiet));
 
 		// Schedule the import
 		final T task = SpringUtils.getBean(taskType);

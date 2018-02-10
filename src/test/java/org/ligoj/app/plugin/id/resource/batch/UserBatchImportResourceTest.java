@@ -87,7 +87,7 @@ public class UserBatchImportResourceTest extends AbstractUserBatchResourceTest {
 		initSpringSecurityContext(DEFAULT_USER);
 		Assertions.assertEquals("Invalid header", Assertions.assertThrows(BusinessException.class, () -> {
 			resource.execute(input, new String[] { "lastName", "firstName", "id", "mail8", "company", "groups" },
-					"cp1250");
+					"cp1250", false);
 		}).getMessage());
 	}
 
@@ -97,7 +97,7 @@ public class UserBatchImportResourceTest extends AbstractUserBatchResourceTest {
 				"Loubli;Sébastien;kloubli5;my.address@sample.com;gfi;jira".getBytes("cp1250"));
 		initSpringSecurityContext(DEFAULT_USER);
 		final BatchTaskVo<UserImportEntry> importTask = waitImport(
-				resource.getImportTask(resource.execute(input, new String[0], "cp1250")));
+				resource.getImportTask(resource.execute(input, new String[0], "cp1250", false)));
 		Assertions.assertEquals(Boolean.TRUE, importTask.getEntries().get(0).getStatus());
 		Assertions.assertNull(importTask.getEntries().get(0).getStatusText());
 
@@ -123,7 +123,7 @@ public class UserBatchImportResourceTest extends AbstractUserBatchResourceTest {
 				"Loubli;Sébastien;;my.address@sample.com;gfi;jira".getBytes("cp1250"));
 		initSpringSecurityContext(DEFAULT_USER);
 		MatcherUtil.assertThrows(Assertions.assertThrows(ConstraintViolationException.class, () -> {
-			resource.execute(input, new String[0], "cp1250");
+			resource.execute(input, new String[0], "cp1250", false);
 		}), "id", "NotBlank");
 	}
 
@@ -135,7 +135,7 @@ public class UserBatchImportResourceTest extends AbstractUserBatchResourceTest {
 				"Loubli;Sébastien;fdaugan;my.address@sample.com;gfi;jira".getBytes("cp1250"));
 		initSpringSecurityContext(DEFAULT_USER);
 		final BatchTaskVo<UserImportEntry> importTask = waitImport(
-				resource.getImportTask(resource.execute(input, new String[0], "cp1250")));
+				resource.getImportTask(resource.execute(input, new String[0], "cp1250", false)));
 		Assertions.assertEquals("message", importTask.getEntries().get(0).getStatusText());
 		Assertions.assertEquals(Boolean.FALSE, importTask.getEntries().get(0).getStatus());
 	}
@@ -189,7 +189,7 @@ public class UserBatchImportResourceTest extends AbstractUserBatchResourceTest {
 	protected <U extends BatchElement> BatchTaskVo<U> full(final InputStream input, final String[] headers,
 			final String encoding) throws IOException, InterruptedException {
 		initSpringSecurityContext(DEFAULT_USER);
-		final long id = resource.execute(input, headers, encoding);
+		final long id = resource.execute(input, headers, encoding, false);
 		Assertions.assertNotNull(id);
 		@SuppressWarnings("unchecked")
 		final BatchTaskVo<U> importTask = (BatchTaskVo<U>) resource.getImportTask(id);

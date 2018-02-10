@@ -425,8 +425,8 @@ public class UserOrgResourceTest extends AbstractAppTest {
 		final IPasswordGenerator generator = Mockito.mock(IPasswordGenerator.class);
 		Mockito.when(resource.applicationContext.getBeansOfType(IPasswordGenerator.class))
 				.thenReturn(Collections.singletonMap("bean", generator));
-		resource.updatePassword(newUser());
-		Mockito.verify(generator, VerificationModeFactory.atLeast(1)).generate("wuser");
+		resource.updatePassword(newUser(), false);
+		Mockito.verify(generator, VerificationModeFactory.atLeast(1)).generate("wuser", false);
 	}
 
 	@Test
@@ -438,7 +438,7 @@ public class UserOrgResourceTest extends AbstractAppTest {
 				.thenReturn(Collections.singletonMap("bean", generator));
 		resource.resetPasswordByAdmin(newUser());
 		resource.resetPasswordByAdmin(newUser());
-		Mockito.verify(generator, VerificationModeFactory.atLeast(2)).generate("wuser");
+		Mockito.verify(generator, VerificationModeFactory.atLeast(2)).generate("wuser", false);
 
 		// Check the audit
 		Assertions.assertEquals(2, passwordResetAuditRepository.countBy("login", "wuser"));

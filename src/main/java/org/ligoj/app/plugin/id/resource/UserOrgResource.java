@@ -378,9 +378,10 @@ public class UserOrgResource extends AbstractOrgResource {
 	 *
 	 * @param user
 	 *            The user definition, and associated groups. Initial groups are checked.User definition is checked.
+	 * @param quiet
+	 *            Flag to turn-off the possible notification such as mail.
 	 */
-	@POST
-	public void create(final UserOrgEditionVo user) {
+	public void create(final UserOrgEditionVo user, final boolean quiet) {
 		// Check the right on the company and the groups
 		validateChanges(securityHelper.getLogin(), user);
 
@@ -389,7 +390,18 @@ public class UserOrgResource extends AbstractOrgResource {
 			throw new ValidationJsonException(USER_KEY, "already-exist", "0", USER_KEY, "1", user.getId());
 		}
 
-		saveOrUpdate(user);
+		saveOrUpdate(user, quiet);
+	}
+
+	/**
+	 * Create the given user.
+	 *
+	 * @param user
+	 *            The user definition, and associated groups. Initial groups are checked.User definition is checked.
+	 */
+	@POST
+	public void create(final UserOrgEditionVo user) {
+		create(user, false);
 	}
 
 	/**
@@ -608,8 +620,10 @@ public class UserOrgResource extends AbstractOrgResource {
 	 * 
 	 * @param importEntry
 	 *            The entry to save or to update.
+	 * @param quiet
+	 *            Flag to turn-off the possible notification such as mail.
 	 */
-	public void saveOrUpdate(final UserOrgEditionVo importEntry) {
+	private void saveOrUpdate(final UserOrgEditionVo importEntry, final boolean quiet) {
 
 		// Create as needed the user, groups will be proceeded after.
 		final IUserRepository repository = getUser();
@@ -621,9 +635,9 @@ public class UserOrgResource extends AbstractOrgResource {
 			user = repository.create(newUser);
 
 			// Set the password
-			updatePassword(newUser);
+			updatePassword(newUser, quiet);
 		} else {
-			updateUser(user, newUser);
+			updateUser(user, newUser, quiet);
 		}
 
 		// Update membership
@@ -631,9 +645,25 @@ public class UserOrgResource extends AbstractOrgResource {
 	}
 
 	/**
+	 * Create the user is not exist and update the related groups and company.<br>
+	 * The mail of the entry will replace the one of the repository if it one does not contain any mail. If entry did
+	 * not exist or, if there was no password (or a dummy one), it will be set to the one of import of a new generated
+	 * password. <br>
+	 * When mail or password is updated a mail is sent to the user with the account, and eventually the new
+	 * password.<br>
+	 * Groups of entry will be normalized.
+	 * 
+	 * @param importEntry
+	 *            The entry to save or to update.
+	 */
+	public void saveOrUpdate(final UserOrgEditionVo importEntry) {
+		saveOrUpdate(importEntry, false);
+	}
+
+	/**
 	 * Update the attributes the given user. Groups are not managed there.
 	 */
-	private void updateUser(final UserOrg oldUser, final UserOrg newUser) {
+	private void updateUser(final UserOrg oldUser, final UserOrg newUser, final boolean quiet) {
 		log.info("{} already exists", newUser.getId());
 
 		// First update the DN
@@ -651,11 +681,11 @@ public class UserOrgResource extends AbstractOrgResource {
 		} else if (hadNoMail) {
 			// Mail has been added, set a new password
 			log.info("{} already exists, but a mail has been created", newUser.getId());
-			updatePassword(newUser);
+			updatePassword(newUser, quiet);
 		} else if (!oldUser.isSecured()) {
 			// Override the password
 			log.info("{} had no password, a mail will be sent", newUser.getId());
-			updatePassword(newUser);
+			updatePassword(newUser, quiet);
 		}
 
 	}
@@ -820,7 +850,7 @@ public class UserOrgResource extends AbstractOrgResource {
 	protected String resetPasswordByAdmin(final UserOrg user) {
 		// Have to generate a new password
 		String pwd = applicationContext.getBeansOfType(IPasswordGenerator.class).values().stream().findFirst()
-				.map(p -> p.generate(user.getId())).orElse(null);
+				.map(p -> p.generate(user.getId(), false)).orElse(null);
 		// This user is now secured
 		user.setSecured(true);
 
@@ -914,11 +944,13 @@ public class UserOrgResource extends AbstractOrgResource {
 	 *
 	 * @param user
 	 *            The user to update.
+	 * @param quiet
+	 *            Flag to turn-off the possible notification such as mail.
 	 */
-	protected void updatePassword(final UserOrg user) {
+	protected void updatePassword(final UserOrg user, final boolean quiet) {
 		// Have to generate a new password
 		applicationContext.getBeansOfType(IPasswordGenerator.class).values().stream().findFirst()
-				.ifPresent(p -> p.generate(user.getId()));
+				.ifPresent(p -> p.generate(user.getId(), quiet));
 
 		// This user is now secured
 		user.setSecured(true);

@@ -35,6 +35,8 @@ public class UserBatchUpdateResource extends AbstractBatchResource<UserUpdateEnt
 	 *            the CSV header names.
 	 * @param encoding
 	 *            CSV encoding. Default is UTF-8.
+	 * @param quiet
+	 *            Optional flag to turn-off the possible notification such as mail. Default value is <code>false</code>.
 	 * @return the import identifier.
 	 */
 	@POST
@@ -42,7 +44,8 @@ public class UserBatchUpdateResource extends AbstractBatchResource<UserUpdateEnt
 	@Path("atomic")
 	public long execute(@Multipart(value = "csv-file") final InputStream uploadedFile,
 			@Multipart(value = "columns", required = false) final String[] columns,
-			@Multipart(value = "encoding", required = false) final String encoding) throws IOException {
-		return batch(uploadedFile, columns, encoding, DEFAULT_CSV_HEADERS, UserUpdateEntry.class, UserAtomicTask.class);
+			@Multipart(value = "encoding", required = false) final String encoding,
+			@Multipart(value = "quiet", required = false) final Boolean quiet) throws IOException {
+		return batch(uploadedFile, columns, encoding, DEFAULT_CSV_HEADERS, UserUpdateEntry.class, UserAtomicTask.class, quiet);
 	}
 }
