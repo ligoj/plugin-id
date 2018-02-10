@@ -20,15 +20,6 @@
 		<url>https://github.com/ligoj/plugin-id.git</url>
 	</scm>
 
-	<dependencies>
-		<dependency>
-			<groupId>org.ligoj.plugin</groupId>
-			<artifactId>plugin-mail</artifactId>
-			<version>[1.0.1-SNAPSHOT,1.1.0)</version>
-			<scope>provided</scope>
-		</dependency>
-	</dependencies>
-
 	<profiles>
 		<profile>
 			<id>bintray</id>
