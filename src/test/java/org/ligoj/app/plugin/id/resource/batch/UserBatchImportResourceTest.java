@@ -130,7 +130,7 @@ public class UserBatchImportResourceTest extends AbstractUserBatchResourceTest {
 	@Test
 	public void fullFailed() throws IOException, InterruptedException {
 		Mockito.doThrow(new BusinessException("message")).when(this.mockResource)
-				.create(ArgumentMatchers.any(UserOrgEditionVo.class));
+				.create(ArgumentMatchers.any(UserOrgEditionVo.class), ArgumentMatchers.eq(false));
 		final InputStream input = new ByteArrayInputStream(
 				"Loubli;Sébastien;fdaugan;my.address@sample.com;gfi;jira".getBytes("cp1250"));
 		initSpringSecurityContext(DEFAULT_USER);
