@@ -824,43 +824,37 @@ public class UserOrgResource extends AbstractOrgResource {
 	}
 
 	/**
-	 * Reset a user password and send a mail to him and to the user who performed the action.<br>
-	 * Rules, order is important :
+	 * Reset a user password, send a mail to him and to the user (principal) requesting this action.<br>
+	 * This action is audited when succeed. Rules, order is important :
 	 * <ul>
-	 * <li>Only users managing the company of this user can perform the enable, if not, act as if the user did not
+	 * <li>Only users managing the company of this user can perform the operation, if not, act as if the user did not
 	 * exist</li>
-	 * <li>User must exist</li>
-	 * <li>User performing action must be an administrator</li>
+	 * <li>Target user must exist</li>
+	 * <li>Principal user must be an administrator</li>
 	 * </ul>
-	 * Note : even if the user requesting this enable has no right on the groups the involved user, this operation can
-	 * be performed.
+	 * Note: This operation can be performed even if the principal has no right on the groups related to the involved
+	 * user.
 	 *
 	 * @param user
-	 *            The user to restore. A normalized form of this parameter will be used for this operation.
-	 * @return The generated password.
+	 *            The user to reset. A normalized form of this parameter will be used for this operation.
+	 * @return The generated password or <code>null</code> when this operation failed. We don't want exception.
 	 */
 	@PUT
 	@Path("{user}/reset")
 	@ResponseBody
 	@Produces(MediaType.TEXT_PLAIN)
-	public String resetPassword(@PathParam("user") final String user) {
-		return resetPasswordByAdmin(checkResetRight(user));
-	}
-
-	protected String resetPasswordByAdmin(final UserOrg user) {
+	public String resetPassword(@PathParam("user") final String uid) {
+		final UserOrg user = checkResetRight(uid);
 		// Have to generate a new password
-		String pwd = applicationContext.getBeansOfType(IPasswordGenerator.class).values().stream().findFirst()
-				.map(p -> p.generate(user.getId(), false)).orElse(null);
-		// This user is now secured
-		user.setSecured(true);
+		return Optional.ofNullable(updatePassword(user, false)).map(p -> {
 
-		// Unlock account if locked
-		getUser().unlock(user);
+			// Unlock account if locked
+			getUser().unlock(user);
 
-		// Log the action
-		logAdminReset(user);
-
-		return pwd;
+			// Log the action
+			logAdminReset(user);
+			return p;
+		}).orElse(null);
 	}
 
 	/**
@@ -939,21 +933,25 @@ public class UserOrgResource extends AbstractOrgResource {
 	}
 
 	/**
-	 * Generate a new password of given user. The password generation is delegated to the first password plug-in
-	 * available.
+	 * Generate a new password of given user and tag it as secured. The password generation is delegated to the first
+	 * password plug-in available. When no plug-in is found, the user is not tagged as secured.
 	 *
 	 * @param user
 	 *            The user to update.
 	 * @param quiet
 	 *            Flag to turn-off the possible notification such as mail.
+	 * @return The new generated password. When <code>null</code> no password could be generated, and the user is not
+	 *         tagged as secured.
 	 */
-	protected void updatePassword(final UserOrg user, final boolean quiet) {
-		// Have to generate a new password
-		applicationContext.getBeansOfType(IPasswordGenerator.class).values().stream().findFirst()
-				.ifPresent(p -> p.generate(user.getId(), quiet));
+	protected String updatePassword(final UserOrg user, final boolean quiet) {
+		return applicationContext.getBeansOfType(IPasswordGenerator.class).values().stream().findFirst().map(p -> {
+			// Have to generate a new password
+			final String password = p.generate(user.getId(), quiet);
 
-		// This user is now secured
-		user.setSecured(true);
+			// This user is now secured
+			user.setSecured(true);
+			return password;
+		}).orElse(null);
 	}
 
 	/**

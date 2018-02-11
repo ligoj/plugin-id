@@ -29,7 +29,7 @@ define({
 		'reset': 'Password Reset',
 		'reset-confirm': 'Are you sure to reset the password of {{this}}?<br>An email will be sent to this user and you.',
 		'reseted-confirm': '{{this}} password has been reset.',
-		'show-passwd' : 'Show password',
+		'show-password' : 'Show password',
 		'password' : 'Password'
 	},
 	fr: true

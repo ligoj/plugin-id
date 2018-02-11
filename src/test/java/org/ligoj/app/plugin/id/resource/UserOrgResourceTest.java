@@ -76,9 +76,8 @@ public class UserOrgResourceTest extends AbstractAppTest {
 
 	@BeforeEach
 	public void prepareData() throws IOException {
-		persistEntities("csv",
-				new Class[] { DelegateOrg.class, CacheCompany.class, CacheGroup.class, CacheUser.class, CacheMembership.class },
-				StandardCharsets.UTF_8.name());
+		persistEntities("csv", new Class[] { DelegateOrg.class, CacheCompany.class, CacheGroup.class, CacheUser.class,
+				CacheMembership.class }, StandardCharsets.UTF_8.name());
 		iamProvider = Mockito.mock(IamProvider.class);
 		final IamConfiguration configuration = Mockito.mock(IamConfiguration.class);
 		Mockito.when(iamProvider.getConfiguration()).thenReturn(configuration);
@@ -106,7 +105,8 @@ public class UserOrgResourceTest extends AbstractAppTest {
 	@Test
 	public void findById() {
 		final CompanyOrg company = new CompanyOrg("ou=ing,ou=france,ou=people,dc=sample,dc=com", "ing");
-		final GroupOrg groupOrg1 = new GroupOrg("cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com", "DIG", Collections.singleton("wuser"));
+		final GroupOrg groupOrg1 = new GroupOrg("cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com", "DIG",
+				Collections.singleton("wuser"));
 		resource.groupResource = Mockito.mock(GroupResource.class);
 		Mockito.when(companyRepository.findByIdExpected(DEFAULT_USER, "ing")).thenReturn(company);
 		groupFindById(DEFAULT_USER, "dig", groupOrg1);
@@ -127,7 +127,8 @@ public class UserOrgResourceTest extends AbstractAppTest {
 	@Test
 	public void findAllBy() {
 		final UserOrg userOrg = new UserOrg();
-		Mockito.when(userRepository.findAllBy("mail", "marc.martin@sample.com")).thenReturn(Collections.singletonList(userOrg));
+		Mockito.when(userRepository.findAllBy("mail", "marc.martin@sample.com"))
+				.thenReturn(Collections.singletonList(userOrg));
 		Assertions.assertSame(userOrg, resource.findAllBy("mail", "marc.martin@sample.com").get(0));
 	}
 
@@ -140,7 +141,8 @@ public class UserOrgResourceTest extends AbstractAppTest {
 		user2.setCompany("ing");
 		user2.setGroups(Collections.singletonList("any"));
 		users.put("user2", user2);
-		final GroupOrg groupOrg1 = new GroupOrg("cn=dig,ou=fonction,ou=groups,dc=sample,dc=com", "DIG", Collections.singleton("wuser"));
+		final GroupOrg groupOrg1 = new GroupOrg("cn=dig,ou=fonction,ou=groups,dc=sample,dc=com", "DIG",
+				Collections.singleton("wuser"));
 		final GroupOrg groupOrg2 = new GroupOrg("cn=dig rha,cn=dig,ou=fonction,ou=groups,dc=sample,dc=com", "DIG RHA",
 				Collections.singleton("wuser"));
 		final Map<String, GroupOrg> groupsMap = new HashMap<>();
@@ -152,8 +154,8 @@ public class UserOrgResourceTest extends AbstractAppTest {
 		Mockito.when(companyRepository.findByIdExpected(DEFAULT_USER, "ing")).thenReturn(company);
 		groupFindById(DEFAULT_USER, "dig", groupOrg1);
 		Mockito.when(groupRepository.findAll()).thenReturn(groupsMap);
-		Mockito.when(userRepository.findAll(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
-				.thenReturn(new PageImpl<>(new ArrayList<>(users.values())));
+		Mockito.when(userRepository.findAll(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(),
+				ArgumentMatchers.any())).thenReturn(new PageImpl<>(new ArrayList<>(users.values())));
 		Mockito.when(resource.groupResource.getContainers()).thenReturn(new HashSet<>(groupsMap.values()));
 		Mockito.when(resource.groupResource.getContainersForWrite()).thenReturn(new HashSet<>(groupsMap.values()));
 		Mockito.when(resource.companyResource.getContainers()).thenReturn(Collections.singleton(company));
@@ -180,7 +182,8 @@ public class UserOrgResourceTest extends AbstractAppTest {
 		user2.setCompany("ing");
 		user2.setGroups(Collections.singletonList("any"));
 		users.put("user2", user2);
-		final GroupOrg groupOrg1 = new GroupOrg("cn=dig,ou=fonction,ou=groups,dc=sample,dc=com", "DIG", Collections.singleton("wuser"));
+		final GroupOrg groupOrg1 = new GroupOrg("cn=dig,ou=fonction,ou=groups,dc=sample,dc=com", "DIG",
+				Collections.singleton("wuser"));
 		final GroupOrg groupOrg2 = new GroupOrg("cn=dig rha,cn=dig,ou=fonction,ou=groups,dc=sample,dc=com", "DIG RHA",
 				Collections.singleton("wuser"));
 		final Map<String, GroupOrg> groupsMap = new HashMap<>();
@@ -192,8 +195,8 @@ public class UserOrgResourceTest extends AbstractAppTest {
 		Mockito.when(companyRepository.findByIdExpected(DEFAULT_USER, "ing")).thenReturn(company);
 		groupFindById(DEFAULT_USER, "dig", groupOrg1);
 		Mockito.when(groupRepository.findAll()).thenReturn(groupsMap);
-		Mockito.when(userRepository.findAll(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
-				.thenReturn(new PageImpl<>(new ArrayList<>(users.values())));
+		Mockito.when(userRepository.findAll(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(),
+				ArgumentMatchers.any())).thenReturn(new PageImpl<>(new ArrayList<>(users.values())));
 		Mockito.when(resource.groupResource.getContainers()).thenReturn(new HashSet<>(groupsMap.values()));
 		Mockito.when(resource.groupResource.getContainersForWrite()).thenReturn(new HashSet<>(groupsMap.values()));
 		Mockito.when(resource.companyResource.getContainers()).thenReturn(Collections.singleton(company));
@@ -220,7 +223,8 @@ public class UserOrgResourceTest extends AbstractAppTest {
 		user2.setCompany("ing");
 		user2.setGroups(Collections.singletonList("any"));
 		users.put("user2", user2);
-		final GroupOrg groupOrg1 = new GroupOrg("cn=dig,ou=fonction,ou=groups,dc=sample,dc=com", "DIG", Collections.singleton("wuser"));
+		final GroupOrg groupOrg1 = new GroupOrg("cn=dig,ou=fonction,ou=groups,dc=sample,dc=com", "DIG",
+				Collections.singleton("wuser"));
 		final GroupOrg groupOrg2 = new GroupOrg("cn=dig rha,cn=dig,ou=fonction,ou=groups,dc=sample,dc=com", "DIG RHA",
 				Collections.singleton("wuser"));
 		final Map<String, GroupOrg> groupsMap = new HashMap<>();
@@ -234,11 +238,12 @@ public class UserOrgResourceTest extends AbstractAppTest {
 		Mockito.when(companyRepository.findByIdExpected(DEFAULT_USER, "gfi")).thenReturn(company2);
 		groupFindById(DEFAULT_USER, "dig", groupOrg1);
 		Mockito.when(groupRepository.findAll()).thenReturn(groupsMap);
-		Mockito.when(userRepository.findAll(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
-				.thenReturn(new PageImpl<>(new ArrayList<>(users.values())));
+		Mockito.when(userRepository.findAll(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(),
+				ArgumentMatchers.any())).thenReturn(new PageImpl<>(new ArrayList<>(users.values())));
 		Mockito.when(resource.groupResource.getContainers()).thenReturn(new HashSet<>(groupsMap.values()));
 		Mockito.when(resource.groupResource.getContainersForWrite()).thenReturn(Collections.emptySet());
-		Mockito.when(resource.companyResource.getContainers()).thenReturn(new HashSet<>(Arrays.asList(company1, company2)));
+		Mockito.when(resource.companyResource.getContainers())
+				.thenReturn(new HashSet<>(Arrays.asList(company1, company2)));
 		Mockito.when(resource.companyResource.getContainersForWrite()).thenReturn(Collections.emptySet());
 
 		final TableItem<UserOrgVo> tableItem = resource.findAll("ing", "not exist group", "iRsT", newUriInfoAsc("id"));
@@ -259,15 +264,16 @@ public class UserOrgResourceTest extends AbstractAppTest {
 		user2.setCompany("ing");
 		user2.setGroups(Collections.singletonList("any"));
 		users.put("user2", user2);
-		final GroupOrg groupOrg1 = new GroupOrg("cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com", "DIG", Collections.singleton("wuser"));
+		final GroupOrg groupOrg1 = new GroupOrg("cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com", "DIG",
+				Collections.singleton("wuser"));
 		final Map<String, GroupOrg> groupsMap = new HashMap<>();
 		groupsMap.put("dig", groupOrg1);
 		resource.groupResource = Mockito.mock(GroupResource.class);
 		final CompanyOrg company = new CompanyOrg("ou=ing,ou=france,ou=people,dc=sample,dc=com", "ing");
 		Mockito.when(companyRepository.findByIdExpected(DEFAULT_USER, "ing")).thenReturn(company);
 		groupFindById(DEFAULT_USER, "dig", groupOrg1);
-		Mockito.when(userRepository.findAll(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
-				.thenReturn(new PageImpl<>(new ArrayList<>(users.values())));
+		Mockito.when(userRepository.findAll(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(),
+				ArgumentMatchers.any())).thenReturn(new PageImpl<>(new ArrayList<>(users.values())));
 		Mockito.when(resource.groupResource.getContainers()).thenReturn(new HashSet<>(groupsMap.values()));
 		Mockito.when(resource.groupResource.getContainersForWrite()).thenReturn(new HashSet<>(groupsMap.values()));
 
@@ -341,9 +347,10 @@ public class UserOrgResourceTest extends AbstractAppTest {
 	@Test
 	public void createNotWriteInCompany() {
 		initSpringSecurityContext("any");
-		final GroupOrg groupOrg1 = new GroupOrg("cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com", "DIG", Collections.singleton("flasta"));
-		final GroupOrg groupOrg2 = new GroupOrg("cn=DIG RHA,cn=DIG AS,cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com", "DIG RHA",
-				Collections.singleton("wuser"));
+		final GroupOrg groupOrg1 = new GroupOrg("cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com", "DIG",
+				Collections.singleton("flasta"));
+		final GroupOrg groupOrg2 = new GroupOrg("cn=DIG RHA,cn=DIG AS,cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com",
+				"DIG RHA", Collections.singleton("wuser"));
 		groupOrg2.setLocked(true);
 		final Map<String, GroupOrg> groupsMap = new HashMap<>();
 		groupsMap.put("dig rha", groupOrg2);
@@ -369,9 +376,10 @@ public class UserOrgResourceTest extends AbstractAppTest {
 	@Test
 	public void createNotVisibleCompany() {
 		initSpringSecurityContext("any");
-		final GroupOrg groupOrg1 = new GroupOrg("cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com", "DIG", Collections.singleton("flasta"));
-		final GroupOrg groupOrg2 = new GroupOrg("cn=DIG RHA,cn=DIG AS,cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com", "DIG RHA",
-				Collections.singleton("wuser"));
+		final GroupOrg groupOrg1 = new GroupOrg("cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com", "DIG",
+				Collections.singleton("flasta"));
+		final GroupOrg groupOrg2 = new GroupOrg("cn=DIG RHA,cn=DIG AS,cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com",
+				"DIG RHA", Collections.singleton("wuser"));
 		groupOrg2.setLocked(true);
 		final Map<String, GroupOrg> groupsMap = new HashMap<>();
 		groupsMap.put("dig rha", groupOrg2);
@@ -396,9 +404,10 @@ public class UserOrgResourceTest extends AbstractAppTest {
 
 	@Test
 	public void create() {
-		final GroupOrg groupOrg1 = new GroupOrg("cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com", "DIG", Collections.singleton("flasta"));
-		final GroupOrg groupOrg2 = new GroupOrg("cn=DIG RHA,cn=DIG AS,cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com", "DIG RHA",
-				Collections.singleton("wuser"));
+		final GroupOrg groupOrg1 = new GroupOrg("cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com", "DIG",
+				Collections.singleton("flasta"));
+		final GroupOrg groupOrg2 = new GroupOrg("cn=DIG RHA,cn=DIG AS,cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com",
+				"DIG RHA", Collections.singleton("wuser"));
 		groupOrg2.setLocked(true);
 		final Map<String, GroupOrg> groupsMap = new HashMap<>();
 		groupsMap.put("dig rha", groupOrg2);
@@ -430,14 +439,16 @@ public class UserOrgResourceTest extends AbstractAppTest {
 	}
 
 	@Test
-	public void resetPasswordByAdmin() {
+	public void resetPassword() {
+		prepareUser();
 		Assertions.assertEquals(0, passwordResetAuditRepository.countBy("login", "wuser"));
 		resource.applicationContext = Mockito.mock(ApplicationContext.class);
 		final IPasswordGenerator generator = Mockito.mock(IPasswordGenerator.class);
 		Mockito.when(resource.applicationContext.getBeansOfType(IPasswordGenerator.class))
 				.thenReturn(Collections.singletonMap("bean", generator));
-		resource.resetPasswordByAdmin(newUser());
-		resource.resetPasswordByAdmin(newUser());
+		Mockito.doReturn("my-secret").when(generator).generate("wuser", false);
+		resource.resetPassword("wuser");
+		resource.resetPassword("wuser");
 		Mockito.verify(generator, VerificationModeFactory.atLeast(2)).generate("wuser", false);
 
 		// Check the audit
@@ -449,10 +460,40 @@ public class UserOrgResourceTest extends AbstractAppTest {
 	}
 
 	@Test
-	public void createUserAlreadyExists() {
-		final GroupOrg groupOrg1 = new GroupOrg("cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com", "DIG", Collections.singleton("flasta"));
-		final GroupOrg groupOrg2 = new GroupOrg("cn=DIG RHA,cn=DIG AS,cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com", "DIG RHA",
+	public void resetPasswordNoPasswordGenerator() {
+		prepareUser();
+		Assertions.assertEquals(0, passwordResetAuditRepository.countBy("login", "wuser"));
+		resource.applicationContext = Mockito.mock(ApplicationContext.class);
+		Mockito.when(resource.applicationContext.getBeansOfType(IPasswordGenerator.class))
+				.thenReturn(Collections.emptyMap());
+		Assertions.assertNull(resource.resetPassword("wuser"));
+
+		// Check the audit: no write since no password generator
+		Assertions.assertEquals(0, passwordResetAuditRepository.countBy("login", "wuser"));
+	}
+
+	private void prepareUser() {
+		final CompanyOrg company = new CompanyOrg("ou=ing,ou=france,ou=people,dc=sample,dc=com", "ing");
+		final GroupOrg groupOrg1 = new GroupOrg("cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com", "DIG",
 				Collections.singleton("wuser"));
+		final Map<String, GroupOrg> groupsMap = new HashMap<>();
+		groupsMap.put("dig", groupOrg1);
+		final UserOrg user = new UserOrg();
+		user.setId("wuser");
+		user.setCompany("ing");
+		user.setGroups(Collections.singleton("dig rha"));
+
+		Mockito.when(userRepository.findByIdExpected(DEFAULT_USER, "wuser")).thenReturn(user);
+		Mockito.when(companyRepository.findById("ing")).thenReturn(company);
+		Mockito.when(groupRepository.findAll()).thenReturn(groupsMap);
+	}
+
+	@Test
+	public void createUserAlreadyExists() {
+		final GroupOrg groupOrg1 = new GroupOrg("cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com", "DIG",
+				Collections.singleton("flasta"));
+		final GroupOrg groupOrg2 = new GroupOrg("cn=DIG RHA,cn=DIG AS,cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com",
+				"DIG RHA", Collections.singleton("wuser"));
 		groupOrg2.setLocked(true);
 		final Map<String, GroupOrg> groupsMap = new HashMap<>();
 		groupsMap.put("dig rha", groupOrg2);
@@ -480,7 +521,8 @@ public class UserOrgResourceTest extends AbstractAppTest {
 
 	@Test
 	public void deleteLastMember() {
-		final GroupOrg groupOrg1 = new GroupOrg("cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com", "DIG", Collections.singleton("wuser"));
+		final GroupOrg groupOrg1 = new GroupOrg("cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com", "DIG",
+				Collections.singleton("wuser"));
 		final Map<String, GroupOrg> groupsMap = new HashMap<>();
 		groupsMap.put("dig", groupOrg1);
 		final UserOrg user = new UserOrg();
@@ -525,8 +567,8 @@ public class UserOrgResourceTest extends AbstractAppTest {
 		final UserOrg user = new UserOrg();
 		user.setCompany("ing");
 		user.setGroups(Collections.singleton("dig"));
-		Mockito.when(userRepository.findByIdExpected("mtuyer", "wuser"))
-				.thenThrow(new ValidationJsonException("id", BusinessException.KEY_UNKNOW_ID, "0", "user", "1", "mtuyer"));
+		Mockito.when(userRepository.findByIdExpected("mtuyer", "wuser")).thenThrow(
+				new ValidationJsonException("id", BusinessException.KEY_UNKNOW_ID, "0", "user", "1", "mtuyer"));
 		Mockito.when(companyRepository.findById("ing")).thenReturn(company);
 		Mockito.when(groupRepository.findAll()).thenReturn(groupsMap);
 		MatcherUtil.assertThrows(Assertions.assertThrows(ValidationJsonException.class, () -> {
@@ -555,9 +597,10 @@ public class UserOrgResourceTest extends AbstractAppTest {
 
 	@Test
 	public void mergeUserNoChange() {
-		final GroupOrg groupOrg1 = new GroupOrg("cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com", "DIG", Collections.singleton("wuser"));
-		final GroupOrg groupOrg2 = new GroupOrg("cn=DIG RHA,cn=DIG AS,cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com", "DIG RHA",
-				Collections.singleton("user2"));
+		final GroupOrg groupOrg1 = new GroupOrg("cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com", "DIG",
+				Collections.singleton("wuser"));
+		final GroupOrg groupOrg2 = new GroupOrg("cn=DIG RHA,cn=DIG AS,cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com",
+				"DIG RHA", Collections.singleton("user2"));
 		groupOrg2.setLocked(true);
 		final Map<String, GroupOrg> groupsMap = new HashMap<>();
 		groupsMap.put("dig", groupOrg1);
@@ -575,9 +618,10 @@ public class UserOrgResourceTest extends AbstractAppTest {
 
 	@Test
 	public void mergeUserNoDepartment() {
-		final GroupOrg groupOrg1 = new GroupOrg("cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com", "DIG", Collections.singleton("wuser"));
-		final GroupOrg groupOrg2 = new GroupOrg("cn=DIG RHA,cn=DIG AS,cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com", "DIG RHA",
-				Collections.singleton("user2"));
+		final GroupOrg groupOrg1 = new GroupOrg("cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com", "DIG",
+				Collections.singleton("wuser"));
+		final GroupOrg groupOrg2 = new GroupOrg("cn=DIG RHA,cn=DIG AS,cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com",
+				"DIG RHA", Collections.singleton("user2"));
 		groupOrg2.setLocked(true);
 		final Map<String, GroupOrg> groupsMap = new HashMap<>();
 		groupsMap.put("dig", groupOrg1);
@@ -597,9 +641,10 @@ public class UserOrgResourceTest extends AbstractAppTest {
 
 	@Test
 	public void mergeUser() {
-		final GroupOrg groupOrg1 = new GroupOrg("cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com", "DIG", Collections.singleton("wuser"));
-		final GroupOrg groupOrg2 = new GroupOrg("cn=DIG RHA,cn=DIG AS,cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com", "DIG RHA",
-				Collections.singleton("user2"));
+		final GroupOrg groupOrg1 = new GroupOrg("cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com", "DIG",
+				Collections.singleton("wuser"));
+		final GroupOrg groupOrg2 = new GroupOrg("cn=DIG RHA,cn=DIG AS,cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com",
+				"DIG RHA", Collections.singleton("user2"));
 		groupOrg2.setLocked(true);
 		final Map<String, GroupOrg> groupsMap = new HashMap<>();
 		groupsMap.put("dig", groupOrg1);
@@ -623,9 +668,10 @@ public class UserOrgResourceTest extends AbstractAppTest {
 	@Test
 	public void update() {
 		final CompanyOrg company = new CompanyOrg("ou=ing,ou=france,ou=people,dc=sample,dc=com", "ing");
-		final GroupOrg groupOrg1 = new GroupOrg("cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com", "DIG", Collections.singleton("wuser"));
-		final GroupOrg groupOrg2 = new GroupOrg("cn=DIG RHA,cn=DIG AS,cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com", "DIG RHA",
-				Collections.singleton("user2"));
+		final GroupOrg groupOrg1 = new GroupOrg("cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com", "DIG",
+				Collections.singleton("wuser"));
+		final GroupOrg groupOrg2 = new GroupOrg("cn=DIG RHA,cn=DIG AS,cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com",
+				"DIG RHA", Collections.singleton("user2"));
 		groupOrg2.setLocked(true);
 		final Map<String, GroupOrg> groupsMap = new HashMap<>();
 		groupsMap.put("dig", groupOrg1);
@@ -652,9 +698,10 @@ public class UserOrgResourceTest extends AbstractAppTest {
 	public void updateNotWriteInCompany() {
 		initSpringSecurityContext("mtuyer");
 		final CompanyOrg company = new CompanyOrg("ou=ing,ou=france,ou=people,dc=sample,dc=com", "ing");
-		final GroupOrg groupOrg1 = new GroupOrg("cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com", "DIG", Collections.singleton("wuser"));
-		final GroupOrg groupOrg2 = new GroupOrg("cn=DIG RHA,cn=DIG AS,cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com", "DIG RHA",
-				Collections.singleton("user2"));
+		final GroupOrg groupOrg1 = new GroupOrg("cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com", "DIG",
+				Collections.singleton("wuser"));
+		final GroupOrg groupOrg2 = new GroupOrg("cn=DIG RHA,cn=DIG AS,cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com",
+				"DIG RHA", Collections.singleton("user2"));
 		groupOrg2.setLocked(true);
 		final Map<String, GroupOrg> groupsMap = new HashMap<>();
 		groupsMap.put("dig", groupOrg1);
@@ -698,9 +745,10 @@ public class UserOrgResourceTest extends AbstractAppTest {
 
 		final CompanyOrg company = new CompanyOrg("ou=ing,ou=france,ou=people,dc=sample,dc=com", "ing");
 		final CompanyOrg company2 = new CompanyOrg("ou=gfi,ou=france,ou=people,dc=sample,dc=com", "gfi");
-		final GroupOrg groupOrg1 = new GroupOrg("cn=dig,ou=fonction,ou=groups,dc=sample,dc=com", "DIG", Collections.singleton("wuser"));
-		final GroupOrg groupOrg2 = new GroupOrg("cn=dig rha,cn=dig as,cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com", "DIG RHA",
-				Collections.singleton("user2"));
+		final GroupOrg groupOrg1 = new GroupOrg("cn=dig,ou=fonction,ou=groups,dc=sample,dc=com", "DIG",
+				Collections.singleton("wuser"));
+		final GroupOrg groupOrg2 = new GroupOrg("cn=dig rha,cn=dig as,cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com",
+				"DIG RHA", Collections.singleton("user2"));
 		final GroupOrg groupOrg3 = new GroupOrg("cn=other,dc=other,dc=com", "Other", Collections.singleton("user2"));
 		final GroupOrg groupOrg4 = new GroupOrg("cn=invisible,dc=net", "Other", Collections.singleton("user2"));
 		groupOrg2.setLocked(true);
@@ -793,7 +841,8 @@ public class UserOrgResourceTest extends AbstractAppTest {
 	@Test
 	public void updateGroup() {
 		// Remove group "dig"
-		update2(userVo -> userVo.setGroups(Arrays.asList("other", "dig rha")), u -> u.setGroups(Arrays.asList("other", "dig rha", "dig")));
+		update2(userVo -> userVo.setGroups(Arrays.asList("other", "dig rha")),
+				u -> u.setGroups(Arrays.asList("other", "dig rha", "dig")));
 	}
 
 	@Test
@@ -812,15 +861,16 @@ public class UserOrgResourceTest extends AbstractAppTest {
 		user2.setCompany("ing");
 		user2.setGroups(Collections.singletonList("any"));
 		users.put("user2", user2);
-		final GroupOrg groupOrg1 = new GroupOrg("cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com", "DIG", Collections.singleton("wuser"));
+		final GroupOrg groupOrg1 = new GroupOrg("cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com", "DIG",
+				Collections.singleton("wuser"));
 		final Map<String, GroupOrg> groupsMap = new HashMap<>();
 		groupsMap.put("dig", groupOrg1);
 		resource.groupResource = Mockito.mock(GroupResource.class);
 		final CompanyOrg company = new CompanyOrg("ou=ing,ou=france,ou=people,dc=sample,dc=com", "ing");
 		Mockito.when(companyRepository.findByIdExpected(DEFAULT_USER, "ing")).thenReturn(company);
 		groupFindById(DEFAULT_USER, "dig", groupOrg1);
-		Mockito.when(userRepository.findAll(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
-				.thenReturn(new PageImpl<>(new ArrayList<>(users.values())));
+		Mockito.when(userRepository.findAll(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(),
+				ArgumentMatchers.any())).thenReturn(new PageImpl<>(new ArrayList<>(users.values())));
 		Mockito.when(resource.groupResource.getContainers()).thenReturn(new HashSet<>(groupsMap.values()));
 		Mockito.when(resource.groupResource.getContainersForWrite()).thenReturn(new HashSet<>(groupsMap.values()));
 
@@ -839,15 +889,16 @@ public class UserOrgResourceTest extends AbstractAppTest {
 		user2.setCompany("ing");
 		user2.setGroups(Collections.singletonList("any"));
 		users.put("user2", user2);
-		final GroupOrg groupOrg1 = new GroupOrg("cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com", "DIG", Collections.singleton("wuser"));
+		final GroupOrg groupOrg1 = new GroupOrg("cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com", "DIG",
+				Collections.singleton("wuser"));
 		final Map<String, GroupOrg> groupsMap = new HashMap<>();
 		groupsMap.put("dig", groupOrg1);
 		resource.companyResource = Mockito.mock(CompanyResource.class);
 		final CompanyOrg company = new CompanyOrg("ou=ing,ou=france,ou=people,dc=sample,dc=com", "ing");
 		Mockito.when(companyRepository.findByIdExpected(DEFAULT_USER, "ing")).thenReturn(company);
 		groupFindById(DEFAULT_USER, "dig", groupOrg1);
-		Mockito.when(userRepository.findAll(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
-				.thenReturn(new PageImpl<>(new ArrayList<>(users.values())));
+		Mockito.when(userRepository.findAll(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(),
+				ArgumentMatchers.any())).thenReturn(new PageImpl<>(new ArrayList<>(users.values())));
 		Mockito.when(resource.companyResource.getContainers()).thenReturn(Collections.singleton(company));
 		Mockito.when(resource.companyResource.getContainersForWrite()).thenReturn(Collections.singleton(company));
 
@@ -866,15 +917,16 @@ public class UserOrgResourceTest extends AbstractAppTest {
 		user2.setCompany("ing");
 		user2.setGroups(Collections.singletonList("any"));
 		users.put("user2", user2);
-		final GroupOrg groupOrg1 = new GroupOrg("cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com", "DIG", Collections.singleton("wuser"));
+		final GroupOrg groupOrg1 = new GroupOrg("cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com", "DIG",
+				Collections.singleton("wuser"));
 		final Map<String, GroupOrg> groupsMap = new HashMap<>();
 		groupsMap.put("dig", groupOrg1);
 		resource.groupResource = Mockito.mock(GroupResource.class);
 		final CompanyOrg company = new CompanyOrg("ou=ing,ou=france,ou=people,dc=sample,dc=com", "ing");
 		Mockito.when(companyRepository.findByIdExpected(DEFAULT_USER, "ing")).thenReturn(company);
 		groupFindById(DEFAULT_USER, "dig", groupOrg1);
-		Mockito.when(userRepository.findAll(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
-				.thenReturn(new PageImpl<>(new ArrayList<>(users.values())));
+		Mockito.when(userRepository.findAll(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(),
+				ArgumentMatchers.any())).thenReturn(new PageImpl<>(new ArrayList<>(users.values())));
 		Mockito.when(resource.groupResource.getContainers()).thenReturn(new HashSet<>(groupsMap.values()));
 		Mockito.when(resource.groupResource.getContainersForWrite()).thenReturn(new HashSet<>(groupsMap.values()));
 
@@ -893,15 +945,16 @@ public class UserOrgResourceTest extends AbstractAppTest {
 		user2.setCompany("ing");
 		user2.setGroups(Collections.singletonList("any"));
 		users.put("user2", user2);
-		final GroupOrg groupOrg1 = new GroupOrg("cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com", "DIG", Collections.singleton("wuser"));
+		final GroupOrg groupOrg1 = new GroupOrg("cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com", "DIG",
+				Collections.singleton("wuser"));
 		final Map<String, GroupOrg> groupsMap = new HashMap<>();
 		groupsMap.put("dig", groupOrg1);
 		resource.groupResource = Mockito.mock(GroupResource.class);
 		final CompanyOrg company = new CompanyOrg("ou=ing,ou=france,ou=people,dc=sample,dc=com", "ing");
 		Mockito.when(companyRepository.findByIdExpected(DEFAULT_USER, "ing")).thenReturn(company);
 		groupFindById(DEFAULT_USER, "dig", groupOrg1);
-		Mockito.when(userRepository.findAll(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
-				.thenReturn(new PageImpl<>(new ArrayList<>(users.values())));
+		Mockito.when(userRepository.findAll(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(),
+				ArgumentMatchers.any())).thenReturn(new PageImpl<>(new ArrayList<>(users.values())));
 		Mockito.when(resource.groupResource.getContainers()).thenReturn(new HashSet<>(groupsMap.values()));
 		Mockito.when(resource.groupResource.getContainersForWrite()).thenReturn(new HashSet<>(groupsMap.values()));
 
@@ -920,15 +973,16 @@ public class UserOrgResourceTest extends AbstractAppTest {
 		user2.setCompany("ing");
 		user2.setGroups(Collections.singletonList("any"));
 		users.put("user2", user2);
-		final GroupOrg groupOrg1 = new GroupOrg("cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com", "DIG", Collections.singleton("wuser"));
+		final GroupOrg groupOrg1 = new GroupOrg("cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com", "DIG",
+				Collections.singleton("wuser"));
 		final Map<String, GroupOrg> groupsMap = new HashMap<>();
 		groupsMap.put("dig", groupOrg1);
 		resource.groupResource = Mockito.mock(GroupResource.class);
 		final CompanyOrg company = new CompanyOrg("ou=ing,ou=france,ou=people,dc=sample,dc=com", "ing");
 		Mockito.when(companyRepository.findByIdExpected(DEFAULT_USER, "ing")).thenReturn(company);
 		groupFindById(DEFAULT_USER, "dig", groupOrg1);
-		Mockito.when(userRepository.findAll(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
-				.thenReturn(new PageImpl<>(new ArrayList<>(users.values())));
+		Mockito.when(userRepository.findAll(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(),
+				ArgumentMatchers.any())).thenReturn(new PageImpl<>(new ArrayList<>(users.values())));
 		Mockito.when(resource.groupResource.getContainers()).thenReturn(new HashSet<>(groupsMap.values()));
 		Mockito.when(resource.groupResource.getContainersForWrite()).thenReturn(new HashSet<>(groupsMap.values()));
 
@@ -939,26 +993,10 @@ public class UserOrgResourceTest extends AbstractAppTest {
 	}
 
 	@Test
-	public void resetPassword() {
-		final CompanyOrg company = new CompanyOrg("ou=ing,ou=france,ou=people,dc=sample,dc=com", "ing");
-		final GroupOrg groupOrg1 = new GroupOrg("cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com", "DIG", Collections.singleton("wuser"));
-		final Map<String, GroupOrg> groupsMap = new HashMap<>();
-		groupsMap.put("dig", groupOrg1);
-		final UserOrg user = new UserOrg();
-		user.setId("wuser");
-		user.setCompany("ing");
-		user.setGroups(Collections.singleton("dig rha"));
-
-		Mockito.when(userRepository.findByIdExpected(DEFAULT_USER, "wuser")).thenReturn(user);
-		Mockito.when(companyRepository.findById("ing")).thenReturn(company);
-		Mockito.when(groupRepository.findAll()).thenReturn(groupsMap);
-		resource.resetPassword("wuser");
-	}
-
-	@Test
 	public void lock() {
 		final CompanyOrg company = new CompanyOrg("ou=ing,ou=france,ou=people,dc=sample,dc=com", "ing");
-		final GroupOrg groupOrg1 = new GroupOrg("cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com", "DIG", Collections.singleton("wuser"));
+		final GroupOrg groupOrg1 = new GroupOrg("cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com", "DIG",
+				Collections.singleton("wuser"));
 		final Map<String, GroupOrg> groupsMap = new HashMap<>();
 		groupsMap.put("dig", groupOrg1);
 		final UserOrg user = new UserOrg();
@@ -973,7 +1011,8 @@ public class UserOrgResourceTest extends AbstractAppTest {
 	@Test
 	public void isolate() {
 		final CompanyOrg company = new CompanyOrg("ou=ing,ou=france,ou=people,dc=sample,dc=com", "ing");
-		final GroupOrg groupOrg1 = new GroupOrg("cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com", "DIG", Collections.singleton("wuser"));
+		final GroupOrg groupOrg1 = new GroupOrg("cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com", "DIG",
+				Collections.singleton("wuser"));
 		final Map<String, GroupOrg> groupsMap = new HashMap<>();
 		groupsMap.put("dig", groupOrg1);
 		final UserOrg user = new UserOrg();
@@ -988,7 +1027,8 @@ public class UserOrgResourceTest extends AbstractAppTest {
 	@Test
 	public void restore() {
 		final CompanyOrg company = new CompanyOrg("ou=ing,ou=france,ou=people,dc=sample,dc=com", "ing");
-		final GroupOrg groupOrg1 = new GroupOrg("cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com", "DIG", Collections.singleton("wuser"));
+		final GroupOrg groupOrg1 = new GroupOrg("cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com", "DIG",
+				Collections.singleton("wuser"));
 		final Map<String, GroupOrg> groupsMap = new HashMap<>();
 		groupsMap.put("dig", groupOrg1);
 		final UserOrg user = new UserOrg();
@@ -1004,7 +1044,8 @@ public class UserOrgResourceTest extends AbstractAppTest {
 	@Test
 	public void unlock() {
 		final CompanyOrg company = new CompanyOrg("ou=ing,ou=france,ou=people,dc=sample,dc=com", "ing");
-		final GroupOrg groupOrg1 = new GroupOrg("cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com", "DIG", Collections.singleton("wuser"));
+		final GroupOrg groupOrg1 = new GroupOrg("cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com", "DIG",
+				Collections.singleton("wuser"));
 		final Map<String, GroupOrg> groupsMap = new HashMap<>();
 		groupsMap.put("dig", groupOrg1);
 		final UserOrg user = new UserOrg();
@@ -1037,9 +1078,10 @@ public class UserOrgResourceTest extends AbstractAppTest {
 	 */
 	@Test
 	public void addUserToGroup() {
-		final GroupOrg groupOrg1 = new GroupOrg("cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com", "DIG", Collections.singleton("user1"));
-		final GroupOrg groupOrg2 = new GroupOrg("cn=DIG RHA,cn=DIG AS,cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com", "DIG RHA",
-				Collections.singleton("wuser"));
+		final GroupOrg groupOrg1 = new GroupOrg("cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com", "DIG",
+				Collections.singleton("user1"));
+		final GroupOrg groupOrg2 = new GroupOrg("cn=DIG RHA,cn=DIG AS,cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com",
+				"DIG RHA", Collections.singleton("wuser"));
 		groupOrg2.setLocked(true);
 		final Map<String, GroupOrg> groupsMap = new HashMap<>();
 		groupsMap.put("dig rha", groupOrg2);
@@ -1059,9 +1101,10 @@ public class UserOrgResourceTest extends AbstractAppTest {
 	 */
 	@Test
 	public void addUserToGroupAlreadyMember() {
-		final GroupOrg groupOrg1 = new GroupOrg("cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com", "DIG", Collections.singleton("wuser"));
-		final GroupOrg groupOrg2 = new GroupOrg("cn=DIG RHA,cn=DIG AS,cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com", "DIG RHA",
-				Collections.singleton("user2"));
+		final GroupOrg groupOrg1 = new GroupOrg("cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com", "DIG",
+				Collections.singleton("wuser"));
+		final GroupOrg groupOrg2 = new GroupOrg("cn=DIG RHA,cn=DIG AS,cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com",
+				"DIG RHA", Collections.singleton("user2"));
 		groupOrg2.setLocked(true);
 		final Map<String, GroupOrg> groupsMap = new HashMap<>();
 		groupsMap.put("dig", groupOrg1);
@@ -1080,7 +1123,8 @@ public class UserOrgResourceTest extends AbstractAppTest {
 	@Test
 	public void addUserToGroupNotWritableGroup() {
 		initSpringSecurityContext("mlavoine");
-		final GroupOrg groupOrg1 = new GroupOrg("cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com", "DIG", Collections.singleton("user1"));
+		final GroupOrg groupOrg1 = new GroupOrg("cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com", "DIG",
+				Collections.singleton("user1"));
 		final GroupOrg groupOrg2 = new GroupOrg("cn=DIG RHA,cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com", "DIG",
 				Collections.singleton("user1"));
 		final UserOrg user = new UserOrg();
@@ -1103,7 +1147,8 @@ public class UserOrgResourceTest extends AbstractAppTest {
 	@Test
 	public void removeUserFromGroupNotWritableGroup() {
 		initSpringSecurityContext("mlavoine");
-		final GroupOrg groupOrg1 = new GroupOrg("cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com", "DIG", Collections.singleton("user1"));
+		final GroupOrg groupOrg1 = new GroupOrg("cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com", "DIG",
+				Collections.singleton("user1"));
 		final GroupOrg groupOrg2 = new GroupOrg("cn=DIG RHA,cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com", "DIG",
 				Collections.singleton("user1"));
 		final UserOrg user = new UserOrg();
@@ -1125,8 +1170,8 @@ public class UserOrgResourceTest extends AbstractAppTest {
 	 */
 	@Test
 	public void removeUserFromGroup() {
-		final GroupOrg groupOrg1 = new GroupOrg("cn=DIG RHA,cn=DIG AS,cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com", "DIG RHA",
-				Collections.singleton("wuser"));
+		final GroupOrg groupOrg1 = new GroupOrg("cn=DIG RHA,cn=DIG AS,cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com",
+				"DIG RHA", Collections.singleton("wuser"));
 		final GroupOrg groupOrg2 = new GroupOrg("cn=DIG AS,cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com", "DIG AS",
 				Collections.singleton("wuser"));
 		groupOrg2.setLocked(true);
