@@ -9,6 +9,7 @@ import org.junit.jupiter.api.Test;
 import org.ligoj.app.DefaultVerificationMode;
 import org.ligoj.app.iam.UserOrg;
 import org.ligoj.app.plugin.id.resource.UserOrgEditionVo;
+import org.ligoj.bootstrap.core.validation.ValidationJsonException;
 import org.mockito.Mockito;
 import org.mockito.exceptions.base.MockitoException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,6 +21,19 @@ public class UserBatchUpdateResourceTest extends AbstractUserBatchResourceTest {
 
 	@Autowired
 	protected UserBatchUpdateResource resource;
+
+	@Test
+	public void executeCsvError() throws IOException, InterruptedException {
+		final UserBatchUpdateResource resource = new UserBatchUpdateResource();
+		applicationContext.getAutowireCapableBeanFactory().autowireBean(resource);
+		Assertions.assertEquals(
+				"csv-file:Too much values for type org.ligoj.app.plugin.id.resource.batch.UserUpdateEntry. Expected : 1, got : 2 : [fdaugan, mail]",
+				Assertions.assertThrows(ValidationJsonException.class,
+						() -> resource.batch(new ByteArrayInputStream("fdaugan;mail".getBytes("cp1252")),
+								new String[] { "user" }, "cp1252", new String[] { "user" }, UserUpdateEntry.class,
+								UserAtomicTask.class, false))
+						.getMessage());
+	}
 
 	@Test
 	public void execute() throws IOException, InterruptedException {

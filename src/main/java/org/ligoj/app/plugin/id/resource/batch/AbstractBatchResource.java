@@ -24,8 +24,9 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateUtils;
 import org.ligoj.bootstrap.core.SpringUtils;
 import org.ligoj.bootstrap.core.csv.CsvForBean;
-import org.ligoj.bootstrap.core.resource.BusinessException;
 import org.ligoj.bootstrap.core.resource.OnNullReturn404;
+import org.ligoj.bootstrap.core.resource.TechnicalException;
+import org.ligoj.bootstrap.core.validation.ValidationJsonException;
 import org.ligoj.bootstrap.core.validation.ValidatorBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.task.TaskExecutor;
@@ -103,6 +104,17 @@ public abstract class AbstractBatchResource<B extends BatchElement> {
 	protected <T extends AbstractBatchTask<B>> long batch(final InputStream uploadedFile, final String[] columns,
 			final String encoding, final String[] defaultColumns, final Class<B> batchType, final Class<T> taskType,
 			final Boolean quiet) throws IOException {
+		try {
+			return batchInternal(uploadedFile, columns, encoding, defaultColumns, batchType, taskType, quiet);
+		} catch (final TechnicalException io) {
+			// Handle technical exception there to associate to to csv-file input
+			throw new ValidationJsonException("csv-file", io.getMessage());
+		}
+	}
+
+	protected <T extends AbstractBatchTask<B>> long batchInternal(final InputStream uploadedFile,
+			final String[] columns, final String encoding, final String[] defaultColumns, final Class<B> batchType,
+			final Class<T> taskType, final Boolean quiet) throws IOException {
 
 		// Public identifier is based on system date
 		final long id = System.currentTimeMillis();
@@ -153,7 +165,7 @@ public abstract class AbstractBatchResource<B extends BatchElement> {
 	private void checkHeaders(final String[] requested, final String... columns) {
 		for (final String column : columns) {
 			if (!ArrayUtils.contains(requested, column.trim())) {
-				throw new BusinessException("Invalid header", column);
+				throw new ValidationJsonException("csv-file", "Invalid header " + column);
 			}
 		}
 	}
