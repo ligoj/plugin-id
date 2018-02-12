@@ -30,7 +30,9 @@ define({
 		'reset-confirm': 'Are you sure to reset the password of {{this}}?<br>An email will be sent to this user and you.',
 		'reseted-confirm': '{{this}} password has been reset.',
 		'show-password' : 'Show password',
-		'password' : 'Password'
+		'password' : 'Password',
+		'quiet': 'Silent',
+		'quiet-help': 'Silent import does not imply notification related to this import'
 	},
 	fr: true
 });
