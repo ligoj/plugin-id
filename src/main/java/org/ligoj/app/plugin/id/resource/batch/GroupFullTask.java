@@ -10,11 +10,11 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 /**
- * Group LDAP import from list of bean entries.
+ * Group import from list of bean entries.
  */
 @Component
 @Scope(value = ConfigurableBeanFactory.SCOPE_PROTOTYPE)
-public class GroupFullLdapTask extends AbstractLdapBatchTask<GroupImportEntry> {
+public class GroupFullTask extends AbstractBatchTask<GroupImportEntry> {
 
 	@Autowired
 	protected GroupResource resource;
@@ -23,7 +23,7 @@ public class GroupFullLdapTask extends AbstractLdapBatchTask<GroupImportEntry> {
 	protected ContainerScopeResource containerScopeResource;
 
 	@Override
-	protected void doBatch(final GroupImportEntry entry) {
+	protected void doBatch(final GroupImportEntry entry, final boolean quiet) {
 
 		// Copy the group information
 		final GroupEditionVo edition = new GroupEditionVo();

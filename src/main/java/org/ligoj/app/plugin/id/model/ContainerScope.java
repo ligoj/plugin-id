@@ -15,7 +15,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 /**
- * Type of LDAP group define the DN of parent LDAP owner. Name attribute is the name of the type.
+ * Logical scope of container defined by the parent DN. Name attribute is the name of the type.
  */
 @Getter
 @Setter
@@ -30,9 +30,7 @@ public class ContainerScope extends AbstractNamedEntity<Integer> {
 	public static final String TYPE_PROJECT = "Project";
 
 	/**
-	 * The "Distinguished Name" of the LDAP parent owning the container of this type. The base DN is not included into
-	 * this
-	 * String.
+	 * The "Distinguished Name" parent of of container's DN. The base DN is not included into this String.
 	 */
 	@NotNull
 	@NotBlank

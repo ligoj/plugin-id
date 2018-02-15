@@ -18,20 +18,22 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateUtils;
 import org.ligoj.bootstrap.core.SpringUtils;
 import org.ligoj.bootstrap.core.csv.CsvForBean;
-import org.ligoj.bootstrap.core.resource.BusinessException;
 import org.ligoj.bootstrap.core.resource.OnNullReturn404;
+import org.ligoj.bootstrap.core.resource.TechnicalException;
+import org.ligoj.bootstrap.core.validation.ValidationJsonException;
 import org.ligoj.bootstrap.core.validation.ValidatorBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 /**
- * LDAP batch resource.
+ * Base batch resource class.
  */
 public abstract class AbstractBatchResource<B extends BatchElement> {
 
@@ -95,11 +97,24 @@ public abstract class AbstractBatchResource<B extends BatchElement> {
 	 * Is the current task is finished.
 	 */
 	private boolean isFinished(final BatchTaskVo<?> task) {
-		return task.getStatus().getEnd() != null && task.getStatus().getEnd().getTime() + DateUtils.MILLIS_PER_DAY < System.currentTimeMillis();
+		return task.getStatus().getEnd() != null
+				&& task.getStatus().getEnd().getTime() + DateUtils.MILLIS_PER_DAY < System.currentTimeMillis();
 	}
 
-	protected <T extends AbstractLdapBatchTask<B>> long batch(final InputStream uploadedFile, final String[] columns,
-			final String encoding, final String[] defaultColumns, final Class<B> batchType, final Class<T> taskType) throws IOException {
+	protected <T extends AbstractBatchTask<B>> long batch(final InputStream uploadedFile, final String[] columns,
+			final String encoding, final String[] defaultColumns, final Class<B> batchType, final Class<T> taskType,
+			final Boolean quiet) throws IOException {
+		try {
+			return batchInternal(uploadedFile, columns, encoding, defaultColumns, batchType, taskType, quiet);
+		} catch (final TechnicalException io) {
+			// Handle technical exception there to associate to to csv-file input
+			throw new ValidationJsonException("csv-file", io.getMessage());
+		}
+	}
+
+	protected <T extends AbstractBatchTask<B>> long batchInternal(final InputStream uploadedFile,
+			final String[] columns, final String encoding, final String[] defaultColumns, final Class<B> batchType,
+			final Class<T> taskType, final Boolean quiet) throws IOException {
 
 		// Public identifier is based on system date
 		final long id = System.currentTimeMillis();
@@ -109,13 +124,14 @@ public abstract class AbstractBatchResource<B extends BatchElement> {
 		checkHeaders(defaultColumns, sanitizeColumns);
 
 		// Build CSV header from array
-		final String csvHeaders = StringUtils.chop(ArrayUtils.toString(sanitizeColumns)).substring(1).replace(',', ';') + "\n";
+		final String csvHeaders = StringUtils.chop(ArrayUtils.toString(sanitizeColumns)).substring(1).replace(',', ';')
+				+ "\n";
 
-		// Build entries
+		// Build entries with prepended CSV header
+		final String encSafe = ObjectUtils.defaultIfNull(encoding, StandardCharsets.UTF_8.name());
+		final ByteArrayInputStream input = new ByteArrayInputStream(csvHeaders.getBytes(encSafe));
 		final List<B> entries = csvForBean.toBean(batchType,
-				new InputStreamReader(new SequenceInputStream(
-						new ByteArrayInputStream(csvHeaders.getBytes(ObjectUtils.defaultIfNull(encoding, StandardCharsets.UTF_8.name()))),
-						uploadedFile), ObjectUtils.defaultIfNull(encoding, StandardCharsets.UTF_8.name())));
+				new InputStreamReader(new SequenceInputStream(input, uploadedFile), encSafe));
 		entries.removeIf(Objects::isNull);
 
 		// Validate them
@@ -126,6 +142,7 @@ public abstract class AbstractBatchResource<B extends BatchElement> {
 		importTask.setEntries(entries);
 		importTask.setPrincipal(SecurityContextHolder.getContext().getAuthentication().getName());
 		importTask.setId(id);
+		importTask.setQuiet(BooleanUtils.isTrue(quiet));
 
 		// Schedule the import
 		final T task = SpringUtils.getBean(taskType);
@@ -148,7 +165,7 @@ public abstract class AbstractBatchResource<B extends BatchElement> {
 	private void checkHeaders(final String[] requested, final String... columns) {
 		for (final String column : columns) {
 			if (!ArrayUtils.contains(requested, column.trim())) {
-				throw new BusinessException("Invalid header", column);
+				throw new ValidationJsonException("csv-file", "Invalid header " + column);
 			}
 		}
 	}

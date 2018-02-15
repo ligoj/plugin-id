@@ -32,36 +32,36 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 /**
- * Test of {@link GroupBatchLdapResource}
+ * Test of {@link GroupBatchResource}
  */
 @ExtendWith(SpringExtension.class)
 @ContextConfiguration(locations = "classpath:/META-INF/spring/application-context-test.xml")
 @Rollback
 @Transactional
-public class GroupBatchLdapResourceTest extends AbstractLdapBatchTest {
+public class GroupBatchResourceTest extends AbstractBatchTest {
 
 	@Autowired
-	protected GroupBatchLdapResource resource;
+	protected GroupBatchResource resource;
 
-	private GroupResource mockLdapResource;
+	private GroupResource mockResource;
 
 	@SuppressWarnings("unchecked")
 	@BeforeEach
 	public void mockApplicationContext() {
 		final ApplicationContext applicationContext = Mockito.mock(ApplicationContext.class);
 		SpringUtils.setSharedApplicationContext(applicationContext);
-		mockLdapResource = Mockito.mock(GroupResource.class);
-		final GroupFullLdapTask mockTask = new GroupFullLdapTask();
-		mockTask.resource = mockLdapResource;
+		mockResource = Mockito.mock(GroupResource.class);
+		final GroupFullTask mockTask = new GroupFullTask();
+		mockTask.resource = mockResource;
 		mockTask.securityHelper = securityHelper;
 		mockTask.containerScopeResource = Mockito.mock(ContainerScopeResource.class);
 		Mockito.when(applicationContext.getBean(SessionSettings.class)).thenReturn(new SessionSettings());
 		Mockito.when(applicationContext.getBean((Class<?>) ArgumentMatchers.any(Class.class))).thenAnswer((Answer<Object>) invocation -> {
 			final Class<?> requiredType = (Class<Object>) invocation.getArguments()[0];
-			if (requiredType == GroupFullLdapTask.class) {
+			if (requiredType == GroupFullTask.class) {
 				return mockTask;
 			}
-			return GroupBatchLdapResourceTest.super.applicationContext.getBean(requiredType);
+			return GroupBatchResourceTest.super.applicationContext.getBean(requiredType);
 		});
 
 		final ContainerScope container = new ContainerScope();
@@ -96,8 +96,8 @@ public class GroupBatchLdapResourceTest extends AbstractLdapBatchTest {
 		Assertions.assertTrue(importEntry.getStatus());
 		Assertions.assertNull(importEntry.getStatusText());
 
-		// Check LDAP
-		Mockito.verify(mockLdapResource, new DefaultVerificationMode(data -> {
+		// Check group
+		Mockito.verify(mockResource, new DefaultVerificationMode(data -> {
 			if (data.getAllInvocations().size() != 1) {
 				throw new MockitoException("Expect one call");
 			}
@@ -128,8 +128,8 @@ public class GroupBatchLdapResourceTest extends AbstractLdapBatchTest {
 		Assertions.assertTrue(importEntry.getStatus());
 		Assertions.assertNull(importEntry.getStatusText());
 
-		// Check LDAP
-		Mockito.verify(mockLdapResource, new DefaultVerificationMode(data -> {
+		// Check group
+		Mockito.verify(mockResource, new DefaultVerificationMode(data -> {
 			if (data.getAllInvocations().size() != 1) {
 				throw new MockitoException("Expect one call");
 			}
@@ -154,7 +154,7 @@ public class GroupBatchLdapResourceTest extends AbstractLdapBatchTest {
 	protected <U extends BatchElement> BatchTaskVo<U> full(final InputStream input, final String[] headers, final String encoding)
 			throws IOException, InterruptedException {
 		initSpringSecurityContext(DEFAULT_USER);
-		final long id = resource.full(input, headers, encoding);
+		final long id = resource.full(input, headers, encoding, false);
 		Assertions.assertNotNull(id);
 		@SuppressWarnings("unchecked")
 		final BatchTaskVo<U> importTask = (BatchTaskVo<U>) resource.getImportTask(id);

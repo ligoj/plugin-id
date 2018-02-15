@@ -160,6 +160,7 @@ define(function () {
 			}).on('show.bs.modal', function () {
 				$('.import-progress').attr('aria-valuenow', '0').css('width', '0%').removeClass('progress-bar progress-bar-striped progress-bar-striped').empty();
 				$('.import-summary').addClass('hide').empty();
+				_('quiet').prop('checked', false);
 				current.$parent.unscheduleUploadStep('service/id/user/batch');
 			}).on('submit', function (e) {
 				var mode = $(this).find('.import-options input:checked').is('.import-options-full') ? 'full' : 'atomic';
@@ -202,16 +203,17 @@ define(function () {
 				current.$parent.requireAgreement(current.showPopup, $(this));
 			});
 
-			_('showAdminPasswd').on('hidden.bs.modal', function(){ 
-				_('passwd').text('');
-				$('#showpasswd').removeAttr('checked');
+			_('rest-password-popup').on('hide.bs.modal', function() { 
+				_('generated-password').val('');
+			}).on('show.bs.modal', function() { 
+				_('show-password').removeAttr('checked');
 			});
 
-			_('showpasswd').on('change', function (){
-				if (_('showpasswd').is(':checked')) {
-					_('passwd')[0].type = "text";
+			_('show-password').on('change', function (){
+				if ($(this).is(':checked')) {
+					_('generated-password')[0].type = "text";
 				} else {
-					_('passwd')[0].type = "password";
+					_('generated-password')[0].type = "password";
 				}
 			});
 
@@ -487,8 +489,9 @@ define(function () {
 						notifyManager.notify(Handlebars.compile(current.$messages[operated + '-confirm'])(name));
 						current.table && current.table.api().ajax.reload();
 						if (operation === 'reset') {
-							_('showAdminPasswd').modal('show');
-							_('passwd')[0].value = data;
+							// Callback the popup to display the generated password
+							_('generated-password').val(data);
+							_('rest-password-popup').modal('show');
 						}
 					}
 				});

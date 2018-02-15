@@ -209,9 +209,9 @@ public class ContainerScopeResourceTest extends AbstractJpaTest {
 	 */
 	@Test
 	public void deleteLocked() {
-		final ContainerScope typeLdap = repository.findAll(Sort.by("name")).get(3);
-		final int id = typeLdap.getId();
-		Assertions.assertTrue(typeLdap.isLocked());
+		final ContainerScope scope = repository.findAll(Sort.by("name")).get(3);
+		final int id = scope.getId();
+		Assertions.assertTrue(scope.isLocked());
 		final long initCount = repository.count();
 		em.clear();
 		resource.delete(id);
@@ -227,9 +227,9 @@ public class ContainerScopeResourceTest extends AbstractJpaTest {
 	 */
 	@Test
 	public void delete() {
-		final ContainerScope typeLdap = repository.findAll(Sort.by("name")).get(0);
-		final int id = typeLdap.getId();
-		Assertions.assertFalse(typeLdap.isLocked());
+		final ContainerScope scope = repository.findAll(Sort.by("name")).get(0);
+		final int id = scope.getId();
+		Assertions.assertFalse(scope.isLocked());
 		final long initCount = repository.count();
 		em.clear();
 		resource.delete(id);

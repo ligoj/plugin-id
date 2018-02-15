@@ -7,7 +7,7 @@ import lombok.Setter;
 import lombok.ToString;
 
 /**
- * LDAP import bean
+ * Task import bean.
  */
 @Getter
 @ToString(of = "id")
@@ -36,4 +36,6 @@ public class BatchTaskVo<B extends BatchElement> {
 	@Setter
 	private String principal;
 
+	@Setter
+	private boolean quiet;
 }

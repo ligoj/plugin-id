@@ -39,6 +39,6 @@ public class UserOrgVo extends SimpleUserOrg {
 	/**
 	 * Membership, CN of groups.
 	 */
-	private List<GroupLdapVo> groups;
+	private List<GroupVo> groups;
 
 }

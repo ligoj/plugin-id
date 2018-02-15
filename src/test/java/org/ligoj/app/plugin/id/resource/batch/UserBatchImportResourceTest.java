@@ -19,12 +19,12 @@ import org.mockito.exceptions.base.MockitoException;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
- * Test of {@link UserBatchImportLdapResource}
+ * Test of {@link UserBatchImportResource}
  */
-public class UserBatchImportLdapResourceTest extends AbstractUserBatchLdapResourceTest {
+public class UserBatchImportResourceTest extends AbstractUserBatchResourceTest {
 
 	@Autowired
-	protected UserBatchImportLdapResource resource;
+	protected UserBatchImportResource resource;
 
 	@Test
 	public void full() throws IOException, InterruptedException {
@@ -41,18 +41,18 @@ public class UserBatchImportLdapResourceTest extends AbstractUserBatchLdapResour
 		Assertions.assertTrue(importEntry.getStatus());
 		Assertions.assertNull(importEntry.getStatusText());
 
-		// Check LDAP
-		Mockito.verify(mockLdapResource, new DefaultVerificationMode(data -> {
+		// Check user
+		Mockito.verify(mockResource, new DefaultVerificationMode(data -> {
 			if (data.getAllInvocations().size() != 1) {
 				throw new MockitoException("Expect one call");
 			}
-			final UserOrgEditionVo userLdap = (UserOrgEditionVo) data.getAllInvocations().get(0).getArguments()[0];
-			Assertions.assertNotNull(userLdap);
-			Assertions.assertEquals("Sébastien", userLdap.getFirstName());
-			Assertions.assertEquals("Loubli", userLdap.getLastName());
-			Assertions.assertEquals("kloubli", userLdap.getId());
-			Assertions.assertEquals("gfi", userLdap.getCompany());
-			Assertions.assertEquals("my.address@sample.com", userLdap.getMail());
+			final UserOrgEditionVo user = (UserOrgEditionVo) data.getAllInvocations().get(0).getArguments()[0];
+			Assertions.assertNotNull(user);
+			Assertions.assertEquals("Sébastien", user.getFirstName());
+			Assertions.assertEquals("Loubli", user.getLastName());
+			Assertions.assertEquals("kloubli", user.getId());
+			Assertions.assertEquals("gfi", user.getCompany());
+			Assertions.assertEquals("my.address@sample.com", user.getMail());
 		})).create(null);
 	}
 
@@ -67,16 +67,16 @@ public class UserBatchImportLdapResourceTest extends AbstractUserBatchLdapResour
 		Assertions.assertTrue(importEntry.getStatus());
 		Assertions.assertNull(importEntry.getStatusText());
 
-		// Check LDAP
-		Mockito.verify(mockLdapResource, new DefaultVerificationMode(data -> {
+		// Check user
+		Mockito.verify(mockResource, new DefaultVerificationMode(data -> {
 			if (data.getAllInvocations().size() != 1) {
 				throw new MockitoException("Expect one call");
 			}
-			final UserOrgEditionVo userLdap = (UserOrgEditionVo) data.getAllInvocations().get(0).getArguments()[0];
-			Assertions.assertNotNull(userLdap);
-			Assertions.assertEquals("kloubli9", userLdap.getId());
-			Assertions.assertEquals(1, userLdap.getGroups().size());
-			Assertions.assertEquals("jira", userLdap.getGroups().iterator().next());
+			final UserOrgEditionVo user = (UserOrgEditionVo) data.getAllInvocations().get(0).getArguments()[0];
+			Assertions.assertNotNull(user);
+			Assertions.assertEquals("kloubli9", user.getId());
+			Assertions.assertEquals(1, user.getGroups().size());
+			Assertions.assertEquals("jira", user.getGroups().iterator().next());
 		})).create(null);
 	}
 
@@ -87,7 +87,7 @@ public class UserBatchImportLdapResourceTest extends AbstractUserBatchLdapResour
 		initSpringSecurityContext(DEFAULT_USER);
 		Assertions.assertEquals("Invalid header", Assertions.assertThrows(BusinessException.class, () -> {
 			resource.execute(input, new String[] { "lastName", "firstName", "id", "mail8", "company", "groups" },
-					"cp1250");
+					"cp1250", false);
 		}).getMessage());
 	}
 
@@ -97,23 +97,23 @@ public class UserBatchImportLdapResourceTest extends AbstractUserBatchLdapResour
 				"Loubli;Sébastien;kloubli5;my.address@sample.com;gfi;jira".getBytes("cp1250"));
 		initSpringSecurityContext(DEFAULT_USER);
 		final BatchTaskVo<UserImportEntry> importTask = waitImport(
-				resource.getImportTask(resource.execute(input, new String[0], "cp1250")));
+				resource.getImportTask(resource.execute(input, new String[0], "cp1250", false)));
 		Assertions.assertEquals(Boolean.TRUE, importTask.getEntries().get(0).getStatus());
 		Assertions.assertNull(importTask.getEntries().get(0).getStatusText());
 
-		// Check LDAP
-		Mockito.verify(mockLdapResource, new DefaultVerificationMode(data -> {
+		// Check user
+		Mockito.verify(mockResource, new DefaultVerificationMode(data -> {
 			if (data.getAllInvocations().size() != 1) {
 				throw new MockitoException("Expect one call");
 			}
-			final UserOrgEditionVo userLdap = (UserOrgEditionVo) data.getAllInvocations().get(0).getArguments()[0];
-			Assertions.assertNotNull(userLdap);
-			Assertions.assertNotNull(userLdap);
-			Assertions.assertEquals("Sébastien", userLdap.getFirstName());
-			Assertions.assertEquals("Loubli", userLdap.getLastName());
-			Assertions.assertEquals("kloubli5", userLdap.getId());
-			Assertions.assertEquals("gfi", userLdap.getCompany());
-			Assertions.assertEquals("my.address@sample.com", userLdap.getMail());
+			final UserOrgEditionVo user = (UserOrgEditionVo) data.getAllInvocations().get(0).getArguments()[0];
+			Assertions.assertNotNull(user);
+			Assertions.assertNotNull(user);
+			Assertions.assertEquals("Sébastien", user.getFirstName());
+			Assertions.assertEquals("Loubli", user.getLastName());
+			Assertions.assertEquals("kloubli5", user.getId());
+			Assertions.assertEquals("gfi", user.getCompany());
+			Assertions.assertEquals("my.address@sample.com", user.getMail());
 		})).create(null);
 	}
 
@@ -123,19 +123,19 @@ public class UserBatchImportLdapResourceTest extends AbstractUserBatchLdapResour
 				"Loubli;Sébastien;;my.address@sample.com;gfi;jira".getBytes("cp1250"));
 		initSpringSecurityContext(DEFAULT_USER);
 		MatcherUtil.assertThrows(Assertions.assertThrows(ConstraintViolationException.class, () -> {
-			resource.execute(input, new String[0], "cp1250");
+			resource.execute(input, new String[0], "cp1250", false);
 		}), "id", "NotBlank");
 	}
 
 	@Test
 	public void fullFailed() throws IOException, InterruptedException {
-		Mockito.doThrow(new BusinessException("message")).when(this.mockLdapResource)
-				.create(ArgumentMatchers.any(UserOrgEditionVo.class));
+		Mockito.doThrow(new BusinessException("message")).when(this.mockResource)
+				.create(ArgumentMatchers.any(UserOrgEditionVo.class), ArgumentMatchers.eq(false));
 		final InputStream input = new ByteArrayInputStream(
 				"Loubli;Sébastien;fdaugan;my.address@sample.com;gfi;jira".getBytes("cp1250"));
 		initSpringSecurityContext(DEFAULT_USER);
 		final BatchTaskVo<UserImportEntry> importTask = waitImport(
-				resource.getImportTask(resource.execute(input, new String[0], "cp1250")));
+				resource.getImportTask(resource.execute(input, new String[0], "cp1250", false)));
 		Assertions.assertEquals("message", importTask.getEntries().get(0).getStatusText());
 		Assertions.assertEquals(Boolean.FALSE, importTask.getEntries().get(0).getStatus());
 	}
@@ -189,7 +189,7 @@ public class UserBatchImportLdapResourceTest extends AbstractUserBatchLdapResour
 	protected <U extends BatchElement> BatchTaskVo<U> full(final InputStream input, final String[] headers,
 			final String encoding) throws IOException, InterruptedException {
 		initSpringSecurityContext(DEFAULT_USER);
-		final long id = resource.execute(input, headers, encoding);
+		final long id = resource.execute(input, headers, encoding, false);
 		Assertions.assertNotNull(id);
 		@SuppressWarnings("unchecked")
 		final BatchTaskVo<U> importTask = (BatchTaskVo<U>) resource.getImportTask(id);

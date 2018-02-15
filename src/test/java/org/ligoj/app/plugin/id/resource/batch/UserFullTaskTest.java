@@ -23,15 +23,15 @@ import org.mockito.Mockito;
 import com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider;
 
 /**
- * Test of {@link UserFullLdapTask}
+ * Test of {@link UserFullTask}
  */
-public class UserFullLdapTaskTest extends AbstractSecurityTest {
+public class UserFullTaskTest extends AbstractSecurityTest {
 
-	private UserFullLdapTask task;
+	private UserFullTask task;
 
 	@BeforeEach
 	public void setup() {
-		task = new UserFullLdapTask();
+		task = new UserFullTask();
 		task.resource = Mockito.mock(UserOrgResource.class);
 		task.securityHelper = new SecurityHelper();
 		task.jaxrsFactory = ServerProviderFactory.getInstance();
@@ -39,7 +39,7 @@ public class UserFullLdapTaskTest extends AbstractSecurityTest {
 	}
 
 	@Test
-	public void runInvalidLdapStatus() {
+	public void runInvalidStatus() {
 		final UserImportEntry entry = Mockito.mock(UserImportEntry.class);
 		Mockito.when(entry.getId()).thenThrow(new RuntimeException());
 		final BatchTaskVo<UserImportEntry> importTask = new BatchTaskVo<>();
@@ -96,7 +96,7 @@ public class UserFullLdapTaskTest extends AbstractSecurityTest {
 		importTask.setEntries(Collections.singletonList(entry));
 
 		final Message message = Mockito.mock(Message.class);
-		final UserFullLdapTask task = new UserFullLdapTask() {
+		final UserFullTask task = new UserFullTask() {
 			@Override
 			protected Message getMessage() {
 				return message;

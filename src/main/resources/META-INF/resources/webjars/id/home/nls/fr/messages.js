@@ -27,6 +27,8 @@ define({
 	'reset': 'Réinitialisation mot de passe',
 	'reset-confirm': 'Êtes-vous certain de réinitialiser le mot de passe de {{{this}}}?<br>Un mail sera envoyé à l\'utilisateur et vous.',
 	'reseted-confirm': 'Le mot de passe de {{this}} a été réinitialisé.',
-	'show-passwd' : 'Voir le mot de passe',
-	'password' : 'Mot de passe'
+	'show-password' : 'Afficher le mot de passe',
+	'password' : 'Mot de passe',
+	'quiet': 'Silencieux',
+	'quiet-help': 'Un import silencieux n\'implique pas de notifications asociées à cet import'
 });

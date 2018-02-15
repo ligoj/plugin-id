@@ -5,7 +5,7 @@ import org.ligoj.app.AbstractAppTest;
 import org.ligoj.bootstrap.core.security.SecurityHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 
-public abstract class AbstractLdapBatchTest extends AbstractAppTest {
+public abstract class AbstractBatchTest extends AbstractAppTest {
 
 	@Autowired
 	protected SecurityHelper securityHelper;

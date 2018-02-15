@@ -22,38 +22,38 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 /**
- * Test of {@link UserBatchLdapResource}
+ * Test of {@link UserBatchResource}
  */
 @ExtendWith(SpringExtension.class)
 @ContextConfiguration(locations = "classpath:/META-INF/spring/application-context-test.xml")
 @Rollback
 @Transactional
-public abstract class AbstractUserBatchLdapResourceTest extends AbstractLdapBatchTest {
+public abstract class AbstractUserBatchResourceTest extends AbstractBatchTest {
 
-	protected UserOrgResource mockLdapResource;
+	protected UserOrgResource mockResource;
 
 	@SuppressWarnings("unchecked")
 	@BeforeEach
 	public void mockApplicationContext() {
 		final ApplicationContext applicationContext = Mockito.mock(ApplicationContext.class);
 		SpringUtils.setSharedApplicationContext(applicationContext);
-		mockLdapResource = Mockito.mock(UserOrgResource.class);
-		final UserFullLdapTask mockTask = new UserFullLdapTask();
-		mockTask.resource = mockLdapResource;
+		mockResource = Mockito.mock(UserOrgResource.class);
+		final UserFullTask mockTask = new UserFullTask();
+		mockTask.resource = mockResource;
 		mockTask.securityHelper = securityHelper;
-		final UserAtomicLdapTask mockTaskUpdate = new UserAtomicLdapTask();
-		mockTaskUpdate.resource = mockLdapResource;
+		final UserAtomicTask mockTaskUpdate = new UserAtomicTask();
+		mockTaskUpdate.resource = mockResource;
 		mockTaskUpdate.securityHelper = securityHelper;
 		Mockito.when(applicationContext.getBean(SessionSettings.class)).thenReturn(new SessionSettings());
 		Mockito.when(applicationContext.getBean((Class<?>) ArgumentMatchers.any(Class.class))).thenAnswer((Answer<Object>) invocation -> {
 			final Class<?> requiredType = (Class<Object>) invocation.getArguments()[0];
-			if (requiredType == UserFullLdapTask.class) {
+			if (requiredType == UserFullTask.class) {
 				return mockTask;
 			}
-			if (requiredType == UserAtomicLdapTask.class) {
+			if (requiredType == UserAtomicTask.class) {
 				return mockTaskUpdate;
 			}
-			return AbstractUserBatchLdapResourceTest.super.applicationContext.getBean(requiredType);
+			return AbstractUserBatchResourceTest.super.applicationContext.getBean(requiredType);
 		});
 
 		mockTaskUpdate.jaxrsFactory = ServerProviderFactory.createInstance(null);

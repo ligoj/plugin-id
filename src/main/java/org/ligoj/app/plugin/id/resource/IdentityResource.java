@@ -26,17 +26,17 @@ public class IdentityResource extends AbstractServicePlugin {
 	public static final String SERVICE_KEY = SERVICE_URL.replace('/', ':').substring(1);
 
 	/**
-	 * Normalized LDAP Group name (CN).
+	 * Normalized Group name (CN).
 	 */
 	public static final String PARAMETER_GROUP = SERVICE_KEY + ":group";
 
 	/**
-	 * Normalized LDAP parent Group name (CN).
+	 * Normalized parent Group name (CN).
 	 */
 	public static final String PARAMETER_PARENT_GROUP = SERVICE_KEY + ":parent-group";
 
 	/**
-	 * Normalized LDAP Organizational Unit (OU).
+	 * Normalized Organizational Unit (OU).
 	 */
 	public static final String PARAMETER_OU = SERVICE_KEY + ":ou";
 

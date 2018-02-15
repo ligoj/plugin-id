@@ -7,19 +7,18 @@ import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
-//http://docs.spring.io/spring/docs/3.2.x/spring-framework-reference/html/scheduling.html
 /**
- * LDAP import from list of bean entries.
+ * Import from list of bean entries.
  */
 @Component
 @Scope(value = ConfigurableBeanFactory.SCOPE_PROTOTYPE)
-public class UserFullLdapTask extends AbstractLdapBatchTask<UserImportEntry> {
+public class UserFullTask extends AbstractBatchTask<UserImportEntry> {
 
 	@Autowired
 	protected UserOrgResource resource;
 
 	@Override
-	protected void doBatch(final UserImportEntry entry) {
+	protected void doBatch(final UserImportEntry entry, final boolean quiet) {
 
 		// Copy the user information
 		final UserOrgEditionVo user = new UserOrgEditionVo();
@@ -33,7 +32,7 @@ public class UserFullLdapTask extends AbstractLdapBatchTask<UserImportEntry> {
 		user.setGroups(toList(entry.getGroups()));
 
 		// Create the user
-		resource.create(user);
+		resource.create(user, quiet);
 	}
 
 }

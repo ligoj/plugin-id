@@ -18,15 +18,15 @@ import org.mockito.Mockito;
 import org.mockito.exceptions.base.MockitoException;
 
 /**
- * Test of {@link UserAtomicLdapTask}
+ * Test of {@link UserAtomicTask}
  */
-public class UserAtomicLdapTaskTest extends AbstractSecurityTest {
+public class UserAtomicTaskTest extends AbstractSecurityTest {
 
-	private UserAtomicLdapTask task;
+	private UserAtomicTask task;
 
 	@BeforeEach
 	public void setup() {
-		task = new UserAtomicLdapTask();
+		task = new UserAtomicTask();
 		task.resource = Mockito.mock(UserOrgResource.class);
 		task.securityHelper = new SecurityHelper();
 		initSpringSecurityContext(DEFAULT_USER);
@@ -132,7 +132,7 @@ public class UserAtomicLdapTaskTest extends AbstractSecurityTest {
 		entry.setUser(DEFAULT_USER);
 		task.doBatch(entry);
 
-		// Check LDAP
+		// Check user
 		Mockito.verify(task.resource).isolate(DEFAULT_USER);
 	}
 
@@ -143,7 +143,7 @@ public class UserAtomicLdapTaskTest extends AbstractSecurityTest {
 		entry.setUser(DEFAULT_USER);
 		task.doBatch(entry);
 
-		// Check LDAP
+		// Check user
 		Mockito.verify(task.resource).restore(DEFAULT_USER);
 	}
 
@@ -154,7 +154,7 @@ public class UserAtomicLdapTaskTest extends AbstractSecurityTest {
 		entry.setUser(DEFAULT_USER);
 		task.doBatch(entry);
 
-		// Check LDAP
+		// Check user
 		Mockito.verify(task.resource).lock(DEFAULT_USER);
 	}
 
@@ -165,13 +165,13 @@ public class UserAtomicLdapTaskTest extends AbstractSecurityTest {
 		entry.setUser(DEFAULT_USER);
 		task.doBatch(entry);
 
-		// Check LDAP
+		// Check user
 		Mockito.verify(task.resource).delete(DEFAULT_USER);
 	}
 
 	private void checkAttribute(final Function<UserOrgEditionVo, String> function, final String value) {
 
-		// Check LDAP
+		// Check user
 		Mockito.verify(task.resource, new DefaultVerificationMode(data -> {
 			if (data.getAllInvocations().size() != 2) {
 				throw new MockitoException("Expect two calls");
@@ -181,9 +181,9 @@ public class UserAtomicLdapTaskTest extends AbstractSecurityTest {
 			Assertions.assertEquals(DEFAULT_USER, data.getAllInvocations().get(0).getArguments()[0]);
 
 			// "update" call
-			final UserOrgEditionVo userLdap = (UserOrgEditionVo) data.getAllInvocations().get(1).getArguments()[0];
-			Assertions.assertNotNull(userLdap);
-			Assertions.assertEquals(value, function.apply(userLdap));
+			final UserOrgEditionVo user = (UserOrgEditionVo) data.getAllInvocations().get(1).getArguments()[0];
+			Assertions.assertNotNull(user);
+			Assertions.assertEquals(value, function.apply(user));
 		})).update(null);
 
 	}

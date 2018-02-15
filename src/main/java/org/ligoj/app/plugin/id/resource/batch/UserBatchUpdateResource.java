@@ -14,36 +14,38 @@ import org.ligoj.app.plugin.id.resource.IdentityResource;
 import org.springframework.stereotype.Service;
 
 /**
- * LDAP batch resource for user.
+ * Batch resource to update user.
  */
 @Path(IdentityResource.SERVICE_URL + "/user/batch")
 @Service
 @Produces(MediaType.APPLICATION_JSON)
-public class UserBatchImportLdapResource extends AbstractBatchResource<UserImportEntry> {
+public class UserBatchUpdateResource extends AbstractBatchResource<UserUpdateEntry> {
 
 	/**
-	 * Default CSV headers for imports.
+	 * Default CSV headers for actions.
 	 */
-	private static final String[] DEFAULT_CSV_HEADERS = { "lastName", "firstName", "id", "mail", "company", "groups", "department",
-			"localId" };
+	private static final String[] DEFAULT_CSV_HEADERS = { "user", "operation", "value" };
 
 	/**
-	 * Upload a file of LDAP entries to create or update users. The whole entry is replaced.
+	 * Upload a file of entries to execute atomic operations on existing users.
 	 * 
 	 * @param uploadedFile
-	 *            LDAP entries files to import. Currently support only CSV format.
+	 *            Entries file to import. Currently support only CSV format.
 	 * @param columns
 	 *            the CSV header names.
 	 * @param encoding
 	 *            CSV encoding. Default is UTF-8.
+	 * @param quiet
+	 *            Optional flag to turn-off the possible notification such as mail. Default value is <code>false</code>.
 	 * @return the import identifier.
 	 */
 	@POST
 	@Consumes(MediaType.MULTIPART_FORM_DATA)
-	@Path("full")
+	@Path("atomic")
 	public long execute(@Multipart(value = "csv-file") final InputStream uploadedFile,
 			@Multipart(value = "columns", required = false) final String[] columns,
-			@Multipart(value = "encoding", required = false) final String encoding) throws IOException {
-		return batch(uploadedFile, columns, encoding, DEFAULT_CSV_HEADERS, UserImportEntry.class, UserFullLdapTask.class);
+			@Multipart(value = "encoding", required = false) final String encoding,
+			@Multipart(value = "quiet", required = false) final Boolean quiet) throws IOException {
+		return batch(uploadedFile, columns, encoding, DEFAULT_CSV_HEADERS, UserUpdateEntry.class, UserAtomicTask.class, quiet);
 	}
 }
