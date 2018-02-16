@@ -839,14 +839,9 @@ public class UserOrgResource extends AbstractOrgResource {
 	 * user.
 	 *
 	 * @param user
-<<<<<<< HEAD
 	 *            The user to restore. A normalized form of this parameter will be
 	 *            used for this operation.
 	 * @return The generated password.
-=======
-	 *            The user to reset. A normalized form of this parameter will be used for this operation.
-	 * @return The generated password or <code>null</code> when this operation failed. We don't want exception.
->>>>>>> refs/remotes/origin/master
 	 */
 	@PUT
 	@Path("{user}/reset")
