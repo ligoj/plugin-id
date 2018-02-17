@@ -73,9 +73,9 @@ define(function () {
 					_('groups').attr('rows', data.groups.length).val(data.groups.join('\n'));
 
 					// Loacked account management
-					if (data.disabled) {
+					if (data.locked) {
 						_('locked').removeClass('hidden');
-						_('locked-since').val(moment(data.disabled).format(formatManager.messages.shortdateMomentJs));
+						_('locked-since').val(moment(data.locked).format(formatManager.messages.shortdateMomentJs));
 					} else {
 						_('locked').addClass('hidden');
 					}

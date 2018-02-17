@@ -279,6 +279,9 @@ public class UserOrgResource extends AbstractOrgResource {
 	public UserOrg findById(@PathParam("user") final String user) {
 		final UserOrg rawUserOrg = getUser().findByIdExpected(securityHelper.getLogin(), Normalizer.normalize(user));
 
+		// Check if the user lock status without using cache
+		getUser().checkLockStatus(rawUserOrg);
+
 		// User has been found, secure the object regarding the visible groups
 		final UserOrg securedUserOrg = new UserOrg();
 		rawUserOrg.copy(securedUserOrg);
@@ -836,8 +839,9 @@ public class UserOrgResource extends AbstractOrgResource {
 	 * user.
 	 *
 	 * @param user
-	 *            The user to reset. A normalized form of this parameter will be used for this operation.
-	 * @return The generated password or <code>null</code> when this operation failed. We don't want exception.
+	 *            The user to restore. A normalized form of this parameter will be
+	 *            used for this operation.
+	 * @return The generated password.
 	 */
 	@PUT
 	@Path("{user}/reset")
