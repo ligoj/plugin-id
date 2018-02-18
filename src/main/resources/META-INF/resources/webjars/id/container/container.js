@@ -62,7 +62,7 @@ define(function () {
 			_('importPopup').on('show.bs.modal', function () {
 				$('.import-progress').attr('aria-valuenow', '0').css('width', '0%').removeClass('progress-bar progress-bar-striped progress-bar-striped').empty();
 				$('.import-summary').addClass('hide').empty();
-				current.$parent.unscheduleUploadStep('service/id/group/batch');
+				current.$parent.unscheduleUploadStep();
 			}).on('submit', function (e) {
 				$(this).ajaxSubmit({
 					url: REST_PATH + 'service/id/group/batch/full',
@@ -77,7 +77,9 @@ define(function () {
 					},
 					success: function (id) {
 						$('.import-summary').html('Processing...');
-						current.$parent.scheduleUploadStep('service/id/group/batch', id);
+						current.$parent.scheduleUploadStep('service/id/group/batch', id, function() {
+							current.table && current.table.api().ajax.reload();
+						});
 					}
 				});
 				e.preventDefault();

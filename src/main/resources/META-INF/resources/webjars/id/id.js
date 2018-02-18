@@ -59,13 +59,13 @@ define(function () {
 			clearInterval(current.intervalVariable);
 		},
 
-		scheduleUploadStep: function (url, id) {
+		scheduleUploadStep: function (url, id, callback) {
 			current.intervalVariable = setInterval(function () {
-				current.synchronizeUploadStep(url, id);
+				current.synchronizeUploadStep(url, id, callback);
 			}, 1000);
 		},
 
-		synchronizeUploadStep: function (url, id) {
+		synchronizeUploadStep: function (url, id, callback) {
 			current.unscheduleUploadStep();
 			$.ajax({
 				dataType: 'json',
@@ -74,10 +74,10 @@ define(function () {
 				success: function (data) {
 					current.displayUploadPartialResult(data);
 					if (data.end) {
-						current.displayUploadResult(url, id);
+						current.displayUploadResult(url, id, callback);
 						return;
 					}
-					current.scheduleUploadStep(url, id);
+					current.scheduleUploadStep(url, id, callback);
 				}
 			});
 		},
@@ -85,7 +85,7 @@ define(function () {
 		/**
 		 * Display the complete result.
 		 */
-		displayUploadResult: function (url, id) {
+		displayUploadResult: function (url, id, callback) {
 			$.ajax({
 				dataType: 'json',
 				url: REST_PATH + url + '/' + id,
@@ -108,6 +108,9 @@ define(function () {
 						}
 					}
 					$summary.removeClass('alert-info').addClass(errors ? 'alert-danger' : 'alert-success');
+					if (callback) {
+						callback(data);
+					}
 				}
 			});
 		},

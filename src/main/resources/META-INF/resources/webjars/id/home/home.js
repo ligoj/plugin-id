@@ -178,7 +178,9 @@ define(function () {
 					},
 					success: function (id) {
 						$('.import-summary').html('Processing...');
-						current.$parent.scheduleUploadStep('service/id/user/batch/' + mode, id);
+						current.$parent.scheduleUploadStep('service/id/user/batch/' + mode, id, function() {
+							current.table && current.table.api().ajax.reload();
+						});
 					}
 				});
 				e.preventDefault();
