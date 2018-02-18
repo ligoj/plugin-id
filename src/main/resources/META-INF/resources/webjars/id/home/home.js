@@ -164,6 +164,7 @@ define(function () {
 				current.$parent.unscheduleUploadStep('service/id/user/batch');
 			}).on('submit', function (e) {
 				var mode = $(this).find('.import-options input:checked').is('.import-options-full') ? 'full' : 'atomic';
+				_('quiet').val(_('quiet').is(':checked') ? 'true' : 'false');
 				$(this).ajaxSubmit({
 					url: REST_PATH + 'service/id/user/batch/' + mode,
 					type: 'POST',
