@@ -6,7 +6,6 @@ define({
 	'user-import-dry-run': 'Exécution à blanc',
 	'user-import-full': 'Complet',
 	'user-import-atomic': 'Atomique',
-	'sample': 'Exemple',
 	'create-another': 'Créer un autre utilisateur',
 	'warn-mail-perso': 'Le mail doit correspondre à un contexte professionnel; pas de yahoo.fr, gmail.com, etc.',
 	'created-account': 'Le compte {{id}} a été créé et un mail a été envoyé.</br><i class="fa fa-envelope"></i> <a href="mailto:{{mail}}?subject=Nouveau compte {{id}}">{{mail}}</a>',

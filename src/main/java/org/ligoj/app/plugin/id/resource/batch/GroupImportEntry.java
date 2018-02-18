@@ -36,10 +36,10 @@ public class GroupImportEntry implements BatchElement {
 	private String owner;
 
 	/**
-	 * The type of this container.
+	 * The scope of this container.
 	 */
 	@NotNull
-	private String type;
+	private String scope;
 
 	/**
 	 * Import status. <code>null</code> when not proceeded.

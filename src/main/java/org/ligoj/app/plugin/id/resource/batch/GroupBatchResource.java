@@ -24,7 +24,8 @@ public class GroupBatchResource extends AbstractBatchResource<GroupImportEntry> 
 	/**
 	 * Default CSV headers for imports.
 	 */
-	private static final String[] DEFAULT_IMPORT_CSV_HEADERS = { "name", "type", "parent", "owner", "assistant", "department" };
+	private static final String[] DEFAULT_IMPORT_CSV_HEADERS = { "name", "scope", "parent", "department", "owner",
+			"assistant" };
 
 	/**
 	 * Upload a file of entries to create or update groups. The whole entry is replaced.
@@ -46,6 +47,7 @@ public class GroupBatchResource extends AbstractBatchResource<GroupImportEntry> 
 			@Multipart(value = "columns", required = false) final String[] columns,
 			@Multipart(value = "encoding", required = false) final String encoding,
 			@Multipart(value = "quiet", required = false) final Boolean quiet) throws IOException {
-		return batch(uploadedFile, columns, encoding, DEFAULT_IMPORT_CSV_HEADERS, GroupImportEntry.class, GroupFullTask.class, quiet);
+		return batch(uploadedFile, columns, encoding, DEFAULT_IMPORT_CSV_HEADERS, GroupImportEntry.class,
+				GroupFullTask.class, quiet);
 	}
 }

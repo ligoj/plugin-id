@@ -7,7 +7,6 @@ define({
 		'user-import-dry-run': 'Dry run',
 		'user-import-full': 'Full',
 		'user-import-atomic': 'Atomic',
-		'sample': 'Sample',
 		'create-another': 'Create another user',
 		'warn-mail-perso': 'Account mail must be a professional mail; this excludes yahoo.fr, gmail.com, etc.',
 		'created-account': 'Account {{id}} has been created and an email has been sent.</br><i class="fa fa-envelope"></i> <a href="mailto:{{mail}}?subject=New account {{id}}">{{mail}}</a>',

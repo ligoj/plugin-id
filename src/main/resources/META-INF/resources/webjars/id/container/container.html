@@ -56,27 +56,28 @@
 			</div>
 			<div class="modal-body">
 				<div class="form-horizontal">
-					<div class="alert alert-info import-options-details import-options-atomic hidden">
-						{{group-import-message}} <a data-toggle="collapse" href="#more-import-options-atomic" aria-controls="more-import-options-atomic"><i class="fa fa-question-circle faa-wrench animated-hover"></i></a>
-						<div id="more-import-options-atomic" class="collapse">
-							<br/>Implicit CSV headers
-							<code>name;scope;parent;owner;assistant;businessCategory
+					<div class="alert alert-info import-options-details">
+						{{group-import-message}} <a data-toggle="collapse" href="#more-import-options" aria-controls="more-import-options"><i class="fa fa-question-circle faa-wrench animated-hover"></i></a>
+						<div id="more-import-options" class="collapse">
+							<br/>Implicit CSV headers<br>
+							<code>name;scope;parent;department;owner;assistant
 								<br>
-								<strong>user</strong> Group name
+								<strong>name</strong><small>(*) Group name, will be normalized to create the identifier</small>
 								<br>
-								<strong>scope</strong> Container scope, see <a href="#/id/container-scope">{{container-scope}}</a>. Case is sensitive.
+								<strong>scope</strong><small>(*) Container scope, see <a href="#/id/container-scope">{{container-scope}}</a>. Case is sensitive.</small>
 								<br>
-								<strong>parent</strong> Optional parent name, must exists.
+								<strong>parent</strong><small> Parent name, must exists. Case insensitive.</small>
 								<br>
-								<strong>owner</strong> Optional owner user &quote;s identifier of this group. Not yet used. Multivalued, use comma as separator.
+								<strong>department</strong><small> Identifier of flag such as department. Multivalued, use comma as separator.</small>
 								<br>
-								<strong>assistant</strong> Optional assistant user &quote;s identifier of this group. Not yet used. Multivalued, use comma as separator.
+								<strong>owner</strong><small> Owner user identifiers of this group. Not yet used. Multivalued, use comma as separator.</small>
 								<br>
-								<strong>department</strong> Optional identifier of flag such as department. Multivalued, use comma as separator.
+								<strong>assistant</strong><small> Assistant user identifiers of this group. Not yet used. Multivalued, use comma as separator.</small>
 							</code>
-							<br/>{{sample}}
-							<code>Head Company;organization;;brain
-								<br>Body;organization;Head Company;heart;arm,belly;78945
+							<br/>{{sample}}<br/>
+							<code>Sample Group2;Group;;ligoj-admin;ligoj-user
+								<br>West Coast HR;organization;HR
+								<br>Lawyers;organization;;78945,19067;jdoe;bjordan,phills
 							</code>
 						</div>
 					</div>

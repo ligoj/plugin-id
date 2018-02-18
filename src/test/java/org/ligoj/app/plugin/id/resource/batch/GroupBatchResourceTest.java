@@ -88,7 +88,7 @@ public class GroupBatchResourceTest extends AbstractBatchTest {
 		// Check the result
 		final GroupImportEntry importEntry = checkImportTask(importTask);
 		Assertions.assertEquals("Gfi France", importEntry.getName());
-		Assertions.assertEquals("Fonction", importEntry.getType());
+		Assertions.assertEquals("Fonction", importEntry.getScope());
 		Assertions.assertNull(importEntry.getDepartment());
 		Assertions.assertNull(importEntry.getOwner());
 		Assertions.assertNull(importEntry.getAssistant());
@@ -115,12 +115,12 @@ public class GroupBatchResourceTest extends AbstractBatchTest {
 	// "name", "type", "parent", "owner", "seealso", "department"
 	@Test
 	public void fullFull() throws IOException, InterruptedException {
-		final BatchTaskVo<GroupImportEntry> importTask = full("Opérations Spéciales;Fonction;Operations;fdaugan,alongchu;jdoe5,wuser;700301,700302");
+		final BatchTaskVo<GroupImportEntry> importTask = full("Special;Fonction;Operations;700301,700302;fdaugan,alongchu;jdoe5,wuser");
 
 		// Check the result
 		final GroupImportEntry importEntry = checkImportTask(importTask);
-		Assertions.assertEquals("Opérations Spéciales", importEntry.getName());
-		Assertions.assertEquals("Fonction", importEntry.getType());
+		Assertions.assertEquals("Special", importEntry.getName());
+		Assertions.assertEquals("Fonction", importEntry.getScope());
 		Assertions.assertEquals("Operations", importEntry.getParent());
 		Assertions.assertEquals("fdaugan,alongchu", importEntry.getOwner());
 		Assertions.assertEquals("jdoe5,wuser", importEntry.getAssistant());
@@ -135,7 +135,7 @@ public class GroupBatchResourceTest extends AbstractBatchTest {
 			}
 			final GroupEditionVo group = (GroupEditionVo) data.getAllInvocations().get(0).getArguments()[0];
 			Assertions.assertNotNull(group);
-			Assertions.assertEquals("Opérations Spéciales", group.getName());
+			Assertions.assertEquals("Special", group.getName());
 			Assertions.assertNotNull(group.getScope());
 			Assertions.assertEquals(2, group.getOwners().size());
 			Assertions.assertEquals("fdaugan", group.getOwners().get(0));
@@ -168,6 +168,6 @@ public class GroupBatchResourceTest extends AbstractBatchTest {
 
 	protected <U extends BatchElement> BatchTaskVo<U> full(final String csvData, final String encoding) throws IOException, InterruptedException {
 		return full(new ByteArrayInputStream(csvData.getBytes(encoding)),
-				new String[] { "name", "type", "parent", "owner", "assistant", "department" }, encoding);
+				new String[] { "name", "scope", "parent", "department", "owner", "assistant" }, encoding);
 	}
 }

@@ -155,9 +155,13 @@
 							<br/>Implicit CSV headers
 							<code>lastName;firstName;id;mail;company;groups;department;localId
 								<br>
-								<strong>id</strong> User name
+								<strong>id</strong><small>(*) User name</small>
 								<br>
-								<strong>groups</strong> Comma separated group names
+								<strong>groups</strong><small>(*) Comma separated group names</small>
+								<br>
+								<strong>department</strong><small> Department identifier this user belongs to. Corresponds to 'departmentNumber' for LDAP and <a href="https://msdn.microsoft.com/en-us/library/ms675490(v=vs.85).aspx">department</a> for AD.</small>
+								<br>
+								<strong>localId</strong><small> Employee number for sample. Corresponds to 'employeeNumber' for LDAP and <a href="https://msdn.microsoft.com/en-us/library/ms675662(v=vs.85).aspx">employeeID</a> for AD.</small>
 							</code>
 							<br/>{{sample}}
 							<code>John;Doe;jdoe897654;given.name897654@fbi.com;fbi;protected,anonymous</code>
@@ -169,11 +173,11 @@
 							<br/>Implicit CSV headers
 							<code>user;operation;value
 								<br>
-								<strong>user</strong> User name
+								<strong>user</strong><small>(*) User name</small>
 								<br>
-								<strong>operation</strong> firstname, lastname, mail, lock, delete, isolate, restore, department, localid
+								<strong>operation</strong><small>(*) firstname, lastname, mail, lock, delete, isolate, restore, department, localid</small>
 								<br>
-								<strong>value</strong> Optional value, only for attribute update
+								<strong>value</strong><small> Only for update operations</small>
 							</code>
 							<br/>{{sample}}
 							<code>nminaj;mail;nicki@viveo.com
