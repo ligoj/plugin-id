@@ -16,7 +16,7 @@ import org.springframework.stereotype.Service;
 /**
  * Batch resource to update user.
  */
-@Path(IdentityResource.SERVICE_URL + "/user/batch")
+@Path(IdentityResource.SERVICE_URL + "/user/batch/atomic")
 @Service
 @Produces(MediaType.APPLICATION_JSON)
 public class UserBatchUpdateResource extends AbstractBatchResource<UserUpdateEntry> {
@@ -41,7 +41,6 @@ public class UserBatchUpdateResource extends AbstractBatchResource<UserUpdateEnt
 	 */
 	@POST
 	@Consumes(MediaType.MULTIPART_FORM_DATA)
-	@Path("atomic")
 	public long execute(@Multipart(value = "csv-file") final InputStream uploadedFile,
 			@Multipart(value = "columns", required = false) final String[] columns,
 			@Multipart(value = "encoding", required = false) final String encoding,

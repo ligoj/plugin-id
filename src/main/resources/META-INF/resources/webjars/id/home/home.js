@@ -161,7 +161,7 @@ define(function () {
 				$('.import-progress').attr('aria-valuenow', '0').css('width', '0%').removeClass('progress-bar progress-bar-striped progress-bar-striped').empty();
 				$('.import-summary').addClass('hide').empty();
 				_('quiet').prop('checked', false);
-				current.$parent.unscheduleUploadStep('service/id/user/batch');
+				current.$parent.unscheduleUploadStep();
 			}).on('submit', function (e) {
 				var mode = $(this).find('.import-options input:checked').is('.import-options-full') ? 'full' : 'atomic';
 				_('quiet').val(_('quiet').is(':checked') ? 'true' : 'false');
@@ -178,7 +178,7 @@ define(function () {
 					},
 					success: function (id) {
 						$('.import-summary').html('Processing...');
-						current.$parent.scheduleUploadStep('service/id/user/batch', id);
+						current.$parent.scheduleUploadStep('service/id/user/batch/' + mode, id);
 					}
 				});
 				e.preventDefault();

@@ -16,7 +16,7 @@ import org.springframework.stereotype.Service;
 /**
  * Batch resource to import user.
  */
-@Path(IdentityResource.SERVICE_URL + "/user/batch")
+@Path(IdentityResource.SERVICE_URL + "/user/batch/full")
 @Service
 @Produces(MediaType.APPLICATION_JSON)
 public class UserBatchImportResource extends AbstractBatchResource<UserImportEntry> {
@@ -42,7 +42,6 @@ public class UserBatchImportResource extends AbstractBatchResource<UserImportEnt
 	 */
 	@POST
 	@Consumes(MediaType.MULTIPART_FORM_DATA)
-	@Path("full")
 	public long execute(@Multipart(value = "csv-file") final InputStream uploadedFile,
 			@Multipart(value = "columns", required = false) final String[] columns,
 			@Multipart(value = "encoding", required = false) final String encoding,
