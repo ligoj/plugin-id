@@ -196,10 +196,13 @@ define(function () {
 						extend: 'popup',
 						className: 'btn-success'
 					}, {
-						extend: 'popup',
 						target: '#importPopup',
 						className: current.containerType === 'group' ? '' : 'hidden',
-						text: current.$messages['upload-new']
+						text: current.$messages['upload-new'],
+						attr: {
+							'data-target': '#importPopup',
+							'data-toggle': 'modal'
+						}
 					}
 				]
 			});
