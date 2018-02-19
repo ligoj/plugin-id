@@ -395,7 +395,7 @@ define(function () {
 					groupsAsTag.push({
 						id: this.name,
 						text: this.name,
-						locked: !this.canWriteGroups
+						locked: !this.canWrite
 					});
 				});
 				_('groups').select2('data', groupsAsTag);
