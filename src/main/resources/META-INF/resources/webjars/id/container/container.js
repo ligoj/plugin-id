@@ -25,8 +25,13 @@ define(function () {
 			current.currentId = null;
 			var previousContainerType = current.containerType;
 			current.containerType = parameter || 'group';
-			current.initializeSearch();
 
+			// Update dynamic title
+			current.$messages.title = current.$messages[current.containerType];
+			document.title = current.$messages.title;
+			$('.cascade-title').text(current.$messages.title);
+			
+			current.initializeSearch();
 			if (current.table === null || (current.table && previousContainerType && previousContainerType !== current.containerType)) {
 				// Initialize the datatables when type is changed
 				current.initializeDataTable();

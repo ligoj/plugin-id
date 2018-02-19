@@ -1,6 +1,5 @@
 define({
 	root: {
-		'title': 'Group',
 		'create-another': 'Create another group',
 		'locked-details': 'A locked container is a type considered as organizational or vital',
 		'group-import-message': 'Group import is a blocking exclusive repository operation',
