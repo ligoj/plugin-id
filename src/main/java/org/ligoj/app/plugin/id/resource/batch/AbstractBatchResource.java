@@ -101,13 +101,34 @@ public abstract class AbstractBatchResource<B extends BatchElement> {
 				&& task.getStatus().getEnd().getTime() + DateUtils.MILLIS_PER_DAY < System.currentTimeMillis();
 	}
 
+	/**
+	 * Execute a batch operation from the given input.
+	 * 
+	 * @param uploadedFile
+	 *            The CSV input without header
+	 * @param columns
+	 *            The ordered columns associated to the given input.
+	 * @param encoding
+	 *            CSV encoding. Default is UTF-8.
+	 * @param defaultColumns
+	 *            The handled/accepted column for the target entity.
+	 * @param batchType
+	 *            The target batch entity type.
+	 * @param taskType
+	 *            The task type running this batch.
+	 * @param quiet
+	 *            Optional flag to turn-off the possible notification such as mail. Default value is <code>false</code>.
+	 * @return the import identifier.
+	 * @throws IOException
+	 *             When CSV read failed.
+	 */
 	protected <T extends AbstractBatchTask<B>> long batch(final InputStream uploadedFile, final String[] columns,
 			final String encoding, final String[] defaultColumns, final Class<B> batchType, final Class<T> taskType,
 			final Boolean quiet) throws IOException {
 		try {
 			return batchInternal(uploadedFile, columns, encoding, defaultColumns, batchType, taskType, quiet);
 		} catch (final TechnicalException io) {
-			// Handle technical exception there to associate to to csv-file input
+			// Handle technical exception there to associate to to csv-file parameter.
 			throw new ValidationJsonException("csv-file", io.getMessage());
 		}
 	}

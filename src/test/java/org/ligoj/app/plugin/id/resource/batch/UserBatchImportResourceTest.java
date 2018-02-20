@@ -13,6 +13,7 @@ import org.ligoj.app.DefaultVerificationMode;
 import org.ligoj.app.MatcherUtil;
 import org.ligoj.app.plugin.id.resource.UserOrgEditionVo;
 import org.ligoj.bootstrap.core.resource.BusinessException;
+import org.ligoj.bootstrap.core.validation.ValidationJsonException;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
 import org.mockito.exceptions.base.MockitoException;
@@ -27,8 +28,8 @@ public class UserBatchImportResourceTest extends AbstractUserBatchResourceTest {
 	protected UserBatchImportResource resource;
 
 	@Test
-	public void full() throws IOException, InterruptedException {
-		final BatchTaskVo<UserImportEntry> importTask = full("Loubli;Sébastien;kloubli;my.address@sample.com;gfi;jira");
+	public void execute() throws IOException, InterruptedException {
+		final BatchTaskVo<UserImportEntry> importTask = execute("Loubli;Sébastien;kloubli;my.address@sample.com;gfi;jira");
 
 		// Check the result
 		final UserImportEntry importEntry = checkImportTask(importTask);
@@ -57,8 +58,8 @@ public class UserBatchImportResourceTest extends AbstractUserBatchResourceTest {
 	}
 
 	@Test
-	public void fullEmptyGroups() throws IOException, InterruptedException {
-		final BatchTaskVo<UserImportEntry> importTask = full(
+	public void executeEmptyGroups() throws IOException, InterruptedException {
+		final BatchTaskVo<UserImportEntry> importTask = execute(
 				"Loubli;Sébastien;kloubli9;my.address@sample.com;gfi;,jira,");
 
 		// Check the result
@@ -81,18 +82,18 @@ public class UserBatchImportResourceTest extends AbstractUserBatchResourceTest {
 	}
 
 	@Test
-	public void fullInvalidHeaders() throws IOException {
+	public void executeInvalidHeaders() throws IOException {
 		final InputStream input = new ByteArrayInputStream(
 				"Loubli;Sébastien;kloubli4;my.address@sample.com;gfi;jira".getBytes("cp1250"));
 		initSpringSecurityContext(DEFAULT_USER);
-		Assertions.assertEquals("Invalid header", Assertions.assertThrows(BusinessException.class, () -> {
-			resource.execute(input, new String[] { "lastName", "firstName", "id", "mail8", "company", "groups" },
+		Assertions.assertEquals("csv-file:Invalid header __?__", Assertions.assertThrows(ValidationJsonException.class, () -> {
+			resource.execute(input, new String[] { "lastName", "firstName", "id", "__?__", "company", "groups" },
 					"cp1250", false);
 		}).getMessage());
 	}
 
 	@Test
-	public void fullDefaultHeader() throws IOException, InterruptedException {
+	public void executeDefaultHeader() throws IOException, InterruptedException {
 		final InputStream input = new ByteArrayInputStream(
 				"Loubli;Sébastien;kloubli5;my.address@sample.com;gfi;jira".getBytes("cp1250"));
 		initSpringSecurityContext(DEFAULT_USER);
@@ -118,7 +119,7 @@ public class UserBatchImportResourceTest extends AbstractUserBatchResourceTest {
 	}
 
 	@Test
-	public void fullMisingLogin() throws IOException {
+	public void executeMisingLogin() throws IOException {
 		final InputStream input = new ByteArrayInputStream(
 				"Loubli;Sébastien;;my.address@sample.com;gfi;jira".getBytes("cp1250"));
 		initSpringSecurityContext(DEFAULT_USER);
@@ -128,7 +129,7 @@ public class UserBatchImportResourceTest extends AbstractUserBatchResourceTest {
 	}
 
 	@Test
-	public void fullFailed() throws IOException, InterruptedException {
+	public void executeFailed() throws IOException, InterruptedException {
 		Mockito.doThrow(new BusinessException("message")).when(this.mockResource)
 				.create(ArgumentMatchers.any(UserOrgEditionVo.class), ArgumentMatchers.eq(false));
 		final InputStream input = new ByteArrayInputStream(
@@ -152,7 +153,7 @@ public class UserBatchImportResourceTest extends AbstractUserBatchResourceTest {
 
 	@Test
 	public void getImportStatus() throws InterruptedException, IOException {
-		final BatchTaskVo<UserImportEntry> importTask = full(
+		final BatchTaskVo<UserImportEntry> importTask = execute(
 				"Loubli;Sébastien;kloubli7;my.address@sample.com;gfi;,jira,");
 		Assertions.assertSame(importTask, resource.getImportTask(importTask.getId()));
 		Assertions.assertSame(importTask.getStatus(), resource.getImportStatus(importTask.getId()));
@@ -160,10 +161,10 @@ public class UserBatchImportResourceTest extends AbstractUserBatchResourceTest {
 
 	@Test
 	public void getImportStatusPreviousFinished() throws InterruptedException, IOException {
-		final BatchTaskVo<UserImportEntry> oldTask = full(
+		final BatchTaskVo<UserImportEntry> oldTask = execute(
 				"Loubli;Sébastien;kloubli5a;my.address@sample.com;gfi;,jira,");
 		oldTask.getStatus().setEnd(getDate(1980, 1, 1));
-		final BatchTaskVo<UserImportEntry> importTask = full(
+		final BatchTaskVo<UserImportEntry> importTask = execute(
 				"Loubli;Sébastien;kloubli5b;my.address@sample.com;gfi;,jira,");
 		Assertions.assertSame(importTask, resource.getImportTask(importTask.getId()));
 		Assertions.assertSame(importTask.getStatus(), resource.getImportStatus(importTask.getId()));
@@ -171,22 +172,22 @@ public class UserBatchImportResourceTest extends AbstractUserBatchResourceTest {
 
 	@Test
 	public void getImportStatusPreviousNotFinished() throws InterruptedException, IOException {
-		final BatchTaskVo<UserImportEntry> oldTask = full(
+		final BatchTaskVo<UserImportEntry> oldTask = execute(
 				"Loubli;Sébastien;kloubli6a;my.address@sample.com;gfi;,jira,");
 		oldTask.getStatus().setEnd(null);
-		final BatchTaskVo<UserImportEntry> importTask = full(
+		final BatchTaskVo<UserImportEntry> importTask = execute(
 				"Loubli;Sébastien;kloubli6b;my.address@sample.com;gfi;,jira,");
 		Assertions.assertSame(importTask, resource.getImportTask(importTask.getId()));
 		Assertions.assertSame(importTask.getStatus(), resource.getImportStatus(importTask.getId()));
 		oldTask.getStatus().setEnd(new Date());
 	}
 
-	protected <U extends BatchElement> BatchTaskVo<U> full(final InputStream input, final String[] headers)
+	protected <U extends BatchElement> BatchTaskVo<U> execute(final InputStream input, final String[] headers)
 			throws IOException, InterruptedException {
-		return full(input, headers, "cp1252");
+		return execute(input, headers, "cp1252");
 	}
 
-	protected <U extends BatchElement> BatchTaskVo<U> full(final InputStream input, final String[] headers,
+	protected <U extends BatchElement> BatchTaskVo<U> execute(final InputStream input, final String[] headers,
 			final String encoding) throws IOException, InterruptedException {
 		initSpringSecurityContext(DEFAULT_USER);
 		final long id = resource.execute(input, headers, encoding, false);
@@ -197,15 +198,16 @@ public class UserBatchImportResourceTest extends AbstractUserBatchResourceTest {
 		return waitImport(importTask);
 	}
 
-	protected <U extends BatchElement> BatchTaskVo<U> full(final String csvData)
+	protected <U extends BatchElement> BatchTaskVo<U> execute(final String csvData)
 			throws IOException, InterruptedException {
-		return full(csvData, "cp1252");
+		return execute(csvData, "cp1252");
 	}
 
-	protected <U extends BatchElement> BatchTaskVo<U> full(final String csvData, final String encoding)
+	protected <U extends BatchElement> BatchTaskVo<U> execute(final String csvData, final String encoding)
 			throws IOException, InterruptedException {
-		return full(new ByteArrayInputStream(csvData.getBytes(encoding)),
-				new String[] { "lastName", "firstName", "id", "mail", "company", "groups" }, encoding);
+		return execute(new ByteArrayInputStream(csvData.getBytes(encoding)),
+				new String[] { "lastName", "firstName", "id", "mail", "company", "groups" },
+				encoding);
 	}
 
 }
