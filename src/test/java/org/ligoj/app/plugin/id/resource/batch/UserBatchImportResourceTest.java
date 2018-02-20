@@ -29,7 +29,8 @@ public class UserBatchImportResourceTest extends AbstractUserBatchResourceTest {
 
 	@Test
 	public void execute() throws IOException, InterruptedException {
-		final BatchTaskVo<UserImportEntry> importTask = execute("Loubli;Sébastien;kloubli;my.address@sample.com;gfi;jira");
+		final BatchTaskVo<UserImportEntry> importTask = execute(
+				"Loubli;Sébastien;kloubli;my.address@sample.com;gfi;jira;MY_DPT;MY_ID");
 
 		// Check the result
 		final UserImportEntry importEntry = checkImportTask(importTask);
@@ -54,6 +55,8 @@ public class UserBatchImportResourceTest extends AbstractUserBatchResourceTest {
 			Assertions.assertEquals("kloubli", user.getId());
 			Assertions.assertEquals("gfi", user.getCompany());
 			Assertions.assertEquals("my.address@sample.com", user.getMail());
+			Assertions.assertEquals("MY_DPT", user.getDepartment());
+			Assertions.assertEquals("MY_ID", user.getLocalId());
 		})).create(null);
 	}
 
@@ -206,7 +209,7 @@ public class UserBatchImportResourceTest extends AbstractUserBatchResourceTest {
 	protected <U extends BatchElement> BatchTaskVo<U> execute(final String csvData, final String encoding)
 			throws IOException, InterruptedException {
 		return execute(new ByteArrayInputStream(csvData.getBytes(encoding)),
-				new String[] { "lastName", "firstName", "id", "mail", "company", "groups" },
+				new String[] { "lastName", "firstName", "id", "mail", "company", "groups", "department", "localId" },
 				encoding);
 	}
 

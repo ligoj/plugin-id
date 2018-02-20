@@ -27,6 +27,8 @@ public class UserFullTask extends AbstractBatchTask<UserImportEntry> {
 		user.setLastName(entry.getLastName());
 		user.setId(entry.getId());
 		user.setMail(entry.getMail());
+		user.setDepartment(entry.getDepartment());
+		user.setLocalId(entry.getLocalId());
 
 		// Copy groups
 		user.setGroups(toList(entry.getGroups()));
