@@ -197,8 +197,6 @@ public class UserOrgResource extends AbstractOrgResource {
 		final Set<GroupOrg> visibleGroups = groupResource.getContainers();
 		final Set<GroupOrg> writableGroups = groupResource.getContainersForWrite();
 		final Set<CompanyOrg> companies = companyResource.getContainersForWrite();
-		final Map<String, String> dnByCompanies = companies.stream()
-				.collect(Collectors.toMap(CompanyOrg::getId, CompanyOrg::getDn));
 		final Collection<String> writableCompanies = companies.stream().map(CompanyOrg::getId)
 				.collect(Collectors.toList());
 
@@ -212,13 +210,6 @@ public class UserOrgResource extends AbstractOrgResource {
 			rawUserOrg.copy(securedUserOrg);
 			securedUserOrg.setCanWrite(writableCompanies.contains(rawUserOrg.getCompany()));
 			securedUserOrg.setCanWriteGroups(!writableGroups.isEmpty());
-			securedUserOrg
-					.setCanAdmin(
-							writableCompanies.contains(rawUserOrg.getCompany())
-									&& !delegateRepository
-											.findByMatchingDnForWrite(securityHelper.getLogin(),
-													dnByCompanies.get(rawUserOrg.getCompany()), DelegateType.TREE)
-											.isEmpty());
 
 			// Show only the groups that are also visible to current user
 			securedUserOrg.setGroups(visibleGroups.stream()

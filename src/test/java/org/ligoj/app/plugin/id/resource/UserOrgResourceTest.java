@@ -168,7 +168,6 @@ public class UserOrgResourceTest extends AbstractAppTest {
 		// Check the users
 		final UserOrgVo userVo = checkUser(tableItem.getData().get(0));
 		Assertions.assertTrue(userVo.getGroups().get(0).isCanWrite());
-		Assertions.assertTrue(userVo.isCanAdmin());
 		Assertions.assertTrue(userVo.isCanWrite());
 		Assertions.assertTrue(userVo.isCanWriteGroups());
 	}
