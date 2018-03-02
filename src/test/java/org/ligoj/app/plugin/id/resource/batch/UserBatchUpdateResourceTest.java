@@ -23,7 +23,7 @@ public class UserBatchUpdateResourceTest extends AbstractUserBatchResourceTest {
 	protected UserBatchUpdateResource resource;
 
 	@Test
-	public void executeCsvError() throws IOException, InterruptedException {
+	public void executeCsvError() {
 		final UserBatchUpdateResource resource = new UserBatchUpdateResource();
 		applicationContext.getAutowireCapableBeanFactory().autowireBean(resource);
 		Assertions.assertEquals(
