@@ -29,12 +29,6 @@ public class UserOrgVo extends SimpleUserOrg {
 	 * <code>true</code> when the current principal user can write at least one group.
 	 */
 	private boolean canWriteGroups;
-	
-	/**
-	 * Is this entry can be updated (attributes) by current user : reset password. 
-	 * Corresponds to the "ADMIN" right brought be a delegate.
-	 */
-	private boolean canAdmin;
 
 	/**
 	 * Membership, CN of groups.
