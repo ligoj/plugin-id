@@ -39,6 +39,8 @@ public class GroupBatchResource extends AbstractBatchResource<GroupImportEntry> 
 	 * @param quiet
 	 *            Optional flag to turn-off the possible notification such as mail. Default value is <code>false</code>.
 	 * @return the import identifier.
+	 * @throws IOException
+	 *             When CSV read failed.
 	 */
 	@POST
 	@Consumes(MediaType.MULTIPART_FORM_DATA)

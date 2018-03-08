@@ -829,8 +829,8 @@ public class UserOrgResource extends AbstractOrgResource {
 	 * Note: This operation can be performed even if the principal has no right on the groups related to the involved
 	 * user.
 	 *
-	 * @param user
-	 *            The user to restore. A normalized form of this parameter will be
+	 * @param uid
+	 *            The user identifier to restore. A normalized form of this parameter will be
 	 *            used for this operation.
 	 * @return The generated password.
 	 */

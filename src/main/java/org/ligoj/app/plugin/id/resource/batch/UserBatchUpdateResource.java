@@ -38,6 +38,8 @@ public class UserBatchUpdateResource extends AbstractBatchResource<UserUpdateEnt
 	 * @param quiet
 	 *            Optional flag to turn-off the possible notification such as mail. Default value is <code>false</code>.
 	 * @return the import identifier.
+	 * @throws IOException
+	 *             When CSV read failed.
 	 */
 	@POST
 	@Consumes(MediaType.MULTIPART_FORM_DATA)
@@ -45,6 +47,7 @@ public class UserBatchUpdateResource extends AbstractBatchResource<UserUpdateEnt
 			@Multipart(value = "columns", required = false) final String[] columns,
 			@Multipart(value = "encoding", required = false) final String encoding,
 			@Multipart(value = "quiet", required = false) final Boolean quiet) throws IOException {
-		return batch(uploadedFile, columns, encoding, DEFAULT_CSV_HEADERS, UserUpdateEntry.class, UserAtomicTask.class, quiet);
+		return batch(uploadedFile, columns, encoding, DEFAULT_CSV_HEADERS, UserUpdateEntry.class, UserAtomicTask.class,
+				quiet);
 	}
 }

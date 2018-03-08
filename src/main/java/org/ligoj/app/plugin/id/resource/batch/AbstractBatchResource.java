@@ -115,6 +115,8 @@ public abstract class AbstractBatchResource<B extends BatchElement> {
 	 * @param batchType
 	 *            The target batch entity type.
 	 * @param taskType
+	 *            The task class running this batch.
+	 * @param <T>
 	 *            The task type running this batch.
 	 * @param quiet
 	 *            Optional flag to turn-off the possible notification such as mail. Default value is <code>false</code>.
