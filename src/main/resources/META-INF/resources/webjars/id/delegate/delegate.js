@@ -137,13 +137,13 @@ define(function () {
 						data: 'canAdmin',
 						width: '16px',
 						render: function (value) {
-							return value ? '<i class="fa fa-check"></i>' : '&nbsp;';
+							return value ? '<i class="fas fa-check"></i>' : '&nbsp;';
 						}
 					}, {
 						data: 'canWrite',
 						width: '16px',
 						render: function (value) {
-							return value ? '<i class="fa fa-check"></i>' : '&nbsp;';
+							return value ? '<i class="fas fa-check"></i>' : '&nbsp;';
 						}
 					}, {
 						data: 'managed',
@@ -151,8 +151,8 @@ define(function () {
 						orderable: false,
 						render: function (value) {
 							if (value) {
-								var editlink = '<a class="update"><i class="fa fa-pencil" data-toggle="tooltip" title="' + current.$messages.update + '"></i></a>';
-								return editlink + '<a class="delete"><i class="fa fa-remove" data-toggle="tooltip" title="' + current.$messages.delete + '"></i></a>';
+								var editlink = '<a class="update"><i class="fas fa-pencil-alt" data-toggle="tooltip" title="' + current.$messages.update + '"></i></a>';
+								return editlink + '<a class="delete"><i class="fas fa-times" data-toggle="tooltip" title="' + current.$messages.delete + '"></i></a>';
 							}
 							return '&nbsp;';
 						}
@@ -221,7 +221,7 @@ define(function () {
 			} else {
 				// Requires a confirmation
 				var entity = current.table.fnGetData($(this).closest('tr')[0]);
-				var display = current.$main.getResourceLink(entity.receiver, entity.receiverType) + ' <i class="fa fa-arrow-right"></i> ' + current.$main.getResourceLink(entity.name, entity.type);
+				var display = current.$main.getResourceLink(entity.receiver, entity.receiverType) + ' <i class="fas fa-arrow-right"></i> ' + current.$main.getResourceLink(entity.name, entity.type);
 				bootbox.confirmDelete(function (confirmed) {
 					confirmed && current.deleteDelegate(entity.id, display);
 				}, display);

@@ -93,8 +93,8 @@ define(function () {
 					orderable: false,
 					render: function (_i, _j, data) {
 						if (!data.locked) {
-							var editlink = '<a class="update" data-toggle="modal" data-target="#popup"><i class="fa fa-pencil" data-toggle="tooltip" title="' + current.$messages.update + '"></i></a>';
-							return editlink + '<a class="delete"><i class="fa fa-trash" data-toggle="tooltip" title="' + current.$messages.delete + '"></i></a>';
+							var editlink = '<a class="update" data-toggle="modal" data-target="#popup"><i class="fas fa-pencil-alt" data-toggle="tooltip" title="' + current.$messages.update + '"></i></a>';
+							return editlink + '<a class="delete"><i class="fas fa-trash-alt" data-toggle="tooltip" title="' + current.$messages.delete + '"></i></a>';
 						}
 						return '&nbsp;';
 					}

@@ -13,13 +13,13 @@
 							{{all}}
 						</button>
 						<button type="button" class="btn btn-default search-type" value="group">
-							<i class="fa resource fa-users fa-fw" title="{{group}}" data-toggle="tooltip" data-container="body"></i><span class="hidden-xs"> {{group}}</span>
+							<i class="fas resource fa-users fa-fw" title="{{group}}" data-toggle="tooltip" data-container="body"></i><span class="hidden-xs"> {{group}}</span>
 						</button>
 						<button type="button" class="btn btn-default search-type" value="company">
-							<i class="fa resource fa-building fa-fw" title="{{company}}" data-toggle="tooltip" data-container="body"></i><span class="hidden-xs"> {{company}}</span>
+							<i class="far resource fa-building fa-fw" title="{{company}}" data-toggle="tooltip" data-container="body"></i><span class="hidden-xs"> {{company}}</span>
 						</button>
 						<button type="button" class="btn btn-default search-type" value="tree">
-							<i class="fa resource fa-ellipsis-v fa-fw" title="{{tree}}" data-toggle="tooltip" data-container="body"></i><span class="hidden-xs"> {{tree}}</span>
+							<i class="fas resource fa-code-branch fa-rotate-90 fa-fw" title="{{tree}}" data-toggle="tooltip" data-container="body"></i><span class="hidden-xs"> {{tree}}</span>
 						</button>
 					</div>
 				</div>
@@ -30,7 +30,7 @@
 		<div class="form-group has-feedback label-floating">
 			<label for="search" class="control-label">{{login}}, {{name}}, DN</label>
 			<input type="text" class="form-control" id="search" aria-controls="table" />
-			<span class="fa fa-search form-control-feedback"></span>
+			<span class="fas fa-search form-control-feedback"></span>
 		</div>
 	</div>
 </div>
@@ -39,8 +39,8 @@
 		<tr>
 			<th>{{receiver}}</th>
 			<th>{{resource}}</th>
-			<th><i class="fa fa-wrench" title="{{admin}}"></i></th>
-			<th><i class="fa fa-pencil" title="{{write}}"></i></th>
+			<th><i class="fas fa-wrench" title="{{admin}}"></i></th>
+			<th><i class="fas fa-pencil-alt" title="{{write}}"></i></th>
 			<th>{{actions}}</th>
 		</tr>
 	</thead>
@@ -68,12 +68,12 @@
 							<div class="input-group">
 								<div class="input-group-btn">
 									<button class="btn btn-default dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-										<i class="fa fa-user fa-fw"></i> <span class="caret"></span>
+										<i class="fas fa-user fa-fw"></i> <span class="caret"></span>
 									</button>
 									<ul class="dropdown-menu">
-										<li data-type="user" class="active"><a><i class="fa fa-user fa-fw"></i> {{user}}</a></li>
-										<li data-type="group"><a><i class="fa fa-users fa-fw"></i> {{group}}</a></li>
-										<li data-type="company"><a><i class="fa fa-building fa-fw"></i> {{company}}</a></li>
+										<li data-type="user" class="active"><a><i class="fas fa-user fa-fw"></i> {{user}}</a></li>
+										<li data-type="group"><a><i class="fas fa-users fa-fw"></i> {{group}}</a></li>
+										<li data-type="company"><a><i class="far fa-building fa-fw"></i> {{company}}</a></li>
 									</ul>
 								</div>
 								<input type="text" id="receiver" class="form-control" required>
@@ -87,12 +87,12 @@
 							<div class="input-group">
 								<div class="input-group-btn">
 									<button class="btn btn-default dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-										<i class="fa fa-users"></i>   <span class="caret"></span>
+										<i class="fas fa-users"></i>   <span class="caret"></span>
 									</button>
 									<ul class="dropdown-menu">
-										<li data-type="group" class="active"><a><i class="fa fa-users fa-fw"></i> {{group}}</a></li>
-										<li data-type="company"><a><i class="fa fa-building fa-fw"></i> {{company}}</a></li>
-										<li data-type="tree"><a><i class="fa fa-ellipsis-v fa-fw"></i> {{tree}}</a></li>
+										<li data-type="group" class="active"><a><i class="fas fa-users fa-fw"></i> {{group}}</a></li>
+										<li data-type="company"><a><i class="far fa-building fa-fw"></i> {{company}}</a></li>
+										<li data-type="tree"><a><i class="fas fa-code-branch fa-rotate-90 fa-fw"></i> {{tree}}</a></li>
 									</ul>
 								</div>
 								<input type="text" id="resource" class="form-control" required>

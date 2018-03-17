@@ -9,7 +9,7 @@ define({
 		'user-import-atomic': 'Atomic',
 		'create-another': 'Create another user',
 		'warn-mail-perso': 'Account mail must be a professional mail; this excludes yahoo.fr, gmail.com, etc.',
-		'created-account': 'Account {{id}} has been created and an email has been sent.</br><i class="fa fa-envelope"></i> <a href="mailto:{{mail}}?subject=New account {{id}}">{{mail}}</a>',
+		'created-account': 'Account {{id}} has been created and an email has been sent.</br><i class="fas fa-envelope"></i> <a href="mailto:{{mail}}?subject=New account {{id}}">{{mail}}</a>',
 		'employer': 'Employer',
 		'member': 'Member',
 		'company-help': 'Only companies you manage are available there',

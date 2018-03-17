@@ -164,21 +164,21 @@ define(function () {
 						orderable: false,
 						width: '16px',
 						render: function (_i, _j, data) {
-							return data.canAdmin ? '<i class="fa fa-check"></i>' : '&nbsp;';
+							return data.canAdmin ? '<i class="fas fa-check"></i>' : '&nbsp;';
 						}
 					}, {
 						data: 'canWrite',
 						orderable: false,
 						width: '16px',
 						render: function (_i, _j, data) {
-							return data.canWrite ? '<i class="fa fa-check"></i>' : '&nbsp;';
+							return data.canWrite ? '<i class="fas fa-check"></i>' : '&nbsp;';
 						}
 					}, {
 						data: 'locked',
 						orderable: false,
 						width: '16px',
 						render: function (_i, _j, data) {
-							return data.locked ? '<i class="fa fa-check"></i>' : '&nbsp;';
+							return data.locked ? '<i class="fas fa-check"></i>' : '&nbsp;';
 						}
 					}, {
 						data: null,
@@ -188,11 +188,11 @@ define(function () {
 							var result = '';
 							if (data.canWrite && data.containerType === 'group' && data.count) {
 								// Empty the container, for now only for group
-								result += '<a class="empty"><i class="fa fa-user-times" data-toggle="tooltip" title="' + current.$messages['empty-group'] + '"></i></a>';
+								result += '<a class="empty"><i class="fas fa-user-times" data-toggle="tooltip" title="' + current.$messages['empty-group'] + '"></i></a>';
 							}
 							if (data.locked !== true && data.canAdmin && (data.containerType === 'group' || data.count === 0)) {
 								// Delete the container
-								result += '<a class="delete"><i class="fa fa-trash" data-toggle="tooltip" title="' + current.$messages['delete'] + '"></i></a>';
+								result += '<a class="delete"><i class="fas fa-trash-alt" data-toggle="tooltip" title="' + current.$messages['delete'] + '"></i></a>';
 							}
 							return result || '&nbsp;';
 						}

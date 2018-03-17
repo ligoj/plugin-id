@@ -201,7 +201,7 @@ define(function () {
 					width: '16px',
 					orderable: false,
 					render: function () {
-						return '<a class="remove-user"><i class="fa fa-user-times" data-toggle="tooltip" title="' + current.$messages['service:id:remove-member'] + '"></i></a>';
+						return '<a class="remove-user"><i class="fas fa-user-times" data-toggle="tooltip" title="' + current.$messages['service:id:remove-member'] + '"></i></a>';
 					}
 				}]
 			});

@@ -290,9 +290,9 @@ define(function () {
 							width: '32px',
 							orderable: false,
 							render: function (_i, _j, data) {
-								var editlink = '<a class="update"><i class="fa fa-pencil" data-toggle="tooltip" title="' + current.$messages.update + '"></i></a>';
+								var editlink = '<a class="update"><i class="fas fa-pencil-alt" data-toggle="tooltip" title="' + current.$messages.update + '"></i></a>';
 								if (data.canWrite) {
-									editlink += '<div class="btn-group"><i data-toggle="dropdown" class="fa fa-cog"></i><ul class="dropdown-menu dropdown-menu-right">';
+									editlink += '<div class="btn-group"><i data-toggle="dropdown" class="fas fa-cog"></i><ul class="dropdown-menu dropdown-menu-right">';
 									if (data.isolated) {
 										// Isolated -> restore
 										editlink += '<li><a class="restore"><i class="menu-icon fa fa-sign-in"></i> ' + current.$messages.restore + '</a></li>';
@@ -307,8 +307,8 @@ define(function () {
 									}
 	
 									// Delete icon
-									editlink += '<li><a class="delete"><i class="menu-icon fa fa-trash"></i> ' + current.$messages.delete + '</a></li>';
-									editlink += '<li><a class="reset"><i class="menu-icon fa fa-refresh"></i> ' + current.$messages.reset + '</a></li>';
+									editlink += '<li><a class="delete"><i class="menu-icon fa fa-trash-alt"></i> ' + current.$messages.delete + '</a></li>';
+									editlink += '<li><a class="reset"><i class="menu-icon fas fa-sync-alt"></i> ' + current.$messages.reset + '</a></li>';
 									editlink += '</ul>';
 									editlink += '</div>';
 								}

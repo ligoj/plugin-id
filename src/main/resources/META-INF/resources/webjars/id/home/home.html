@@ -27,7 +27,7 @@
 		<div class="form-group has-feedback label-floating">
 			<label class="control-label" for="search">{{firstName}},{{lastName}},...</label>
 			<input type="text" class="form-control" id="search" aria-controls="table" />
-			<span class="fa fa-search form-control-feedback"></span>
+			<span class="fas fa-search form-control-feedback"></span>
 		</div>
 	</div>
 </div>
@@ -103,14 +103,14 @@
 						<label class="control-label col-sm-3" for="company">{{company}}</label>
 						<div class="col-sm-8">
 							<input type="text" id="company" class="form-control" required maxlength="100" />
-							<span class="input-help"><i class="mode-edition fa fa-question-circle-o" data-container="#_ucDiv" data-toggle="tooltip" title="{{company-help}}"></i></span>
+							<span class="input-help"><i class="mode-edition far fa-question-circle" data-container="#_ucDiv" data-toggle="tooltip" title="{{company-help}}"></i></span>
 						</div>
 					</div>
 					<div class="form-group">
 						<label class="control-label col-sm-3" for="groups">{{groups}}</label>
 						<div class="col-sm-8">
 							<input type="text" id="groups" class="form-control" />
-							<span class="input-help"><i class="mode-edition fa fa-question-circle-o" data-container="#_ucDiv" data-toggle="tooltip" title="{{group-help}}"></i></span>
+							<span class="input-help"><i class="mode-edition far fa-question-circle" data-container="#_ucDiv" data-toggle="tooltip" title="{{group-help}}"></i></span>
 						</div>
 					</div>
 				</div>
@@ -150,7 +150,7 @@
 						</label>
 					</div>
 					<div class="alert alert-info import-options-details import-options-full">
-						{{user-import-full-message}} <a data-toggle="collapse" href="#more-import-options-full" aria-controls="more-import-options-full"><i class="fa fa-question-circle faa-wrench animated-hover"></i></a>
+						{{user-import-full-message}} <a data-toggle="collapse" href="#more-import-options-full" aria-controls="more-import-options-full"><i class="fas fa-question-circle faa-wrench animated-hover"></i></a>
 						<div id="more-import-options-full" class="collapse">
 							<br/>Implicit CSV headers
 							<code>lastName;firstName;id;mail;company;groups;department;localId
@@ -168,7 +168,7 @@
 						</div>
 					</div>
 					<div class="alert alert-info import-options-details import-options-atomic hidden">
-						{{user-import-atomic-message}} <a data-toggle="collapse" href="#more-import-options-atomic" aria-controls="more-import-options-atomic"><i class="fa fa-question-circle faa-wrench animated-hover"></i></a>
+						{{user-import-atomic-message}} <a data-toggle="collapse" href="#more-import-options-atomic" aria-controls="more-import-options-atomic"><i class="fas fa-question-circle faa-wrench animated-hover"></i></a>
 						<div id="more-import-options-atomic" class="collapse">
 							<br/>Implicit CSV headers
 							<code>user;operation;value

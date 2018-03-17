@@ -8,7 +8,7 @@ define({
 	'user-import-atomic': 'Atomique',
 	'create-another': 'Créer un autre utilisateur',
 	'warn-mail-perso': 'Le mail doit correspondre à un contexte professionnel; pas de yahoo.fr, gmail.com, etc.',
-	'created-account': 'Le compte {{id}} a été créé et un mail a été envoyé.</br><i class="fa fa-envelope"></i> <a href="mailto:{{mail}}?subject=Nouveau compte {{id}}">{{mail}}</a>',
+	'created-account': 'Le compte {{id}} a été créé et un mail a été envoyé.</br><i class="fas fa-envelope"></i> <a href="mailto:{{mail}}?subject=Nouveau compte {{id}}">{{mail}}</a>',
 	'employer': 'Employeur',
 	'member': 'Membre',
 	'company-help': 'Seules les sociétés que vous gérez sont visibles ici',
