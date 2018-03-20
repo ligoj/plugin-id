@@ -23,8 +23,6 @@ import org.ligoj.bootstrap.core.json.datatable.DataTableAttributes;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import net.sf.ehcache.CacheManager;
-
 /**
  * Common test class for containers.
  */
@@ -42,7 +40,7 @@ public abstract class AbstractContainerResourceTest extends AbstractAppTest {
 		persistEntities("csv",
 				new Class[] { DelegateOrg.class, ContainerScope.class, CacheCompany.class, CacheUser.class, CacheGroup.class, CacheMembership.class },
 				StandardCharsets.UTF_8.name());
-		CacheManager.getInstance().getCache("container-scopes").removeAll();
+		cacheManager.getCache("container-scopes").clear();
 
 		iamProvider = Mockito.mock(IamProvider.class);
 		final IamConfiguration configuration = Mockito.mock(IamConfiguration.class);
