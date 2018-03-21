@@ -1,3 +1,6 @@
+/*
+ * Licensed under MIT (https://github.com/ligoj/ligoj/blob/master/LICENSE)
+ */
 define({
 	'title': 'Gestion des utilisateurs',
 	'user-clean-message': 'Les espaces encadrants seront retirés, et les noms seront capitalisés',

@@ -1,5 +1,7 @@
 /**
  * Manager used to populate and manage IAM features.
+ *
+ * Licensed under MIT (https://github.com/ligoj/ligoj/blob/master/LICENSE)
  */
 define(function () {
 	var current = {
