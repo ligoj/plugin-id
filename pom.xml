@@ -19,6 +19,9 @@
 		<developerConnection>scm:git:https://github.com/ligoj/plugin-id</developerConnection>
 		<url>https://github.com/ligoj/plugin-id.git</url>
 	</scm>
+	<properties>
+		<sonar.sources>src/main/java,src/main/resources/META-INF/resources/webjars</sonar.sources>
+	</properties>
 
 	<profiles>
 		<profile>
