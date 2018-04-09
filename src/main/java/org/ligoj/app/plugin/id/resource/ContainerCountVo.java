@@ -17,6 +17,11 @@ import lombok.Setter;
 public class ContainerCountVo extends ContainerWithScopeVo {
 
 	/**
+	 * SID, for Hazelcast
+	 */
+	private static final long serialVersionUID = 1L;
+
+	/**
 	 * Unique visible members count.
 	 */
 	private int countVisible;

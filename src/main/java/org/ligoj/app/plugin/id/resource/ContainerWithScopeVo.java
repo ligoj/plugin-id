@@ -15,6 +15,10 @@ import lombok.Setter;
 @Getter
 @Setter
 public class ContainerWithScopeVo extends NamedBean<String> {
+	/**
+	 * SID, for Hazelcast
+	 */
+	private static final long serialVersionUID = 1L;
 
 	/**
 	 * Scope name.
