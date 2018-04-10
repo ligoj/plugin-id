@@ -37,8 +37,6 @@ define(function () {
 					kv.length === 2 && _('search-' + kv[0]).select2('data', kv[1]).closest('.form-group').removeClass('is-empty');
 				}
 				current.suspendSearch = false;
-			} else {
-			
 			}
 			
 			// Also initialize the datatables component
