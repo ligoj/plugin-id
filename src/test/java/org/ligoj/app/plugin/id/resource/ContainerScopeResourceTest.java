@@ -66,7 +66,7 @@ public class ContainerScopeResourceTest extends AbstractJpaTest {
 		Assertions.assertEquals(4, result.size());
 		final ContainerScope type = result.get(2);
 		Assertions.assertEquals("Project", type.getName());
-		Assertions.assertEquals("ou=project,dc=sample,dc=com", type.getDn());
+		Assertions.assertEquals("ou=projects,dc=sample,dc=com", type.getDn());
 	}
 
 	@Test
@@ -83,7 +83,7 @@ public class ContainerScopeResourceTest extends AbstractJpaTest {
 	public void findAllGlobalSearch() {
 		// create a mock URI info with pagination informations
 		final UriInfo uriInfo = newFindAllParameters();
-		
+
 		// Add criteria
 		uriInfo.getQueryParameters().add("q", "j");
 
@@ -133,7 +133,7 @@ public class ContainerScopeResourceTest extends AbstractJpaTest {
 	private void checkType(final ContainerScope type) {
 		Assertions.assertEquals("Project", type.getName());
 		Assertions.assertTrue(type.isLocked());
-		Assertions.assertEquals("ou=project,dc=sample,dc=com", type.getDn());
+		Assertions.assertEquals("ou=projects,dc=sample,dc=com", type.getDn());
 		Assertions.assertEquals(ContainerType.GROUP, type.getType());
 	}
 
@@ -165,7 +165,7 @@ public class ContainerScopeResourceTest extends AbstractJpaTest {
 		final ContainerScope vo = new ContainerScope();
 		vo.setName("Name");
 		vo.setType(ContainerType.GROUP);
-		vo.setDn("ou=project,dc=sample,dc=com");
+		vo.setDn("ou=projects,dc=sample,dc=com");
 		Assertions.assertThrows(DataIntegrityViolationException.class, () -> {
 			resource.create(vo);
 		});

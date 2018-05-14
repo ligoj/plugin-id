@@ -1,5 +1,5 @@
 name;dn;locked;type
-Project;ou=project,dc=sample,dc=com;true;GROUP
+Project;ou=projects,dc=sample,dc=com;true;GROUP
 Tool;ou=tools,dc=sample,dc=com;false;GROUP
 Hub;cn=Production,ou=branche,ou=groups,dc=sample,dc=com;false;GROUP
 Fonction;ou=fonction,ou=groups,dc=sample,dc=com;false;GROUP
