@@ -288,7 +288,7 @@ define(function () {
 							}
 						}, {
 							data: null,
-							width: '32px',
+							width: '36px',
 							orderable: false,
 							render: function (_i, _j, data) {
 								var editlink = '<a class="update"><i class="fas fa-pencil-alt" data-toggle="tooltip" title="' + current.$messages.update + '"></i></a>';
