@@ -3,14 +3,19 @@
  */
 package org.ligoj.app.plugin.id.resource;
 
-import org.springframework.stereotype.Component;
-
 import java.util.Arrays;
 import java.util.List;
+
+import javax.cache.annotation.CacheKey;
+import javax.cache.annotation.CacheResult;
 
 import org.ligoj.app.model.Node;
 import org.ligoj.app.model.Parameter;
 import org.ligoj.app.resource.plugin.AbstractServicePlugin;
+import org.ligoj.bootstrap.core.security.SecurityHelper;
+import org.ligoj.bootstrap.dao.system.SystemUserRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 /**
  * The identity service.
@@ -48,6 +53,15 @@ public class IdentityResource extends AbstractServicePlugin {
 	 */
 	public static final String PARAMETER_UID_PATTERN = SERVICE_KEY + ":uid-pattern";
 
+	@Autowired
+	protected SecurityHelper securityHelper;
+
+	/**
+	 * System user repository.
+	 */
+	@Autowired
+	protected SystemUserRepository systemUserRepository;
+
 	@Override
 	public String getKey() {
 		return SERVICE_KEY;
@@ -56,5 +70,10 @@ public class IdentityResource extends AbstractServicePlugin {
 	@Override
 	public List<Class<?>> getInstalledEntities() {
 		return Arrays.asList(Node.class, Parameter.class);
+	}
+
+	@CacheResult(cacheName = "user-is-admin")
+	public boolean isAdmin(@CacheKey final String user) {
+		return systemUserRepository.isAdmin(user);
 	}
 }

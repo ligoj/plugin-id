@@ -47,6 +47,11 @@ import org.ligoj.bootstrap.core.json.TableItem;
 import org.ligoj.bootstrap.core.json.datatable.DataTableAttributes;
 import org.ligoj.bootstrap.core.resource.BusinessException;
 import org.ligoj.bootstrap.core.validation.ValidationJsonException;
+import org.ligoj.bootstrap.model.system.SystemAuthorization;
+import org.ligoj.bootstrap.model.system.SystemRole;
+import org.ligoj.bootstrap.model.system.SystemRoleAssignment;
+import org.ligoj.bootstrap.model.system.SystemAuthorization.AuthorizationType;
+import org.ligoj.bootstrap.model.system.SystemUser;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
 import org.mockito.internal.verification.VerificationModeFactory;
@@ -1080,6 +1085,36 @@ public class UserOrgResourceTest extends AbstractAppTest {
 	 */
 	@Test
 	public void addUserToGroup() {
+		mockAddUser(DEFAULT_USER);
+		resource.addUserToGroup("wuser", "dig rha");
+	}
+
+	/**
+	 * Add a user to a group without delegates but being system administrator.
+	 */
+	@Test
+	public void addUserToGroupSystemAdmin() {
+		initSpringSecurityContext("my-admin");
+		SystemUser user = new SystemUser();
+		user.setLogin("my-admin");
+		em.persist(user);
+		SystemRole role = new SystemRole();
+		role.setName("some");
+		em.persist(role);
+		SystemAuthorization authorization = new SystemAuthorization();
+		authorization.setType(AuthorizationType.API);
+		authorization.setPattern(".*");
+		authorization.setRole(role);
+		em.persist(authorization);
+		SystemRoleAssignment assignment = new SystemRoleAssignment();
+		assignment.setRole(role);
+		assignment.setUser(user);
+		em.persist(assignment);
+		mockAddUser("my-admin");
+		resource.addUserToGroup("wuser", "dig rha");
+	}
+
+	private void mockAddUser(final String principal) {
 		final GroupOrg groupOrg1 = new GroupOrg("cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com", "DIG",
 				Collections.singleton("user1"));
 		final GroupOrg groupOrg2 = new GroupOrg("cn=DIG RHA,cn=DIG AS,cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com",
@@ -1093,9 +1128,8 @@ public class UserOrgResourceTest extends AbstractAppTest {
 		Mockito.when(companyRepository.findById("ing")).thenReturn(company);
 		Mockito.when(userRepository.findByIdExpected("wuser")).thenReturn(user);
 		Mockito.when(userRepository.findById("wuser")).thenReturn(user);
-		groupFindById(DEFAULT_USER, "dig", groupOrg1);
-		groupFindById(DEFAULT_USER, "dig rha", groupOrg2);
-		resource.addUserToGroup("wuser", "dig rha");
+		groupFindById(principal, "dig", groupOrg1);
+		groupFindById(principal, "dig rha", groupOrg2);
 	}
 
 	/**

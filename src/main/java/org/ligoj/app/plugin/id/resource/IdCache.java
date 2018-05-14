@@ -20,6 +20,7 @@ public class IdCache implements CacheManagerAware {
 	@Override
 	public void onCreate(final HazelcastCacheManager cacheManager, final Function<String, CacheConfig<?, ?>> provider) {
 		cacheManager.createCache("container-scopes", provider.apply("container-scopes"));
+		cacheManager.createCache("user-is-admin", provider.apply("user-is-admin"));
 	}
 
 }

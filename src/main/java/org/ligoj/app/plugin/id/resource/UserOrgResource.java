@@ -54,7 +54,6 @@ import org.ligoj.app.plugin.id.model.PasswordResetAudit;
 import org.ligoj.bootstrap.core.json.PaginationJson;
 import org.ligoj.bootstrap.core.json.TableItem;
 import org.ligoj.bootstrap.core.json.datatable.DataTableAttributes;
-import org.ligoj.bootstrap.core.security.SecurityHelper;
 import org.ligoj.bootstrap.core.validation.ValidationJsonException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
@@ -106,9 +105,6 @@ public class UserOrgResource extends AbstractOrgResource {
 	protected GroupResource groupResource;
 
 	@Autowired
-	private SecurityHelper securityHelper;
-
-	@Autowired
 	protected ApplicationContext applicationContext;
 
 	/**
@@ -127,7 +123,7 @@ public class UserOrgResource extends AbstractOrgResource {
 	/**
 	 * Return users matching the given criteria. The visible groups, trees and companies are checked. The returned
 	 * groups of each user depends on the groups the user can see. The result is not secured : it contains DN.
-	 * 
+	 *
 	 * @param company
 	 *            The optional company name to match.
 	 * @param group
@@ -147,7 +143,7 @@ public class UserOrgResource extends AbstractOrgResource {
 	 * Return users matching the given criteria. The visible groups, trees and companies are checked. The returned
 	 * groups of each user depends on the groups the user can see and are in normalized CN form. The result is not
 	 * secured, it contains DN.
-	 * 
+	 *
 	 * @param visibleGroups
 	 *            The visible groups by the principal user.
 	 * @param company
@@ -182,7 +178,7 @@ public class UserOrgResource extends AbstractOrgResource {
 	/**
 	 * Return users matching the given criteria. The visible groups, trees and companies are checked. The returned
 	 * groups of each user depends on the groups the user can see/write, and are in CN form.
-	 * 
+	 *
 	 * @param company
 	 *            the optional company name to match.
 	 * @param group
@@ -290,7 +286,7 @@ public class UserOrgResource extends AbstractOrgResource {
 
 	/**
 	 * Add given user to the a group.
-	 * 
+	 *
 	 * @param user
 	 *            The user to add.
 	 * @param group
@@ -304,7 +300,7 @@ public class UserOrgResource extends AbstractOrgResource {
 
 	/**
 	 * Remove given user from the a group.
-	 * 
+	 *
 	 * @param user
 	 *            The user to remove.
 	 * @param group
@@ -318,7 +314,7 @@ public class UserOrgResource extends AbstractOrgResource {
 
 	/**
 	 * Performs an operation on a group and a user.
-	 * 
+	 *
 	 * @param user
 	 *            The user to move.
 	 * @param group
@@ -354,7 +350,7 @@ public class UserOrgResource extends AbstractOrgResource {
 
 	/**
 	 * Update the given user.
-	 * 
+	 *
 	 * @param user
 	 *            The user definition, and associated groups. Group changes are checked.User definition changes are
 	 *            checked.
@@ -463,7 +459,7 @@ public class UserOrgResource extends AbstractOrgResource {
 
 	/**
 	 * Validate assigned groups, department and return corresponding group identifiers.
-	 * 
+	 *
 	 * @param userOrg
 	 *            The user to update.
 	 * @param importEntry
@@ -489,7 +485,7 @@ public class UserOrgResource extends AbstractOrgResource {
 	/**
 	 * Validate assigned groups, and return corresponding group identifiers. The groups must be visible by the
 	 * principal, and added/removed groups from the user must be writable by the principal.
-	 * 
+	 *
 	 * @param previousGroups
 	 *            The current user's groups.used to validate the changes.
 	 * @param desiredGroups
@@ -509,7 +505,7 @@ public class UserOrgResource extends AbstractOrgResource {
 
 	/**
 	 * Validate a change of membership of given group by the principal user.
-	 * 
+	 *
 	 * @param updatedGroup
 	 *            The group the principal user is updating : add/remove a user. The visibility of this must have been
 	 *            previously checked.
@@ -536,7 +532,7 @@ public class UserOrgResource extends AbstractOrgResource {
 	 * <li>WG : Writable groups in VG</li>
 	 * <li>GG : Final groups of entry = CG-WG+DG</li>
 	 * </ul>
-	 * 
+	 *
 	 * @param delegates
 	 *            the available delegates of current principal user.
 	 * @param userOrg
@@ -579,7 +575,8 @@ public class UserOrgResource extends AbstractOrgResource {
 	}
 
 	private boolean canWrite(final List<DelegateOrg> delegates, final String dn, final DelegateType type) {
-		return delegates.stream().anyMatch(delegate -> canWrite(delegate, dn, type));
+		return resource.isAdmin(securityHelper.getLogin())
+				|| delegates.stream().anyMatch(delegate -> canWrite(delegate, dn, type));
 	}
 
 	protected boolean canWrite(final DelegateOrg delegate, final String dn, final DelegateType type) {
@@ -614,7 +611,7 @@ public class UserOrgResource extends AbstractOrgResource {
 	 * When mail or password is updated a mail is sent to the user with the account, and eventually the new
 	 * password.<br>
 	 * Groups of entry will be normalized.
-	 * 
+	 *
 	 * @param importEntry
 	 *            The entry to save or to update.
 	 * @param quiet
@@ -649,7 +646,7 @@ public class UserOrgResource extends AbstractOrgResource {
 	 * When mail or password is updated a mail is sent to the user with the account, and eventually the new
 	 * password.<br>
 	 * Groups of entry will be normalized.
-	 * 
+	 *
 	 * @param importEntry
 	 *            The entry to save or to update.
 	 */
@@ -689,7 +686,7 @@ public class UserOrgResource extends AbstractOrgResource {
 
 	/**
 	 * Convert the import format to the internal format.
-	 * 
+	 *
 	 * @param importEntry
 	 *            The raw imported user.
 	 * @return The internal format of the user.
@@ -833,8 +830,7 @@ public class UserOrgResource extends AbstractOrgResource {
 	 * user.
 	 *
 	 * @param uid
-	 *            The user identifier to restore. A normalized form of this parameter will be
-	 *            used for this operation.
+	 *            The user identifier to restore. A normalized form of this parameter will be used for this operation.
 	 * @return The generated password.
 	 */
 	@PUT
@@ -857,7 +853,7 @@ public class UserOrgResource extends AbstractOrgResource {
 
 	/**
 	 * Log password reset action triggered by authenticated and privileged user.
-	 * 
+	 *
 	 * @param user
 	 *            Target user to log.
 	 */
@@ -869,7 +865,7 @@ public class UserOrgResource extends AbstractOrgResource {
 
 	/**
 	 * Check the current user can reset the given user password.
-	 * 
+	 *
 	 * @param user
 	 *            The user to alter.
 	 * @return The internal representation of found user.
@@ -891,7 +887,7 @@ public class UserOrgResource extends AbstractOrgResource {
 
 	/**
 	 * Check the current user can delete, enable or disable the given user entry.
-	 * 
+	 *
 	 * @param user
 	 *            The user to alter.
 	 * @param hard
@@ -915,7 +911,7 @@ public class UserOrgResource extends AbstractOrgResource {
 
 	/**
 	 * Check the groups of given users would contain at least another user when it will be deleted.
-	 * 
+	 *
 	 * @param userOrg
 	 *            User o delete and to check the memberships.
 	 * @param allGroups
@@ -955,7 +951,7 @@ public class UserOrgResource extends AbstractOrgResource {
 	/**
 	 * Return the {@link UserOrg} list corresponding to the given attribute/value without using cache for the search,
 	 * but using it for the instances.
-	 * 
+	 *
 	 * @param attribute
 	 *            The attribute name to match.
 	 * @param value
@@ -968,7 +964,7 @@ public class UserOrgResource extends AbstractOrgResource {
 
 	/**
 	 * Return the {@link UserOrg} corresponding to the given attribute/value without using cache.
-	 * 
+	 *
 	 * @param user
 	 *            The user to find. A normalized form will be used for the search.
 	 * @return the found user or <code>null</code> when not found. Groups are not fetched for this operation.
@@ -979,7 +975,7 @@ public class UserOrgResource extends AbstractOrgResource {
 
 	/**
 	 * Update internal user with the new user. Note the security is not checked there.
-	 * 
+	 *
 	 * @param userOrg
 	 *            The internal user to update. Note this must be the internal instance
 	 * @param newUser
@@ -995,7 +991,7 @@ public class UserOrgResource extends AbstractOrgResource {
 
 	/**
 	 * Return the group corresponding to the given department.
-	 * 
+	 *
 	 * @param department
 	 *            The department to match.
 	 * @return The group corresponding to the given department or <code>null</code>.
@@ -1007,7 +1003,7 @@ public class UserOrgResource extends AbstractOrgResource {
 	/**
 	 * Update internal user with the new user for following attributes : department and local identifier. Note the
 	 * security is not checked there.
-	 * 
+	 *
 	 * @param userOrg
 	 *            The user to update. Note this must be the internal instance.
 	 * @param newUser

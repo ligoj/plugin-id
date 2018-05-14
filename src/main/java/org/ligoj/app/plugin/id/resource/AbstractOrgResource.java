@@ -7,6 +7,7 @@ import org.ligoj.app.iam.ICompanyRepository;
 import org.ligoj.app.iam.IGroupRepository;
 import org.ligoj.app.iam.IUserRepository;
 import org.ligoj.app.iam.IamProvider;
+import org.ligoj.bootstrap.core.security.SecurityHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import lombok.Setter;
@@ -23,9 +24,15 @@ public abstract class AbstractOrgResource {
 	@Setter
 	protected IamProvider[] iamProvider;
 
+	@Autowired
+	protected IdentityResource resource;
+
+	@Autowired
+	protected SecurityHelper securityHelper;
+
 	/**
 	 * User repository provider.
-	 * 
+	 *
 	 * @return User repository provider.
 	 */
 	protected IUserRepository getUser() {
@@ -34,7 +41,7 @@ public abstract class AbstractOrgResource {
 
 	/**
 	 * Company repository provider.
-	 * 
+	 *
 	 * @return Company repository provider.
 	 */
 	protected ICompanyRepository getCompany() {
@@ -43,11 +50,10 @@ public abstract class AbstractOrgResource {
 
 	/**
 	 * Group repository provider.
-	 * 
+	 *
 	 * @return Group repository provider.
 	 */
 	protected IGroupRepository getGroup() {
 		return iamProvider[0].getConfiguration().getGroupRepository();
 	}
-
 }
