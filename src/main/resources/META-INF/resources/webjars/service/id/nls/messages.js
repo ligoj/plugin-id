@@ -7,7 +7,7 @@ define({
 		'mail': 'Mail',
 		'groups': 'Groups',
 		'service:id': 'Identity',
-		'service:id:uid-pattern' : 'Pattern UID',
+		'service:id:uid-pattern': 'User pattern capture id from DN',
 		'service:id:group': 'Group',
 		'service:id:parent-group': 'Parent group',
 		'service:id:parent-group-description': 'Optional parent group where the new group will be added',
