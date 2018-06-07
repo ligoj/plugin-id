@@ -38,7 +38,6 @@ import org.ligoj.bootstrap.core.json.TableItem;
 import org.ligoj.bootstrap.core.json.datatable.DataTableAttributes;
 import org.ligoj.bootstrap.core.resource.BusinessException;
 import org.ligoj.bootstrap.core.resource.OnNullReturn404;
-import org.ligoj.bootstrap.core.security.SecurityHelper;
 import org.ligoj.bootstrap.core.validation.ValidationJsonException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -50,7 +49,7 @@ import lombok.extern.slf4j.Slf4j;
 
 /**
  * Basic container operations.
- * 
+ *
  * @param <T>
  *            The container type.
  * @param <V>
@@ -69,9 +68,6 @@ public abstract class AbstractContainerResource<T extends ContainerOrg, V extend
 
 	@Autowired
 	protected PaginationJson paginationJson;
-
-	@Autowired
-	protected SecurityHelper securityHelper;
 
 	@Autowired
 	protected DelegateOrgRepository delegateRepository;
@@ -96,21 +92,21 @@ public abstract class AbstractContainerResource<T extends ContainerOrg, V extend
 
 	/**
 	 * Return the repository managing the container.
-	 * 
+	 *
 	 * @return the repository managing the container.
 	 */
 	protected abstract IContainerRepository<T> getRepository();
 
 	/**
 	 * Return the repository managing the container as cache.
-	 * 
+	 *
 	 * @return the repository managing the container as cache.
 	 */
 	protected abstract CacheContainerRepository<C> getCacheRepository();
 
 	/**
 	 * Return the DN from the container and the computed scope.
-	 * 
+	 *
 	 * @param container
 	 *            The container to convert.
 	 * @param scope
@@ -121,7 +117,7 @@ public abstract class AbstractContainerResource<T extends ContainerOrg, V extend
 
 	/**
 	 * Simple transformer, securing sensible date. DN is not forwarded.
-	 * 
+	 *
 	 * @param rawGroup
 	 *            The group to convert.
 	 * @return The container including the scope and without sensible data.
@@ -141,7 +137,7 @@ public abstract class AbstractContainerResource<T extends ContainerOrg, V extend
 	/**
 	 * Return the container matching to given name. Case is sensitive.
 	 * Visibility is checked against security context. DN is not exposed.
-	 * 
+	 *
 	 * @param name
 	 *            the container name. Exact match is required, so a normalized
 	 *            version.
@@ -158,7 +154,7 @@ public abstract class AbstractContainerResource<T extends ContainerOrg, V extend
 	 * Create the given container.<br>
 	 * The delegation system is involved for this operation and requires
 	 * administration privilege on the parent tree or group/company.
-	 * 
+	 *
 	 * @param container
 	 *            The container to create.
 	 * @return The identifier of created {@link org.ligoj.app.iam.ContainerOrg}.
@@ -174,7 +170,7 @@ public abstract class AbstractContainerResource<T extends ContainerOrg, V extend
 	 * administration privilege on the parent tree or group/company.<br>
 	 * Note this is for internal use since the returned object corresponds to
 	 * the internal representation.
-	 * 
+	 *
 	 * @param container
 	 *            The container to create.
 	 * @return The created {@link org.ligoj.app.iam.ContainerOrg} internal
@@ -221,7 +217,7 @@ public abstract class AbstractContainerResource<T extends ContainerOrg, V extend
 	 * Delete an existing container.<br>
 	 * The delegation system is involved for this operation and requires
 	 * administration privilege on this container.
-	 * 
+	 *
 	 * @param id
 	 *            The container's identifier.
 	 */
@@ -240,7 +236,7 @@ public abstract class AbstractContainerResource<T extends ContainerOrg, V extend
 
 	/**
 	 * Return containers the current user can manage with write access.
-	 * 
+	 *
 	 * @param uriInfo
 	 *            filter data.
 	 * @return containers the current user can manage.
@@ -254,7 +250,7 @@ public abstract class AbstractContainerResource<T extends ContainerOrg, V extend
 
 	/**
 	 * Return containers the current user can manage with administration access.
-	 * 
+	 *
 	 * @param uriInfo
 	 *            filter data.
 	 * @return containers the current user can manage.
@@ -269,7 +265,7 @@ public abstract class AbstractContainerResource<T extends ContainerOrg, V extend
 	/**
 	 * Return containers the current user can see. A user always sees his
 	 * company, as if he had a company delegation to see it.
-	 * 
+	 *
 	 * @param uriInfo
 	 *            filter data.
 	 * @return containers the current user can see.
@@ -286,7 +282,7 @@ public abstract class AbstractContainerResource<T extends ContainerOrg, V extend
 	 * cannot be seen by the current user, the error code
 	 * {@link org.ligoj.bootstrap.core.resource.BusinessException#KEY_UNKNOW_ID}
 	 * will be returned.
-	 * 
+	 *
 	 * @param id
 	 *            The container's identifier. Will be normalized.
 	 * @return The container from its identifier.
@@ -297,7 +293,7 @@ public abstract class AbstractContainerResource<T extends ContainerOrg, V extend
 
 	/**
 	 * Find a container from its identifier.
-	 * 
+	 *
 	 * @param id
 	 *            The container's identifier. Will be normalized.
 	 * @return The container from its identifier. <code>null</code> if the
@@ -309,7 +305,7 @@ public abstract class AbstractContainerResource<T extends ContainerOrg, V extend
 
 	/**
 	 * Check the container can be deleted by the current user.
-	 * 
+	 *
 	 * @param container
 	 *            The container to delete.
 	 */
@@ -334,7 +330,7 @@ public abstract class AbstractContainerResource<T extends ContainerOrg, V extend
 	 * Return the closest {@link ContainerScope} name associated to the given
 	 * container. Order of scopes is important since the first matching item
 	 * from this list is returned.
-	 * 
+	 *
 	 * @param scopes
 	 *            The available scopes.
 	 * @param container
@@ -385,7 +381,7 @@ public abstract class AbstractContainerResource<T extends ContainerOrg, V extend
 	/**
 	 * Build a new secured container managing the effective visibility and
 	 * rights.
-	 * 
+	 *
 	 * @param rawContainer
 	 *            the raw container contained sensitive data.
 	 * @param canWrite
@@ -417,7 +413,7 @@ public abstract class AbstractContainerResource<T extends ContainerOrg, V extend
 
 	/**
 	 * Return containers the given user can manage with write access.
-	 * 
+	 *
 	 * @return ordered containers the given user can manage with write access.
 	 */
 	public Set<T> getContainersForWrite() {
@@ -426,7 +422,7 @@ public abstract class AbstractContainerResource<T extends ContainerOrg, V extend
 
 	/**
 	 * Return containers the given user can manage with administration access.
-	 * 
+	 *
 	 * @return ordered companies the given user can manage with administration
 	 *         access.
 	 */
@@ -436,7 +432,7 @@ public abstract class AbstractContainerResource<T extends ContainerOrg, V extend
 
 	/**
 	 * Return containers the current user can see.
-	 * 
+	 *
 	 * @return ordered containers the current user can see.
 	 */
 	public Set<T> getContainers() {
@@ -445,7 +441,7 @@ public abstract class AbstractContainerResource<T extends ContainerOrg, V extend
 
 	/**
 	 * Return containers the current user can see.
-	 * 
+	 *
 	 * @param criteria
 	 *            Optional criteria, can be <code>null</code>.
 	 * @param pageRequest
@@ -459,7 +455,7 @@ public abstract class AbstractContainerResource<T extends ContainerOrg, V extend
 	/**
 	 * Return the internal representation of the container set. Not existing
 	 * cache items are removed.
-	 * 
+	 *
 	 * @param cacheItems
 	 *            The database base cache containers to convert.
 	 * @return The internal representation of container set. Ordered is kept.
@@ -472,7 +468,7 @@ public abstract class AbstractContainerResource<T extends ContainerOrg, V extend
 	/**
 	 * Return the internal representation of the container set as a
 	 * {@link Page}.
-	 * 
+	 *
 	 * @param cacheItems
 	 *            The database base page cache containers to convert.
 	 * @return The internal representation of
