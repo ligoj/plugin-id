@@ -23,7 +23,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.ligoj.app.AbstractAppTest;
-import org.ligoj.app.MatcherUtil;
 import org.ligoj.app.iam.CompanyOrg;
 import org.ligoj.app.iam.GroupOrg;
 import org.ligoj.app.iam.ICompanyRepository;
@@ -43,14 +42,15 @@ import org.ligoj.app.iam.model.DelegateOrg;
 import org.ligoj.app.iam.model.DelegateType;
 import org.ligoj.app.plugin.id.dao.PasswordResetAuditRepository;
 import org.ligoj.app.plugin.id.model.PasswordResetAudit;
+import org.ligoj.bootstrap.MatcherUtil;
 import org.ligoj.bootstrap.core.json.TableItem;
 import org.ligoj.bootstrap.core.json.datatable.DataTableAttributes;
 import org.ligoj.bootstrap.core.resource.BusinessException;
 import org.ligoj.bootstrap.core.validation.ValidationJsonException;
 import org.ligoj.bootstrap.model.system.SystemAuthorization;
+import org.ligoj.bootstrap.model.system.SystemAuthorization.AuthorizationType;
 import org.ligoj.bootstrap.model.system.SystemRole;
 import org.ligoj.bootstrap.model.system.SystemRoleAssignment;
-import org.ligoj.bootstrap.model.system.SystemAuthorization.AuthorizationType;
 import org.ligoj.bootstrap.model.system.SystemUser;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
@@ -101,7 +101,8 @@ public class UserOrgResourceTest extends AbstractAppTest {
 		Mockito.when(companyRepository.getTypeName()).thenReturn("company");
 	}
 
-	private UriInfo newUriInfoAsc(final String ascProperty) {
+	@Override
+	protected UriInfo newUriInfoAsc(final String ascProperty) {
 		final UriInfo uriInfo = newUriInfo();
 		uriInfo.getQueryParameters().add(DataTableAttributes.PAGE_LENGTH, "100");
 		uriInfo.getQueryParameters().add(DataTableAttributes.SORTED_COLUMN, "2");
