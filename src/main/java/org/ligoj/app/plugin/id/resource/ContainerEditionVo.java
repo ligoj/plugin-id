@@ -22,7 +22,7 @@ import lombok.Setter;
 public class ContainerEditionVo {
 
 	/**
-	 * Group name, original CN.
+	 * Container name, original CN.
 	 */
 	@NotNull
 	@NotEmpty
