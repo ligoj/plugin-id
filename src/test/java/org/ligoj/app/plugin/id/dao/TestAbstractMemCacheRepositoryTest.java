@@ -196,7 +196,7 @@ public class TestAbstractMemCacheRepositoryTest extends AbstractDataGeneratorTes
 	public void createGroup() {
 		final GroupOrg newGroupLdap = new GroupOrg("dn3", "G3", new HashSet<>());
 
-		repository.create(newGroupLdap);
+		Assertions.assertEquals(newGroupLdap, repository.create(newGroupLdap));
 
 		Mockito.verify(repository.cache).create(newGroupLdap);
 		Assertions.assertEquals(newGroupLdap, groups.get("g3"));
@@ -206,7 +206,7 @@ public class TestAbstractMemCacheRepositoryTest extends AbstractDataGeneratorTes
 	public void createCompany() {
 		final CompanyOrg newCompanyLdap = new CompanyOrg("dn3", "C3");
 
-		repository.create(newCompanyLdap);
+		Assertions.assertEquals(newCompanyLdap, repository.create(newCompanyLdap));
 
 		Mockito.verify(repository.cache).create(newCompanyLdap);
 		Assertions.assertEquals(newCompanyLdap, companies.get("c3"));
@@ -220,7 +220,7 @@ public class TestAbstractMemCacheRepositoryTest extends AbstractDataGeneratorTes
 		newUser.setLastName("l");
 		newUser.setCompany("company");
 
-		repository.create(newUser);
+		Assertions.assertEquals(newUser, repository.create(newUser));
 
 		Mockito.verify(repository.cache).create(newUser);
 		Assertions.assertTrue(user.getGroups().contains("group"));

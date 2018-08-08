@@ -80,33 +80,39 @@ public abstract class AbstractMemCacheRepository {
 	 * Add given group to the cache.
 	 *
 	 * @param group
-	 *            the new group.
+	 *            The new group.
+	 * @return <code>group</code>
 	 */
-	public void create(final GroupOrg group) {
+	public GroupOrg create(final GroupOrg group) {
 		cache.create(group);
 		getGroup().findAll().put(group.getId(), group);
+		return group;
 	}
 
 	/**
 	 * Add given company to the cache.
 	 *
 	 * @param company
-	 *            the new group.
+	 *            The new company.
+	 * @return <code>company</code>
 	 */
-	public void create(final CompanyOrg company) {
+	public CompanyOrg create(final CompanyOrg company) {
 		cache.create(company);
 		getCompany().findAll().put(company.getId(), company);
+		return company;
 	}
 
 	/**
 	 * Add given user to the cache. Membership is not considered.
 	 *
 	 * @param user
-	 *            the new user.
+	 *            The new user.
+	 * @return <code>user</code>
 	 */
-	public void create(final UserOrg user) {
+	public UserOrg create(final UserOrg user) {
 		cache.create(user);
 		getUser().findAll().put(user.getId(), user);
+		return user;
 	}
 
 	/**
