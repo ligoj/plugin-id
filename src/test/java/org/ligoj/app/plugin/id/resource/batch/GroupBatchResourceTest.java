@@ -86,11 +86,11 @@ public class GroupBatchResourceTest extends AbstractBatchTest {
 
 	@Test
 	public void full() throws IOException, InterruptedException {
-		final BatchTaskVo<GroupImportEntry> importTask = full("Gfi France;Fonction");
+		final BatchTaskVo<GroupImportEntry> importTask = full("Ligoj France;Fonction");
 
 		// Check the result
 		final GroupImportEntry importEntry = checkImportTask(importTask);
-		Assertions.assertEquals("Gfi France", importEntry.getName());
+		Assertions.assertEquals("Ligoj France", importEntry.getName());
 		Assertions.assertEquals("Fonction", importEntry.getScope());
 		Assertions.assertNull(importEntry.getDepartment());
 		Assertions.assertNull(importEntry.getOwner());
@@ -106,7 +106,7 @@ public class GroupBatchResourceTest extends AbstractBatchTest {
 			}
 			final GroupEditionVo group = (GroupEditionVo) data.getAllInvocations().get(0).getArguments()[0];
 			Assertions.assertNotNull(group);
-			Assertions.assertEquals("Gfi France", group.getName());
+			Assertions.assertEquals("Ligoj France", group.getName());
 			Assertions.assertNotNull(group.getScope());
 			Assertions.assertTrue(group.getDepartments().isEmpty());
 			Assertions.assertTrue(group.getOwners().isEmpty());
