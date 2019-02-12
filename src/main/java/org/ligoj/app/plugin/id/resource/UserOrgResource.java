@@ -14,7 +14,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
-import java.util.function.BiFunction;
+import java.util.function.BiPredicate;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -323,7 +323,7 @@ public class UserOrgResource extends AbstractOrgResource {
 	 *            The function to execute on computed groups of current user.
 	 */
 	private void updateGroupUser(final String user, final String group,
-			final BiFunction<Collection<String>, String, Boolean> updater) {
+			final BiPredicate<Collection<String>, String> updater) {
 
 		// Get all delegates of current user
 		final List<DelegateOrg> delegates = delegateRepository.findAllByUser(securityHelper.getLogin());
@@ -336,8 +336,7 @@ public class UserOrgResource extends AbstractOrgResource {
 
 		// Compute the new groups
 		final Set<String> newGroups = new HashSet<>(userOrg.getGroups());
-		final boolean updated = updater.apply(newGroups, group);
-		if (updated) {
+		if (updater.test(newGroups, group)) {
 
 			// Replace the user groups by the normalized groups including the
 			// one we have just updated
