@@ -79,7 +79,7 @@ public class GroupResource extends AbstractContainerResource<GroupOrg, GroupEdit
 	/**
 	 * Return groups matching to given criteria. The visible groups, trees and companies are checked. The returned
 	 * groups of each user depends on the groups the user can see/write in CN form.
-	 * 
+	 *
 	 * @param uriInfo
 	 *            filter data.
 	 * @return found groups.
@@ -111,7 +111,7 @@ public class GroupResource extends AbstractContainerResource<GroupOrg, GroupEdit
 
 	/**
 	 * Indicates a group exists or not.
-	 * 
+	 *
 	 * @param group
 	 *            the group name. Exact match is required, so a normalized version.
 	 * @return <code>true</code> if the group exists.
@@ -140,8 +140,20 @@ public class GroupResource extends AbstractContainerResource<GroupOrg, GroupEdit
 	}
 
 	/**
+	 * Convert the given user UIDs to a the corresponding DN. The users must exists.
+	 *
+	 * @param uids
+	 *            The UIDs to convert.
+	 * @return The corresponding DN.
+	 */
+	private List<String> toDn(final List<String> uids) {
+		return CollectionUtils.emptyIfNull(uids).stream().map(getUser()::findByIdExpected).map(UserOrg::getDn)
+				.collect(Collectors.toList());
+	}
+
+	/**
 	 * Empty this group by removing all members if supported by the repository.
-	 * 
+	 *
 	 * @param id
 	 *            The group to empty.
 	 */
@@ -183,17 +195,5 @@ public class GroupResource extends AbstractContainerResource<GroupOrg, GroupEdit
 				CollectionUtils.emptyIfNull(container.getDepartments()));
 
 		return group;
-	}
-
-	/**
-	 * Convert the given user UIDs to a the corresponding DN. The users must exists.
-	 * 
-	 * @param uids
-	 *            The UIDs to convert.
-	 * @return The corresponding DN.
-	 */
-	private List<String> toDn(final List<String> uids) {
-		return CollectionUtils.emptyIfNull(uids).stream().map(getUser()::findByIdExpected).map(UserOrg::getDn)
-				.collect(Collectors.toList());
 	}
 }

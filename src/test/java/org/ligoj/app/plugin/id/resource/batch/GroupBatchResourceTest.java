@@ -48,42 +48,6 @@ public class GroupBatchResourceTest extends AbstractBatchTest {
 
 	private GroupResource mockResource;
 
-	@SuppressWarnings("unchecked")
-	@BeforeEach
-	public void mockApplicationContext() {
-		final ApplicationContext applicationContext = Mockito.mock(ApplicationContext.class);
-		SpringUtils.setSharedApplicationContext(applicationContext);
-		mockResource = Mockito.mock(GroupResource.class);
-		final GroupFullTask mockTask = new GroupFullTask();
-		mockTask.resource = mockResource;
-		mockTask.securityHelper = securityHelper;
-		mockTask.containerScopeResource = Mockito.mock(ContainerScopeResource.class);
-		Mockito.when(applicationContext.getBean(SessionSettings.class)).thenReturn(new SessionSettings());
-		Mockito.when(applicationContext.getBean((Class<?>) ArgumentMatchers.any(Class.class))).thenAnswer((Answer<Object>) invocation -> {
-			final Class<?> requiredType = (Class<Object>) invocation.getArguments()[0];
-			if (requiredType == GroupFullTask.class) {
-				return mockTask;
-			}
-			return GroupBatchResourceTest.super.applicationContext.getBean(requiredType);
-		});
-
-		final ContainerScope container = new ContainerScope();
-		container.setId(1);
-		container.setName("Fonction");
-		container.setType(ContainerType.GROUP);
-		Mockito.when(mockTask.containerScopeResource.findByName("Fonction")).thenReturn(container);
-	}
-
-	@AfterEach
-	public void unmockApplicationContext() {
-		SpringUtils.setSharedApplicationContext(super.applicationContext);
-	}
-
-	@BeforeEach
-	public void prepareData() throws IOException {
-		persistEntities("csv", new Class[] { DelegateOrg.class }, StandardCharsets.UTF_8.name());
-	}
-
 	@Test
 	public void full() throws IOException, InterruptedException {
 		final BatchTaskVo<GroupImportEntry> importTask = full("Ligoj France;Fonction");
@@ -113,6 +77,30 @@ public class GroupBatchResourceTest extends AbstractBatchTest {
 			Assertions.assertTrue(group.getAssistants().isEmpty());
 			Assertions.assertNull(group.getParent());
 		})).create(null);
+	}
+
+	protected <U extends BatchElement> BatchTaskVo<U> full(final InputStream input, final String[] headers) throws IOException, InterruptedException {
+		return full(input, headers, "cp1252");
+	}
+
+	protected <U extends BatchElement> BatchTaskVo<U> full(final InputStream input, final String[] headers, final String encoding)
+			throws IOException, InterruptedException {
+		initSpringSecurityContext(DEFAULT_USER);
+		final long id = resource.full(input, headers, encoding, false);
+		Assertions.assertNotNull(id);
+		@SuppressWarnings("unchecked")
+		final BatchTaskVo<U> importTask = (BatchTaskVo<U>) resource.getImportTask(id);
+		Assertions.assertEquals(id, importTask.getId());
+		return waitImport(importTask);
+	}
+
+	protected <U extends BatchElement> BatchTaskVo<U> full(final String csvData) throws IOException, InterruptedException {
+		return full(csvData, "cp1252");
+	}
+
+	protected <U extends BatchElement> BatchTaskVo<U> full(final String csvData, final String encoding) throws IOException, InterruptedException {
+		return full(new ByteArrayInputStream(csvData.getBytes(encoding)),
+				new String[] { "name", "scope", "parent", "department", "owner", "assistant" }, encoding);
 	}
 
 	// "name", "type", "parent", "owner", "seealso", "department"
@@ -150,27 +138,39 @@ public class GroupBatchResourceTest extends AbstractBatchTest {
 		})).create(null);
 	}
 
-	protected <U extends BatchElement> BatchTaskVo<U> full(final InputStream input, final String[] headers) throws IOException, InterruptedException {
-		return full(input, headers, "cp1252");
+	@SuppressWarnings("unchecked")
+	@BeforeEach
+	public void mockApplicationContext() {
+		final ApplicationContext applicationContext = Mockito.mock(ApplicationContext.class);
+		SpringUtils.setSharedApplicationContext(applicationContext);
+		mockResource = Mockito.mock(GroupResource.class);
+		final GroupFullTask mockTask = new GroupFullTask();
+		mockTask.resource = mockResource;
+		mockTask.securityHelper = securityHelper;
+		mockTask.containerScopeResource = Mockito.mock(ContainerScopeResource.class);
+		Mockito.when(applicationContext.getBean(SessionSettings.class)).thenReturn(new SessionSettings());
+		Mockito.when(applicationContext.getBean((Class<?>) ArgumentMatchers.any(Class.class))).thenAnswer((Answer<Object>) invocation -> {
+			final Class<?> requiredType = (Class<Object>) invocation.getArguments()[0];
+			if (requiredType == GroupFullTask.class) {
+				return mockTask;
+			}
+			return GroupBatchResourceTest.super.applicationContext.getBean(requiredType);
+		});
+
+		final ContainerScope container = new ContainerScope();
+		container.setId(1);
+		container.setName("Fonction");
+		container.setType(ContainerType.GROUP);
+		Mockito.when(mockTask.containerScopeResource.findByName("Fonction")).thenReturn(container);
 	}
 
-	protected <U extends BatchElement> BatchTaskVo<U> full(final InputStream input, final String[] headers, final String encoding)
-			throws IOException, InterruptedException {
-		initSpringSecurityContext(DEFAULT_USER);
-		final long id = resource.full(input, headers, encoding, false);
-		Assertions.assertNotNull(id);
-		@SuppressWarnings("unchecked")
-		final BatchTaskVo<U> importTask = (BatchTaskVo<U>) resource.getImportTask(id);
-		Assertions.assertEquals(id, importTask.getId());
-		return waitImport(importTask);
+	@BeforeEach
+	public void prepareData() throws IOException {
+		persistEntities("csv", new Class[] { DelegateOrg.class }, StandardCharsets.UTF_8.name());
 	}
 
-	protected <U extends BatchElement> BatchTaskVo<U> full(final String csvData) throws IOException, InterruptedException {
-		return full(csvData, "cp1252");
-	}
-
-	protected <U extends BatchElement> BatchTaskVo<U> full(final String csvData, final String encoding) throws IOException, InterruptedException {
-		return full(new ByteArrayInputStream(csvData.getBytes(encoding)),
-				new String[] { "name", "scope", "parent", "department", "owner", "assistant" }, encoding);
+	@AfterEach
+	public void unmockApplicationContext() {
+		SpringUtils.setSharedApplicationContext(super.applicationContext);
 	}
 }

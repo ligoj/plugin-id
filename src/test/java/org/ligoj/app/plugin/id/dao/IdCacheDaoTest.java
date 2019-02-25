@@ -55,6 +55,161 @@ public class IdCacheDaoTest extends AbstractJpaTest {
 	@Autowired
 	private DelegateOrgRepository delegateOrgRepository;
 
+	@Test
+	public void addGroupToGroup() {
+		dao.create(new GroupOrg("dng3", "NameSG-other", null));
+		Assertions.assertEquals(0, em.createQuery("FROM CacheMembership WHERE group.id = :id AND subGroup.id = :sid")
+				.setParameter("id", "group").setParameter("sid", "namesg-other").getResultList().size());
+		dao.addGroupToGroup(new GroupOrg("dng3", "NameSG-other", null), new GroupOrg("dng", "Group", null));
+
+		final List<CacheMembership> memberships = em
+				.createQuery("FROM CacheMembership WHERE group.id = :id AND subGroup.id = :sid", CacheMembership.class)
+				.setParameter("id", "group").setParameter("sid", "namesg-other").getResultList();
+		Assertions.assertEquals(1, memberships.size());
+		Assertions.assertEquals("group", memberships.get(0).getGroup().getId());
+		Assertions.assertEquals("namesg-other", memberships.get(0).getSubGroup().getId());
+		Assertions.assertNull(memberships.get(0).getUser());
+	}
+
+	@Test
+	public void addUserToGroup() {
+		em.createQuery("DELETE FROM CacheMembership").executeUpdate();
+		Assertions.assertEquals(0, em.createQuery("FROM CacheMembership WHERE user.id = :id").setParameter("id", "u0")
+				.getResultList().size());
+		dao.addUserToGroup(newUser("u0"), new GroupOrg("dng", "Group", null));
+		Assertions.assertEquals(1, em.createQuery("FROM CacheMembership WHERE user.id = :id").setParameter("id", "u0")
+				.getResultList().size());
+	}
+
+	private void checkUser() {
+		final CacheUser user3 = em.find(CacheUser.class, "u");
+		Assertions.assertNotNull(user3);
+		Assertions.assertEquals("u", user3.getId());
+		Assertions.assertEquals("company", user3.getCompany().getId());
+		Assertions.assertEquals("f", user3.getFirstName());
+		Assertions.assertEquals("l", user3.getLastName());
+		Assertions.assertEquals("mail", user3.getMails());
+	}
+
+	@Test
+	public void clear() {
+		Assertions.assertNotNull(em.find(CacheCompany.class, "another-company"));
+		Assertions.assertNotNull(em.find(CacheGroup.class, "group"));
+		Assertions.assertNotNull(em.find(CacheUser.class, "u0"));
+		Assertions.assertEquals(2, em.createQuery("FROM CacheMembership").getResultList().size());
+		em.clear();
+		dao.clear();
+		Assertions.assertEquals(0, em.createQuery("FROM CacheMembership").getResultList().size());
+		Assertions.assertEquals(0, em.createQuery("FROM CacheGroup").getResultList().size());
+		Assertions.assertEquals(0, em.createQuery("FROM CacheUser").getResultList().size());
+		Assertions.assertEquals(0, em.createQuery("FROM CacheMembership").getResultList().size());
+	}
+
+	@Test
+	public void createGroup() {
+		Assertions.assertEquals(0, em.createQuery("FROM CacheGroup WHERE id = :id").setParameter("id", "namesg-other")
+				.getResultList().size());
+		dao.create(new GroupOrg("dng3", "NameSG-other", null));
+		final CacheGroup group = em.find(CacheGroup.class, "namesg-other");
+		Assertions.assertNotNull(group);
+		Assertions.assertEquals("namesg-other", group.getId());
+		Assertions.assertEquals("NameSG-other", group.getName());
+		Assertions.assertEquals("dng3", group.getDescription());
+	}
+
+	@Test
+	public void createUser() {
+		Assertions.assertEquals(1, em.createQuery("FROM CacheMembership WHERE user.id = :id").setParameter("id", "u0")
+				.getResultList().size());
+		final CacheCompany company = new CacheCompany();
+		company.setId("company");
+		company.setName("Company");
+		company.setDescription("cn=company");
+		em.persist(company);
+		em.flush();
+		em.clear();
+
+		dao.create(newUser());
+
+		Assertions.assertEquals("cn=company", em.find(CacheCompany.class, "company").getDescription());
+		Assertions.assertNotNull(em.find(CacheCompany.class, "another-company"));
+		Assertions.assertNotNull(em.find(CacheGroup.class, "group"));
+		checkUser();
+	}
+
+	@Test
+	public void deleteCompany() {
+		Assertions.assertEquals(2, em.createQuery("FROM CacheMembership WHERE group.id = :id")
+				.setParameter("id", "group").getResultList().size());
+		final UserOrg user = new UserOrg();
+		user.setId("u0");
+		dao.delete(user);
+		Assertions.assertNotNull(em.find(CacheGroup.class, "group"));
+		em.clear();
+		final CompanyOrg company = new CompanyOrg("dna", "another-company");
+
+		dao.delete(company);
+
+		Assertions.assertNull(em.find(CacheCompany.class, "another-company"));
+		Assertions.assertNotNull(em.find(CacheGroup.class, "group"));
+		Assertions.assertNull(em.find(CacheUser.class, "u0"));
+		Assertions.assertEquals(1, em.createQuery("FROM CacheMembership WHERE group.id = :id")
+				.setParameter("id", "group").getResultList().size());
+	}
+
+	@Test
+	public void deleteCompanyNotEmpty() {
+		Assertions.assertEquals(2, em.createQuery("FROM CacheMembership WHERE group.id = :id")
+				.setParameter("id", "group").getResultList().size());
+		Assertions.assertNotNull(em.find(CacheUser.class, "u0"));
+		Assertions.assertNotNull(em.find(CacheGroup.class, "group"));
+		em.clear();
+		final CompanyOrg company = new CompanyOrg("dna", "another-company");
+		Assertions.assertThrows(DataIntegrityViolationException.class, () -> dao.delete(company));
+	}
+
+	@Test
+	public void deleteGroup() {
+		Assertions.assertEquals(2, em.createQuery("FROM CacheMembership WHERE group.id = :id")
+				.setParameter("id", "group").getResultList().size());
+		final GroupOrg group = new GroupOrg("dng", "Group", null);
+
+		dao.delete(group);
+
+		Assertions.assertNotNull(em.find(CacheCompany.class, "another-company"));
+		Assertions.assertNull(em.find(CacheGroup.class, "group"));
+		Assertions.assertNotNull(em.find(CacheUser.class, "u0"));
+		Assertions.assertEquals(0, em.createQuery("FROM CacheMembership WHERE group.id = :id")
+				.setParameter("id", "group").getResultList().size());
+	}
+
+	@Test
+	public void deleteUser() {
+		Assertions.assertEquals(1, em.createQuery("FROM CacheMembership WHERE user.id = :id").setParameter("id", "u0")
+				.getResultList().size());
+		final UserOrg user = new UserOrg();
+		user.setId("u0");
+
+		dao.delete(user);
+
+		Assertions.assertNotNull(em.find(CacheCompany.class, "another-company"));
+		Assertions.assertNotNull(em.find(CacheGroup.class, "group"));
+		Assertions.assertNull(em.find(CacheUser.class, "u0"));
+		Assertions.assertEquals(0, em.createQuery("FROM CacheMembership WHERE user.id = :id").setParameter("id", "u0")
+				.getResultList().size());
+	}
+
+	@Test
+	public void empty() {
+		Assertions.assertEquals(2, em.createQuery("FROM CacheMembership WHERE group.id = :id")
+				.setParameter("id", "group").getResultList().size());
+		final GroupOrg group = new GroupOrg("dng", "Group", null);
+		dao.empty(group);
+		Assertions.assertNotNull(em.find(CacheGroup.class, "group"));
+		Assertions.assertEquals(0, em.createQuery("FROM CacheMembership WHERE group.id = :id")
+				.setParameter("id", "group").getResultList().size());
+	}
+
 	@BeforeEach
 	public void initDbCache() {
 		final CacheCompany company = new CacheCompany();
@@ -115,6 +270,41 @@ public class IdCacheDaoTest extends AbstractJpaTest {
 
 		em.flush();
 		em.clear();
+	}
+
+	private UserOrg newUser() {
+		final UserOrg user = new UserOrg();
+		user.setId("u");
+		user.setFirstName("f");
+		user.setLastName("l");
+		user.setCompany("company");
+		user.setGroups(Collections.singleton("group"));
+		user.setMails(Collections.singletonList("mail"));
+		return user;
+	}
+
+	private UserOrg newUser(final String login) {
+		final UserOrg user = new UserOrg();
+		user.setId(login);
+		return user;
+	}
+
+	@Test
+	public void removeGroupFromGroup() {
+		Assertions.assertEquals(1, em.createQuery("FROM CacheMembership WHERE group.id = :id AND subGroup.id = :sid")
+				.setParameter("id", "group").setParameter("sid", "another-group").getResultList().size());
+		dao.removeGroupFromGroup(new GroupOrg("dng2", "Another-Group", null), new GroupOrg("dng", "Group", null));
+		Assertions.assertEquals(0, em.createQuery("FROM CacheMembership WHERE group.id = :id AND subGroup.id = :sid")
+				.setParameter("id", "group").setParameter("sid", "another-group").getResultList().size());
+	}
+
+	@Test
+	public void removeUserFromGroup() {
+		Assertions.assertEquals(1, em.createQuery("FROM CacheMembership WHERE user.id = :id").setParameter("id", "u0")
+				.getResultList().size());
+		dao.removeUserFromGroup(newUser("u0"), new GroupOrg("dng", "Group", null));
+		Assertions.assertEquals(0, em.createQuery("FROM CacheMembership WHERE user.id = :id").setParameter("id", "u0")
+				.getResultList().size());
 	}
 
 	@Test
@@ -225,61 +415,6 @@ public class IdCacheDaoTest extends AbstractJpaTest {
 		Assertions.assertEquals(1, pgroups.size());
 	}
 
-	private UserOrg newUser() {
-		final UserOrg user = new UserOrg();
-		user.setId("u");
-		user.setFirstName("f");
-		user.setLastName("l");
-		user.setCompany("company");
-		user.setGroups(Collections.singleton("group"));
-		user.setMails(Collections.singletonList("mail"));
-		return user;
-	}
-
-	private void checkUser() {
-		final CacheUser user3 = em.find(CacheUser.class, "u");
-		Assertions.assertNotNull(user3);
-		Assertions.assertEquals("u", user3.getId());
-		Assertions.assertEquals("company", user3.getCompany().getId());
-		Assertions.assertEquals("f", user3.getFirstName());
-		Assertions.assertEquals("l", user3.getLastName());
-		Assertions.assertEquals("mail", user3.getMails());
-	}
-
-	@Test
-	public void clear() {
-		Assertions.assertNotNull(em.find(CacheCompany.class, "another-company"));
-		Assertions.assertNotNull(em.find(CacheGroup.class, "group"));
-		Assertions.assertNotNull(em.find(CacheUser.class, "u0"));
-		Assertions.assertEquals(2, em.createQuery("FROM CacheMembership").getResultList().size());
-		em.clear();
-		dao.clear();
-		Assertions.assertEquals(0, em.createQuery("FROM CacheMembership").getResultList().size());
-		Assertions.assertEquals(0, em.createQuery("FROM CacheGroup").getResultList().size());
-		Assertions.assertEquals(0, em.createQuery("FROM CacheUser").getResultList().size());
-		Assertions.assertEquals(0, em.createQuery("FROM CacheMembership").getResultList().size());
-	}
-
-	@Test
-	public void createUser() {
-		Assertions.assertEquals(1, em.createQuery("FROM CacheMembership WHERE user.id = :id").setParameter("id", "u0")
-				.getResultList().size());
-		final CacheCompany company = new CacheCompany();
-		company.setId("company");
-		company.setName("Company");
-		company.setDescription("cn=company");
-		em.persist(company);
-		em.flush();
-		em.clear();
-
-		dao.create(newUser());
-
-		Assertions.assertEquals("cn=company", em.find(CacheCompany.class, "company").getDescription());
-		Assertions.assertNotNull(em.find(CacheCompany.class, "another-company"));
-		Assertions.assertNotNull(em.find(CacheGroup.class, "group"));
-		checkUser();
-	}
-
 	@Test
 	public void updateUser() {
 		Assertions.assertEquals(1, em.createQuery("FROM CacheMembership WHERE user.id = :id").setParameter("id", "u0")
@@ -308,140 +443,5 @@ public class IdCacheDaoTest extends AbstractJpaTest {
 		Assertions.assertEquals("group", memberships.get(0).getGroup().getId());
 		Assertions.assertNull(memberships.get(0).getSubGroup());
 		Assertions.assertEquals("u0", memberships.get(0).getUser().getId());
-	}
-
-	private UserOrg newUser(final String login) {
-		final UserOrg user = new UserOrg();
-		user.setId(login);
-		return user;
-	}
-
-	@Test
-	public void removeUserFromGroup() {
-		Assertions.assertEquals(1, em.createQuery("FROM CacheMembership WHERE user.id = :id").setParameter("id", "u0")
-				.getResultList().size());
-		dao.removeUserFromGroup(newUser("u0"), new GroupOrg("dng", "Group", null));
-		Assertions.assertEquals(0, em.createQuery("FROM CacheMembership WHERE user.id = :id").setParameter("id", "u0")
-				.getResultList().size());
-	}
-
-	@Test
-	public void removeGroupFromGroup() {
-		Assertions.assertEquals(1, em.createQuery("FROM CacheMembership WHERE group.id = :id AND subGroup.id = :sid")
-				.setParameter("id", "group").setParameter("sid", "another-group").getResultList().size());
-		dao.removeGroupFromGroup(new GroupOrg("dng2", "Another-Group", null), new GroupOrg("dng", "Group", null));
-		Assertions.assertEquals(0, em.createQuery("FROM CacheMembership WHERE group.id = :id AND subGroup.id = :sid")
-				.setParameter("id", "group").setParameter("sid", "another-group").getResultList().size());
-	}
-
-	@Test
-	public void addUserToGroup() {
-		em.createQuery("DELETE FROM CacheMembership").executeUpdate();
-		Assertions.assertEquals(0, em.createQuery("FROM CacheMembership WHERE user.id = :id").setParameter("id", "u0")
-				.getResultList().size());
-		dao.addUserToGroup(newUser("u0"), new GroupOrg("dng", "Group", null));
-		Assertions.assertEquals(1, em.createQuery("FROM CacheMembership WHERE user.id = :id").setParameter("id", "u0")
-				.getResultList().size());
-	}
-
-	@Test
-	public void createGroup() {
-		Assertions.assertEquals(0, em.createQuery("FROM CacheGroup WHERE id = :id").setParameter("id", "namesg-other")
-				.getResultList().size());
-		dao.create(new GroupOrg("dng3", "NameSG-other", null));
-		final CacheGroup group = em.find(CacheGroup.class, "namesg-other");
-		Assertions.assertNotNull(group);
-		Assertions.assertEquals("namesg-other", group.getId());
-		Assertions.assertEquals("NameSG-other", group.getName());
-		Assertions.assertEquals("dng3", group.getDescription());
-	}
-
-	@Test
-	public void addGroupToGroup() {
-		dao.create(new GroupOrg("dng3", "NameSG-other", null));
-		Assertions.assertEquals(0, em.createQuery("FROM CacheMembership WHERE group.id = :id AND subGroup.id = :sid")
-				.setParameter("id", "group").setParameter("sid", "namesg-other").getResultList().size());
-		dao.addGroupToGroup(new GroupOrg("dng3", "NameSG-other", null), new GroupOrg("dng", "Group", null));
-
-		final List<CacheMembership> memberships = em
-				.createQuery("FROM CacheMembership WHERE group.id = :id AND subGroup.id = :sid", CacheMembership.class)
-				.setParameter("id", "group").setParameter("sid", "namesg-other").getResultList();
-		Assertions.assertEquals(1, memberships.size());
-		Assertions.assertEquals("group", memberships.get(0).getGroup().getId());
-		Assertions.assertEquals("namesg-other", memberships.get(0).getSubGroup().getId());
-		Assertions.assertNull(memberships.get(0).getUser());
-	}
-
-	@Test
-	public void deleteUser() {
-		Assertions.assertEquals(1, em.createQuery("FROM CacheMembership WHERE user.id = :id").setParameter("id", "u0")
-				.getResultList().size());
-		final UserOrg user = new UserOrg();
-		user.setId("u0");
-
-		dao.delete(user);
-
-		Assertions.assertNotNull(em.find(CacheCompany.class, "another-company"));
-		Assertions.assertNotNull(em.find(CacheGroup.class, "group"));
-		Assertions.assertNull(em.find(CacheUser.class, "u0"));
-		Assertions.assertEquals(0, em.createQuery("FROM CacheMembership WHERE user.id = :id").setParameter("id", "u0")
-				.getResultList().size());
-	}
-
-	@Test
-	public void deleteGroup() {
-		Assertions.assertEquals(2, em.createQuery("FROM CacheMembership WHERE group.id = :id")
-				.setParameter("id", "group").getResultList().size());
-		final GroupOrg group = new GroupOrg("dng", "Group", null);
-
-		dao.delete(group);
-
-		Assertions.assertNotNull(em.find(CacheCompany.class, "another-company"));
-		Assertions.assertNull(em.find(CacheGroup.class, "group"));
-		Assertions.assertNotNull(em.find(CacheUser.class, "u0"));
-		Assertions.assertEquals(0, em.createQuery("FROM CacheMembership WHERE group.id = :id")
-				.setParameter("id", "group").getResultList().size());
-	}
-
-	@Test
-	public void deleteCompanyNotEmpty() {
-		Assertions.assertEquals(2, em.createQuery("FROM CacheMembership WHERE group.id = :id")
-				.setParameter("id", "group").getResultList().size());
-		Assertions.assertNotNull(em.find(CacheUser.class, "u0"));
-		Assertions.assertNotNull(em.find(CacheGroup.class, "group"));
-		em.clear();
-		final CompanyOrg company = new CompanyOrg("dna", "another-company");
-		Assertions.assertThrows(DataIntegrityViolationException.class, () -> dao.delete(company));
-	}
-
-	@Test
-	public void deleteCompany() {
-		Assertions.assertEquals(2, em.createQuery("FROM CacheMembership WHERE group.id = :id")
-				.setParameter("id", "group").getResultList().size());
-		final UserOrg user = new UserOrg();
-		user.setId("u0");
-		dao.delete(user);
-		Assertions.assertNotNull(em.find(CacheGroup.class, "group"));
-		em.clear();
-		final CompanyOrg company = new CompanyOrg("dna", "another-company");
-
-		dao.delete(company);
-
-		Assertions.assertNull(em.find(CacheCompany.class, "another-company"));
-		Assertions.assertNotNull(em.find(CacheGroup.class, "group"));
-		Assertions.assertNull(em.find(CacheUser.class, "u0"));
-		Assertions.assertEquals(1, em.createQuery("FROM CacheMembership WHERE group.id = :id")
-				.setParameter("id", "group").getResultList().size());
-	}
-
-	@Test
-	public void empty() {
-		Assertions.assertEquals(2, em.createQuery("FROM CacheMembership WHERE group.id = :id")
-				.setParameter("id", "group").getResultList().size());
-		final GroupOrg group = new GroupOrg("dng", "Group", null);
-		dao.empty(group);
-		Assertions.assertNotNull(em.find(CacheGroup.class, "group"));
-		Assertions.assertEquals(0, em.createQuery("FROM CacheMembership WHERE group.id = :id")
-				.setParameter("id", "group").getResultList().size());
 	}
 }

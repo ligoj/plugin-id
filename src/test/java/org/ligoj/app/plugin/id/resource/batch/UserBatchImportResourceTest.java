@@ -63,39 +63,32 @@ public class UserBatchImportResourceTest extends AbstractUserBatchResourceTest {
 		})).create(null);
 	}
 
-	@Test
-	public void executeEmptyGroups() throws IOException, InterruptedException {
-		final BatchTaskVo<UserImportEntry> importTask = execute(
-				"Loubli;Sébastien;kloubli9;my.address@sample.com;ligoj;,jira,");
-
-		// Check the result
-		final UserImportEntry importEntry = checkImportTask(importTask);
-		Assertions.assertEquals("kloubli9", importEntry.getId());
-		Assertions.assertTrue(importEntry.getStatus());
-		Assertions.assertNull(importEntry.getStatusText());
-
-		// Check user
-		Mockito.verify(mockResource, new DefaultVerificationMode(data -> {
-			if (data.getAllInvocations().size() != 1) {
-				throw new MockitoException("Expect one call");
-			}
-			final UserOrgEditionVo user = (UserOrgEditionVo) data.getAllInvocations().get(0).getArguments()[0];
-			Assertions.assertNotNull(user);
-			Assertions.assertEquals("kloubli9", user.getId());
-			Assertions.assertEquals(1, user.getGroups().size());
-			Assertions.assertEquals("jira", user.getGroups().iterator().next());
-		})).create(null);
+	protected <U extends BatchElement> BatchTaskVo<U> execute(final InputStream input, final String[] headers)
+			throws IOException, InterruptedException {
+		return execute(input, headers, "cp1252");
 	}
 
-	@Test
-	public void executeInvalidHeaders() throws IOException {
-		final InputStream input = new ByteArrayInputStream(
-				"Loubli;Sébastien;kloubli4;my.address@sample.com;ligoj;jira".getBytes("cp1250"));
+	protected <U extends BatchElement> BatchTaskVo<U> execute(final InputStream input, final String[] headers,
+			final String encoding) throws IOException, InterruptedException {
 		initSpringSecurityContext(DEFAULT_USER);
-		Assertions.assertEquals("csv-file:Invalid header __?__", Assertions.assertThrows(ValidationJsonException.class, () -> {
-			resource.execute(input, new String[] { "lastName", "firstName", "id", "__?__", "company", "groups" },
-					"cp1250", false);
-		}).getMessage());
+		final long id = resource.execute(input, headers, encoding, false);
+		Assertions.assertNotNull(id);
+		@SuppressWarnings("unchecked")
+		final BatchTaskVo<U> importTask = (BatchTaskVo<U>) resource.getImportTask(id);
+		Assertions.assertEquals(id, importTask.getId());
+		return waitImport(importTask);
+	}
+
+	protected <U extends BatchElement> BatchTaskVo<U> execute(final String csvData)
+			throws IOException, InterruptedException {
+		return execute(csvData, "cp1252");
+	}
+
+	protected <U extends BatchElement> BatchTaskVo<U> execute(final String csvData, final String encoding)
+			throws IOException, InterruptedException {
+		return execute(new ByteArrayInputStream(csvData.getBytes(encoding)),
+				new String[] { "lastName", "firstName", "id", "mail", "company", "groups", "department", "localId" },
+				encoding);
 	}
 
 	@Test
@@ -125,13 +118,27 @@ public class UserBatchImportResourceTest extends AbstractUserBatchResourceTest {
 	}
 
 	@Test
-	public void executeMisingLogin() throws IOException {
-		final InputStream input = new ByteArrayInputStream(
-				"Loubli;Sébastien;;my.address@sample.com;ligoj;jira".getBytes("cp1250"));
-		initSpringSecurityContext(DEFAULT_USER);
-		MatcherUtil.assertThrows(Assertions.assertThrows(ConstraintViolationException.class, () -> {
-			resource.execute(input, new String[0], "cp1250", false);
-		}), "id", "NotBlank");
+	public void executeEmptyGroups() throws IOException, InterruptedException {
+		final BatchTaskVo<UserImportEntry> importTask = execute(
+				"Loubli;Sébastien;kloubli9;my.address@sample.com;ligoj;,jira,");
+
+		// Check the result
+		final UserImportEntry importEntry = checkImportTask(importTask);
+		Assertions.assertEquals("kloubli9", importEntry.getId());
+		Assertions.assertTrue(importEntry.getStatus());
+		Assertions.assertNull(importEntry.getStatusText());
+
+		// Check user
+		Mockito.verify(mockResource, new DefaultVerificationMode(data -> {
+			if (data.getAllInvocations().size() != 1) {
+				throw new MockitoException("Expect one call");
+			}
+			final UserOrgEditionVo user = (UserOrgEditionVo) data.getAllInvocations().get(0).getArguments()[0];
+			Assertions.assertNotNull(user);
+			Assertions.assertEquals("kloubli9", user.getId());
+			Assertions.assertEquals(1, user.getGroups().size());
+			Assertions.assertEquals("jira", user.getGroups().iterator().next());
+		})).create(null);
 	}
 
 	@Test
@@ -148,13 +155,24 @@ public class UserBatchImportResourceTest extends AbstractUserBatchResourceTest {
 	}
 
 	@Test
-	public void getImportTaskFailed() {
-		Assertions.assertNull(resource.getImportTask(-1));
+	public void executeInvalidHeaders() throws IOException {
+		final InputStream input = new ByteArrayInputStream(
+				"Loubli;Sébastien;kloubli4;my.address@sample.com;ligoj;jira".getBytes("cp1250"));
+		initSpringSecurityContext(DEFAULT_USER);
+		Assertions.assertEquals("csv-file:Invalid header __?__", Assertions.assertThrows(ValidationJsonException.class, () -> {
+			resource.execute(input, new String[] { "lastName", "firstName", "id", "__?__", "company", "groups" },
+					"cp1250", false);
+		}).getMessage());
 	}
 
 	@Test
-	public void getImportStatusFailed() {
-		Assertions.assertNull(resource.getImportStatus(-1));
+	public void executeMisingLogin() throws IOException {
+		final InputStream input = new ByteArrayInputStream(
+				"Loubli;Sébastien;;my.address@sample.com;ligoj;jira".getBytes("cp1250"));
+		initSpringSecurityContext(DEFAULT_USER);
+		MatcherUtil.assertThrows(Assertions.assertThrows(ConstraintViolationException.class, () -> {
+			resource.execute(input, new String[0], "cp1250", false);
+		}), "id", "NotBlank");
 	}
 
 	@Test
@@ -163,6 +181,11 @@ public class UserBatchImportResourceTest extends AbstractUserBatchResourceTest {
 				"Loubli;Sébastien;kloubli7;my.address@sample.com;ligoj;,jira,");
 		Assertions.assertSame(importTask, resource.getImportTask(importTask.getId()));
 		Assertions.assertSame(importTask.getStatus(), resource.getImportStatus(importTask.getId()));
+	}
+
+	@Test
+	public void getImportStatusFailed() {
+		Assertions.assertNull(resource.getImportStatus(-1));
 	}
 
 	@Test
@@ -188,32 +211,9 @@ public class UserBatchImportResourceTest extends AbstractUserBatchResourceTest {
 		oldTask.getStatus().setEnd(new Date());
 	}
 
-	protected <U extends BatchElement> BatchTaskVo<U> execute(final InputStream input, final String[] headers)
-			throws IOException, InterruptedException {
-		return execute(input, headers, "cp1252");
-	}
-
-	protected <U extends BatchElement> BatchTaskVo<U> execute(final InputStream input, final String[] headers,
-			final String encoding) throws IOException, InterruptedException {
-		initSpringSecurityContext(DEFAULT_USER);
-		final long id = resource.execute(input, headers, encoding, false);
-		Assertions.assertNotNull(id);
-		@SuppressWarnings("unchecked")
-		final BatchTaskVo<U> importTask = (BatchTaskVo<U>) resource.getImportTask(id);
-		Assertions.assertEquals(id, importTask.getId());
-		return waitImport(importTask);
-	}
-
-	protected <U extends BatchElement> BatchTaskVo<U> execute(final String csvData)
-			throws IOException, InterruptedException {
-		return execute(csvData, "cp1252");
-	}
-
-	protected <U extends BatchElement> BatchTaskVo<U> execute(final String csvData, final String encoding)
-			throws IOException, InterruptedException {
-		return execute(new ByteArrayInputStream(csvData.getBytes(encoding)),
-				new String[] { "lastName", "firstName", "id", "mail", "company", "groups", "department", "localId" },
-				encoding);
+	@Test
+	public void getImportTaskFailed() {
+		Assertions.assertNull(resource.getImportTask(-1));
 	}
 
 }
