@@ -5,7 +5,7 @@ API plugin used for compatibility check
 [![Build Status](https://circleci.com/gh/ligoj/plugin-id.svg?style=svg)](https://circleci.com/gh/ligoj/plugin-id)
 [![Build Status](https://semaphoreci.com/api/v1/ligoj/plugin-id/branches/master/shields_badge.svg)](https://semaphoreci.com/ligoj/plugin-id)
 [![Build Status](https://ci.appveyor.com/api/projects/status/5926fmf0p5qp9j16/branch/master?svg=true)](https://ci.appveyor.com/project/ligoj/plugin-id/branch/master)
-[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=org.ligoj.plugin%3plugin-id&metric=coverage)](https://sonarcloud.io/component_measures/metric/coverage/list?id=org.ligoj.plugin%3plugin-id)
+[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=org.ligoj.plugin%3Aplugin-id&metric=coverage)](https://sonarcloud.io/dashboard?id=org.ligoj.plugin%3Aplugin-id)
 [![Quality Gate](https://sonarcloud.io/api/project_badges/measure?metric=alert_status&project=org.ligoj.plugin:plugin-id)](https://sonarcloud.io/dashboard/index/org.ligoj.plugin:plugin-id)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/abf810c094e44c0691f71174c707d6ed)](https://www.codacy.com/app/ligoj/plugin-id?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=ligoj/plugin-id&amp;utm_campaign=Badge_Grade)
 [![CodeFactor](https://www.codefactor.io/repository/github/ligoj/plugin-id/badge)](https://www.codefactor.io/repository/github/ligoj/plugin-id)
@@ -21,3 +21,8 @@ Provides the following features :
 
 Dashboard features :
 - Amount of users in the linked group
+
+Related plugins:
+- [plugin-id-sql](https://github.com/ligoj/plugin-id-sql)  
+- [plugin-id-ldap](https://github.com/ligoj/plugin-id-ldap)  
+- [plugin-id-ldap-embedded](https://github.com/ligoj/plugin-id-ldap-embedded)  
