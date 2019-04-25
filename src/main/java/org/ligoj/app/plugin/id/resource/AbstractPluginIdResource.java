@@ -12,6 +12,7 @@ import javax.cache.annotation.CacheKey;
 import javax.cache.annotation.CacheResult;
 import javax.ws.rs.NotAuthorizedException;
 
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.ligoj.app.api.Normalizer;
 import org.ligoj.app.iam.IUserRepository;
@@ -71,19 +72,19 @@ public abstract class AbstractPluginIdResource<U extends IUserRepository> extend
 	 * @return A not <code>null</code> application user.
 	 */
 	protected String toApplicationUser(final U repository, final Authentication authentication) {
-		// Check the authentication
+		// Check the authentication and get the user from its repository
 		final UserOrg account = repository.findOneBy(getAuthenticateProperty(repository, authentication),
 				authentication.getName());
 
-		// Check at least one mail is present
+		// Check at least one mail is present for the federation
 		if (account.getMails().isEmpty()) {
-			// Mails are required to proceed the authentication
+			// Mails are required to proceed the federation between the repositories
 			log.info("Account '{} [{} {}]' has no mail", account.getId(), account.getFirstName(),
 					account.getLastName());
 			throw new NotAuthorizedException("ambiguous-account-no-mail");
 		}
 
-		// Find the right application user
+		// Find (or create) the corresponding application user
 		return toApplicationUser(account);
 	}
 
@@ -98,6 +99,12 @@ public abstract class AbstractPluginIdResource<U extends IUserRepository> extend
 	 * @return A not <code>null</code> application user.
 	 */
 	protected String toApplicationUser(final UserOrg account) {
+		// Be sure the mail is provided
+		if (CollectionUtils.isEmpty(account.getMails())) {
+			log.info("Account '{} [{} {}]' has no mails, expected at least", account.getId(), account.getFirstName(),
+					account.getLastName());
+			throw new NotAuthorizedException("account-no-mail");
+		}
 		// Find the user by the mail in the primary repository
 		final List<UserOrg> usersByMail = userResource.findAllBy("mails", account.getMails().get(0));
 		if (usersByMail.isEmpty()) {
@@ -223,8 +230,8 @@ public abstract class AbstractPluginIdResource<U extends IUserRepository> extend
 	/**
 	 * Copy the repository details to the IAM configuration.
 	 * 
-	 * @param iam The target IAM configuration.
-	 * @param repository    The current {@link IUserRepository} instance.
+	 * @param iam        The target IAM configuration.
+	 * @param repository The current {@link IUserRepository} instance.
 	 */
 	protected void copyConfiguration(final IamConfiguration iam, final U repository) {
 		iam.setCompanyRepository(repository.getCompanyRepository());

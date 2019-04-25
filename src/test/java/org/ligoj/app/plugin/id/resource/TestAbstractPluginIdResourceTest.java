@@ -238,4 +238,11 @@ public class TestAbstractPluginIdResourceTest {
 			resource.toApplicationUser(existing);
 		});
 	}
+
+	@Test
+	public void toApplicationUserNoMail() {
+		Assertions.assertThrows(NotAuthorizedException.class, () -> {
+			resource.toApplicationUser(new UserOrg());
+		});
+	}
 }
