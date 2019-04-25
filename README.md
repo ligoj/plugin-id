@@ -24,5 +24,6 @@ Dashboard features :
 
 Related plugins:
 - [plugin-id-sql](https://github.com/ligoj/plugin-id-sql)  
+- [plugin-id-cognito](https://github.com/ligoj/plugin-id-cognito)  
 - [plugin-id-ldap](https://github.com/ligoj/plugin-id-ldap)  
 - [plugin-id-ldap-embedded](https://github.com/ligoj/plugin-id-ldap-embedded)  
