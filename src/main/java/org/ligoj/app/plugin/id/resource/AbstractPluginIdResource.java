@@ -87,7 +87,7 @@ public abstract class AbstractPluginIdResource<U extends IUserRepository> extend
 				authentication.getName());
 
 		// Check at least one mail is present for the federation
-		if (account.getMails().isEmpty()) {
+		if (CollectionUtils.isEmpty(account.getMails())) {
 			// Mails are required to proceed the federation between the repositories
 			log.info("Account '{} [{} {}]' has no mail", account.getId(), account.getFirstName(),
 					account.getLastName());
@@ -117,12 +117,6 @@ public abstract class AbstractPluginIdResource<U extends IUserRepository> extend
 	 * @return A not <code>null</code> application user.
 	 */
 	protected String toApplicationUser(final UserOrg account) {
-		// Be sure the mail is provided
-		if (CollectionUtils.isEmpty(account.getMails())) {
-			log.info("Account '{} [{} {}]' has no mails, expected at least", account.getId(), account.getFirstName(),
-					account.getLastName());
-			throw new NotAuthorizedException("account-no-mail");
-		}
 		// Find the user by the mail in the primary repository
 		final List<UserOrg> usersByMail = userResource.findAllBy("mails", account.getMails().get(0));
 		if (usersByMail.isEmpty()) {

@@ -14,11 +14,15 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.ligoj.app.iam.IUserRepository;
+import org.ligoj.app.iam.IamConfiguration;
 import org.ligoj.app.iam.UserOrg;
+import org.ligoj.bootstrap.AbstractJpaTest;
 import org.ligoj.bootstrap.core.resource.TechnicalException;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.ContextConfiguration;
@@ -31,42 +35,46 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 @ContextConfiguration(locations = "classpath:/META-INF/spring/application-context-test.xml")
 @Rollback
 @Transactional
-public class TestAbstractPluginIdResourceTest {
+public class TestAbstractPluginIdResourceTest extends AbstractJpaTest {
 
 	@Autowired
-	protected UserOrgResource userResource;
+	private UserOrgResource userResource;
 
 	private AbstractPluginIdResource<IUserRepository> resource;
 
+	private IUserRepository userRepository;
+
 	@BeforeEach
-	public void init() {
+	void init() {
 		resource = new AbstractPluginIdResource<>() {
 
 			@Override
 			public boolean accept(Authentication authentication, String node) {
-				return false;
+				return true;
 			}
 
 			@Override
 			public String getKey() {
-				return null;
+				return "service:id:test";
 			}
 
 			@Override
 			protected AbstractPluginIdResource<IUserRepository> getSelf() {
-				return null;
+				return this;
 			}
 
 			@Override
 			protected IUserRepository getUserRepository(String node) {
-				return null;
+				return TestAbstractPluginIdResourceTest.this.userRepository;
 			}
 		};
+		this.userRepository = Mockito.mock(IUserRepository.class);
 		resource.userResource = userResource;
+		cacheManager.getCache("id-configuration").clear();
 	}
 
 	@Test
-	public void toLogin() {
+	void toLogin() {
 		final UserOrg user = new UserOrg();
 		user.setFirstName("First");
 		user.setLastName("Last123");
@@ -74,7 +82,7 @@ public class TestAbstractPluginIdResourceTest {
 	}
 
 	@Test
-	public void toLoginNoFirstName() {
+	void toLoginNoFirstName() {
 		final UserOrg user = new UserOrg();
 		user.setLastName("Last123");
 		Assertions.assertThrows(NotAuthorizedException.class, () -> {
@@ -83,7 +91,7 @@ public class TestAbstractPluginIdResourceTest {
 	}
 
 	@Test
-	public void toLoginNoLastName() {
+	void toLoginNoLastName() {
 		final UserOrg user = new UserOrg();
 		user.setFirstName("First");
 		Assertions.assertThrows(NotAuthorizedException.class, () -> {
@@ -92,8 +100,9 @@ public class TestAbstractPluginIdResourceTest {
 	}
 
 	@Test
-	public void newApplicationUserSaveFail() {
-		resource.userResource = Mockito.mock(UserOrgResource.class);
+	void newApplicationUserSaveFail() {
+		final UserOrgResource userResource = Mockito.mock(UserOrgResource.class);
+		resource.userResource = userResource;
 		Mockito.when(resource.userResource.findByIdNoCache("flast123")).thenReturn(null);
 		Mockito.doThrow(new TechnicalException("")).when(resource.userResource)
 				.saveOrUpdate(ArgumentMatchers.any(UserOrgEditionVo.class));
@@ -110,8 +119,9 @@ public class TestAbstractPluginIdResourceTest {
 	}
 
 	@Test
-	public void newApplicationUserNextLoginFail() {
-		resource.userResource = Mockito.mock(UserOrgResource.class);
+	void newApplicationUserNextLoginFail() {
+		final UserOrgResource userResource = Mockito.mock(UserOrgResource.class);
+		resource.userResource = userResource;
 		Mockito.doThrow(new RuntimeException()).when(resource.userResource).findByIdNoCache("flast123");
 
 		final UserOrg user = new UserOrg();
@@ -126,8 +136,8 @@ public class TestAbstractPluginIdResourceTest {
 	}
 
 	@Test
-	public void toApplicationUserExists() {
-
+	void toApplicationUserExists() {
+		final Authentication authentication = new UsernamePasswordAuthenticationToken("secondarylogin", null);
 		final UserOrgResource userResource = Mockito.mock(UserOrgResource.class);
 		resource.userResource = userResource;
 
@@ -156,13 +166,14 @@ public class TestAbstractPluginIdResourceTest {
 			TestAbstractPluginIdResourceTest.this.userResource.mergeUser(existing, authUser);
 			return null;
 		}).when(userResource).mergeUser(existing, authUser);
-		Assertions.assertEquals("primarylogin", resource.toApplicationUser(authUser));
+		Mockito.doReturn(authUser).when(userRepository).findOneBy("id", "secondarylogin");
+		Assertions.assertEquals("primarylogin", resource.toApplicationUser(userRepository, authentication));
 	}
 
 	@Test
-	public void toApplicationUserNew() {
-
-		UserOrgResource userResource = Mockito.mock(UserOrgResource.class);
+	void toApplicationUserNew() {
+		final Authentication authentication = new UsernamePasswordAuthenticationToken("secondarylogin", null);
+		final UserOrgResource userResource = Mockito.mock(UserOrgResource.class);
 		resource.userResource = userResource;
 		Mockito.doReturn(Collections.emptyList()).when(userResource).findAllBy("mails", "some@where.com");
 		Mockito.doReturn(null).when(userResource).findByIdNoCache("flast123");
@@ -179,12 +190,14 @@ public class TestAbstractPluginIdResourceTest {
 		user.setFirstName("First");
 		user.setLastName("Last123");
 		user.setCompany("ligoj");
-		Assertions.assertEquals("flast123", resource.toApplicationUser(user));
+		Mockito.doReturn(user).when(userRepository).findOneBy("id", "secondarylogin");
+		Assertions.assertEquals("flast123", resource.toApplicationUser(userRepository, authentication));
 		Mockito.verify(userResource).saveOrUpdate(Mockito.any());
 	}
 
 	@Test
-	public void toApplicationUserNewWithCollision() {
+	void toApplicationUserNewWithCollision() {
+		final Authentication authentication = new UsernamePasswordAuthenticationToken("mmartin", null);
 		final UserOrgResource userResource = Mockito.mock(UserOrgResource.class);
 		resource.userResource = userResource;
 
@@ -213,14 +226,16 @@ public class TestAbstractPluginIdResourceTest {
 			return null;
 		}).when(userResource).saveOrUpdate(Mockito.any());
 
-		Assertions.assertEquals("mmartin1", resource.toApplicationUser(authUser));
+		Mockito.doReturn(existing).when(userRepository).findOneBy("id", "mmartin");
+		Assertions.assertEquals("mmartin1", resource.toApplicationUser(userRepository, authentication));
 
 		final UserOrg userIAM = this.userResource.findByIdNoCache("mmartin1");
 		Assertions.assertEquals("mmartin1", userIAM.getName());
 	}
 
 	@Test
-	public void toApplicationUserTooManyMail() {
+	void toApplicationUserTooManyMail() {
+		final Authentication authentication = new UsernamePasswordAuthenticationToken("secondarylogin", null);
 		final UserOrgResource userResource = Mockito.mock(UserOrgResource.class);
 		resource.userResource = userResource;
 
@@ -231,18 +246,76 @@ public class TestAbstractPluginIdResourceTest {
 		existing.setLastName("Last123");
 		existing.setName("secondarylogin");
 
+		Mockito.doReturn(existing).when(userRepository).findOneBy("id", "secondarylogin");
 		Mockito.doReturn(Arrays.asList(existing, existing)).when(userResource).findAllBy("mails",
 				"marc.martin@sample.com");
 
 		Assertions.assertThrows(NotAuthorizedException.class, () -> {
-			resource.toApplicationUser(existing);
+			resource.toApplicationUser(userRepository, authentication);
 		});
 	}
 
 	@Test
-	public void toApplicationUserNoMail() {
+	void toApplicationUserNoMail() {
+
+		// Create a new IAM node pluged to the primary node
+		final UserOrg existing = new UserOrg();
+		existing.setMails(Collections.emptyList());
+		existing.setFirstName("First");
+		existing.setLastName("Last123");
+		existing.setName("login");
+
+		final Authentication authentication = new UsernamePasswordAuthenticationToken("login", null);
+		Mockito.doReturn(existing).when(userRepository).findOneBy("id", "login");
 		Assertions.assertThrows(NotAuthorizedException.class, () -> {
-			resource.toApplicationUser(new UserOrg());
+			resource.toApplicationUser(userRepository, authentication);
 		});
+	}
+
+	@Test
+	void getConfiguration() {
+		final IamConfiguration configuration = resource.getConfiguration("service:id:test:node1");
+		Assertions.assertSame(userRepository, configuration.getUserRepository());
+	}
+
+	@Test
+	void authenticateFailed() {
+		final Authentication authentication = new UsernamePasswordAuthenticationToken("secondarylogin", null);
+		Assertions.assertThrows(BadCredentialsException.class,
+				() -> resource.authenticate(authentication, "service:id:test:node1", true));
+	}
+
+	@Test
+	void authenticatePrimary() {
+		final Authentication authentication = new UsernamePasswordAuthenticationToken("secondarylogin", "secret");
+		Mockito.doReturn(true).when(userRepository).authenticate("secondarylogin", "secret");
+		Assertions.assertSame(authentication, resource.authenticate(authentication, "service:id:test:node1", true));
+	}
+
+	@Test
+	void authenticateSecondary() {
+		final Authentication authentication = new UsernamePasswordAuthenticationToken("secondarylogin", "secret");
+		Mockito.doReturn(true).when(userRepository).authenticate("secondarylogin", "secret");
+
+		// Create a new IAM node plugged to the primary node
+		final UserOrg user = new UserOrg();
+		user.setId("secondarylogin");
+		user.setMails(Collections.singletonList("some@where.com"));
+		user.setFirstName("First");
+		user.setLastName("Last123");
+		user.setCompany("ligoj");
+		Mockito.doReturn(user).when(userRepository).findOneBy("id", "secondarylogin");
+
+		final UserOrgResource userResource = Mockito.mock(UserOrgResource.class);
+		resource.userResource = userResource;
+		Mockito.doReturn(Collections.emptyList()).when(userResource).findAllBy("mails", "some@where.com");
+		Mockito.doReturn(null).when(userResource).findByIdNoCache("flast123");
+		Mockito.doAnswer(invocation -> {
+			TestAbstractPluginIdResourceTest.this.userResource
+					.saveOrUpdate((UserOrgEditionVo) invocation.getArguments()[0]);
+			return null;
+		}).when(userResource).saveOrUpdate(Mockito.any());
+
+		Assertions.assertEquals("flast123", resource.authenticate(authentication, "service:id:test:node1", false).getPrincipal());
 	}
 }
