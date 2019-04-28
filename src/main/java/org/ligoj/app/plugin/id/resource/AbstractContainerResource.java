@@ -147,7 +147,7 @@ public abstract class AbstractContainerResource<T extends ContainerOrg, V extend
 			// Not managed container, report this attempt and act as if this
 			// company did not exist
 			log.warn("Attempt to delete a {} '{}' out of scope", type, container.getName());
-			throw new ValidationJsonException(getTypeName(), BusinessException.KEY_UNKNOW_ID, "0", getTypeName(), "1",
+			throw new ValidationJsonException(getTypeName(), BusinessException.KEY_UNKNOWN_ID, "0", getTypeName(), "1",
 					container.getId());
 		}
 

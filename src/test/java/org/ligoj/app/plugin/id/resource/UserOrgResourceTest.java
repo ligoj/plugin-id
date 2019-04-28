@@ -576,12 +576,12 @@ public class UserOrgResourceTest extends AbstractAppTest {
 		user.setCompany("ing");
 		user.setGroups(Collections.singleton("dig"));
 		Mockito.when(userRepository.findByIdExpected("mtuyer", "wuser")).thenThrow(
-				new ValidationJsonException("id", BusinessException.KEY_UNKNOW_ID, "0", "user", "1", "mtuyer"));
+				new ValidationJsonException("id", BusinessException.KEY_UNKNOWN_ID, "0", "user", "1", "mtuyer"));
 		Mockito.when(companyRepository.findById("ing")).thenReturn(company);
 		Mockito.when(groupRepository.findAll()).thenReturn(groupsMap);
 		MatcherUtil.assertThrows(Assertions.assertThrows(ValidationJsonException.class, () -> {
 			resource.delete("wuser");
-		}), "id", BusinessException.KEY_UNKNOW_ID);
+		}), "id", BusinessException.KEY_UNKNOWN_ID);
 	}
 
 	@Test

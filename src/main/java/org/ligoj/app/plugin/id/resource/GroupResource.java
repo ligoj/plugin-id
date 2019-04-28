@@ -165,7 +165,7 @@ public class GroupResource extends AbstractContainerResource<GroupOrg, GroupEdit
 
 		// Check the group can be updated by the current user
 		if (!getContainersForWrite().contains(container)) {
-			throw new ValidationJsonException(getTypeName(), BusinessException.KEY_UNKNOW_ID, "0", getTypeName(), "1",
+			throw new ValidationJsonException(getTypeName(), BusinessException.KEY_UNKNOWN_ID, "0", getTypeName(), "1",
 					id);
 		}
 

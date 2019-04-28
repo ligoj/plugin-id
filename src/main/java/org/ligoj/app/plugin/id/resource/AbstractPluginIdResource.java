@@ -28,6 +28,11 @@ import org.springframework.security.core.Authentication;
 
 import lombok.extern.slf4j.Slf4j;
 
+/**
+ * Plug-in Identity base class.
+ *
+ * @param <U> The {@link IUserRepository} type.
+ */
 @Slf4j
 public abstract class AbstractPluginIdResource<U extends IUserRepository> extends AbstractToolPluginResource
 		implements IdentityServicePlugin, IamConfigurationProvider {
@@ -36,6 +41,11 @@ public abstract class AbstractPluginIdResource<U extends IUserRepository> extend
 	 * Lock object used to synchronize the creation.
 	 */
 	private static final Object USER_LOCK = new Object();
+
+	/**
+	 * The default authentication property name.
+	 */
+	private static final String DEFAULT_ID = "id";
 
 	/**
 	 * Available node configurations. Key is the node identifier.
@@ -88,8 +98,16 @@ public abstract class AbstractPluginIdResource<U extends IUserRepository> extend
 		return toApplicationUser(account);
 	}
 
+	/**
+	 * Return the local identity property name. In the most case, will be a constant, but in some cases, the property
+	 * name is determined dynamically depending on the available authentication principal
+	 * 
+	 * @param repository     The current repository.
+	 * @param authentication The current authentication.
+	 * @return The property name.
+	 */
 	protected String getAuthenticateProperty(final U repository, final Authentication authentication) {
-		return "id";
+		return DEFAULT_ID;
 	}
 
 	/**
@@ -195,7 +213,13 @@ public abstract class AbstractPluginIdResource<U extends IUserRepository> extend
 		return nodeConfigurations.computeIfAbsent(node, this::refreshConfiguration);
 	}
 
-	@CacheResult(cacheName = "id-sql-configuration")
+	/**
+	 * Ensure the configuration is loaded for the given node. Cache is involved.
+	 * 
+	 * @param node The node identifier, also used as cache key.
+	 * @return The IAM configuration related to the given node.
+	 */
+	@CacheResult(cacheName = "id-configuration")
 	public boolean ensureCachedConfiguration(@CacheKey final String node) {
 		refreshConfiguration(node);
 		return true;
@@ -204,7 +228,7 @@ public abstract class AbstractPluginIdResource<U extends IUserRepository> extend
 	/**
 	 * Build a user SQL repository from the given node.
 	 *
-	 * @param node The node, also used as cache key.
+	 * @param node The node identifier, also used as cache key.
 	 * @return The {@link IUserRepository} instance. Cache is involved.
 	 */
 	protected abstract U getUserRepository(final String node);
