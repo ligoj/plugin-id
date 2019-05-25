@@ -253,7 +253,7 @@ public abstract class AbstractContainerResource<T extends ContainerOrg, V extend
 
 	/**
 	 * Find a container from its identifier. If the container is not found or cannot be seen by the current user, the
-	 * error code {@link org.ligoj.bootstrap.core.resource.BusinessException#KEY_UNKNOW_ID} will be returned.
+	 * error code {@link org.ligoj.bootstrap.core.resource.BusinessException#KEY_UNKNOWN_ID} will be returned.
 	 *
 	 * @param id
 	 *            The container's identifier. Will be normalized.

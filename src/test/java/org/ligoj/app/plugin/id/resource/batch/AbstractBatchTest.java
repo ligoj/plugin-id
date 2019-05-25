@@ -8,6 +8,9 @@ import org.ligoj.app.AbstractAppTest;
 import org.ligoj.bootstrap.core.security.SecurityHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 
+/**
+ * Base batch test.
+ */
 public abstract class AbstractBatchTest extends AbstractAppTest {
 
 	@Autowired

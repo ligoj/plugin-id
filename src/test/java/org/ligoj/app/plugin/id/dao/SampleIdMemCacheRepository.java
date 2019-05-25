@@ -5,6 +5,9 @@ import java.util.Map;
 import org.ligoj.app.iam.ResourceOrg;
 import org.springframework.stereotype.Component;
 
+/**
+ * Test repository.
+ */
 @Component
 public class SampleIdMemCacheRepository extends AbstractMemCacheRepository {
 

@@ -37,6 +37,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 
 /**
  * Base batch resource class.
+ * @param <B> A batch 
  */
 public abstract class AbstractBatchResource<B extends BatchElement> {
 

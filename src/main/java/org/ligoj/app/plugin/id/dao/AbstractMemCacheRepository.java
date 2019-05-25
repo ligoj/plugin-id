@@ -30,7 +30,19 @@ public abstract class AbstractMemCacheRepository {
 	 * Cache data type.
 	 */
 	public enum CacheDataType {
-		GROUP, COMPANY, USER
+		/**
+		 * Group type.
+		 */
+		GROUP,
+		/**
+		 * Company type.
+		 */
+		COMPANY,
+
+		/**
+		 * User type.
+		 */
+		USER
 	}
 
 	@Autowired
@@ -52,10 +64,8 @@ public abstract class AbstractMemCacheRepository {
 	/**
 	 * Add the group to the given group.Cache is also updated.
 	 *
-	 * @param subGroup
-	 *            The group to add to the other group.
-	 * @param group
-	 *            The group to update.
+	 * @param subGroup The group to add to the other group.
+	 * @param group    The group to update.
 	 */
 	public void addGroupToGroup(final GroupOrg subGroup, final GroupOrg group) {
 
@@ -70,10 +80,8 @@ public abstract class AbstractMemCacheRepository {
 	/**
 	 * Add the user to the given group.Cache is also updated.
 	 *
-	 * @param user
-	 *            The user to add to the other group.
-	 * @param group
-	 *            The group to update.
+	 * @param user  The user to add to the other group.
+	 * @param group The group to update.
 	 */
 	public void addUserToGroup(final UserOrg user, final GroupOrg group) {
 
@@ -88,8 +96,7 @@ public abstract class AbstractMemCacheRepository {
 	/**
 	 * Add given company to the cache.
 	 *
-	 * @param company
-	 *            The new company.
+	 * @param company The new company.
 	 * @return <code>company</code>
 	 */
 	public CompanyOrg create(final CompanyOrg company) {
@@ -101,8 +108,7 @@ public abstract class AbstractMemCacheRepository {
 	/**
 	 * Add given group to the cache.
 	 *
-	 * @param group
-	 *            The new group.
+	 * @param group The new group.
 	 * @return <code>group</code>
 	 */
 	public GroupOrg create(final GroupOrg group) {
@@ -114,8 +120,7 @@ public abstract class AbstractMemCacheRepository {
 	/**
 	 * Add given user to the cache. Membership is not considered.
 	 *
-	 * @param user
-	 *            The new user.
+	 * @param user The new user.
 	 * @return <code>user</code>
 	 */
 	public UserOrg create(final UserOrg user) {
@@ -128,8 +133,7 @@ public abstract class AbstractMemCacheRepository {
 	 * Remove given company from the cache. Warning, it is assumed there is no more user associated to the deleted
 	 * company.
 	 *
-	 * @param company
-	 *            The company to remove.
+	 * @param company The company to remove.
 	 */
 	public void delete(final CompanyOrg company) {
 		final Map<String, CompanyOrg> companiesNameToDn = getCompany().findAll();
@@ -144,8 +148,7 @@ public abstract class AbstractMemCacheRepository {
 	/**
 	 * Remove given group from the cache.
 	 *
-	 * @param group
-	 *            the group to remove.
+	 * @param group the group to remove.
 	 */
 	public void delete(final GroupOrg group) {
 		final Map<String, GroupOrg> groupsNameToDn = getGroup().findAll();
@@ -164,8 +167,7 @@ public abstract class AbstractMemCacheRepository {
 	 * Remove given group from the cache. User should have been removed from each group before that, this function does
 	 * not update in memory membership.
 	 *
-	 * @param user
-	 *            the user to remove.
+	 * @param user the user to remove.
 	 */
 	public void delete(final UserOrg user) {
 		final Map<String, UserOrg> users = getUser().findAll();
@@ -180,10 +182,8 @@ public abstract class AbstractMemCacheRepository {
 	/**
 	 * Remove all users from the given group and empty the group.
 	 *
-	 * @param group
-	 *            The group to empty.
-	 * @param users
-	 *            All known users.
+	 * @param group The group to empty.
+	 * @param users All known users.
 	 */
 	private void deleteMemoryAssociations(final GroupOrg group, final Map<String, UserOrg> users) {
 		// Remove from in-memory cache all users
@@ -198,10 +198,8 @@ public abstract class AbstractMemCacheRepository {
 	/**
 	 * Remove all users from the given group and empty the group.
 	 *
-	 * @param group
-	 *            The group to empty.
-	 * @param users
-	 *            All known users could be removed from this group.
+	 * @param group The group to empty.
+	 * @param users All known users could be removed from this group.
 	 */
 	public void empty(final GroupOrg group, final Map<String, UserOrg> users) {
 		// Remove the group from the users
@@ -268,10 +266,8 @@ public abstract class AbstractMemCacheRepository {
 	/**
 	 * Remove the group from the another group. Cache is also updated but only in group members.
 	 *
-	 * @param subGroup
-	 *            The group to remove from the other group.
-	 * @param group
-	 *            The group to update.
+	 * @param subGroup The group to remove from the other group.
+	 * @param group    The group to update.
 	 */
 	public void removeGroupFromGroup(final GroupOrg subGroup, final GroupOrg group) {
 		// Remove from JPA cache
@@ -285,10 +281,8 @@ public abstract class AbstractMemCacheRepository {
 	/**
 	 * Remove the user from the given group. Cache is also updated but only in group members.
 	 *
-	 * @param user
-	 *            The user to remove from the given group.
-	 * @param group
-	 *            The group to update.
+	 * @param user  The user to remove from the given group.
+	 * @param group The group to update.
 	 */
 	public void removeUserFromGroup(final UserOrg user, final GroupOrg group) {
 		// Remove from JPA cache
@@ -302,8 +296,7 @@ public abstract class AbstractMemCacheRepository {
 	/**
 	 * Update the attributes.
 	 *
-	 * @param user
-	 *            The user to update.
+	 * @param user The user to update.
 	 */
 	public void update(final UserOrg user) {
 		cache.update(user);

@@ -20,13 +20,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 /**
  * Test of {@link UserBatchUpdateResource}
  */
-public class UserBatchUpdateResourceTest extends AbstractUserBatchResourceTest {
+class UserBatchUpdateResourceTest extends AbstractUserBatchResourceTest {
 
 	@Autowired
-	protected UserBatchUpdateResource resource;
+	private UserBatchUpdateResource resource;
 
 	@Test
-	public void executeCsvError() {
+	void executeCsvError() {
 		final UserBatchUpdateResource resource = new UserBatchUpdateResource();
 		applicationContext.getAutowireCapableBeanFactory().autowireBean(resource);
 		Assertions.assertEquals(
@@ -39,7 +39,7 @@ public class UserBatchUpdateResourceTest extends AbstractUserBatchResourceTest {
 	}
 
 	@Test
-	public void execute() throws IOException, InterruptedException {
+	void execute() throws IOException, InterruptedException {
 		initSpringSecurityContext(DEFAULT_USER);
 
 		final UserOrg user = new UserOrg();
@@ -92,12 +92,12 @@ public class UserBatchUpdateResourceTest extends AbstractUserBatchResourceTest {
 	}
 
 	@Test
-	public void getImportTaskFailed() {
+	void getImportTaskFailed() {
 		Assertions.assertNull(resource.getImportTask(-1));
 	}
 
 	@Test
-	public void getImportStatusFailed() {
+	void getImportStatusFailed() {
 		Assertions.assertNull(resource.getImportStatus(-1));
 	}
 

@@ -11,6 +11,7 @@ import lombok.ToString;
 
 /**
  * Task import bean.
+ * @param <B> The batch element type.
  */
 @Getter
 @ToString(of = "id")

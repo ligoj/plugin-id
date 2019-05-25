@@ -36,7 +36,7 @@ public abstract class AbstractContainerResourceTest extends AbstractAppTest {
 	protected ICompanyRepository companyRepository;
 
 	@BeforeEach
-	public void prepareData() throws IOException {
+	void prepareData() throws IOException {
 		persistEntities("csv",
 				new Class[] { DelegateOrg.class, ContainerScope.class, CacheCompany.class, CacheUser.class, CacheGroup.class, CacheMembership.class },
 				StandardCharsets.UTF_8.name());
