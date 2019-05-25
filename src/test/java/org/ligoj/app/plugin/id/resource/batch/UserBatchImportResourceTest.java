@@ -25,13 +25,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 /**
  * Test of {@link UserBatchImportResource}
  */
-public class UserBatchImportResourceTest extends AbstractUserBatchResourceTest {
+class UserBatchImportResourceTest extends AbstractUserBatchResourceTest {
 
 	@Autowired
 	protected UserBatchImportResource resource;
 
 	@Test
-	public void execute() throws IOException, InterruptedException {
+	void execute() throws IOException, InterruptedException {
 		final BatchTaskVo<UserImportEntry> importTask = execute(
 				"Loubli;Sébastien;kloubli;my.address@sample.com;ligoj;jira;MY_DPT;MY_ID");
 
@@ -92,7 +92,7 @@ public class UserBatchImportResourceTest extends AbstractUserBatchResourceTest {
 	}
 
 	@Test
-	public void executeDefaultHeader() throws IOException, InterruptedException {
+	void executeDefaultHeader() throws IOException, InterruptedException {
 		final InputStream input = new ByteArrayInputStream(
 				"Loubli;Sébastien;kloubli5;my.address@sample.com;ligoj;jira".getBytes("cp1250"));
 		initSpringSecurityContext(DEFAULT_USER);
@@ -118,7 +118,7 @@ public class UserBatchImportResourceTest extends AbstractUserBatchResourceTest {
 	}
 
 	@Test
-	public void executeEmptyGroups() throws IOException, InterruptedException {
+	void executeEmptyGroups() throws IOException, InterruptedException {
 		final BatchTaskVo<UserImportEntry> importTask = execute(
 				"Loubli;Sébastien;kloubli9;my.address@sample.com;ligoj;,jira,");
 
@@ -142,7 +142,7 @@ public class UserBatchImportResourceTest extends AbstractUserBatchResourceTest {
 	}
 
 	@Test
-	public void executeFailed() throws IOException, InterruptedException {
+	void executeFailed() throws IOException, InterruptedException {
 		Mockito.doThrow(new BusinessException("message")).when(this.mockResource)
 				.create(ArgumentMatchers.any(UserOrgEditionVo.class), ArgumentMatchers.eq(false));
 		final InputStream input = new ByteArrayInputStream(
@@ -155,7 +155,7 @@ public class UserBatchImportResourceTest extends AbstractUserBatchResourceTest {
 	}
 
 	@Test
-	public void executeInvalidHeaders() throws IOException {
+	void executeInvalidHeaders() throws IOException {
 		final InputStream input = new ByteArrayInputStream(
 				"Loubli;Sébastien;kloubli4;my.address@sample.com;ligoj;jira".getBytes("cp1250"));
 		initSpringSecurityContext(DEFAULT_USER);
@@ -166,7 +166,7 @@ public class UserBatchImportResourceTest extends AbstractUserBatchResourceTest {
 	}
 
 	@Test
-	public void executeMisingLogin() throws IOException {
+	void executeMisingLogin() throws IOException {
 		final InputStream input = new ByteArrayInputStream(
 				"Loubli;Sébastien;;my.address@sample.com;ligoj;jira".getBytes("cp1250"));
 		initSpringSecurityContext(DEFAULT_USER);
@@ -176,7 +176,7 @@ public class UserBatchImportResourceTest extends AbstractUserBatchResourceTest {
 	}
 
 	@Test
-	public void getImportStatus() throws InterruptedException, IOException {
+	void getImportStatus() throws InterruptedException, IOException {
 		final BatchTaskVo<UserImportEntry> importTask = execute(
 				"Loubli;Sébastien;kloubli7;my.address@sample.com;ligoj;,jira,");
 		Assertions.assertSame(importTask, resource.getImportTask(importTask.getId()));
@@ -184,12 +184,12 @@ public class UserBatchImportResourceTest extends AbstractUserBatchResourceTest {
 	}
 
 	@Test
-	public void getImportStatusFailed() {
+	void getImportStatusFailed() {
 		Assertions.assertNull(resource.getImportStatus(-1));
 	}
 
 	@Test
-	public void getImportStatusPreviousFinished() throws InterruptedException, IOException {
+	void getImportStatusPreviousFinished() throws InterruptedException, IOException {
 		final BatchTaskVo<UserImportEntry> oldTask = execute(
 				"Loubli;Sébastien;kloubli5a;my.address@sample.com;ligoj;,jira,");
 		oldTask.getStatus().setEnd(getDate(1980, 1, 1));
@@ -200,7 +200,7 @@ public class UserBatchImportResourceTest extends AbstractUserBatchResourceTest {
 	}
 
 	@Test
-	public void getImportStatusPreviousNotFinished() throws InterruptedException, IOException {
+	void getImportStatusPreviousNotFinished() throws InterruptedException, IOException {
 		final BatchTaskVo<UserImportEntry> oldTask = execute(
 				"Loubli;Sébastien;kloubli6a;my.address@sample.com;ligoj;,jira,");
 		oldTask.getStatus().setEnd(null);
@@ -212,7 +212,7 @@ public class UserBatchImportResourceTest extends AbstractUserBatchResourceTest {
 	}
 
 	@Test
-	public void getImportTaskFailed() {
+	void getImportTaskFailed() {
 		Assertions.assertNull(resource.getImportTask(-1));
 	}
 

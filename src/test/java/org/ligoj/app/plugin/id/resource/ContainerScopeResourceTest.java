@@ -35,7 +35,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 @ContextConfiguration(locations = "classpath:/META-INF/spring/application-context-test.xml")
 @Rollback
 @Transactional
-public class ContainerScopeResourceTest extends AbstractJpaTest {
+class ContainerScopeResourceTest extends AbstractJpaTest {
 
 	@Autowired
 	private ContainerScopeResource resource;
@@ -44,12 +44,12 @@ public class ContainerScopeResourceTest extends AbstractJpaTest {
 	private ContainerScopeRepository repository;
 
 	@BeforeEach
-	public void setUpEntities() throws IOException {
+	void setUpEntities() throws IOException {
 		persistEntities("csv", new Class[] { ContainerScope.class }, "UTF-8");
 	}
 
 	@Test
-	public void findAll() {
+	void findAll() {
 		// create a mock URI info with pagination informations
 		final UriInfo uriInfo = newFindAllParameters();
 
@@ -61,7 +61,7 @@ public class ContainerScopeResourceTest extends AbstractJpaTest {
 	}
 
 	@Test
-	public void findAll2() {
+	void findAll2() {
 		final List<ContainerScope> result = resource.findAllDescOrder(ContainerType.GROUP);
 		Assertions.assertEquals(4, result.size());
 		final ContainerScope type = result.get(2);
@@ -70,7 +70,7 @@ public class ContainerScopeResourceTest extends AbstractJpaTest {
 	}
 
 	@Test
-	public void findAllCompany() {
+	void findAllCompany() {
 		final List<ContainerScope> result = resource.findAllDescOrder(ContainerType.COMPANY);
 		Assertions.assertEquals(2, result.size());
 		final ContainerScope type = result.get(0);
@@ -80,7 +80,7 @@ public class ContainerScopeResourceTest extends AbstractJpaTest {
 	}
 
 	@Test
-	public void findAllGlobalSearch() {
+	void findAllGlobalSearch() {
 		// create a mock URI info with pagination informations
 		final UriInfo uriInfo = newFindAllParameters();
 
@@ -110,7 +110,7 @@ public class ContainerScopeResourceTest extends AbstractJpaTest {
 	 * test {@link ContainerScopeResource#findById(int)}
 	 */
 	@Test
-	public void findByIdInvalid() {
+	void findByIdInvalid() {
 		Assertions.assertThrows(JpaObjectRetrievalFailureException.class, () -> {
 			Assertions.assertNull(resource.findById(0));
 		});
@@ -120,13 +120,13 @@ public class ContainerScopeResourceTest extends AbstractJpaTest {
 	 * test {@link ContainerScopeResource#findById(int)}
 	 */
 	@Test
-	public void findById() {
+	void findById() {
 		final Integer id = repository.findAll(Sort.by("name")).get(3).getId();
 		checkType(resource.findById(id));
 	}
 
 	@Test
-	public void findByName() {
+	void findByName() {
 		checkType(resource.findByName("Project"));
 	}
 
@@ -141,7 +141,7 @@ public class ContainerScopeResourceTest extends AbstractJpaTest {
 	 * test create
 	 */
 	@Test
-	public void create() {
+	void create() {
 		final ContainerScope vo = new ContainerScope();
 		vo.setName("Name");
 		vo.setDn("dc=sample,dc=com");
@@ -161,7 +161,7 @@ public class ContainerScopeResourceTest extends AbstractJpaTest {
 	 * test create duplicate DN
 	 */
 	@Test
-	public void createDuplicateDn() {
+	void createDuplicateDn() {
 		final ContainerScope vo = new ContainerScope();
 		vo.setName("Name");
 		vo.setType(ContainerType.GROUP);
@@ -175,7 +175,7 @@ public class ContainerScopeResourceTest extends AbstractJpaTest {
 	 * test create duplicate name
 	 */
 	@Test
-	public void createDuplicateName() {
+	void createDuplicateName() {
 		final ContainerScope vo = new ContainerScope();
 		vo.setName("Project");
 		vo.setDn("dc=sample,dc=com");
@@ -189,7 +189,7 @@ public class ContainerScopeResourceTest extends AbstractJpaTest {
 	 * test update
 	 */
 	@Test
-	public void update() {
+	void update() {
 		final int id = repository.findAll(Sort.by("name")).get(0).getId();
 
 		final ContainerScope vo = new ContainerScope();
@@ -211,7 +211,7 @@ public class ContainerScopeResourceTest extends AbstractJpaTest {
 	 * test delete locked group
 	 */
 	@Test
-	public void deleteLocked() {
+	void deleteLocked() {
 		final ContainerScope scope = repository.findAll(Sort.by("name")).get(3);
 		final int id = scope.getId();
 		Assertions.assertTrue(scope.isLocked());
@@ -229,7 +229,7 @@ public class ContainerScopeResourceTest extends AbstractJpaTest {
 	 * test delete
 	 */
 	@Test
-	public void delete() {
+	void delete() {
 		final ContainerScope scope = repository.findAll(Sort.by("name")).get(0);
 		final int id = scope.getId();
 		Assertions.assertFalse(scope.isLocked());

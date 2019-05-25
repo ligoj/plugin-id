@@ -69,7 +69,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 @ContextConfiguration(locations = "classpath:/META-INF/spring/application-context-test.xml")
 @Rollback
 @Transactional
-public class UserOrgResourceTest extends AbstractAppTest {
+class UserOrgResourceTest extends AbstractAppTest {
 
 	private UserOrgResource resource;
 	protected IUserRepository userRepository;
@@ -83,7 +83,7 @@ public class UserOrgResourceTest extends AbstractAppTest {
 	private DelegateOrgRepository delegateOrgRepository;
 
 	@BeforeEach
-	public void prepareData() throws IOException {
+	void prepareData() throws IOException {
 		persistEntities("csv", new Class[] { DelegateOrg.class, CacheCompany.class, CacheGroup.class, CacheUser.class,
 				CacheMembership.class }, StandardCharsets.UTF_8.name());
 		iamProvider = Mockito.mock(IamProvider.class);
@@ -112,7 +112,7 @@ public class UserOrgResourceTest extends AbstractAppTest {
 	}
 
 	@Test
-	public void findById() {
+	void findById() {
 		final CompanyOrg company = new CompanyOrg("ou=ing,ou=france,ou=people,dc=sample,dc=com", "ing");
 		final GroupOrg groupOrg1 = new GroupOrg("cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com", "DIG",
 				Collections.singleton("wuser"));
@@ -127,14 +127,14 @@ public class UserOrgResourceTest extends AbstractAppTest {
 	}
 
 	@Test
-	public void findByIdNoCache() {
+	void findByIdNoCache() {
 		Mockito.when(userRepository.findByIdNoCache("wuser")).thenReturn(newUser());
 		Assertions.assertEquals("uid=wuser,ou=ing,ou=france,ou=people,dc=sample,dc=com",
 				checkUser(resource.findByIdNoCache("WusER")).getDn());
 	}
 
 	@Test
-	public void findAllBy() {
+	void findAllBy() {
 		final UserOrg userOrg = new UserOrg();
 		Mockito.when(userRepository.findAllBy("mail", "marc.martin@sample.com"))
 				.thenReturn(Collections.singletonList(userOrg));
@@ -142,7 +142,7 @@ public class UserOrgResourceTest extends AbstractAppTest {
 	}
 
 	@Test
-	public void findAll() {
+	void findAll() {
 		final Map<String, UserOrg> users = new HashMap<>();
 		final UserOrg user1 = newUser();
 		users.put("wuser", user1);
@@ -182,7 +182,7 @@ public class UserOrgResourceTest extends AbstractAppTest {
 	}
 
 	@Test
-	public void findAllFilteredNonVisibleGroup() {
+	void findAllFilteredNonVisibleGroup() {
 		final Map<String, UserOrg> users = new HashMap<>();
 		final UserOrg user1 = newUser();
 		users.put("wuser", user1);
@@ -221,7 +221,7 @@ public class UserOrgResourceTest extends AbstractAppTest {
 	}
 
 	@Test
-	public void findAllReadOnly() {
+	void findAllReadOnly() {
 		initSpringSecurityContext("fdaugan");
 		final Map<String, UserOrg> users = new HashMap<>();
 		final UserOrg user1 = newUser();
@@ -264,7 +264,7 @@ public class UserOrgResourceTest extends AbstractAppTest {
 	}
 
 	@Test
-	public void findAllNotVisibleCompany() {
+	void findAllNotVisibleCompany() {
 		final Map<String, UserOrg> users = new HashMap<>();
 		final UserOrg user1 = newUser();
 		users.put("wuser", user1);
@@ -353,7 +353,7 @@ public class UserOrgResourceTest extends AbstractAppTest {
 	}
 
 	@Test
-	public void createNotWriteInCompany() {
+	void createNotWriteInCompany() {
 		initSpringSecurityContext("any");
 		final GroupOrg groupOrg1 = new GroupOrg("cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com", "DIG",
 				Collections.singleton("flasta"));
@@ -382,7 +382,7 @@ public class UserOrgResourceTest extends AbstractAppTest {
 	}
 
 	@Test
-	public void createNotVisibleCompany() {
+	void createNotVisibleCompany() {
 		initSpringSecurityContext("any");
 		final GroupOrg groupOrg1 = new GroupOrg("cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com", "DIG",
 				Collections.singleton("flasta"));
@@ -411,7 +411,7 @@ public class UserOrgResourceTest extends AbstractAppTest {
 	}
 
 	@Test
-	public void create() {
+	void create() {
 		final GroupOrg groupOrg1 = new GroupOrg("cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com", "DIG",
 				Collections.singleton("flasta"));
 		final GroupOrg groupOrg2 = new GroupOrg("cn=DIG RHA,cn=DIG AS,cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com",
@@ -437,7 +437,7 @@ public class UserOrgResourceTest extends AbstractAppTest {
 	}
 
 	@Test
-	public void updatePassword() {
+	void updatePassword() {
 		resource.applicationContext = Mockito.mock(ApplicationContext.class);
 		final IPasswordGenerator generator = Mockito.mock(IPasswordGenerator.class);
 		Mockito.when(resource.applicationContext.getBeansOfType(IPasswordGenerator.class))
@@ -447,7 +447,7 @@ public class UserOrgResourceTest extends AbstractAppTest {
 	}
 
 	@Test
-	public void resetPassword() {
+	void resetPassword() {
 		prepareUser();
 		Assertions.assertEquals(0, passwordResetAuditRepository.countBy("login", "wuser"));
 		resource.applicationContext = Mockito.mock(ApplicationContext.class);
@@ -468,7 +468,7 @@ public class UserOrgResourceTest extends AbstractAppTest {
 	}
 
 	@Test
-	public void resetPasswordNoPasswordGenerator() {
+	void resetPasswordNoPasswordGenerator() {
 		prepareUser();
 		Assertions.assertEquals(0, passwordResetAuditRepository.countBy("login", "wuser"));
 		resource.applicationContext = Mockito.mock(ApplicationContext.class);
@@ -497,7 +497,7 @@ public class UserOrgResourceTest extends AbstractAppTest {
 	}
 
 	@Test
-	public void createUserAlreadyExists() {
+	void createUserAlreadyExists() {
 		final GroupOrg groupOrg1 = new GroupOrg("cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com", "DIG",
 				Collections.singleton("flasta"));
 		final GroupOrg groupOrg2 = new GroupOrg("cn=DIG RHA,cn=DIG AS,cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com",
@@ -528,7 +528,7 @@ public class UserOrgResourceTest extends AbstractAppTest {
 	}
 
 	@Test
-	public void deleteLastMember() {
+	void deleteLastMember() {
 		final GroupOrg groupOrg1 = new GroupOrg("cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com", "DIG",
 				Collections.singleton("wuser"));
 		final Map<String, GroupOrg> groupsMap = new HashMap<>();
@@ -546,7 +546,7 @@ public class UserOrgResourceTest extends AbstractAppTest {
 	}
 
 	@Test
-	public void deleteUserNoWriteCompany() {
+	void deleteUserNoWriteCompany() {
 		initSpringSecurityContext("mtuyer");
 		final CompanyOrg company = new CompanyOrg("ou=ing,ou=france,ou=people,dc=sample,dc=com", "ing");
 		final GroupOrg groupOrg1 = new GroupOrg("cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com", "DIG",
@@ -565,7 +565,7 @@ public class UserOrgResourceTest extends AbstractAppTest {
 	}
 
 	@Test
-	public void deleteUserNotVisibleUser() {
+	void deleteUserNotVisibleUser() {
 		initSpringSecurityContext("mtuyer");
 		final CompanyOrg company = new CompanyOrg("ou=ing,ou=france,ou=people,dc=sample,dc=com", "ing");
 		final GroupOrg groupOrg1 = new GroupOrg("cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com", "DIG",
@@ -585,7 +585,7 @@ public class UserOrgResourceTest extends AbstractAppTest {
 	}
 
 	@Test
-	public void resetPasswordUserNoWriteCompany() {
+	void resetPasswordUserNoWriteCompany() {
 		initSpringSecurityContext("mtuyer");
 		final CompanyOrg company = new CompanyOrg("ou=ing,ou=france,ou=people,dc=sample,dc=com", "ing");
 		final GroupOrg groupOrg1 = new GroupOrg("cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com", "DIG",
@@ -604,7 +604,7 @@ public class UserOrgResourceTest extends AbstractAppTest {
 	}
 
 	@Test
-	public void mergeUserNoChange() {
+	void mergeUserNoChange() {
 		final GroupOrg groupOrg1 = new GroupOrg("cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com", "DIG",
 				Collections.singleton("wuser"));
 		final GroupOrg groupOrg2 = new GroupOrg("cn=DIG RHA,cn=DIG AS,cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com",
@@ -625,7 +625,7 @@ public class UserOrgResourceTest extends AbstractAppTest {
 	}
 
 	@Test
-	public void mergeUserNoDepartment() {
+	void mergeUserNoDepartment() {
 		final GroupOrg groupOrg1 = new GroupOrg("cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com", "DIG",
 				Collections.singleton("wuser"));
 		final GroupOrg groupOrg2 = new GroupOrg("cn=DIG RHA,cn=DIG AS,cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com",
@@ -648,7 +648,7 @@ public class UserOrgResourceTest extends AbstractAppTest {
 	}
 
 	@Test
-	public void mergeUser() {
+	void mergeUser() {
 		final GroupOrg groupOrg1 = new GroupOrg("cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com", "DIG",
 				Collections.singleton("wuser"));
 		final GroupOrg groupOrg2 = new GroupOrg("cn=DIG RHA,cn=DIG AS,cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com",
@@ -674,7 +674,7 @@ public class UserOrgResourceTest extends AbstractAppTest {
 	 * Update everything : attributes and mails
 	 */
 	@Test
-	public void update() {
+	void update() {
 		final CompanyOrg company = new CompanyOrg("ou=ing,ou=france,ou=people,dc=sample,dc=com", "ing");
 		final GroupOrg groupOrg1 = new GroupOrg("cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com", "DIG",
 				Collections.singleton("wuser"));
@@ -703,7 +703,7 @@ public class UserOrgResourceTest extends AbstractAppTest {
 	}
 
 	@Test
-	public void updateNotWriteInCompany() {
+	void updateNotWriteInCompany() {
 		initSpringSecurityContext("mtuyer");
 		final CompanyOrg company = new CompanyOrg("ou=ing,ou=france,ou=people,dc=sample,dc=com", "ing");
 		final GroupOrg groupOrg1 = new GroupOrg("cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com", "DIG",
@@ -738,7 +738,7 @@ public class UserOrgResourceTest extends AbstractAppTest {
 	}
 
 	@Test
-	public void updateFirstName() {
+	void updateFirstName() {
 		// First name change only
 		update2(userVo -> userVo.setFirstName("XFirst2"));
 	}
@@ -794,74 +794,74 @@ public class UserOrgResourceTest extends AbstractAppTest {
 	}
 
 	@Test
-	public void updateLastName() {
+	void updateLastName() {
 		// Last name change only
 		update2(userVo -> userVo.setLastName("XDoe2"));
 	}
 
 	@Test
-	public void updateMail() {
+	void updateMail() {
 		// Mail change only
 		update2(userVo -> userVo.setMail("john31.last31@ing.com"));
 	}
 
 	@Test
-	public void updateCompany() {
+	void updateCompany() {
 		update2(userVo -> userVo.setCompany("ligoj"));
 	}
 
 	@Test
-	public void updateUserChangeDepartment() {
+	void updateUserChangeDepartment() {
 		update2(userVo -> userVo.setDepartment("department2"));
 	}
 
 	@Test
-	public void updateUserChangeDepartmentNotExists() {
+	void updateUserChangeDepartmentNotExists() {
 		update2(userVo -> userVo.setDepartment("any"));
 	}
 
 	@Test
-	public void updateUserNoChange() {
+	void updateUserNoChange() {
 		update2(userVo -> {
 			// No change
 		});
 	}
 
 	@Test
-	public void updateUserHadNoMail() {
+	void updateUserHadNoMail() {
 		update2(userVo -> {
 			userVo.setFirstName("XFirstA");
 		}, userVo -> userVo.setMails(new ArrayList<>()));
 	}
 
 	@Test
-	public void updateUserHasNoMail() {
+	void updateUserHasNoMail() {
 		update2(userVo -> userVo.setMail(null));
 	}
 
 	@Test
-	public void updateUserWasNotSecured() {
+	void updateUserWasNotSecured() {
 		update2(userVo -> {
 			userVo.setFirstName("XFirstA");
 		}, userVo -> userVo.setSecured(false));
 	}
 
 	@Test
-	public void updateGroup() {
+	void updateGroup() {
 		// Remove group "dig"
 		update2(userVo -> userVo.setGroups(Arrays.asList("other", "dig rha")),
 				u -> u.setGroups(Arrays.asList("other", "dig rha", "dig")));
 	}
 
 	@Test
-	public void updateGroupRemoveWithInvisible() {
+	void updateGroupRemoveWithInvisible() {
 		// Remove group "dig" when there is an invisible group
 		update2(userVo -> userVo.setGroups(Arrays.asList("other", "dig rha")),
 				u -> u.setGroups(Arrays.asList("invisible", "other", "dig rha", "dig")));
 	}
 
 	@Test
-	public void findAllNotSecureByCompany() {
+	void findAllNotSecureByCompany() {
 		final Map<String, UserOrg> users = new HashMap<>();
 		final UserOrg user1 = newUser();
 		users.put("wuser", user1);
@@ -889,7 +889,7 @@ public class UserOrgResourceTest extends AbstractAppTest {
 	}
 
 	@Test
-	public void findAllNotSecureByVisibleCompany() {
+	void findAllNotSecureByVisibleCompany() {
 		final Map<String, UserOrg> users = new HashMap<>();
 		final UserOrg user1 = newUser();
 		users.put("wuser", user1);
@@ -917,7 +917,7 @@ public class UserOrgResourceTest extends AbstractAppTest {
 	}
 
 	@Test
-	public void findAllNotSecureByGroup() {
+	void findAllNotSecureByGroup() {
 		final Map<String, UserOrg> users = new HashMap<>();
 		final UserOrg user1 = newUser();
 		users.put("wuser", user1);
@@ -945,7 +945,7 @@ public class UserOrgResourceTest extends AbstractAppTest {
 	}
 
 	@Test
-	public void findAllNotSecureByVisibleGroup() {
+	void findAllNotSecureByVisibleGroup() {
 		final Map<String, UserOrg> users = new HashMap<>();
 		final UserOrg user1 = newUser();
 		users.put("wuser", user1);
@@ -973,7 +973,7 @@ public class UserOrgResourceTest extends AbstractAppTest {
 	}
 
 	@Test
-	public void findAllNotSecure() {
+	void findAllNotSecure() {
 		final Map<String, UserOrg> users = new HashMap<>();
 		final UserOrg user1 = newUser();
 		users.put("wuser", user1);
@@ -1001,7 +1001,7 @@ public class UserOrgResourceTest extends AbstractAppTest {
 	}
 
 	@Test
-	public void lock() {
+	void lock() {
 		final CompanyOrg company = new CompanyOrg("ou=ing,ou=france,ou=people,dc=sample,dc=com", "ing");
 		final GroupOrg groupOrg1 = new GroupOrg("cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com", "DIG",
 				Collections.singleton("wuser"));
@@ -1017,7 +1017,7 @@ public class UserOrgResourceTest extends AbstractAppTest {
 	}
 
 	@Test
-	public void isolate() {
+	void isolate() {
 		final CompanyOrg company = new CompanyOrg("ou=ing,ou=france,ou=people,dc=sample,dc=com", "ing");
 		final GroupOrg groupOrg1 = new GroupOrg("cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com", "DIG",
 				Collections.singleton("wuser"));
@@ -1033,7 +1033,7 @@ public class UserOrgResourceTest extends AbstractAppTest {
 	}
 
 	@Test
-	public void restore() {
+	void restore() {
 		final CompanyOrg company = new CompanyOrg("ou=ing,ou=france,ou=people,dc=sample,dc=com", "ing");
 		final GroupOrg groupOrg1 = new GroupOrg("cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com", "DIG",
 				Collections.singleton("wuser"));
@@ -1050,7 +1050,7 @@ public class UserOrgResourceTest extends AbstractAppTest {
 	}
 
 	@Test
-	public void unlock() {
+	void unlock() {
 		final CompanyOrg company = new CompanyOrg("ou=ing,ou=france,ou=people,dc=sample,dc=com", "ing");
 		final GroupOrg groupOrg1 = new GroupOrg("cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com", "DIG",
 				Collections.singleton("wuser"));
@@ -1066,7 +1066,7 @@ public class UserOrgResourceTest extends AbstractAppTest {
 	}
 
 	@Test
-	public void delete() {
+	void delete() {
 		final CompanyOrg company = new CompanyOrg("ou=ing,ou=france,ou=people,dc=sample,dc=com", "ing");
 		final GroupOrg groupOrg1 = new GroupOrg("cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com", "DIG",
 				new HashSet<>(Arrays.asList("wuser", "user1")));
@@ -1085,7 +1085,7 @@ public class UserOrgResourceTest extends AbstractAppTest {
 	 * Add a user to a group
 	 */
 	@Test
-	public void addUserToGroup() {
+	void addUserToGroup() {
 		mockAddUser(DEFAULT_USER);
 		resource.addUserToGroup("wuser", "dig rha");
 	}
@@ -1094,7 +1094,7 @@ public class UserOrgResourceTest extends AbstractAppTest {
 	 * Add a user to a group without delegates but being system administrator.
 	 */
 	@Test
-	public void addUserToGroupSystemAdmin() {
+	void addUserToGroupSystemAdmin() {
 		initSpringSecurityContext("my-admin");
 		SystemUser user = new SystemUser();
 		user.setLogin("my-admin");
@@ -1137,7 +1137,7 @@ public class UserOrgResourceTest extends AbstractAppTest {
 	 * Add a user to a group this user is already member
 	 */
 	@Test
-	public void addUserToGroupAlreadyMember() {
+	void addUserToGroupAlreadyMember() {
 		final GroupOrg groupOrg1 = new GroupOrg("cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com", "DIG",
 				Collections.singleton("wuser"));
 		final GroupOrg groupOrg2 = new GroupOrg("cn=DIG RHA,cn=DIG AS,cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com",
@@ -1158,7 +1158,7 @@ public class UserOrgResourceTest extends AbstractAppTest {
 	 * Add a user to a group the principal does not visible.
 	 */
 	@Test
-	public void addUserToGroupNotWritableGroup() {
+	void addUserToGroupNotWritableGroup() {
 		initSpringSecurityContext("mlavoine");
 		final GroupOrg groupOrg1 = new GroupOrg("cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com", "DIG",
 				Collections.singleton("user1"));
@@ -1182,7 +1182,7 @@ public class UserOrgResourceTest extends AbstractAppTest {
 	 * Remove a user to a group the principal does not visible.
 	 */
 	@Test
-	public void removeUserFromGroupNotWritableGroup() {
+	void removeUserFromGroupNotWritableGroup() {
 		initSpringSecurityContext("mlavoine");
 		final GroupOrg groupOrg1 = new GroupOrg("cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com", "DIG",
 				Collections.singleton("user1"));
@@ -1206,7 +1206,7 @@ public class UserOrgResourceTest extends AbstractAppTest {
 	 * Test user addition to a group.
 	 */
 	@Test
-	public void removeUserFromGroup() {
+	void removeUserFromGroup() {
 		final GroupOrg groupOrg1 = new GroupOrg("cn=DIG RHA,cn=DIG AS,cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com",
 				"DIG RHA", Collections.singleton("wuser"));
 		final GroupOrg groupOrg2 = new GroupOrg("cn=DIG AS,cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com", "DIG AS",
@@ -1232,21 +1232,21 @@ public class UserOrgResourceTest extends AbstractAppTest {
 	}
 
 	@Test
-	public void canWriteNotSameType() {
+	void canWriteNotSameType() {
 		final DelegateOrg delegate = new DelegateOrg();
 		delegate.setType(DelegateType.GROUP);
 		Assertions.assertFalse(resource.canWrite(delegate, null, DelegateType.COMPANY));
 	}
 
 	@Test
-	public void canWriteSameTypeNoRight() {
+	void canWriteSameTypeNoRight() {
 		final DelegateOrg delegate = new DelegateOrg();
 		delegate.setType(DelegateType.GROUP);
 		Assertions.assertFalse(resource.canWrite(delegate, null, DelegateType.GROUP));
 	}
 
 	@Test
-	public void canWrite() {
+	void canWrite() {
 		final DelegateOrg delegate = new DelegateOrg();
 		delegate.setType(DelegateType.GROUP);
 		delegate.setDn("rightdn");
@@ -1258,7 +1258,7 @@ public class UserOrgResourceTest extends AbstractAppTest {
 	 * Admin on delegate does not grant write access.
 	 */
 	@Test
-	public void canWriteAsAdmin() {
+	void canWriteAsAdmin() {
 		final DelegateOrg delegate = new DelegateOrg();
 		delegate.setType(DelegateType.GROUP);
 		delegate.setCanAdmin(true);
@@ -1267,7 +1267,7 @@ public class UserOrgResourceTest extends AbstractAppTest {
 	}
 
 	@Test
-	public void canWriteAsReader() {
+	void canWriteAsReader() {
 		final DelegateOrg delegate = new DelegateOrg();
 		delegate.setType(DelegateType.GROUP);
 		delegate.setDn("rightdn");

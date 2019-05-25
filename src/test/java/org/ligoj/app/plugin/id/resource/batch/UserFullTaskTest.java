@@ -28,12 +28,12 @@ import com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider;
 /**
  * Test of {@link UserFullTask}
  */
-public class UserFullTaskTest extends AbstractSecurityTest {
+class UserFullTaskTest extends AbstractSecurityTest {
 
 	private UserFullTask task;
 
 	@BeforeEach
-	public void setup() {
+	void setup() {
 		task = new UserFullTask();
 		task.resource = Mockito.mock(UserOrgResource.class);
 		task.securityHelper = new SecurityHelper();
@@ -42,7 +42,7 @@ public class UserFullTaskTest extends AbstractSecurityTest {
 	}
 
 	@Test
-	public void runInvalidStatus() {
+	void runInvalidStatus() {
 		final UserImportEntry entry = Mockito.mock(UserImportEntry.class);
 		Mockito.when(entry.getId()).thenThrow(new RuntimeException());
 		final BatchTaskVo<UserImportEntry> importTask = new BatchTaskVo<>();
@@ -56,7 +56,7 @@ public class UserFullTaskTest extends AbstractSecurityTest {
 	}
 
 	@Test
-	public void run() {
+	void run() {
 		final BatchTaskVo<UserImportEntry> importTask = new BatchTaskVo<>();
 		final UserImportEntry entry = new UserImportEntry();
 		entry.setGroups(",group,");
@@ -69,7 +69,7 @@ public class UserFullTaskTest extends AbstractSecurityTest {
 	}
 
 	@Test
-	public void configureMessage() throws IllegalArgumentException, IllegalAccessException {
+	void configureMessage() throws IllegalArgumentException, IllegalAccessException {
 		final ServerProviderFactory instance = ServerProviderFactory.getInstance();
 		@SuppressWarnings("unchecked")
 		final List<ProviderInfo<ExceptionMapper<?>>> object = (List<ProviderInfo<ExceptionMapper<?>>>) FieldUtils
@@ -92,7 +92,7 @@ public class UserFullTaskTest extends AbstractSecurityTest {
 	}
 
 	@Test
-	public void configureMessage2() throws IllegalArgumentException {
+	void configureMessage2() throws IllegalArgumentException {
 		final UserImportEntry entry = Mockito.mock(UserImportEntry.class);
 		Mockito.when(entry.getId()).thenThrow(new RuntimeException());
 		final BatchTaskVo<UserImportEntry> importTask = new BatchTaskVo<>();

@@ -40,12 +40,12 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 @ContextConfiguration(locations = "classpath:/META-INF/spring/application-context-test.xml")
 @Rollback
 @Transactional
-public class GroupResourceTest extends AbstractContainerResourceTest {
+class GroupResourceTest extends AbstractContainerResourceTest {
 
 	private GroupResource resource;
 
 	@BeforeEach
-	public void mock() {
+	void mock() {
 		resource = new GroupResource();
 		applicationContext.getAutowireCapableBeanFactory().autowireBean(resource);
 		resource.iamProvider = new IamProvider[] { iamProvider };
@@ -53,7 +53,7 @@ public class GroupResourceTest extends AbstractContainerResourceTest {
 	}
 
 	@Test
-	public void findAll() {
+	void findAll() {
 		final GroupOrg groupOrg1 = new GroupOrg("cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com", "DIG", Collections.singleton("user1"));
 		final GroupOrg groupOrg2 = new GroupOrg("cn=DIG RHA,cn=DIG AS,cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com", "DIG RHA",
 				Collections.singleton("user2"));
@@ -112,7 +112,7 @@ public class GroupResourceTest extends AbstractContainerResourceTest {
 	}
 
 	@Test
-	public void findByNameNoType() {
+	void findByNameNoType() {
 		Mockito.when(groupRepository.findById(DEFAULT_USER, "business solution"))
 				.thenReturn(new GroupOrg("cn=Business Solution,ou=groups,dc=sample,dc=com", "Business Solution", null));
 		final ContainerWithScopeVo group = resource.findByName("business solution");
@@ -121,12 +121,12 @@ public class GroupResourceTest extends AbstractContainerResourceTest {
 	}
 
 	@Test
-	public void findByNameNotExistingGroup() {
+	void findByNameNotExistingGroup() {
 		Assertions.assertNull(resource.findByName("any"));
 	}
 
 	@Test
-	public void findByName() {
+	void findByName() {
 		Mockito.when(groupRepository.findById(DEFAULT_USER, "dig as"))
 				.thenReturn(new GroupOrg("cn=DIG AS,cn=DIG AS,cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com", "DIG AS", null));
 		final ContainerWithScopeVo group = resource.findByName("dig as");
@@ -135,7 +135,7 @@ public class GroupResourceTest extends AbstractContainerResourceTest {
 	}
 
 	@Test
-	public void findByIdNotExists() {
+	void findByIdNotExists() {
 		Assertions.assertNull(resource.findById("any"));
 	}
 
@@ -144,25 +144,25 @@ public class GroupResourceTest extends AbstractContainerResourceTest {
 	 * does not exist anymore.
 	 */
 	@Test
-	public void findByIdUserNoRight() {
+	void findByIdUserNoRight() {
 		initSpringSecurityContext("assist");
 		Assertions.assertNull(resource.findById("business solution"));
 	}
 
 	@Test
-	public void exists() {
+	void exists() {
 		Mockito.when(groupRepository.findById(DEFAULT_USER, "dig as"))
 				.thenReturn(new GroupOrg("cn=DIG AS,cn=DIG AS,cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com", "dig as", null));
 		Assertions.assertTrue(resource.exists("dig as"));
 	}
 
 	@Test
-	public void existsNot() {
+	void existsNot() {
 		Assertions.assertFalse(resource.exists("any"));
 	}
 
 	@Test
-	public void createWithParent() {
+	void createWithParent() {
 		final GroupEditionVo group = new GroupEditionVo();
 		group.setDepartments(Collections.singletonList("SOME"));
 		group.setOwners(Collections.singletonList("fdaugan"));
@@ -184,7 +184,7 @@ public class GroupResourceTest extends AbstractContainerResourceTest {
 	}
 
 	@Test
-	public void create() {
+	void create() {
 		createInternal(new GroupEditionVo(), "cn=new-group,ou=fonction,ou=groups,dc=sample,dc=com");
 	}
 
@@ -198,7 +198,7 @@ public class GroupResourceTest extends AbstractContainerResourceTest {
 	}
 
 	@Test
-	public void deleteNoRight() {
+	void deleteNoRight() {
 		initSpringSecurityContext("mmartin");
 		Mockito.when(groupRepository.findByIdExpected("mmartin", "dig rha"))
 				.thenReturn(new GroupOrg("cn=DIG RHA,cn=DIG AS,cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com", "dig rha", null));
@@ -208,7 +208,7 @@ public class GroupResourceTest extends AbstractContainerResourceTest {
 	}
 
 	@Test
-	public void empty() {
+	void empty() {
 		final GroupOrg groupOrg1 = new GroupOrg("cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com", "DIG", Collections.emptySet());
 		final GroupOrg groupOrg2 = new GroupOrg("cn=DIG RHA,cn=DIG AS,cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com", "DIG RHA",
 				Collections.emptySet());
@@ -223,7 +223,7 @@ public class GroupResourceTest extends AbstractContainerResourceTest {
 	}
 
 	@Test
-	public void toDnParent() {
+	void toDnParent() {
 		final ContainerScope scope = containerScopeRepository.findByName("Fonction");
 		final GroupEditionVo group = new GroupEditionVo();
 		group.setName("new-group");
@@ -234,7 +234,7 @@ public class GroupResourceTest extends AbstractContainerResourceTest {
 	}
 
 	@Test
-	public void toDnParentInvalid() {
+	void toDnParentInvalid() {
 		final ContainerScope scope = containerScopeRepository.findByName("Fonction");
 		final GroupEditionVo group = new GroupEditionVo();
 		group.setName("new-group");
@@ -247,7 +247,7 @@ public class GroupResourceTest extends AbstractContainerResourceTest {
 	}
 
 	@Test
-	public void toDn() {
+	void toDn() {
 		final ContainerScope scope = containerScopeRepository.findByName("Fonction");
 		final GroupEditionVo group = new GroupEditionVo();
 		group.setName("new-group");
@@ -255,7 +255,7 @@ public class GroupResourceTest extends AbstractContainerResourceTest {
 	}
 
 	@Test
-	public void emptyNoRight() {
+	void emptyNoRight() {
 		initSpringSecurityContext("mmartin");
 		MatcherUtil.assertThrows(Assertions.assertThrows(ValidationJsonException.class, () -> {
 			resource.empty("dig rha");
@@ -266,7 +266,7 @@ public class GroupResourceTest extends AbstractContainerResourceTest {
 	 * Check visible group is filtered against available groups for write.
 	 */
 	@Test
-	public void getContainersForWrite() {
+	void getContainersForWrite() {
 		initSpringSecurityContext("mlavoine");
 		final TableItem<String> items = resource.getContainersForWrite(newUriInfo());
 		Assertions.assertEquals(0, items.getRecordsFiltered());
@@ -279,7 +279,7 @@ public class GroupResourceTest extends AbstractContainerResourceTest {
 	 * administration.
 	 */
 	@Test
-	public void getContainersForAdmin() {
+	void getContainersForAdmin() {
 		initSpringSecurityContext("mtuyer");
 		final TableItem<String> items = resource.getContainersForAdmin(newUriInfo());
 
@@ -294,7 +294,7 @@ public class GroupResourceTest extends AbstractContainerResourceTest {
 	 * administration.
 	 */
 	@Test
-	public void getContainersForAdminNoRight() {
+	void getContainersForAdminNoRight() {
 		initSpringSecurityContext("mlavoine");
 		final TableItem<String> items = resource.getContainersForAdmin(newUriInfo());
 		Assertions.assertEquals(0, items.getRecordsFiltered());
@@ -303,7 +303,7 @@ public class GroupResourceTest extends AbstractContainerResourceTest {
 	}
 
 	@Test
-	public void getContainersDelegateTreeExactParentDn() {
+	void getContainersDelegateTreeExactParentDn() {
 		initSpringSecurityContext("mlavoine");
 		final TableItem<String> items = resource.getContainers(newUriInfo());
 		Assertions.assertEquals(4, items.getRecordsFiltered());
@@ -321,7 +321,7 @@ public class GroupResourceTest extends AbstractContainerResourceTest {
 	}
 
 	@Test
-	public void getContainersDelegateTreeSubParentDn() {
+	void getContainersDelegateTreeSubParentDn() {
 		initSpringSecurityContext("mtuyer");
 		final UriInfo uriInfo = newUriInfo();
 		uriInfo.getQueryParameters().add(DataTableAttributes.PAGE_LENGTH, "100");
@@ -341,7 +341,7 @@ public class GroupResourceTest extends AbstractContainerResourceTest {
 	}
 
 	@Test
-	public void getContainersNoDelegate() {
+	void getContainersNoDelegate() {
 		initSpringSecurityContext("any");
 		final TableItem<String> items = resource.getContainers(newUriInfo());
 		Assertions.assertEquals(0, items.getRecordsFiltered());
@@ -350,7 +350,7 @@ public class GroupResourceTest extends AbstractContainerResourceTest {
 	}
 
 	@Test
-	public void getContainersDelegateGroup() {
+	void getContainersDelegateGroup() {
 		initSpringSecurityContext("someone");
 		final TableItem<String> items = resource.getContainers(newUriInfo());
 		Assertions.assertEquals(1, items.getRecordsFiltered());
@@ -360,7 +360,7 @@ public class GroupResourceTest extends AbstractContainerResourceTest {
 	}
 
 	@Test
-	public void newContainerCountVo() {
+	void newContainerCountVo() {
 		ContainerOrg rawContainer = new ContainerOrg("dn=no-scope", "name");
 		Assertions.assertNull(resource
 				.newContainerCountVo(rawContainer, Collections.emptySet(), Collections.emptySet(), Collections.emptyList()).getScope());

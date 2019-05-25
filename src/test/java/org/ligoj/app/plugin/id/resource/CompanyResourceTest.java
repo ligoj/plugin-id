@@ -38,12 +38,12 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 @ContextConfiguration(locations = "classpath:/META-INF/spring/application-context-test.xml")
 @Rollback
 @Transactional
-public class CompanyResourceTest extends AbstractContainerResourceTest {
+class CompanyResourceTest extends AbstractContainerResourceTest {
 
 	private CompanyResource resource;
 
 	@BeforeEach
-	public void mock() {
+	void mock() {
 		resource = new CompanyResource();
 		applicationContext.getAutowireCapableBeanFactory().autowireBean(resource);
 		resource.iamProvider = new IamProvider[] { iamProvider };
@@ -57,7 +57,7 @@ public class CompanyResourceTest extends AbstractContainerResourceTest {
 	 * Check managed companies is filtered against available groups.
 	 */
 	@Test
-	public void getContainers() {
+	void getContainers() {
 		final TableItem<String> items = resource.getContainers(newUriInfo());
 		Assertions.assertEquals(9, items.getRecordsFiltered());
 		Assertions.assertEquals(9, items.getRecordsTotal());
@@ -69,7 +69,7 @@ public class CompanyResourceTest extends AbstractContainerResourceTest {
 	 * Check managed companies for write.
 	 */
 	@Test
-	public void getContainersForWrite() {
+	void getContainersForWrite() {
 		final TableItem<String> items = resource.getContainersForWrite(newUriInfo());
 		Assertions.assertEquals(9, items.getRecordsFiltered());
 		Assertions.assertEquals(9, items.getRecordsTotal());
@@ -81,7 +81,7 @@ public class CompanyResourceTest extends AbstractContainerResourceTest {
 	 * Check managed companies for write.
 	 */
 	@Test
-	public void getContainersForWrite2() {
+	void getContainersForWrite2() {
 		initSpringSecurityContext("mtuyer");
 		final TableItem<String> items = resource.getContainersForWrite(newUriInfo());
 		Assertions.assertEquals(0, items.getRecordsFiltered());
@@ -94,7 +94,7 @@ public class CompanyResourceTest extends AbstractContainerResourceTest {
 	 * administration.
 	 */
 	@Test
-	public void getContainersForAdmin() {
+	void getContainersForAdmin() {
 		initSpringSecurityContext("mlavoine");
 		final TableItem<String> items = resource.getContainersForAdmin(newUriInfo());
 		Assertions.assertEquals(0, items.getRecordsFiltered());
@@ -103,7 +103,7 @@ public class CompanyResourceTest extends AbstractContainerResourceTest {
 	}
 
 	@Test
-	public void getContainersForAdmin2() {
+	void getContainersForAdmin2() {
 		initSpringSecurityContext("fdaugan");
 		final TableItem<String> items = resource.getContainersForAdmin(newUriInfo());
 		Assertions.assertEquals(2, items.getRecordsFiltered());
@@ -114,13 +114,13 @@ public class CompanyResourceTest extends AbstractContainerResourceTest {
 	}
 
 	@Test
-	public void findByIdNotExists() {
+	void findByIdNotExists() {
 		initSpringSecurityContext("fdaugan");
 		Assertions.assertNull(resource.findById("any"));
 	}
 
 	@Test
-	public void findByIdExpected() {
+	void findByIdExpected() {
 		Mockito.when(companyRepository.findByIdExpected(DEFAULT_USER, "ing"))
 				.thenReturn(new CompanyOrg("ou=ing,ou=external,ou=people,dc=sample,dc=com", "ing"));
 		Assertions.assertEquals("ou=ing,ou=external,ou=people,dc=sample,dc=com", resource.findByIdExpected("ing").getDn());
@@ -130,7 +130,7 @@ public class CompanyResourceTest extends AbstractContainerResourceTest {
 	 * Check managed companies is filtered against available groups.
 	 */
 	@Test
-	public void getContainersMyCompany() {
+	void getContainersMyCompany() {
 		initSpringSecurityContext("mmartin");
 		final TableItem<String> items = resource.getContainers(newUriInfo());
 		Assertions.assertEquals(4, items.getRecordsFiltered());
@@ -145,7 +145,7 @@ public class CompanyResourceTest extends AbstractContainerResourceTest {
 	}
 
 	@Test
-	public void createNoWriteRight() {
+	void createNoWriteRight() {
 		final ContainerScope scope = containerScopeRepository.findByName("France");
 		final ContainerEditionVo group = new ContainerEditionVo();
 		group.setName("New-Ax-1-z:Z 0");
@@ -157,7 +157,7 @@ public class CompanyResourceTest extends AbstractContainerResourceTest {
 	}
 
 	@Test
-	public void deleteNotVisile() {
+	void deleteNotVisile() {
 		initSpringSecurityContext("mmartin");
 		final CompanyOrg companyOrg1 = new CompanyOrg("ou=ligoj,ou=france,ou=people,dc=sample,dc=com", "ligoj");
 		Mockito.when(companyRepository.findByIdExpected("mmartin", "ligoj")).thenReturn(companyOrg1);
@@ -170,7 +170,7 @@ public class CompanyResourceTest extends AbstractContainerResourceTest {
 	 * Container is locked itself
 	 */
 	@Test
-	public void deleteLocked() {
+	void deleteLocked() {
 		final CompanyOrg company = new CompanyOrg("ou=quarantine,ou=ing,ou=external,ou=people,dc=sample,dc=com", "quarantine");
 		company.setLocked(true);
 		Mockito.when(companyRepository.findByIdExpected(DEFAULT_USER, "quarantine")).thenReturn(company);
@@ -180,7 +180,7 @@ public class CompanyResourceTest extends AbstractContainerResourceTest {
 	}
 
 	@Test
-	public void deleteNotEmptyParent() {
+	void deleteNotEmptyParent() {
 		final CompanyOrg companyOrg1 = new CompanyOrg("ou=france,ou=people,dc=sample,dc=com", "france");
 		final CompanyOrg companyOrg2 = new CompanyOrg("ou=ing-internal,ou=ing,ou=external,ou=people,dc=sample,dc=com", "ing-internal");
 		final Map<String, CompanyOrg> companies = new HashMap<>();
@@ -201,7 +201,7 @@ public class CompanyResourceTest extends AbstractContainerResourceTest {
 	}
 
 	@Test
-	public void createAlreadyExists() {
+	void createAlreadyExists() {
 		final ContainerScope scope = containerScopeRepository.findByName("France");
 		final ContainerEditionVo group = new ContainerEditionVo();
 		group.setName("orange");
@@ -213,7 +213,7 @@ public class CompanyResourceTest extends AbstractContainerResourceTest {
 	}
 
 	@Test
-	public void createInvalidType() {
+	void createInvalidType() {
 		final ContainerScope scope = containerScopeRepository.findByName("Fonction");
 		final ContainerEditionVo company = new ContainerEditionVo();
 		company.setName("New-Ax-1-z:Z 0");
@@ -224,7 +224,7 @@ public class CompanyResourceTest extends AbstractContainerResourceTest {
 	}
 
 	@Test
-	public void create() {
+	void create() {
 		final ContainerScope scope = containerScopeRepository.findByName("France");
 		final ContainerEditionVo company = new ContainerEditionVo();
 		company.setName("new-company");
@@ -236,14 +236,14 @@ public class CompanyResourceTest extends AbstractContainerResourceTest {
 	}
 
 	@Test
-	public void delete() {
+	void delete() {
 		final CompanyOrg companyOrg1 = new CompanyOrg("ou=ligoj,ou=france,ou=people,dc=sample,dc=com", "ligoj");
 		Mockito.when(companyRepository.findByIdExpected(DEFAULT_USER, "ligoj")).thenReturn(companyOrg1);
 		resource.delete("ligoj");
 	}
 
 	@Test
-	public void findAllExternal() {
+	void findAllExternal() {
 		Mockito.when(
 				companyRepository.findAll(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
 				.thenReturn(new PageImpl<>(Collections.emptyList()));
@@ -254,7 +254,7 @@ public class CompanyResourceTest extends AbstractContainerResourceTest {
 	}
 
 	@Test
-	public void findAll() {
+	void findAll() {
 		final CompanyOrg companyOrg1 = new CompanyOrg("ou=ligoj,ou=france,ou=people,dc=sample,dc=com", "ligoj");
 		final CompanyOrg companyOrg2 = new CompanyOrg("ou=ing-internal,ou=ing,ou=external,ou=people,dc=sample,dc=com", "ing-internal");
 		companyOrg2.setLocked(true);
@@ -299,7 +299,7 @@ public class CompanyResourceTest extends AbstractContainerResourceTest {
 	}
 
 	@Test
-	public void isUserInternalCommpanyExternal() {
+	void isUserInternalCommpanyExternal() {
 		initSpringSecurityContext("mlavoine");
 		final UserOrg user = new UserOrg();
 		user.setCompany("ext");
@@ -311,7 +311,7 @@ public class CompanyResourceTest extends AbstractContainerResourceTest {
 	}
 
 	@Test
-	public void isUserInternalCommpanyAny() {
+	void isUserInternalCommpanyAny() {
 		initSpringSecurityContext("any");
 		Mockito.when(userRepository.findById("any")).thenReturn(null);
 		Mockito.when(userRepository.getPeopleInternalBaseDn()).thenReturn("ou=internal,dc=sample,dc=com");
@@ -319,7 +319,7 @@ public class CompanyResourceTest extends AbstractContainerResourceTest {
 	}
 
 	@Test
-	public void isUserInternalCommpany() {
+	void isUserInternalCommpany() {
 		initSpringSecurityContext("mmartin");
 		final UserOrg user = new UserOrg();
 		user.setCompany("sub");

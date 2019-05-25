@@ -41,7 +41,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 @ContextConfiguration(locations = "classpath:/META-INF/spring/application-context-test.xml")
 @Rollback
 @Transactional
-public class GroupBatchResourceTest extends AbstractBatchTest {
+class GroupBatchResourceTest extends AbstractBatchTest {
 
 	@Autowired
 	protected GroupBatchResource resource;
@@ -49,7 +49,7 @@ public class GroupBatchResourceTest extends AbstractBatchTest {
 	private GroupResource mockResource;
 
 	@Test
-	public void full() throws IOException, InterruptedException {
+	void full() throws IOException, InterruptedException {
 		final BatchTaskVo<GroupImportEntry> importTask = full("Ligoj France;Fonction");
 
 		// Check the result
@@ -105,7 +105,7 @@ public class GroupBatchResourceTest extends AbstractBatchTest {
 
 	// "name", "type", "parent", "owner", "seealso", "department"
 	@Test
-	public void fullFull() throws IOException, InterruptedException {
+	void fullFull() throws IOException, InterruptedException {
 		final BatchTaskVo<GroupImportEntry> importTask = full("Special;Fonction;Operations;700301,700302;fdaugan,alongchu;jdoe5,wuser");
 
 		// Check the result
@@ -140,7 +140,7 @@ public class GroupBatchResourceTest extends AbstractBatchTest {
 
 	@SuppressWarnings("unchecked")
 	@BeforeEach
-	public void mockApplicationContext() {
+	void mockApplicationContext() {
 		final ApplicationContext applicationContext = Mockito.mock(ApplicationContext.class);
 		SpringUtils.setSharedApplicationContext(applicationContext);
 		mockResource = Mockito.mock(GroupResource.class);
@@ -165,12 +165,12 @@ public class GroupBatchResourceTest extends AbstractBatchTest {
 	}
 
 	@BeforeEach
-	public void prepareData() throws IOException {
+	void prepareData() throws IOException {
 		persistEntities("csv", new Class[] { DelegateOrg.class }, StandardCharsets.UTF_8.name());
 	}
 
 	@AfterEach
-	public void unmockApplicationContext() {
+	void unmockApplicationContext() {
 		SpringUtils.setSharedApplicationContext(super.applicationContext);
 	}
 }

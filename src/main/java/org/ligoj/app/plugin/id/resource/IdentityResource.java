@@ -72,6 +72,11 @@ public class IdentityResource extends AbstractServicePlugin {
 		return Arrays.asList(Node.class, Parameter.class);
 	}
 
+	/**
+	 * Return <code>true</code> if the given user is an administrator.
+	 * @param user The user name.
+	 * @return <code>true</code> if the given user is an administrator.
+	 */
 	@CacheResult(cacheName = "user-is-admin")
 	public boolean isAdmin(@CacheKey final String user) {
 		return systemUserRepository.isAdmin(user);

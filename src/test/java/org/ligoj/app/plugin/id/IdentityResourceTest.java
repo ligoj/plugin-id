@@ -24,18 +24,18 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 @ContextConfiguration(locations = "classpath:/META-INF/spring/application-context-test.xml")
 @Rollback
 @Transactional
-public class IdentityResourceTest extends AbstractAppTest {
+class IdentityResourceTest extends AbstractAppTest {
 
 	@Autowired
 	private IdentityResource resource;
 
 	@Test
-	public void getKey() {
+	void getKey() {
 		Assertions.assertEquals("service:id", resource.getKey());
 	}
 
 	@Test
-	public void getInstalledEntities() {
+	void getInstalledEntities() {
 		Assertions.assertTrue(resource.getInstalledEntities().contains(Node.class));
 		Assertions.assertTrue(resource.getInstalledEntities().contains(Parameter.class));
 	}

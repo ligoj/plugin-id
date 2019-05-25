@@ -31,13 +31,13 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 @ContextConfiguration(locations = "classpath:/META-INF/spring/application-context-test.xml")
 @Rollback
 @Transactional
-public abstract class AbstractUserBatchResourceTest extends AbstractBatchTest {
+abstract class AbstractUserBatchResourceTest extends AbstractBatchTest {
 
 	protected UserOrgResource mockResource;
 
 	@SuppressWarnings("unchecked")
 	@BeforeEach
-	public void mockApplicationContext() {
+	void mockApplicationContext() {
 		final ApplicationContext applicationContext = Mockito.mock(ApplicationContext.class);
 		SpringUtils.setSharedApplicationContext(applicationContext);
 		mockResource = Mockito.mock(UserOrgResource.class);
@@ -63,12 +63,12 @@ public abstract class AbstractUserBatchResourceTest extends AbstractBatchTest {
 	}
 
 	@AfterEach
-	public void unmockApplicationContext() {
+	void unmockApplicationContext() {
 		SpringUtils.setSharedApplicationContext(super.applicationContext);
 	}
 
 	@BeforeEach
-	public void prepareData() throws IOException {
+	void prepareData() throws IOException {
 		persistEntities("csv", new Class[] { DelegateOrg.class }, StandardCharsets.UTF_8.name());
 	}
 

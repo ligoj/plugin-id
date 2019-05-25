@@ -32,7 +32,7 @@ import org.springframework.context.ApplicationContext;
 /**
  * Test class of {@link AbstractMemCacheRepository}
  */
-public class TestAbstractMemCacheRepositoryTest extends AbstractDataGeneratorTest {
+class TestAbstractMemCacheRepositoryTest extends AbstractDataGeneratorTest {
 	private ICompanyRepository companyRepository;
 	private IGroupRepository groupRepository;
 	private IUserRepository userRepository;
@@ -47,7 +47,7 @@ public class TestAbstractMemCacheRepositoryTest extends AbstractDataGeneratorTes
 	private SampleIdMemCacheRepository repository;
 
 	@BeforeEach
-	public void init() {
+	void init() {
 		companyRepository = Mockito.mock(ICompanyRepository.class);
 		groupRepository = Mockito.mock(IGroupRepository.class);
 		userRepository = Mockito.mock(IUserRepository.class);
@@ -101,7 +101,7 @@ public class TestAbstractMemCacheRepositoryTest extends AbstractDataGeneratorTes
 	}
 
 	@Test
-	public void getLdapData() {
+	void getLdapData() {
 
 		// Only there for coverage
 		CacheDataType.values();
@@ -128,7 +128,7 @@ public class TestAbstractMemCacheRepositoryTest extends AbstractDataGeneratorTes
 	}
 
 	@Test
-	public void addUserToGroup() {
+	void addUserToGroup() {
 		Assertions.assertEquals(1, user.getGroups().size());
 
 		repository.addUserToGroup(user, groupLdap2);
@@ -139,7 +139,7 @@ public class TestAbstractMemCacheRepositoryTest extends AbstractDataGeneratorTes
 	}
 
 	@Test
-	public void removeUserFromGroup() {
+	void removeUserFromGroup() {
 		Assertions.assertEquals(1, user.getGroups().size());
 
 		repository.removeUserFromGroup(user, groupLdap);
@@ -149,7 +149,7 @@ public class TestAbstractMemCacheRepositoryTest extends AbstractDataGeneratorTes
 	}
 
 	@Test
-	public void addGroupToGroup() {
+	void addGroupToGroup() {
 		final GroupOrg parent = groupLdap2;
 		final GroupOrg child = groupLdap;
 
@@ -171,7 +171,7 @@ public class TestAbstractMemCacheRepositoryTest extends AbstractDataGeneratorTes
 	}
 
 	@Test
-	public void removeGroupFromGroup() {
+	void removeGroupFromGroup() {
 		final GroupOrg parent = groupLdap2;
 		final GroupOrg child = groupLdap;
 		parent.getSubGroups().add(child.getId());
@@ -193,7 +193,7 @@ public class TestAbstractMemCacheRepositoryTest extends AbstractDataGeneratorTes
 	}
 
 	@Test
-	public void createGroup() {
+	void createGroup() {
 		final GroupOrg newGroupLdap = new GroupOrg("dn3", "G3", new HashSet<>());
 
 		Assertions.assertEquals(newGroupLdap, repository.create(newGroupLdap));
@@ -203,7 +203,7 @@ public class TestAbstractMemCacheRepositoryTest extends AbstractDataGeneratorTes
 	}
 
 	@Test
-	public void createCompany() {
+	void createCompany() {
 		final CompanyOrg newCompanyLdap = new CompanyOrg("dn3", "C3");
 
 		Assertions.assertEquals(newCompanyLdap, repository.create(newCompanyLdap));
@@ -213,7 +213,7 @@ public class TestAbstractMemCacheRepositoryTest extends AbstractDataGeneratorTes
 	}
 
 	@Test
-	public void createUser() {
+	void createUser() {
 		final UserOrg newUser = new UserOrg();
 		newUser.setId("u3");
 		newUser.setFirstName("f");
@@ -228,7 +228,7 @@ public class TestAbstractMemCacheRepositoryTest extends AbstractDataGeneratorTes
 	}
 
 	@Test
-	public void updateUser() {
+	void updateUser() {
 		user.setFirstName("L");
 
 		repository.update(user);
@@ -238,7 +238,7 @@ public class TestAbstractMemCacheRepositoryTest extends AbstractDataGeneratorTes
 	}
 
 	@Test
-	public void deleteCompany() {
+	void deleteCompany() {
 		Assertions.assertTrue(companies.containsKey("company"));
 		Assertions.assertEquals("company", user.getCompany());
 
@@ -249,7 +249,7 @@ public class TestAbstractMemCacheRepositoryTest extends AbstractDataGeneratorTes
 	}
 
 	@Test
-	public void deleteGroup() {
+	void deleteGroup() {
 		Assertions.assertTrue(groups.containsKey("group"));
 		Assertions.assertTrue(user.getGroups().contains("group"));
 
@@ -260,7 +260,7 @@ public class TestAbstractMemCacheRepositoryTest extends AbstractDataGeneratorTes
 	}
 
 	@Test
-	public void empty() {
+	void empty() {
 		Assertions.assertEquals(1, user.getGroups().size());
 		Assertions.assertTrue(users.containsKey("u"));
 		Assertions.assertTrue(groups.get("group").getMembers().contains("u"));
@@ -273,7 +273,7 @@ public class TestAbstractMemCacheRepositoryTest extends AbstractDataGeneratorTes
 	}
 
 	@Test
-	public void deleteUser() {
+	void deleteUser() {
 		Assertions.assertEquals(1, user.getGroups().size());
 		Assertions.assertTrue(users.containsKey("u"));
 

@@ -23,12 +23,12 @@ import org.mockito.exceptions.base.MockitoException;
 /**
  * Test of {@link UserAtomicTask}
  */
-public class UserAtomicTaskTest extends AbstractSecurityTest {
+class UserAtomicTaskTest extends AbstractSecurityTest {
 
 	private UserAtomicTask task;
 
 	@BeforeEach
-	public void setup() {
+	void setup() {
 		task = new UserAtomicTask();
 		task.resource = Mockito.mock(UserOrgResource.class);
 		task.securityHelper = new SecurityHelper();
@@ -47,7 +47,7 @@ public class UserAtomicTaskTest extends AbstractSecurityTest {
 	}
 
 	@Test
-	public void doBatchInvalidOperation() {
+	void doBatchInvalidOperation() {
 		final UserUpdateEntry entry = new UserUpdateEntry();
 		entry.setOperation("any");
 		MatcherUtil.assertThrows(Assertions.assertThrows(ValidationJsonException.class, () -> {
@@ -56,7 +56,7 @@ public class UserAtomicTaskTest extends AbstractSecurityTest {
 	}
 
 	@Test
-	public void doBatchExtraValue() {
+	void doBatchExtraValue() {
 		final UserUpdateEntry entry = new UserUpdateEntry();
 		entry.setOperation("lock");
 		entry.setValue("any");
@@ -66,7 +66,7 @@ public class UserAtomicTaskTest extends AbstractSecurityTest {
 	}
 
 	@Test
-	public void doBatchDepartment() throws Exception {
+	void doBatchDepartment() throws Exception {
 		final UserUpdateEntry entry = new UserUpdateEntry();
 		entry.setOperation("department");
 		entry.setValue("value");
@@ -76,7 +76,7 @@ public class UserAtomicTaskTest extends AbstractSecurityTest {
 	}
 
 	@Test
-	public void doBatchLastName() throws Exception {
+	void doBatchLastName() throws Exception {
 		final UserUpdateEntry entry = new UserUpdateEntry();
 		entry.setOperation("lastname");
 		entry.setValue("value");
@@ -86,7 +86,7 @@ public class UserAtomicTaskTest extends AbstractSecurityTest {
 	}
 
 	@Test
-	public void doBatchCompany() throws Exception {
+	void doBatchCompany() throws Exception {
 		final UserUpdateEntry entry = new UserUpdateEntry();
 		entry.setOperation("company");
 		entry.setValue("value");
@@ -96,7 +96,7 @@ public class UserAtomicTaskTest extends AbstractSecurityTest {
 	}
 
 	@Test
-	public void doBatchLocalId() throws Exception {
+	void doBatchLocalId() throws Exception {
 		// Only for coverage
 		UserBatchUpdateType.valueOf(UserBatchUpdateType.values()[0].name());
 
@@ -109,7 +109,7 @@ public class UserAtomicTaskTest extends AbstractSecurityTest {
 	}
 
 	@Test
-	public void doBatchMail() throws Exception {
+	void doBatchMail() throws Exception {
 		final UserUpdateEntry entry = new UserUpdateEntry();
 		entry.setOperation("mail");
 		entry.setValue("value");
@@ -119,7 +119,7 @@ public class UserAtomicTaskTest extends AbstractSecurityTest {
 	}
 
 	@Test
-	public void doBatchFirstName() throws Exception {
+	void doBatchFirstName() throws Exception {
 		final UserUpdateEntry entry = new UserUpdateEntry();
 		entry.setOperation("firstname");
 		entry.setValue("value");
@@ -129,7 +129,7 @@ public class UserAtomicTaskTest extends AbstractSecurityTest {
 	}
 
 	@Test
-	public void doBatchIsolate() throws Exception {
+	void doBatchIsolate() throws Exception {
 		final UserUpdateEntry entry = new UserUpdateEntry();
 		entry.setOperation("isolate");
 		entry.setUser(DEFAULT_USER);
@@ -140,7 +140,7 @@ public class UserAtomicTaskTest extends AbstractSecurityTest {
 	}
 
 	@Test
-	public void doBatchRestore() throws Exception {
+	void doBatchRestore() throws Exception {
 		final UserUpdateEntry entry = new UserUpdateEntry();
 		entry.setOperation("restore");
 		entry.setUser(DEFAULT_USER);
@@ -151,7 +151,7 @@ public class UserAtomicTaskTest extends AbstractSecurityTest {
 	}
 
 	@Test
-	public void doBatchLock() throws Exception {
+	void doBatchLock() throws Exception {
 		final UserUpdateEntry entry = new UserUpdateEntry();
 		entry.setOperation("lock");
 		entry.setUser(DEFAULT_USER);
@@ -162,7 +162,7 @@ public class UserAtomicTaskTest extends AbstractSecurityTest {
 	}
 
 	@Test
-	public void doBatchDelete() throws Exception {
+	void doBatchDelete() throws Exception {
 		final UserUpdateEntry entry = new UserUpdateEntry();
 		entry.setOperation("delete");
 		entry.setUser(DEFAULT_USER);

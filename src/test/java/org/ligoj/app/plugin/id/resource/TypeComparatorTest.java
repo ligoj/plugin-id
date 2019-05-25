@@ -22,10 +22,10 @@ import org.ligoj.app.plugin.id.resource.AbstractContainerResource.TypeComparator
 /**
  * Test class of {@link TypeComparator}
  */
-public class TypeComparatorTest {
+class TypeComparatorTest {
 
 	@Test
-	public void compareNullType() {
+	void compareNullType() {
 		final Comparator<GroupOrg> comparator = newComparator(new ArrayList<>());
 		final List<GroupOrg> groups = new ArrayList<>();
 		groups.add(new GroupOrg("cn=NameA,ou=Client1,ou=Project,ou=External,dc=sample,dc=com", "NameA", null));
@@ -38,7 +38,7 @@ public class TypeComparatorTest {
 	}
 
 	@Test
-	public void compareNullLeft() {
+	void compareNullLeft() {
 		final ContainerScope containerType = new ContainerScope();
 		containerType.setDn("ou=Internal,dc=sample,dc=com");
 		containerType.setName("name1");
@@ -56,7 +56,7 @@ public class TypeComparatorTest {
 	}
 
 	@Test
-	public void compareNullRight() {
+	void compareNullRight() {
 		final ContainerScope containerType = new ContainerScope();
 		containerType.setDn("ou=External,dc=sample,dc=com");
 		containerType.setName("name1");
@@ -74,7 +74,7 @@ public class TypeComparatorTest {
 	}
 
 	@Test
-	public void compare() {
+	void compare() {
 		final ContainerScope containerType1 = new ContainerScope();
 		containerType1.setDn("ou=External,dc=sample,dc=com");
 		containerType1.setName("name2");
