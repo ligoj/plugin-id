@@ -45,7 +45,7 @@ define(function () {
 		 */
 		renderFeatures: function (subscription) {
 			// Add group link
-			var result = current.$super('renderServicelink')('users', '#/home/project/' + subscription.project + '/subscription/' + subscription.id, 'service:id:group-manage');
+			var result = current.$super('renderServiceLink')('users', '#/home/project/' + subscription.project + '/subscription/' + subscription.id, 'service:id:group-manage');
 
 			// Help
 			result += current.$super('renderServiceHelpLink')(subscription.parameters, 'service:id:help');
