@@ -81,7 +81,7 @@ public abstract class AbstractBatchTask<B extends BatchElement> implements Runna
 	 * Process the entries
 	 */
 	private void doBatch() {
-		for (final B importEntry : task.getEntries()) {
+		for (final var importEntry : task.getEntries()) {
 			// Override previous status
 			importEntry.setStatus(null);
 			importEntry.setStatusText(null);
@@ -95,7 +95,7 @@ public abstract class AbstractBatchTask<B extends BatchElement> implements Runna
 				// The entry creation failed : entity itself of group membership
 				log.info("Import of {} failed : {}", importEntry, ne.getMessage());
 				importEntry.setStatus(Boolean.FALSE);
-				final ExceptionMapper<Throwable> mapper = jaxrsFactory.createExceptionMapper(ne.getClass(), null);
+				final var mapper = jaxrsFactory.createExceptionMapper(ne.getClass(), null);
 				importEntry
 						.setStatusText(mapper == null ? ne.getMessage() : mapper.toResponse(ne).getEntity().toString());
 			}

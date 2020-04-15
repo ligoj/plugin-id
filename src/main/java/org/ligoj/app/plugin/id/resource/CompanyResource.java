@@ -75,7 +75,7 @@ public class CompanyResource extends AbstractContainerResource<CompanyOrg, Conta
 	 * @return The company name of current user or <code>null</code> if the current user is not in the repository.
 	 */
 	public CompanyOrg getUserCompany() {
-		final UserOrg user = getUser().findById(securityHelper.getLogin());
+		final var user = getUser().findById(securityHelper.getLogin());
 		if (user == null) {
 			return null;
 		}
@@ -88,7 +88,7 @@ public class CompanyResource extends AbstractContainerResource<CompanyOrg, Conta
 	 * @return the company DN of current user or <code>null</code> if the current user is not in the repository.
 	 */
 	private String getUserCompanyDn() {
-		final CompanyOrg company = getUserCompany();
+		final var company = getUserCompany();
 		if (company == null) {
 			return null;
 		}
@@ -115,25 +115,25 @@ public class CompanyResource extends AbstractContainerResource<CompanyOrg, Conta
 	 */
 	@GET
 	public TableItem<ContainerCountVo> findAll(@Context final UriInfo uriInfo) {
-		final PageRequest pageRequest = paginationJson.getPageRequest(uriInfo, ORDERED_COLUMNS);
+		final var pageRequest = paginationJson.getPageRequest(uriInfo, ORDERED_COLUMNS);
 
-		final List<ContainerScope> types = containerScopeResource.findAllDescOrder(ContainerType.COMPANY);
-		final Set<CompanyOrg> visibleCompanies = getContainers();
-		final Set<String> visibleCompaniesAsString = visibleCompanies.stream().map(CompanyOrg::getId)
+		final var types = containerScopeResource.findAllDescOrder(ContainerType.COMPANY);
+		final var visibleCompanies = getContainers();
+		final var visibleCompaniesAsString = visibleCompanies.stream().map(CompanyOrg::getId)
 				.collect(Collectors.toSet());
-		final Set<CompanyOrg> writeCompanies = getContainersForWrite();
-		final Set<CompanyOrg> adminCompanies = getContainersForAdmin();
-		final Map<String, UserOrg> users = getUser().findAll();
+		final var writeCompanies = getContainersForWrite();
+		final var adminCompanies = getContainersForAdmin();
+		final var users = getUser().findAll();
 
 		// Search the companies
-		final Page<CompanyOrg> findAll = getRepository().findAll(visibleCompanies,
+		final var findAll = getRepository().findAll(visibleCompanies,
 				DataTableAttributes.getSearch(uriInfo), pageRequest,
 				Collections.singletonMap(TYPE_ATTRIBUTE, new TypeComparator(types)));
 
 		// Apply pagination and secure the users data
 		return paginationJson.applyPagination(uriInfo, findAll, rawCompany -> {
 			// Build the secured company with counter
-			final ContainerCountVo securedUser = newContainerCountVo(rawCompany, writeCompanies, adminCompanies, types);
+			final var securedUser = newContainerCountVo(rawCompany, writeCompanies, adminCompanies, types);
 
 			// Computed the total members, unrestricted visibility
 			securedUser.setCount(
@@ -152,7 +152,7 @@ public class CompanyResource extends AbstractContainerResource<CompanyOrg, Conta
 		super.checkForDeletion(container);
 
 		// Company deletion is only possible where there is no user inside this company, or inside any sub-company
-		final Map<String, UserOrg> users = getUser().findAll();
+		final var users = getUser().findAll();
 		if (getRepository().findAll().values().stream()
 				.filter(c -> DnUtils.equalsOrParentOf(container.getDn(), c.getDn()))
 				.anyMatch(c -> users.values().stream().map(UserOrg::getCompany).anyMatch(c.getId()::equals))) {

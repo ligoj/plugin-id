@@ -50,7 +50,7 @@ public abstract class AbstractPluginIdResource<U extends IUserRepository> extend
 	/**
 	 * Available node configurations. Key is the node identifier.
 	 */
-	private Map<String, IamConfiguration> nodeConfigurations = new HashMap<>();
+	private final Map<String, IamConfiguration> nodeConfigurations = new HashMap<>();
 
 	@Autowired
 	protected UserOrgResource userResource;
@@ -63,7 +63,7 @@ public abstract class AbstractPluginIdResource<U extends IUserRepository> extend
 	@Override
 	public Authentication authenticate(final Authentication authentication, final String node, final boolean primary) {
 		@SuppressWarnings("unchecked")
-		final U repository = (U) getSelf().getConfiguration(node).getUserRepository();
+		final var repository = (U) getSelf().getConfiguration(node).getUserRepository();
 
 		// Authenticate the user
 		if (repository.authenticate(authentication.getName(), (String) authentication.getCredentials())) {
@@ -83,7 +83,7 @@ public abstract class AbstractPluginIdResource<U extends IUserRepository> extend
 	 */
 	protected String toApplicationUser(final U repository, final Authentication authentication) {
 		// Check the authentication and get the user from its repository
-		final UserOrg account = repository.findOneBy(getAuthenticateProperty(repository, authentication),
+		final var account = repository.findOneBy(getAuthenticateProperty(repository, authentication),
 				authentication.getName());
 
 		// Check at least one mail is present for the federation
@@ -118,7 +118,7 @@ public abstract class AbstractPluginIdResource<U extends IUserRepository> extend
 	 */
 	protected String toApplicationUser(final UserOrg account) {
 		// Find the user by the mail in the primary repository
-		final List<UserOrg> usersByMail = userResource.findAllBy("mails", account.getMails().get(0));
+		final var usersByMail = userResource.findAllBy("mails", account.getMails().get(0));
 		if (usersByMail.isEmpty()) {
 			// No more try, account can be created in the application repository with a free login
 			return newApplicationUser(account);
@@ -145,7 +145,7 @@ public abstract class AbstractPluginIdResource<U extends IUserRepository> extend
 		synchronized (USER_LOCK) {
 
 			// Copy the data from the authenticated account to the application account
-			final UserOrgEditionVo userEdition = new UserOrgEditionVo();
+			final var userEdition = new UserOrgEditionVo();
 			account.copy(userEdition);
 			userEdition.setGroups(Collections.emptyList());
 			userEdition.setMail(account.getMails().get(0));
@@ -167,7 +167,7 @@ public abstract class AbstractPluginIdResource<U extends IUserRepository> extend
 	 * @return a free login inside the primary repository.
 	 */
 	protected String nextFreeLogin(final String login) {
-		int suffix = 0;
+		var suffix = 0;
 		UserOrg user;
 		String nextLogin;
 		do {
@@ -187,8 +187,8 @@ public abstract class AbstractPluginIdResource<U extends IUserRepository> extend
 	 * @return a corresponding application login candidate from an account.
 	 */
 	protected String toLogin(final UserOrg account) {
-		final String trimFirstName = normalize(account.getFirstName());
-		final String trimLastName = normalize(account.getLastName());
+		final var trimFirstName = normalize(account.getFirstName());
+		final var trimLastName = normalize(account.getLastName());
 		if (trimFirstName.length() * trimLastName.length() == 0) {
 			// Unable to build a valid login from these attributes
 			throw new NotAuthorizedException("cannot-build-application-login");
@@ -236,8 +236,8 @@ public abstract class AbstractPluginIdResource<U extends IUserRepository> extend
 	 */
 	protected IamConfiguration refreshConfiguration(final String node) {
 		return nodeConfigurations.compute(node, (n, m) -> {
-			final IamConfiguration iam = new IamConfiguration();
-			final U repository = getUserRepository(node);
+			final var iam = new IamConfiguration();
+			final var repository = getUserRepository(node);
 			iam.setNode(node);
 			iam.setUserRepository(repository);
 			copyConfiguration(iam, repository);

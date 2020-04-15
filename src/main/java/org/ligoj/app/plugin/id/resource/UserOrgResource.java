@@ -131,10 +131,10 @@ public class UserOrgResource extends AbstractOrgResource {
 	 * @return All matched users.
 	 */
 	public List<UserOrg> findAllNotSecure(final String company, final String group) {
-		final Set<GroupOrg> visibleGroups = groupResource.getContainers();
+		final var visibleGroups = groupResource.getContainers();
 
 		// Search the users
-		final MessageImpl message = new MessageImpl();
+		final var message = new MessageImpl();
 		message.put(Message.QUERY_STRING, DataTableAttributes.PAGE_LENGTH + "=10000000");
 		return findAllNotSecure(visibleGroups, company, group, null, new UriInfoImpl(message)).getContent();
 	}
@@ -158,14 +158,14 @@ public class UserOrgResource extends AbstractOrgResource {
 	 */
 	private Page<UserOrg> findAllNotSecure(final Set<GroupOrg> visibleGroups, final String company, final String group,
 			final String criteria, @Context final UriInfo uriInfo) {
-		final PageRequest pageRequest = paginationJson.getPageRequest(uriInfo, ORDERED_COLUMNS);
+		final var pageRequest = paginationJson.getPageRequest(uriInfo, ORDERED_COLUMNS);
 
 		final Collection<String> visibleCompanies = companyResource.getContainers().stream().map(CompanyOrg::getId)
 				.collect(Collectors.toSet());
-		final Map<String, GroupOrg> allGroups = getGroup().findAll();
+		final var allGroups = getGroup().findAll();
 
 		// The companies to use
-		final Set<String> filteredCompanies = computeFilteredCompanies(Normalizer.normalize(company), visibleCompanies);
+		final var filteredCompanies = computeFilteredCompanies(Normalizer.normalize(company), visibleCompanies);
 
 		// The groups to use
 		final Collection<GroupOrg> filteredGroups = group == null ? null
@@ -193,19 +193,19 @@ public class UserOrgResource extends AbstractOrgResource {
 	public TableItem<UserOrgVo> findAll(@QueryParam(SimpleUser.COMPANY_ALIAS) final String company,
 			@QueryParam(GROUP) final String group, @QueryParam(DataTableAttributes.SEARCH) final String criteria,
 			@Context final UriInfo uriInfo) {
-		final Set<GroupOrg> visibleGroups = groupResource.getContainers();
-		final Set<GroupOrg> writableGroups = groupResource.getContainersForWrite();
-		final Set<CompanyOrg> companies = companyResource.getContainersForWrite();
+		final var visibleGroups = groupResource.getContainers();
+		final var writableGroups = groupResource.getContainersForWrite();
+		final var companies = companyResource.getContainersForWrite();
 		final Collection<String> writableCompanies = companies.stream().map(CompanyOrg::getId)
 				.collect(Collectors.toList());
 
 		// Search the users
-		final Page<UserOrg> findAll = findAllNotSecure(visibleGroups, company, group, criteria, uriInfo);
+		final var findAll = findAllNotSecure(visibleGroups, company, group, criteria, uriInfo);
 
 		// Apply pagination and secure the users data
 		return paginationJson.applyPagination(uriInfo, findAll, rawUserOrg -> {
 
-			final UserOrgVo securedUserOrg = new UserOrgVo();
+			final var securedUserOrg = new UserOrgVo();
 			rawUserOrg.copy(securedUserOrg);
 			securedUserOrg.setCanWrite(writableCompanies.contains(rawUserOrg.getCompany()));
 			securedUserOrg.setCanWriteGroups(!writableGroups.isEmpty());
@@ -213,7 +213,7 @@ public class UserOrgResource extends AbstractOrgResource {
 			// Show only the groups that are also visible to current user
 			securedUserOrg.setGroups(visibleGroups.stream()
 					.filter(mGroup -> rawUserOrg.getGroups().contains(mGroup.getId())).map(mGroup -> {
-						final GroupVo vo = new GroupVo();
+						final var vo = new GroupVo();
 						vo.setCanWrite(writableGroups.contains(mGroup));
 						vo.setName(mGroup.getName());
 						return vo;
@@ -267,17 +267,17 @@ public class UserOrgResource extends AbstractOrgResource {
 	@GET
 	@Path("{user:" + SimpleUser.USER_PATTERN + "}")
 	public UserOrg findById(@PathParam("user") final String user) {
-		final UserOrg rawUserOrg = getUser().findByIdExpected(securityHelper.getLogin(), Normalizer.normalize(user));
+		final var rawUserOrg = getUser().findByIdExpected(securityHelper.getLogin(), Normalizer.normalize(user));
 
 		// Check if the user lock status without using cache
 		getUser().checkLockStatus(rawUserOrg);
 
 		// User has been found, secure the object regarding the visible groups
-		final UserOrg securedUserOrg = new UserOrg();
+		final var securedUserOrg = new UserOrg();
 		rawUserOrg.copy(securedUserOrg);
 
 		// Show only the groups of user that are also visible to current user
-		final Set<GroupOrg> visibleGroups = groupResource.getContainers();
+		final var visibleGroups = groupResource.getContainers();
 		securedUserOrg
 				.setGroups(visibleGroups.stream().filter(mGroup -> rawUserOrg.getGroups().contains(mGroup.getId()))
 						.sorted().map(GroupOrg::getName).collect(Collectors.toList()));
@@ -326,10 +326,10 @@ public class UserOrgResource extends AbstractOrgResource {
 			final BiPredicate<Collection<String>, String> updater) {
 
 		// Get all delegates of current user
-		final List<DelegateOrg> delegates = delegateRepository.findAllByUser(securityHelper.getLogin());
+		final var delegates = delegateRepository.findAllByUser(securityHelper.getLogin());
 
 		// Get the implied user
-		final UserOrg userOrg = getUser().findByIdExpected(user);
+		final var userOrg = getUser().findByIdExpected(user);
 
 		// Check the implied group
 		validateWriteGroup(group, delegates);
@@ -340,7 +340,7 @@ public class UserOrgResource extends AbstractOrgResource {
 
 			// Replace the user groups by the normalized groups including the
 			// one we have just updated
-			final Collection<String> mergedGroups = mergeGroups(delegates, userOrg, newGroups);
+			final var mergedGroups = mergeGroups(delegates, userOrg, newGroups);
 
 			// Update membership
 			getUser().updateMembership(new ArrayList<>(mergedGroups), userOrg);
@@ -419,15 +419,15 @@ public class UserOrgResource extends AbstractOrgResource {
 		normalize(importEntry);
 
 		// Get all delegates of current user
-		final List<DelegateOrg> delegates = delegateRepository.findAllByUser(principal);
+		final var delegates = delegateRepository.findAllByUser(principal);
 
 		// Get the stored data of the implied user
-		final UserOrg userOrg = getUser().findById(importEntry.getId());
+		final var userOrg = getUser().findById(importEntry.getId());
 
 		// Check the implied company and request changes
-		final String cleanCompany = Normalizer.normalize(importEntry.getCompany());
-		final String companyDn = getCompany().findByIdExpected(securityHelper.getLogin(), cleanCompany).getDn();
-		final boolean hasAttributeChange = hasAttributeChange(importEntry, userOrg);
+		final var cleanCompany = Normalizer.normalize(importEntry.getCompany());
+		final var companyDn = getCompany().findByIdExpected(securityHelper.getLogin(), cleanCompany).getDn();
+		final var hasAttributeChange = hasAttributeChange(importEntry, userOrg);
 		if (hasAttributeChange && !canWrite(delegates, companyDn, DelegateType.COMPANY)) {
 			// Visible but without write access
 			log.info("Attempt to create/update a read-only user '{}', company '{}'", importEntry.getId(), cleanCompany);
@@ -470,7 +470,7 @@ public class UserOrgResource extends AbstractOrgResource {
 			final List<DelegateOrg> delegates) {
 
 		// First complete the groups with the implicit ones from department
-		final String previous = Optional.ofNullable(userOrg).map(UserOrg::getDepartment).orElse(null);
+		final var previous = Optional.ofNullable(userOrg).map(UserOrg::getDepartment).orElse(null);
 		if (ObjectUtils.notEqual(previous, importEntry.getDepartment())) {
 			Optional.ofNullable(toDepartmentGroup(previous)).map(GroupOrg::getId)
 					.ifPresent(importEntry.getGroups()::remove);
@@ -546,8 +546,8 @@ public class UserOrgResource extends AbstractOrgResource {
 		// Compute the groups merged groups
 		final Collection<String> newGroups = new HashSet<>(userOrg.getGroups());
 		newGroups.addAll(groups);
-		for (final String oldGroup : userOrg.getGroups()) {
-			final String oldGroupDn = getGroup().findById(oldGroup).getDn();
+		for (final var oldGroup : userOrg.getGroups()) {
+			final var oldGroupDn = getGroup().findById(oldGroup).getDn();
 			if (!groups.contains(oldGroup) && canWrite(delegates, oldGroupDn, DelegateType.GROUP)) {
 				// This group is writable, so it has been explicitly removed by
 				// the current user
@@ -619,9 +619,9 @@ public class UserOrgResource extends AbstractOrgResource {
 	private void saveOrUpdate(final UserOrgEditionVo importEntry, final boolean quiet) {
 
 		// Create as needed the user, groups will be proceeded after.
-		final IUserRepository repository = getUser();
-		UserOrg user = repository.findById(importEntry.getId());
-		final UserOrg newUser = toUserOrg(importEntry);
+		final var repository = getUser();
+		var user = repository.findById(importEntry.getId());
+		final var newUser = toUserOrg(importEntry);
 		if (user == null) {
 			// Create a new entry in repository
 			log.info("{} will be created", newUser.getId());
@@ -664,7 +664,7 @@ public class UserOrgResource extends AbstractOrgResource {
 		updateCompanyAsNeeded(oldUser, newUser);
 
 		// Then, update the no secured attributes : first name, etc.
-		final boolean hadNoMail = oldUser.getMails().isEmpty();
+		final var hadNoMail = oldUser.getMails().isEmpty();
 		getUser().updateUser(newUser);
 
 		// Then update the mail and/or password
@@ -691,7 +691,7 @@ public class UserOrgResource extends AbstractOrgResource {
 	 * @return The internal format of the user.
 	 */
 	private UserOrg toUserOrg(final UserOrgEditionVo importEntry) {
-		final UserOrg user = new UserOrg();
+		final var user = new UserOrg();
 		importEntry.copy(user);
 		user.setGroups(new ArrayList<>());
 		final List<String> mails = new ArrayList<>();
@@ -718,15 +718,15 @@ public class UserOrgResource extends AbstractOrgResource {
 	@Path("{user}")
 	public void delete(@PathParam("user") final String user) {
 		// Check the user can be deleted
-		final UserOrg userOrg = checkDeletionRight(user, "delete");
+		final var userOrg = checkDeletionRight(user, "delete");
 
 		// Hard deletion
 		// Check the group : You can't delete an user if he is the last member
 		// of a group
-		final Map<String, GroupOrg> allGroups = getGroup().findAll();
+		final var allGroups = getGroup().findAll();
 		checkLastMemberInGroups(userOrg, allGroups);
 
-		final IUserRepository repository = getUser();
+		final var repository = getUser();
 		// Revoke all memberships of this user
 		repository.updateMembership(new ArrayList<>(), userOrg);
 
@@ -837,7 +837,7 @@ public class UserOrgResource extends AbstractOrgResource {
 	@ResponseBody
 	@Produces(MediaType.TEXT_PLAIN)
 	public String resetPassword(@PathParam("user") final String uid) {
-		final UserOrg user = checkResetRight(uid);
+		final var user = checkResetRight(uid);
 		// Have to generate a new password
 		return Optional.ofNullable(updatePassword(user, false)).map(p -> {
 
@@ -857,7 +857,7 @@ public class UserOrgResource extends AbstractOrgResource {
 	 *            Target user to log.
 	 */
 	private void logAdminReset(final UserOrg user) {
-		final PasswordResetAudit logReset = new PasswordResetAudit();
+		final var logReset = new PasswordResetAudit();
 		logReset.setLogin(user.getId());
 		passwordResetRepository.saveAndFlush(logReset);
 	}
@@ -871,10 +871,10 @@ public class UserOrgResource extends AbstractOrgResource {
 	 */
 	private UserOrg checkResetRight(final String user) {
 		// Check the user exists
-		final UserOrg userOrg = getUser().findByIdExpected(securityHelper.getLogin(), Normalizer.normalize(user));
+		final var userOrg = getUser().findByIdExpected(securityHelper.getLogin(), Normalizer.normalize(user));
 
 		// Check the company
-		final String companyDn = getCompany().findById(userOrg.getCompany()).getDn();
+		final var companyDn = getCompany().findById(userOrg.getCompany()).getDn();
 		if (delegateRepository.findByMatchingDnForWrite(securityHelper.getLogin(), companyDn, DelegateType.TREE)
 				.isEmpty()) {
 			// Report this attempt to delete a non writable user
@@ -895,10 +895,10 @@ public class UserOrgResource extends AbstractOrgResource {
 	 */
 	private UserOrg checkDeletionRight(final String user, final String mode) {
 		// Check the user exists
-		final UserOrg userOrg = getUser().findByIdExpected(securityHelper.getLogin(), Normalizer.normalize(user));
+		final var userOrg = getUser().findByIdExpected(securityHelper.getLogin(), Normalizer.normalize(user));
 
 		// Check the company
-		final String companyDn = getCompany().findById(userOrg.getCompany()).getDn();
+		final var companyDn = getCompany().findById(userOrg.getCompany()).getDn();
 		if (delegateRepository.findByMatchingDnForWrite(securityHelper.getLogin(), companyDn, DelegateType.COMPANY)
 				.isEmpty()) {
 			// Report this attempt to delete a non writable user
@@ -917,7 +917,7 @@ public class UserOrgResource extends AbstractOrgResource {
 	 *            Map of group by groupName
 	 */
 	private void checkLastMemberInGroups(final UserOrg userOrg, final Map<String, GroupOrg> allGroups) {
-		for (final String group : userOrg.getGroups()) {
+		for (final var group : userOrg.getGroups()) {
 			if (allGroups.get(group).getMembers().size() == 1) {
 				throw new ValidationJsonException(USER_KEY, "last-member-of-group", "user", userOrg.getId(), GROUP,
 						group);
@@ -939,7 +939,7 @@ public class UserOrgResource extends AbstractOrgResource {
 	protected String updatePassword(final UserOrg user, final boolean quiet) {
 		return applicationContext.getBeansOfType(IPasswordGenerator.class).values().stream().findFirst().map(p -> {
 			// Have to generate a new password
-			final String password = p.generate(user.getId(), quiet);
+			final var password = p.generate(user.getId(), quiet);
 
 			// This user is now secured
 			user.setSecured(true);
@@ -1009,7 +1009,7 @@ public class UserOrgResource extends AbstractOrgResource {
 	 *            The new user data. Note this will not be the stored instance.
 	 */
 	public void mergeUser(final UserOrg userOrg, final UserOrg newUser) {
-		boolean needUpdate = false;
+		var needUpdate = false;
 
 		// Merge department
 		if (ObjectUtils.notEqual(userOrg.getDepartment(), newUser.getDepartment())) {

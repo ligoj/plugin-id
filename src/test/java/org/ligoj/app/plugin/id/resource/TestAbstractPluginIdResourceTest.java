@@ -75,7 +75,7 @@ public class TestAbstractPluginIdResourceTest extends AbstractJpaTest {
 
 	@Test
 	void toLogin() {
-		final UserOrg user = new UserOrg();
+		final var user = new UserOrg();
 		user.setFirstName("First");
 		user.setLastName("Last123");
 		Assertions.assertEquals("flast123", resource.toLogin(user));
@@ -83,7 +83,7 @@ public class TestAbstractPluginIdResourceTest extends AbstractJpaTest {
 
 	@Test
 	void toLoginNoFirstName() {
-		final UserOrg user = new UserOrg();
+		final var user = new UserOrg();
 		user.setLastName("Last123");
 		Assertions.assertThrows(NotAuthorizedException.class, () -> {
 			resource.toLogin(user);
@@ -92,7 +92,7 @@ public class TestAbstractPluginIdResourceTest extends AbstractJpaTest {
 
 	@Test
 	void toLoginNoLastName() {
-		final UserOrg user = new UserOrg();
+		final var user = new UserOrg();
 		user.setFirstName("First");
 		Assertions.assertThrows(NotAuthorizedException.class, () -> {
 			resource.toLogin(user);
@@ -101,13 +101,12 @@ public class TestAbstractPluginIdResourceTest extends AbstractJpaTest {
 
 	@Test
 	void newApplicationUserSaveFail() {
-		final UserOrgResource userResource = Mockito.mock(UserOrgResource.class);
-		resource.userResource = userResource;
+		resource.userResource = Mockito.mock(UserOrgResource.class);
 		Mockito.when(resource.userResource.findByIdNoCache("flast123")).thenReturn(null);
 		Mockito.doThrow(new TechnicalException("")).when(resource.userResource)
 				.saveOrUpdate(ArgumentMatchers.any(UserOrgEditionVo.class));
 
-		final UserOrg user = new UserOrg();
+		final var user = new UserOrg();
 		user.setMails(Collections.singletonList("fabrice.daugan@sample.com"));
 		user.setFirstName("First");
 		user.setLastName("Last123");
@@ -120,11 +119,10 @@ public class TestAbstractPluginIdResourceTest extends AbstractJpaTest {
 
 	@Test
 	void newApplicationUserNextLoginFail() {
-		final UserOrgResource userResource = Mockito.mock(UserOrgResource.class);
-		resource.userResource = userResource;
+		resource.userResource = Mockito.mock(UserOrgResource.class);
 		Mockito.doThrow(new RuntimeException()).when(resource.userResource).findByIdNoCache("flast123");
 
-		final UserOrg user = new UserOrg();
+		final var user = new UserOrg();
 		user.setMails(Collections.singletonList("fabrice.daugan@sample.com"));
 		user.setFirstName("First");
 		user.setLastName("Last123");
@@ -137,12 +135,12 @@ public class TestAbstractPluginIdResourceTest extends AbstractJpaTest {
 
 	@Test
 	void toApplicationUserExists() {
-		final Authentication authentication = new UsernamePasswordAuthenticationToken("secondarylogin", null);
-		final UserOrgResource userResource = Mockito.mock(UserOrgResource.class);
+		final var authentication = new UsernamePasswordAuthenticationToken("secondarylogin", null);
+		final var userResource = Mockito.mock(UserOrgResource.class);
 		resource.userResource = userResource;
 
 		// Create a new IAM node plugged to the primary node
-		final UserOrg existing = new UserOrg();
+		final var existing = new UserOrg();
 		existing.setId("primarylogin");
 		existing.setMails(Collections.singletonList("marc.martin@sample.com"));
 		existing.setFirstName("First");
@@ -151,7 +149,7 @@ public class TestAbstractPluginIdResourceTest extends AbstractJpaTest {
 		existing.setDepartment("3890");
 		existing.setLocalId("8234");
 
-		final UserOrg authUser = new UserOrg();
+		final var authUser = new UserOrg();
 		authUser.setId("secondarylogin");
 		authUser.setMails(Collections.singletonList("marc.martin@sample.com"));
 		authUser.setFirstName("Marc");
@@ -172,8 +170,8 @@ public class TestAbstractPluginIdResourceTest extends AbstractJpaTest {
 
 	@Test
 	void toApplicationUserNew() {
-		final Authentication authentication = new UsernamePasswordAuthenticationToken("secondarylogin", null);
-		final UserOrgResource userResource = Mockito.mock(UserOrgResource.class);
+		final var authentication = new UsernamePasswordAuthenticationToken("secondarylogin", null);
+		final var userResource = Mockito.mock(UserOrgResource.class);
 		resource.userResource = userResource;
 		Mockito.doReturn(Collections.emptyList()).when(userResource).findAllBy("mails", "some@where.com");
 		Mockito.doReturn(null).when(userResource).findByIdNoCache("flast123");
@@ -184,7 +182,7 @@ public class TestAbstractPluginIdResourceTest extends AbstractJpaTest {
 		}).when(userResource).saveOrUpdate(Mockito.any());
 
 		// Create a new IAM node plugged to the primary node
-		final UserOrg user = new UserOrg();
+		final var user = new UserOrg();
 		user.setId("secondarylogin");
 		user.setMails(Collections.singletonList("some@where.com"));
 		user.setFirstName("First");
@@ -197,12 +195,12 @@ public class TestAbstractPluginIdResourceTest extends AbstractJpaTest {
 
 	@Test
 	void toApplicationUserNewWithCollision() {
-		final Authentication authentication = new UsernamePasswordAuthenticationToken("mmartin", null);
-		final UserOrgResource userResource = Mockito.mock(UserOrgResource.class);
+		final var authentication = new UsernamePasswordAuthenticationToken("mmartin", null);
+		final var userResource = Mockito.mock(UserOrgResource.class);
 		resource.userResource = userResource;
 
 		// Create a new IAM node plugged to the primary node
-		final UserOrg existing = new UserOrg();
+		final var existing = new UserOrg();
 		existing.setId("mmartin");
 		existing.setMails(Collections.singletonList("marc.martin@where.com"));
 		existing.setFirstName("Marc");
@@ -210,7 +208,7 @@ public class TestAbstractPluginIdResourceTest extends AbstractJpaTest {
 		existing.setCompany("ligoj");
 
 		// Create a new IAM node plugged to the primary node
-		final UserOrg authUser = new UserOrg();
+		final var authUser = new UserOrg();
 		authUser.setId("mmartin");
 		authUser.setMails(Collections.singletonList("some@where.com"));
 		authUser.setFirstName("Marc");
@@ -229,18 +227,18 @@ public class TestAbstractPluginIdResourceTest extends AbstractJpaTest {
 		Mockito.doReturn(existing).when(userRepository).findOneBy("id", "mmartin");
 		Assertions.assertEquals("mmartin1", resource.toApplicationUser(userRepository, authentication));
 
-		final UserOrg userIAM = this.userResource.findByIdNoCache("mmartin1");
+		final var userIAM = this.userResource.findByIdNoCache("mmartin1");
 		Assertions.assertEquals("mmartin1", userIAM.getName());
 	}
 
 	@Test
 	void toApplicationUserTooManyMail() {
-		final Authentication authentication = new UsernamePasswordAuthenticationToken("secondarylogin", null);
-		final UserOrgResource userResource = Mockito.mock(UserOrgResource.class);
+		final var authentication = new UsernamePasswordAuthenticationToken("secondarylogin", null);
+		final var userResource = Mockito.mock(UserOrgResource.class);
 		resource.userResource = userResource;
 
 		// Create a new IAM node pluged to the primary node
-		final UserOrg existing = new UserOrg();
+		final var existing = new UserOrg();
 		existing.setMails(Collections.singletonList("marc.martin@sample.com"));
 		existing.setFirstName("First");
 		existing.setLastName("Last123");
@@ -259,13 +257,13 @@ public class TestAbstractPluginIdResourceTest extends AbstractJpaTest {
 	void toApplicationUserNoMail() {
 
 		// Create a new IAM node pluged to the primary node
-		final UserOrg existing = new UserOrg();
+		final var existing = new UserOrg();
 		existing.setMails(Collections.emptyList());
 		existing.setFirstName("First");
 		existing.setLastName("Last123");
 		existing.setName("login");
 
-		final Authentication authentication = new UsernamePasswordAuthenticationToken("login", null);
+		final var authentication = new UsernamePasswordAuthenticationToken("login", null);
 		Mockito.doReturn(existing).when(userRepository).findOneBy("id", "login");
 		Assertions.assertThrows(NotAuthorizedException.class, () -> {
 			resource.toApplicationUser(userRepository, authentication);
@@ -274,31 +272,31 @@ public class TestAbstractPluginIdResourceTest extends AbstractJpaTest {
 
 	@Test
 	void getConfiguration() {
-		final IamConfiguration configuration = resource.getConfiguration("service:id:test:node1");
+		final var configuration = resource.getConfiguration("service:id:test:node1");
 		Assertions.assertSame(userRepository, configuration.getUserRepository());
 	}
 
 	@Test
 	void authenticateFailed() {
-		final Authentication authentication = new UsernamePasswordAuthenticationToken("secondarylogin", null);
+		final var authentication = new UsernamePasswordAuthenticationToken("secondarylogin", null);
 		Assertions.assertThrows(BadCredentialsException.class,
 				() -> resource.authenticate(authentication, "service:id:test:node1", true));
 	}
 
 	@Test
 	void authenticatePrimary() {
-		final Authentication authentication = new UsernamePasswordAuthenticationToken("secondarylogin", "secret");
+		final var authentication = new UsernamePasswordAuthenticationToken("secondarylogin", "secret");
 		Mockito.doReturn(true).when(userRepository).authenticate("secondarylogin", "secret");
 		Assertions.assertSame(authentication, resource.authenticate(authentication, "service:id:test:node1", true));
 	}
 
 	@Test
 	void authenticateSecondary() {
-		final Authentication authentication = new UsernamePasswordAuthenticationToken("secondarylogin", "secret");
+		final var authentication = new UsernamePasswordAuthenticationToken("secondarylogin", "secret");
 		Mockito.doReturn(true).when(userRepository).authenticate("secondarylogin", "secret");
 
 		// Create a new IAM node plugged to the primary node
-		final UserOrg user = new UserOrg();
+		final var user = new UserOrg();
 		user.setId("secondarylogin");
 		user.setMails(Collections.singletonList("some@where.com"));
 		user.setFirstName("First");
@@ -306,7 +304,7 @@ public class TestAbstractPluginIdResourceTest extends AbstractJpaTest {
 		user.setCompany("ligoj");
 		Mockito.doReturn(user).when(userRepository).findOneBy("id", "secondarylogin");
 
-		final UserOrgResource userResource = Mockito.mock(UserOrgResource.class);
+		final var userResource = Mockito.mock(UserOrgResource.class);
 		resource.userResource = userResource;
 		Mockito.doReturn(Collections.emptyList()).when(userResource).findAllBy("mails", "some@where.com");
 		Mockito.doReturn(null).when(userResource).findByIdNoCache("flast123");

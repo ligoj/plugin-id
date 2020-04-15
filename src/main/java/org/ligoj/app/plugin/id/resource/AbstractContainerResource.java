@@ -102,8 +102,8 @@ public abstract class AbstractContainerResource<T extends ContainerOrg, V extend
 			final int result;
 
 			// First compare the type
-			final ContainerScope type1 = toScope(types, container1);
-			final ContainerScope type2 = toScope(types, container2);
+			final var type1 = toScope(types, container1);
+			final var type2 = toScope(types, container2);
 			if (Objects.equals(type1, type2)) {
 				result = 0;
 			} else if (type1 == null) {
@@ -189,7 +189,7 @@ public abstract class AbstractContainerResource<T extends ContainerOrg, V extend
 	public T createInternal(final V container) {
 
 		// Check the unlocked scope exists
-		final ContainerScope scope = containerScopeResource.findById(container.getScope());
+		final var scope = containerScopeResource.findById(container.getScope());
 
 		// Check the type matches with this class' container type
 		if (this.type != scope.getType()) {
@@ -198,7 +198,7 @@ public abstract class AbstractContainerResource<T extends ContainerOrg, V extend
 		}
 
 		// Build the new DN, keeping the case
-		final String newDn = toDn(container, scope);
+		final var newDn = toDn(container, scope);
 
 		// Check the container can be created by the current principal.
 		// Used DN will be FQN to match the delegates
@@ -230,7 +230,7 @@ public abstract class AbstractContainerResource<T extends ContainerOrg, V extend
 	@Path("{id}")
 	public void delete(@PathParam("id") final String id) {
 		// Check the container exists
-		final T container = findByIdExpected(id);
+		final var container = findByIdExpected(id);
 
 		// Check the container can be deleted by current user
 		checkForDeletion(container);
@@ -397,14 +397,14 @@ public abstract class AbstractContainerResource<T extends ContainerOrg, V extend
 	 */
 	protected ContainerCountVo newContainerCountVo(final ContainerOrg rawContainer, final Set<T> canWrite,
 			final Set<T> canAdmin, final List<ContainerScope> types) {
-		final ContainerCountVo securedUserOrg = new ContainerCountVo();
+		final var securedUserOrg = new ContainerCountVo();
 		NamedBean.copy(rawContainer, securedUserOrg);
 		securedUserOrg.setCanWrite(canWrite.contains(rawContainer));
 		securedUserOrg.setCanAdmin(canAdmin.contains(rawContainer));
 		securedUserOrg.setContainerType(type);
 
 		// Find the closest type
-		final ContainerScope scope = toScope(types, rawContainer);
+		final var scope = toScope(types, rawContainer);
 		if (scope != null) {
 			securedUserOrg.setScope(scope.getName());
 			securedUserOrg.setLocked(scope.isLocked());
@@ -472,9 +472,9 @@ public abstract class AbstractContainerResource<T extends ContainerOrg, V extend
 	 */
 	protected ContainerWithScopeVo toVo(final T rawGroup) {
 		// Find the closest type
-		final ContainerWithScopeVo securedUserOrg = new ContainerWithScopeVo();
-		final List<ContainerScope> scopes = containerScopeResource.findAllDescOrder(type);
-		final ContainerScope scope = toScope(scopes, rawGroup);
+		final var securedUserOrg = new ContainerWithScopeVo();
+		final var scopes = containerScopeResource.findAllDescOrder(type);
+		final var scope = toScope(scopes, rawGroup);
 		NamedBean.copy(rawGroup, securedUserOrg);
 		if (scope != null) {
 			securedUserOrg.setScope(scope.getName());

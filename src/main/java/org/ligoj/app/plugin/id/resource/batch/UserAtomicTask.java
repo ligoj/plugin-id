@@ -70,7 +70,7 @@ public class UserAtomicTask extends AbstractBatchTask<UserUpdateEntry> {
 	@Override
 	protected void doBatch(final UserUpdateEntry entry, final boolean quiet) throws Exception {
 
-		final UserBatchUpdateType type = UPDATE_ACTION_TYPES.get(entry.getOperation());
+		final var type = UPDATE_ACTION_TYPES.get(entry.getOperation());
 		if (type == null) {
 			// Non supported operation
 			throw new ValidationJsonException("operation", "unsupported-operation");
@@ -85,10 +85,10 @@ public class UserAtomicTask extends AbstractBatchTask<UserUpdateEntry> {
 		// Update the user
 		if (type == UserBatchUpdateType.ATTRIBUTE) {
 			// Fetch the user
-			final UserOrg user = resource.findById(entry.getUser());
+			final var user = resource.findById(entry.getUser());
 
 			// Prepare the local entity
-			final UserOrgEditionVo editUser = new UserOrgEditionVo();
+			final var editUser = new UserOrgEditionVo();
 			editUser.setId(user.getId());
 			editUser.setFirstName(user.getFirstName());
 			editUser.setLastName(user.getLastName());

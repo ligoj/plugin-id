@@ -86,20 +86,20 @@ public class GroupResource extends AbstractContainerResource<GroupOrg, GroupEdit
 	 */
 	@GET
 	public TableItem<ContainerCountVo> findAll(@Context final UriInfo uriInfo) {
-		final List<ContainerScope> types = containerScopeResource.findAllDescOrder(ContainerType.GROUP);
-		final Map<String, CompanyOrg> companies = getCompany().findAll();
+		final var types = containerScopeResource.findAllDescOrder(ContainerType.GROUP);
+		final var companies = getCompany().findAll();
 		final Collection<CompanyOrg> visibleCompanies = organizationResource.getContainers();
-		final Set<GroupOrg> writeGroups = getContainersForWrite();
-		final Set<GroupOrg> adminGroups = getContainersForAdmin();
-		final Map<String, UserOrg> users = getUser().findAll();
+		final var writeGroups = getContainersForWrite();
+		final var adminGroups = getContainersForAdmin();
+		final var users = getUser().findAll();
 
 		// Search the groups
-		final Page<GroupOrg> findAll = getContainers(DataTableAttributes.getSearch(uriInfo),
+		final var findAll = getContainers(DataTableAttributes.getSearch(uriInfo),
 				paginationJson.getPageRequest(uriInfo, ORDERED_COLUMNS));
 
 		// Apply pagination and secure the users data
 		return paginationJson.applyPagination(uriInfo, findAll, rawGroup -> {
-			final ContainerCountVo securedUserOrg = newContainerCountVo(rawGroup, writeGroups, adminGroups, types);
+			final var securedUserOrg = newContainerCountVo(rawGroup, writeGroups, adminGroups, types);
 			securedUserOrg.setCount(rawGroup.getMembers().size());
 			// Computed the visible members
 			securedUserOrg.setCountVisible((int) rawGroup.getMembers().stream().map(users::get).map(UserOrg::getCompany)
@@ -124,11 +124,11 @@ public class GroupResource extends AbstractContainerResource<GroupOrg, GroupEdit
 
 	@Override
 	protected String toDn(final GroupEditionVo container, final ContainerScope scope) {
-		String parentDn = scope.getDn();
+        var parentDn = scope.getDn();
 		container.setParent(StringUtils.trimToNull(Normalizer.normalize(container.getParent())));
 		if (container.getParent() != null) {
 			// Check the parent is also inside the type, a new DN will be built
-			final GroupOrg parent = findByIdExpected(container.getParent());
+			final var parent = findByIdExpected(container.getParent());
 			if (!DnUtils.equalsOrParentOf(scope.getDn(), parent.getDn())) {
 				throw new ValidationJsonException("parent", "container-parent-type-match", TYPE_ATTRIBUTE, this.type,
 						"provided", scope.getType());
@@ -161,7 +161,7 @@ public class GroupResource extends AbstractContainerResource<GroupOrg, GroupEdit
 	@Path("empty/{id}")
 	public void empty(@PathParam("id") final String id) {
 		// Check the group exists
-		final GroupOrg container = findByIdExpected(id);
+		final var container = findByIdExpected(id);
 
 		// Check the group can be updated by the current user
 		if (!getContainersForWrite().contains(container)) {
@@ -176,11 +176,11 @@ public class GroupResource extends AbstractContainerResource<GroupOrg, GroupEdit
 	@Override
 	protected GroupOrg create(final GroupEditionVo container, final ContainerScope type, final String newDn) {
 		// Check the related objects
-		final List<String> assistants = toDn(container.getAssistants());
-		final List<String> owners = toDn(container.getOwners());
+		final var assistants = toDn(container.getAssistants());
+		final var owners = toDn(container.getOwners());
 
 		// Create the group
-		final GroupOrg group = super.create(container, type, newDn);
+		final var group = super.create(container, type, newDn);
 
 		// Nesting management
 		if (container.getParent() != null) {

@@ -27,7 +27,7 @@ public abstract class AbstractNameComparator extends LoginComparator {
 	 *         second.
 	 */
 	protected int compare(final UserOrg o1, final UserOrg o2, final Function<UserOrg, String> nameProvider) {
-		final int compareTo = ObjectUtils.defaultIfNull(nameProvider.apply(o1), "")
+		final var compareTo = ObjectUtils.defaultIfNull(nameProvider.apply(o1), "")
 				.compareToIgnoreCase(ObjectUtils.defaultIfNull(nameProvider.apply(o2), ""));
 		if (compareTo == 0) {
 			// Equals, so compare with the identifier

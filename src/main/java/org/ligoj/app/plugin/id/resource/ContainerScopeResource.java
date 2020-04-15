@@ -85,8 +85,8 @@ public class ContainerScopeResource {
 	@GET
 	@Path("{type}")
 	public TableItem<ContainerScope> findAll(@PathParam("type") final ContainerType type, @Context final UriInfo uriInfo) {
-		final String criteria = StringUtils.trimToEmpty(DataTableAttributes.getSearch(uriInfo));
-		final Page<ContainerScope> findAll = repository.findAll(type, criteria, paginationJson.getPageRequest(uriInfo, ORDERED_COLUMNS));
+		final var criteria = StringUtils.trimToEmpty(DataTableAttributes.getSearch(uriInfo));
+		final var findAll = repository.findAll(type, criteria, paginationJson.getPageRequest(uriInfo, ORDERED_COLUMNS));
 
 		// apply pagination and prevent lazy initialization issue
 		return paginationJson.applyPagination(uriInfo, findAll, Function.identity());

@@ -89,7 +89,7 @@ public abstract class AbstractBatchResource<B extends BatchElement> {
 	 * Cleanup the previous tasks.
 	 */
 	private void cleanup() {
-		for (final Entry<String, BatchTaskVo<B>> entry : imports.entrySet()) {
+		for (final var entry : imports.entrySet()) {
 			if (isFinished(entry.getValue())) {
 				// This task is finished since yesterday
 				imports.remove(entry.getKey());
@@ -144,20 +144,20 @@ public abstract class AbstractBatchResource<B extends BatchElement> {
 			final Class<T> taskType, final Boolean quiet) throws IOException {
 
 		// Public identifier is based on system date
-		final long id = System.currentTimeMillis();
+		final var id = System.currentTimeMillis();
 
 		// Check column's name validity
-		final String[] sanitizeColumns = ArrayUtils.isEmpty(columns) ? defaultColumns : columns;
+		final var sanitizeColumns = ArrayUtils.isEmpty(columns) ? defaultColumns : columns;
 		checkHeaders(defaultColumns, sanitizeColumns);
 
 		// Build CSV header from array
-		final String csvHeaders = StringUtils.chop(ArrayUtils.toString(sanitizeColumns)).substring(1).replace(',', ';')
+		final var csvHeaders = StringUtils.chop(ArrayUtils.toString(sanitizeColumns)).substring(1).replace(',', ';')
 				+ "\n";
 
 		// Build entries with prepended CSV header
-		final String encSafe = ObjectUtils.defaultIfNull(encoding, StandardCharsets.UTF_8.name());
-		final ByteArrayInputStream input = new ByteArrayInputStream(csvHeaders.getBytes(encSafe));
-		final List<B> entries = csvForBean.toBean(batchType,
+		final var encSafe = ObjectUtils.defaultIfNull(encoding, StandardCharsets.UTF_8.name());
+		final var input = new ByteArrayInputStream(csvHeaders.getBytes(encSafe));
+		final var entries = csvForBean.toBean(batchType,
 				new InputStreamReader(new SequenceInputStream(input, uploadedFile), encSafe));
 		entries.removeIf(Objects::isNull);
 
@@ -165,14 +165,14 @@ public abstract class AbstractBatchResource<B extends BatchElement> {
 		validator.validateCheck(entries);
 
 		// Clone the context for the asynchronous import
-		final BatchTaskVo<B> importTask = new BatchTaskVo<>();
+		final var importTask = new BatchTaskVo<B>();
 		importTask.setEntries(entries);
 		importTask.setPrincipal(SecurityContextHolder.getContext().getAuthentication().getName());
 		importTask.setId(id);
 		importTask.setQuiet(BooleanUtils.isTrue(quiet));
 
 		// Schedule the import
-		final T task = SpringUtils.getBean(taskType);
+		final var task = SpringUtils.getBean(taskType);
 		task.configure(importTask);
 		executor.execute(task);
 
@@ -190,7 +190,7 @@ public abstract class AbstractBatchResource<B extends BatchElement> {
 	 * Check column's name validity
 	 */
 	private void checkHeaders(final String[] requested, final String... columns) {
-		for (final String column : columns) {
+		for (final var column : columns) {
 			if (!ArrayUtils.contains(requested, column.trim())) {
 				throw new ValidationJsonException("csv-file", "Invalid header " + column);
 			}

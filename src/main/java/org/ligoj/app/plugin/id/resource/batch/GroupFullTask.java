@@ -29,7 +29,7 @@ public class GroupFullTask extends AbstractBatchTask<GroupImportEntry> {
 	protected void doBatch(final GroupImportEntry entry, final boolean quiet) {
 
 		// Copy the group information
-		final GroupEditionVo edition = new GroupEditionVo();
+		final var edition = new GroupEditionVo();
 		edition.setName(entry.getName());
 		edition.setParent(StringUtils.trimToNull(entry.getParent()));
 		edition.setScope(containerScopeResource.findByName(entry.getScope()).getId());

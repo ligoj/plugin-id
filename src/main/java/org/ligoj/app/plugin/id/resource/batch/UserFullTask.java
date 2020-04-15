@@ -24,7 +24,7 @@ public class UserFullTask extends AbstractBatchTask<UserImportEntry> {
 	protected void doBatch(final UserImportEntry entry, final boolean quiet) {
 
 		// Copy the user information
-		final UserOrgEditionVo user = new UserOrgEditionVo();
+		final var user = new UserOrgEditionVo();
 		user.setCompany(entry.getCompany());
 		user.setFirstName(entry.getFirstName());
 		user.setLastName(entry.getLastName());

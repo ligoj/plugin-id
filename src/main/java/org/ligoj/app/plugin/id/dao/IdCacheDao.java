@@ -72,8 +72,8 @@ public class IdCacheDao {
 	 * Associate a group to another group.
 	 */
 	private void addGroupToGroupInternal(final CacheGroup entity, final GroupOrg group) {
-		final CacheMembership membership = new CacheMembership();
-		final CacheGroup cacheGroup = new CacheGroup();
+		final var membership = new CacheMembership();
+		final var cacheGroup = new CacheGroup();
 		cacheGroup.setId(group.getId());
 		membership.setSubGroup(entity);
 		membership.setGroup(cacheGroup);
@@ -96,7 +96,7 @@ public class IdCacheDao {
 	 * Associate a user to a group.
 	 */
 	private void addUserToGroupInternal(final CacheUser entity, final CacheGroup group) {
-		final CacheMembership membership = new CacheMembership();
+		final var membership = new CacheMembership();
 		membership.setUser(entity);
 		membership.setGroup(group);
 		em.persist(membership);
@@ -144,11 +144,11 @@ public class IdCacheDao {
 	 *            the user to persist.
 	 */
 	public void create(final UserOrg user) {
-		final CacheUser entity = toCacheUser(user);
+		final var entity = toCacheUser(user);
 
 		// Set the company if defined
 		entity.setCompany(Optional.ofNullable(user.getCompany()).map(c -> {
-			final CacheCompany company = new CacheCompany();
+			final var company = new CacheCompany();
 			company.setId(user.getCompany());
 			return company;
 		}).orElse(null));
@@ -161,7 +161,7 @@ public class IdCacheDao {
 	 * Persist a new company
 	 */
 	private CacheCompany createInternal(final CompanyOrg company) {
-		final CacheCompany cacheCompany = toCacheCompany(company);
+		final var cacheCompany = toCacheCompany(company);
 		em.persist(cacheCompany);
 		return cacheCompany;
 	}
@@ -170,7 +170,7 @@ public class IdCacheDao {
 	 * Persist a new group and return it.
 	 */
 	private CacheGroup createInternal(final GroupOrg group) {
-		final CacheGroup entity = toCacheGroup(group);
+		final var entity = toCacheGroup(group);
 		em.persist(entity);
 		return entity;
 	}
@@ -179,7 +179,7 @@ public class IdCacheDao {
 	 * Persist a new user
 	 */
 	private CacheUser createInternal(final UserOrg user, final Map<String, CacheCompany> companies) {
-		final CacheUser entity = toCacheUserInternal(user);
+		final var entity = toCacheUserInternal(user);
 
 		// Set the company if defined
 		entity.setCompany(Optional.ofNullable(user.getCompany()).map(companies::get).orElse(null));
@@ -277,12 +277,12 @@ public class IdCacheDao {
 	 */
 	private int persistMemberships(final Map<String, UserOrg> users, final Map<String, CacheGroup> cacheGroups,
 			final Map<String, CacheCompany> cacheCompanies) {
-		int memberships = 0;
-		for (final UserOrg user : users.values()) {
+        var memberships = 0;
+		for (final var user : users.values()) {
 
 			// Persist users
-			final CacheUser entity = createInternal(user, cacheCompanies);
-			for (final String group : user.getGroups()) {
+			final var entity = createInternal(user, cacheCompanies);
+			for (final var group : user.getGroups()) {
 				addUserToGroupInternal(entity, cacheGroups.get(group));
 				memberships++;
 			}
@@ -298,11 +298,11 @@ public class IdCacheDao {
 	 * @return the amount of persisted relations.
 	 */
 	private int persistProjectGroups(final Map<String, CacheGroup> groups) {
-		final List<Object[]> allProjectGroup = cacheProjectGroupRepository.findAllProjectGroup();
-		for (final Object[] projectGroup : allProjectGroup) {
-			final Project project = new Project();
+		final var allProjectGroup = cacheProjectGroupRepository.findAllProjectGroup();
+		for (final var projectGroup : allProjectGroup) {
+			final var project = new Project();
 			project.setId((int) projectGroup[0]);
-			final CacheProjectGroup entity = new CacheProjectGroup();
+			final var entity = new CacheProjectGroup();
 			entity.setProject(project);
 			entity.setGroup(groups.get(projectGroup[1]));
 			em.persist(entity);
@@ -348,7 +348,7 @@ public class IdCacheDao {
 	 */
 	public void reset(final Map<String, CompanyOrg> companies, final Map<String, GroupOrg> groups,
 			final Map<String, UserOrg> users) {
-		final long start = System.currentTimeMillis();
+		final var start = System.currentTimeMillis();
 
 		// Remove all CACHE_* entries
 		log.info("Clearing database ...");
@@ -356,15 +356,15 @@ public class IdCacheDao {
 
 		// Insert data into database
 		log.info("Inserting data ...");
-		final Map<String, CacheCompany> cacheCompanies = persistCompanies(companies);
+		final var cacheCompanies = persistCompanies(companies);
 		em.flush();
-		final Map<String, CacheGroup> cacheGroups = persistGroups(groups);
+		final var cacheGroups = persistGroups(groups);
 		em.flush();
-		final int memberships = persistMemberships(users, cacheGroups, cacheCompanies);
+		final var memberships = persistMemberships(users, cacheGroups, cacheCompanies);
 		em.flush();
-		final int subscribedProjects = persistProjectGroups(cacheGroups);
+		final var subscribedProjects = persistProjectGroups(cacheGroups);
 		em.flush();
-		final long updatedDelegate = updateDelegateDn(cacheGroups, cacheCompanies);
+		final var updatedDelegate = updateDelegateDn(cacheGroups, cacheCompanies);
 		em.flush();
 		em.clear();
 		log.info(
@@ -391,11 +391,11 @@ public class IdCacheDao {
 	 * Transform user to JPA.
 	 */
 	private CacheUser toCacheUser(final UserOrg user) {
-		final CacheUser entity = toCacheUserInternal(user);
+		final var entity = toCacheUserInternal(user);
 
 		// Set the company if defined
 		entity.setCompany(Optional.ofNullable(user.getCompany()).map(c -> {
-			final CacheCompany company = new CacheCompany();
+			final var company = new CacheCompany();
 			company.setId(user.getCompany());
 			return company;
 		}).orElse(null));
@@ -406,7 +406,7 @@ public class IdCacheDao {
 	 * Transform user to JPA.
 	 */
 	private CacheUser toCacheUserInternal(final UserOrg user) {
-		final CacheUser entity = new CacheUser();
+		final var entity = new CacheUser();
 		entity.setId(user.getId());
 		entity.setFirstName(user.getFirstName());
 		entity.setLastName(user.getLastName());
@@ -423,7 +423,7 @@ public class IdCacheDao {
 	 *            user to update.
 	 */
 	public void update(final UserOrg user) {
-		final CacheUser entity = toCacheUser(user);
+		final var entity = toCacheUser(user);
 		em.merge(entity);
 		em.flush();
 		em.clear();
@@ -432,15 +432,15 @@ public class IdCacheDao {
 	private long updateDelegateDn(final Map<String, ? extends CacheContainer> containers, final Object type,
 			final String typePath, final Function<DelegateOrg, String> id, Function<DelegateOrg, String> getDn,
 			BiConsumer<DelegateOrg, String> setDn) {
-		final AtomicInteger updated = new AtomicInteger();
+		final var updated = new AtomicInteger();
 		// Get all delegates of he related receiver type
 		delegateOrgRepository.findAllBy(typePath, type).stream().peek(d -> {
 			// Consider only the existing ones
-			final String dn = Optional.ofNullable(containers.get(id.apply(d))).map(CacheContainer::getDescription)
+			final var dn = Optional.ofNullable(containers.get(id.apply(d))).map(CacheContainer::getDescription)
 					.orElse(null);
 
 			// Consider only the dirty one
-			final String delegateDn = getDn.apply(d);
+			final var delegateDn = getDn.apply(d);
 			if (!delegateDn.equalsIgnoreCase(dn)) {
 				// The delegate DN needed this update
 				setDn.accept(d, dn);
@@ -463,7 +463,7 @@ public class IdCacheDao {
 	 */
 	private long updateDelegateDn(final Map<String, ? extends CacheContainer> containers,
 			final ReceiverType receiverType, final DelegateType resourceType) {
-		long count = updateDelegateDn(containers, receiverType, "receiverType", DelegateOrg::getReceiver,
+        var count = updateDelegateDn(containers, receiverType, "receiverType", DelegateOrg::getReceiver,
 				DelegateOrg::getReceiverDn, DelegateOrg::setReceiverDn);
 		count += updateDelegateDn(containers, resourceType, "type", DelegateOrg::getName, DelegateOrg::getDn,
 				DelegateOrg::setDn);

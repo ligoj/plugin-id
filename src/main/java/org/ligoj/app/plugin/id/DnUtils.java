@@ -65,7 +65,7 @@ public final class DnUtils {
 	 * @see DnUtils#equalsOrParentOf(String, String)
 	 */
 	public static boolean equalsOrParentOf(@NotNull final Collection<String> parentDns, final String childDn) {
-		for (final String dn : parentDns) {
+		for (final var dn : parentDns) {
 			if (equalsOrParentOf(dn, childDn)) {
 				return true;
 			}

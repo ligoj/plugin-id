@@ -136,7 +136,7 @@ public abstract class AbstractMemCacheRepository {
 	 * @param company The company to remove.
 	 */
 	public void delete(final CompanyOrg company) {
-		final Map<String, CompanyOrg> companiesNameToDn = getCompany().findAll();
+		final var companiesNameToDn = getCompany().findAll();
 
 		// Remove from JPA cache
 		cache.delete(company);
@@ -151,7 +151,7 @@ public abstract class AbstractMemCacheRepository {
 	 * @param group the group to remove.
 	 */
 	public void delete(final GroupOrg group) {
-		final Map<String, GroupOrg> groupsNameToDn = getGroup().findAll();
+		final var groupsNameToDn = getGroup().findAll();
 
 		// Remove the group from the users
 		deleteMemoryAssociations(group, getUser().findAll());
@@ -170,7 +170,7 @@ public abstract class AbstractMemCacheRepository {
 	 * @param user the user to remove.
 	 */
 	public void delete(final UserOrg user) {
-		final Map<String, UserOrg> users = getUser().findAll();
+		final var users = getUser().findAll();
 
 		// Remove from JPA cache
 		cache.delete(user);
@@ -187,7 +187,7 @@ public abstract class AbstractMemCacheRepository {
 	 */
 	private void deleteMemoryAssociations(final GroupOrg group, final Map<String, UserOrg> users) {
 		// Remove from in-memory cache all users
-		for (final String member : group.getMembers()) {
+		for (final var member : group.getMembers()) {
 			users.get(member).getGroups().remove(group.getId());
 		}
 
@@ -255,7 +255,7 @@ public abstract class AbstractMemCacheRepository {
 
 		// Fetch origin data
 		log.info("Fetching origin data ...");
-		final Map<String, GroupOrg> groups = getGroup().findAllNoCache();
+		final var groups = getGroup().findAllNoCache();
 		result.put(CacheDataType.COMPANY, getCompany().findAllNoCache());
 		result.put(CacheDataType.GROUP, groups);
 		result.put(CacheDataType.USER, getUser().findAllNoCache(groups));

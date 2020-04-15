@@ -33,12 +33,7 @@ import org.springframework.context.ApplicationContext;
  * Test class of {@link AbstractMemCacheRepository}
  */
 class TestAbstractMemCacheRepositoryTest extends AbstractDataGeneratorTest {
-	private ICompanyRepository companyRepository;
-	private IGroupRepository groupRepository;
-	private IUserRepository userRepository;
-	private IamProvider iamProvider;
 	private UserOrg user;
-	private UserOrg user2;
 	private GroupOrg groupLdap;
 	private GroupOrg groupLdap2;
 	private Map<String, GroupOrg> groups;
@@ -48,13 +43,13 @@ class TestAbstractMemCacheRepositoryTest extends AbstractDataGeneratorTest {
 
 	@BeforeEach
 	void init() {
-		companyRepository = Mockito.mock(ICompanyRepository.class);
-		groupRepository = Mockito.mock(IGroupRepository.class);
-		userRepository = Mockito.mock(IUserRepository.class);
-		iamProvider = Mockito.mock(IamProvider.class);
-		final ApplicationContext applicationContext = Mockito.mock(ApplicationContext.class);
+		final var companyRepository = Mockito.mock(ICompanyRepository.class);
+		final var groupRepository = Mockito.mock(IGroupRepository.class);
+		final var userRepository = Mockito.mock(IUserRepository.class);
+		final var iamProvider = Mockito.mock(IamProvider.class);
+		final var applicationContext = Mockito.mock(ApplicationContext.class);
 		SpringUtils.setSharedApplicationContext(applicationContext);
-		final IamConfiguration iamConfiguration = new IamConfiguration();
+		final var iamConfiguration = new IamConfiguration();
 		iamConfiguration.setCompanyRepository(companyRepository);
 		iamConfiguration.setGroupRepository(groupRepository);
 		iamConfiguration.setUserRepository(userRepository);
@@ -63,7 +58,7 @@ class TestAbstractMemCacheRepositoryTest extends AbstractDataGeneratorTest {
 		companies = new HashMap<>();
 		companies.put("company", new CompanyOrg("dnc", "Company"));
 		groups = new HashMap<>();
-		final Set<String> members = new HashSet<>();
+		final var members = new HashSet<String>();
 		members.add("u");
 		groupLdap = new GroupOrg("dn", "Group", members);
 		groups.put("group", groupLdap);
@@ -74,12 +69,12 @@ class TestAbstractMemCacheRepositoryTest extends AbstractDataGeneratorTest {
 		user.setFirstName("f");
 		user.setLastName("l");
 		user.setCompany("company");
-		final List<String> userGroups = new ArrayList<>();
+		final var userGroups = new ArrayList<String>();
 		userGroups.add("group");
 		user.setGroups(userGroups);
 		user.setMails(Collections.singletonList("mail"));
 		groupLdap.getMembers().add("u");
-		user2 = new UserOrg();
+		final var user2 = new UserOrg();
 		user2.setId("u2");
 		user2.setFirstName("f");
 		user2.setLastName("l");
@@ -107,20 +102,20 @@ class TestAbstractMemCacheRepositoryTest extends AbstractDataGeneratorTest {
 		CacheDataType.values();
 		CacheDataType.valueOf(CacheDataType.COMPANY.name());
 
-		final Map<CacheDataType, Map<String, ? extends ResourceOrg>> ldapData = repository.getData();
+		final var ldapData = repository.getData();
 
 		Assertions.assertEquals("Company", ((CompanyOrg) ldapData.get(CacheDataType.COMPANY).get("company")).getName());
 		Assertions.assertEquals("dnc", ((CompanyOrg) ldapData.get(CacheDataType.COMPANY).get("company")).getDn());
-		final GroupOrg groupLdap = (GroupOrg) ldapData.get(CacheDataType.GROUP).get("group");
+		final var groupLdap = (GroupOrg) ldapData.get(CacheDataType.GROUP).get("group");
 		Assertions.assertEquals("dn", groupLdap.getDn());
 		Assertions.assertEquals("group", groupLdap.getId());
 		Assertions.assertEquals("Group", groupLdap.getName());
-		final UserOrg user = (UserOrg) ldapData.get(CacheDataType.USER).get("u");
+		final var user = (UserOrg) ldapData.get(CacheDataType.USER).get("u");
 		Assertions.assertEquals("u", user.getId());
 		Assertions.assertEquals("f", user.getFirstName());
 		Assertions.assertEquals("l", user.getLastName());
 		Assertions.assertEquals("company", user.getCompany());
-		final UserOrg user2 = (UserOrg) ldapData.get(CacheDataType.USER).get("u2");
+		final var user2 = (UserOrg) ldapData.get(CacheDataType.USER).get("u2");
 		Assertions.assertEquals("u2", user2.getId());
 		Assertions.assertEquals("f", user2.getFirstName());
 		Assertions.assertEquals("l", user2.getLastName());
@@ -150,8 +145,8 @@ class TestAbstractMemCacheRepositoryTest extends AbstractDataGeneratorTest {
 
 	@Test
 	void addGroupToGroup() {
-		final GroupOrg parent = groupLdap2;
-		final GroupOrg child = groupLdap;
+		final var parent = groupLdap2;
+		final var child = groupLdap;
 
 		// Check the initial status
 		Assertions.assertEquals(0, child.getSubGroups().size());
@@ -172,8 +167,8 @@ class TestAbstractMemCacheRepositoryTest extends AbstractDataGeneratorTest {
 
 	@Test
 	void removeGroupFromGroup() {
-		final GroupOrg parent = groupLdap2;
-		final GroupOrg child = groupLdap;
+		final var parent = groupLdap2;
+		final var child = groupLdap;
 		parent.getSubGroups().add(child.getId());
 		child.getGroups().add(parent.getId());
 
@@ -194,7 +189,7 @@ class TestAbstractMemCacheRepositoryTest extends AbstractDataGeneratorTest {
 
 	@Test
 	void createGroup() {
-		final GroupOrg newGroupLdap = new GroupOrg("dn3", "G3", new HashSet<>());
+		final var newGroupLdap = new GroupOrg("dn3", "G3", new HashSet<>());
 
 		Assertions.assertEquals(newGroupLdap, repository.create(newGroupLdap));
 
@@ -204,7 +199,7 @@ class TestAbstractMemCacheRepositoryTest extends AbstractDataGeneratorTest {
 
 	@Test
 	void createCompany() {
-		final CompanyOrg newCompanyLdap = new CompanyOrg("dn3", "C3");
+		final var newCompanyLdap = new CompanyOrg("dn3", "C3");
 
 		Assertions.assertEquals(newCompanyLdap, repository.create(newCompanyLdap));
 
@@ -214,7 +209,7 @@ class TestAbstractMemCacheRepositoryTest extends AbstractDataGeneratorTest {
 
 	@Test
 	void createUser() {
-		final UserOrg newUser = new UserOrg();
+		final var newUser = new UserOrg();
 		newUser.setId("u3");
 		newUser.setFirstName("f");
 		newUser.setLastName("l");
