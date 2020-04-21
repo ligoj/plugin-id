@@ -8,7 +8,6 @@ import java.util.Map;
 import java.util.function.BiConsumer;
 
 import org.apache.commons.lang3.StringUtils;
-import org.ligoj.app.iam.UserOrg;
 import org.ligoj.app.iam.dao.DelegateOrgRepository;
 import org.ligoj.app.plugin.id.resource.UserOrgEditionVo;
 import org.ligoj.app.plugin.id.resource.UserOrgResource;

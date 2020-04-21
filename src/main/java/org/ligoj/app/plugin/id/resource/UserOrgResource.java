@@ -42,7 +42,6 @@ import org.ligoj.app.api.Normalizer;
 import org.ligoj.app.iam.CompanyOrg;
 import org.ligoj.app.iam.GroupOrg;
 import org.ligoj.app.iam.IPasswordGenerator;
-import org.ligoj.app.iam.IUserRepository;
 import org.ligoj.app.iam.SimpleUser;
 import org.ligoj.app.iam.UserOrg;
 import org.ligoj.app.iam.dao.DelegateOrgRepository;
@@ -58,7 +57,6 @@ import org.ligoj.bootstrap.core.validation.ValidationJsonException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.ResponseBody;
 

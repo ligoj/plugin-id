@@ -5,7 +5,6 @@ package org.ligoj.app.plugin.id.resource;
 
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import javax.cache.annotation.CacheKey;

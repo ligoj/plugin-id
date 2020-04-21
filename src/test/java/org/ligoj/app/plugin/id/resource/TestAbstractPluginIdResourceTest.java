@@ -14,7 +14,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.ligoj.app.iam.IUserRepository;
-import org.ligoj.app.iam.IamConfiguration;
 import org.ligoj.app.iam.UserOrg;
 import org.ligoj.bootstrap.AbstractJpaTest;
 import org.ligoj.bootstrap.core.resource.TechnicalException;

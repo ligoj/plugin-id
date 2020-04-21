@@ -7,9 +7,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -21,7 +19,6 @@ import org.ligoj.app.iam.IGroupRepository;
 import org.ligoj.app.iam.IUserRepository;
 import org.ligoj.app.iam.IamConfiguration;
 import org.ligoj.app.iam.IamProvider;
-import org.ligoj.app.iam.ResourceOrg;
 import org.ligoj.app.iam.UserOrg;
 import org.ligoj.app.plugin.id.dao.AbstractMemCacheRepository.CacheDataType;
 import org.ligoj.bootstrap.AbstractDataGeneratorTest;
