@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>org.ligoj.api</groupId>
 		<artifactId>plugin-parent</artifactId>
-		<version>3.2.5</version>
+		<version>3.2.8</version>
 		<relativePath />
 	</parent>
 
@@ -24,11 +24,12 @@
 
 	<profiles>
 		<profile>
-			<id>bintray</id>
+			<id>github</id>
 			<distributionManagement>
 				<repository>
-					<id>bintray-ligoj-maven-repo</id>
-					<url>https://api.bintray.com/maven/ligoj/maven-repo/plugin-id/;publish=1</url>
+					<id>github-ligoj</id>
+					<name>GitHub Packages</name>
+					<url>https://maven.pkg.github.com/ligoj/plugin-ui</url>
 				</repository>
 			</distributionManagement>
 		</profile>
