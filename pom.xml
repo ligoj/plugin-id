@@ -29,7 +29,7 @@
 				<repository>
 					<id>github-ligoj</id>
 					<name>GitHub Packages</name>
-					<url>https://maven.pkg.github.com/ligoj/plugin-ui</url>
+					<url>https://maven.pkg.github.com/ligoj/plugin-id</url>
 				</repository>
 			</distributionManagement>
 		</profile>
