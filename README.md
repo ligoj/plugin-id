@@ -3,7 +3,6 @@ API plugin used for compatibility check
 
 [![Build Status](https://travis-ci.org/ligoj/plugin-id.svg?branch=master)](https://travis-ci.org/ligoj/plugin-id)
 [![Build Status](https://circleci.com/gh/ligoj/plugin-id.svg?style=svg)](https://circleci.com/gh/ligoj/plugin-id)
-[![Build Status](https://semaphoreci.com/api/v1/ligoj/plugin-id/branches/master/shields_badge.svg)](https://semaphoreci.com/ligoj/plugin-id)
 [![Build Status](https://ci.appveyor.com/api/projects/status/5926fmf0p5qp9j16/branch/master?svg=true)](https://ci.appveyor.com/project/ligoj/plugin-id/branch/master)
 [![Coverage](https://sonarcloud.io/api/project_badges/measure?project=org.ligoj.plugin%3Aplugin-id&metric=coverage)](https://sonarcloud.io/dashboard?id=org.ligoj.plugin%3Aplugin-id)
 [![Quality Gate](https://sonarcloud.io/api/project_badges/measure?metric=alert_status&project=org.ligoj.plugin:plugin-id)](https://sonarcloud.io/dashboard/index/org.ligoj.plugin:plugin-id)
