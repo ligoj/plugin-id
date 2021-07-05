@@ -1,7 +1,7 @@
 ## :link: Ligoj Identity plugin [![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.ligoj.plugin/plugin-id/badge.svg)](https://maven-badges.herokuapp.com/maven-central/org.ligoj.plugin/plugin-id) [![Download](https://api.bintray.com/packages/ligoj/maven-repo/plugin-id/images/download.svg) ](https://bintray.com/ligoj/maven-repo/plugin-id/_latestVersion)
 API plugin used for compatibility check
 
-[![Build Status](https://travis-ci.org/ligoj/plugin-id.svg?branch=master)](https://travis-ci.org/ligoj/plugin-id)
+[![Build Status](https://travis-ci.com/ligoj/plugin-id.svg?branch=master)](https://travis-ci.com/ligoj/plugin-id)
 [![Build Status](https://circleci.com/gh/ligoj/plugin-id.svg?style=svg)](https://circleci.com/gh/ligoj/plugin-id)
 [![Build Status](https://ci.appveyor.com/api/projects/status/5926fmf0p5qp9j16/branch/master?svg=true)](https://ci.appveyor.com/project/ligoj/plugin-id/branch/master)
 [![Coverage](https://sonarcloud.io/api/project_badges/measure?project=org.ligoj.plugin%3Aplugin-id&metric=coverage)](https://sonarcloud.io/dashboard?id=org.ligoj.plugin%3Aplugin-id)
