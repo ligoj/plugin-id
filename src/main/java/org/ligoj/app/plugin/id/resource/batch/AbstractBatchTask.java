@@ -6,7 +6,6 @@ package org.ligoj.app.plugin.id.resource.batch;
 import java.util.Date;
 import java.util.List;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.cxf.jaxrs.provider.ServerProviderFactory;
@@ -21,8 +20,7 @@ import lombok.extern.slf4j.Slf4j;
 /**
  * Base batch processor.
  * 
- * @param <B>
- *            The batch element type.
+ * @param <B> The batch element type.
  */
 @Slf4j
 public abstract class AbstractBatchTask<B extends BatchElement> implements Runnable { // NOPMD
@@ -54,22 +52,17 @@ public abstract class AbstractBatchTask<B extends BatchElement> implements Runna
 	/**
 	 * Process an entry.
 	 * 
-	 * @param entry
-	 *            A batch entry.
-	 * @param quiet
-	 *            Flag to turn-off the possible notification such as mail.
-	 * @throws Exception
-	 *             Any error cause the abortion for this entry.
+	 * @param entry A batch entry.
+	 * @param quiet Flag to turn-off the possible notification such as mail.
+	 * @throws Exception Any error cause the abortion for this entry.
 	 */
 	protected abstract void doBatch(B entry, boolean quiet) throws Exception; // NOSONAR Allow global error there
 
 	/**
 	 * Process an entry.
 	 * 
-	 * @param entry
-	 *            A batch entry.
-	 * @throws Exception
-	 *             Any error cause the abortion for this entry.
+	 * @param entry A batch entry.
+	 * @throws Exception Any error cause the abortion for this entry.
 	 */
 	protected void doBatch(B entry) throws Exception {
 		doBatch(entry, false);
@@ -104,8 +97,7 @@ public abstract class AbstractBatchTask<B extends BatchElement> implements Runna
 	/**
 	 * Configure the task.
 	 * 
-	 * @param task
-	 *            The batch task.
+	 * @param task The batch task.
 	 */
 	public void configure(final BatchTaskVo<B> task) {
 		this.task = task;
@@ -125,13 +117,12 @@ public abstract class AbstractBatchTask<B extends BatchElement> implements Runna
 	/**
 	 * Split and normalize a string to a collection, ignoring empty items.
 	 * 
-	 * @param rawValue
-	 *            The raw string to split.
+	 * @param rawValue The raw string to split.
 	 * @return A collection from the raw string.
 	 */
 	protected List<String> toList(final String rawValue) {
 		return Pattern.compile(",").splitAsStream(StringUtils.trimToEmpty(rawValue)).map(Normalizer::normalize)
-				.filter(StringUtils::isNotBlank).collect(Collectors.toList());
+				.filter(StringUtils::isNotBlank).toList();
 	}
 
 }

@@ -122,10 +122,8 @@ public class UserOrgResource extends AbstractOrgResource {
 	 * Return users matching the given criteria. The visible groups, trees and companies are checked. The returned
 	 * groups of each user depends on the groups the user can see. The result is not secured : it contains DN.
 	 *
-	 * @param company
-	 *            The optional company name to match.
-	 * @param group
-	 *            The optional group name to match.
+	 * @param company The optional company name to match.
+	 * @param group   The optional group name to match.
 	 * @return All matched users.
 	 */
 	public List<UserOrg> findAllNotSecure(final String company, final String group) {
@@ -142,16 +140,11 @@ public class UserOrgResource extends AbstractOrgResource {
 	 * groups of each user depends on the groups the user can see and are in normalized CN form. The result is not
 	 * secured, it contains DN.
 	 *
-	 * @param visibleGroups
-	 *            The visible groups by the principal user.
-	 * @param company
-	 *            the optional company name to match. Will be normalized.
-	 * @param group
-	 *            the optional group name to match. May be <code>null</code>.
-	 * @param criteria
-	 *            the optional criteria to match.
-	 * @param uriInfo
-	 *            filter data.
+	 * @param visibleGroups The visible groups by the principal user.
+	 * @param company       the optional company name to match. Will be normalized.
+	 * @param group         the optional group name to match. May be <code>null</code>.
+	 * @param criteria      the optional criteria to match.
+	 * @param uriInfo       filter data.
 	 * @return found users.
 	 */
 	private Page<UserOrg> findAllNotSecure(final Set<GroupOrg> visibleGroups, final String company, final String group,
@@ -177,14 +170,10 @@ public class UserOrgResource extends AbstractOrgResource {
 	 * Return users matching the given criteria. The visible groups, trees and companies are checked. The returned
 	 * groups of each user depends on the groups the user can see/write, and are in CN form.
 	 *
-	 * @param company
-	 *            the optional company name to match.
-	 * @param group
-	 *            the optional group name to match.
-	 * @param criteria
-	 *            the optional criteria to match.
-	 * @param uriInfo
-	 *            filter data.
+	 * @param company  the optional company name to match.
+	 * @param group    the optional group name to match.
+	 * @param criteria the optional criteria to match.
+	 * @param uriInfo  filter data.
 	 * @return found users.
 	 */
 	@GET
@@ -194,8 +183,7 @@ public class UserOrgResource extends AbstractOrgResource {
 		final var visibleGroups = groupResource.getContainers();
 		final var writableGroups = groupResource.getContainersForWrite();
 		final var companies = companyResource.getContainersForWrite();
-		final Collection<String> writableCompanies = companies.stream().map(CompanyOrg::getId)
-				.collect(Collectors.toList());
+		final var writableCompanies = companies.stream().map(CompanyOrg::getId).collect(Collectors.toSet());
 
 		// Search the users
 		final var findAll = findAllNotSecure(visibleGroups, company, group, criteria, uriInfo);
@@ -215,7 +203,7 @@ public class UserOrgResource extends AbstractOrgResource {
 						vo.setCanWrite(writableGroups.contains(mGroup));
 						vo.setName(mGroup.getName());
 						return vo;
-					}).collect(Collectors.toList()));
+					}).toList());
 			return securedUserOrg;
 		});
 	}
@@ -250,7 +238,7 @@ public class UserOrgResource extends AbstractOrgResource {
 		return Optional.ofNullable(allGroups.get(Normalizer.normalize(group)))
 				.map(fg -> allGroups.values().stream().filter(visibleGroups::contains)
 						// Filter the group, including the children
-						.filter(g -> DnUtils.equalsOrParentOf(fg.getDn(), g.getDn())).collect(Collectors.toList()))
+						.filter(g -> DnUtils.equalsOrParentOf(fg.getDn(), g.getDn())).toList())
 				.orElse(Collections.emptyList());
 	}
 
@@ -258,8 +246,7 @@ public class UserOrgResource extends AbstractOrgResource {
 	 * Return a specific user from his/her login. When user does not exist or is within a non visible company, return a
 	 * 404.
 	 *
-	 * @param user
-	 *            The user to find. A normalized form will be used for the search.
+	 * @param user The user to find. A normalized form will be used for the search.
 	 * @return found user. Never <code>null</code>.
 	 */
 	@GET
@@ -278,17 +265,15 @@ public class UserOrgResource extends AbstractOrgResource {
 		final var visibleGroups = groupResource.getContainers();
 		securedUserOrg
 				.setGroups(visibleGroups.stream().filter(mGroup -> rawUserOrg.getGroups().contains(mGroup.getId()))
-						.sorted().map(GroupOrg::getName).collect(Collectors.toList()));
+						.sorted().map(GroupOrg::getName).toList());
 		return securedUserOrg;
 	}
 
 	/**
 	 * Add given user to the a group.
 	 *
-	 * @param user
-	 *            The user to add.
-	 * @param group
-	 *            The group to update.
+	 * @param user  The user to add.
+	 * @param group The group to update.
 	 */
 	@PUT
 	@Path("{user}/group/{group}")
@@ -299,10 +284,8 @@ public class UserOrgResource extends AbstractOrgResource {
 	/**
 	 * Remove given user from the a group.
 	 *
-	 * @param user
-	 *            The user to remove.
-	 * @param group
-	 *            The group to update.
+	 * @param user  The user to remove.
+	 * @param group The group to update.
 	 */
 	@DELETE
 	@Path("{user}/group/{group}")
@@ -313,12 +296,9 @@ public class UserOrgResource extends AbstractOrgResource {
 	/**
 	 * Performs an operation on a group and a user.
 	 *
-	 * @param user
-	 *            The user to move.
-	 * @param group
-	 *            The group to update.
-	 * @param updater
-	 *            The function to execute on computed groups of current user.
+	 * @param user    The user to move.
+	 * @param group   The group to update.
+	 * @param updater The function to execute on computed groups of current user.
 	 */
 	private void updateGroupUser(final String user, final String group,
 			final BiPredicate<Collection<String>, String> updater) {
@@ -348,9 +328,8 @@ public class UserOrgResource extends AbstractOrgResource {
 	/**
 	 * Update the given user.
 	 *
-	 * @param user
-	 *            The user definition, and associated groups. Group changes are checked.User definition changes are
-	 *            checked.
+	 * @param user The user definition, and associated groups. Group changes are checked.User definition changes are
+	 *             checked.
 	 */
 	@PUT
 	public void update(final UserOrgEditionVo user) {
@@ -366,10 +345,8 @@ public class UserOrgResource extends AbstractOrgResource {
 	/**
 	 * Create the given user.
 	 *
-	 * @param user
-	 *            The user definition, and associated groups. Initial groups are checked.User definition is checked.
-	 * @param quiet
-	 *            Flag to turn-off the possible notification such as mail.
+	 * @param user  The user definition, and associated groups. Initial groups are checked.User definition is checked.
+	 * @param quiet Flag to turn-off the possible notification such as mail.
 	 */
 	public void create(final UserOrgEditionVo user, final boolean quiet) {
 		// Check the right on the company and the groups
@@ -386,8 +363,7 @@ public class UserOrgResource extends AbstractOrgResource {
 	/**
 	 * Create the given user.
 	 *
-	 * @param user
-	 *            The user definition, and associated groups. Initial groups are checked.User definition is checked.
+	 * @param user The user definition, and associated groups. Initial groups are checked.User definition is checked.
 	 */
 	@POST
 	public void create(final UserOrgEditionVo user) {
@@ -457,12 +433,9 @@ public class UserOrgResource extends AbstractOrgResource {
 	/**
 	 * Validate assigned groups, department and return corresponding group identifiers.
 	 *
-	 * @param userOrg
-	 *            The user to update.
-	 * @param importEntry
-	 *            The user raw values to update.
-	 * @param delegates
-	 *            The delegates (read/write) of the principal user.
+	 * @param userOrg     The user to update.
+	 * @param importEntry The user raw values to update.
+	 * @param delegates   The delegates (read/write) of the principal user.
 	 */
 	private void validateAndGroupsCN(final UserOrg userOrg, final UserOrgEditionVo importEntry,
 			final List<DelegateOrg> delegates) {
@@ -483,13 +456,10 @@ public class UserOrgResource extends AbstractOrgResource {
 	 * Validate assigned groups, and return corresponding group identifiers. The groups must be visible by the
 	 * principal, and added/removed groups from the user must be writable by the principal.
 	 *
-	 * @param previousGroups
-	 *            The current user's groups.used to validate the changes.
-	 * @param desiredGroups
-	 *            The groups the principal user has assigned to the user. In this list, there are some read-only groups
-	 *            previously assigned to this user. Only the changes are checked.
-	 * @param delegates
-	 *            The delegates (read/write) of the principal user.
+	 * @param previousGroups The current user's groups.used to validate the changes.
+	 * @param desiredGroups  The groups the principal user has assigned to the user. In this list, there are some
+	 *                       read-only groups previously assigned to this user. Only the changes are checked.
+	 * @param delegates      The delegates (read/write) of the principal user.
 	 */
 	private void validateAndGroupsCN(final Collection<String> previousGroups, final Collection<String> desiredGroups,
 			final List<DelegateOrg> delegates) {
@@ -503,11 +473,9 @@ public class UserOrgResource extends AbstractOrgResource {
 	/**
 	 * Validate a change of membership of given group by the principal user.
 	 *
-	 * @param updatedGroup
-	 *            The group the principal user is updating : add/remove a user. The visibility of this must have been
-	 *            previously checked.
-	 * @param delegates
-	 *            The delegates (read/write) of the principal user.
+	 * @param updatedGroup The group the principal user is updating : add/remove a user. The visibility of this must
+	 *                     have been previously checked.
+	 * @param delegates    The delegates (read/write) of the principal user.
 	 */
 	private void validateWriteGroup(final String updatedGroup, final List<DelegateOrg> delegates) {
 
@@ -530,13 +498,10 @@ public class UserOrgResource extends AbstractOrgResource {
 	 * <li>GG : Final groups of entry = CG-WG+DG</li>
 	 * </ul>
 	 *
-	 * @param delegates
-	 *            the available delegates of current principal user.
-	 * @param userOrg
-	 *            The internal user entry to update.
-	 * @param groups
-	 *            The writable groups identifiers to be set to the user in addition of the non visible or writable
-	 *            groups by the current principal user..
+	 * @param delegates the available delegates of current principal user.
+	 * @param userOrg   The internal user entry to update.
+	 * @param groups    The writable groups identifiers to be set to the user in addition of the non visible or writable
+	 *                  groups by the current principal user..
 	 * @return the merged group identifiers to be set internally.
 	 */
 	private Collection<String> mergeGroups(final List<DelegateOrg> delegates, final UserOrg userOrg,
@@ -609,10 +574,8 @@ public class UserOrgResource extends AbstractOrgResource {
 	 * password.<br>
 	 * Groups of entry will be normalized.
 	 *
-	 * @param importEntry
-	 *            The entry to save or to update.
-	 * @param quiet
-	 *            Flag to turn-off the possible notification such as mail.
+	 * @param importEntry The entry to save or to update.
+	 * @param quiet       Flag to turn-off the possible notification such as mail.
 	 */
 	private void saveOrUpdate(final UserOrgEditionVo importEntry, final boolean quiet) {
 
@@ -644,8 +607,7 @@ public class UserOrgResource extends AbstractOrgResource {
 	 * password.<br>
 	 * Groups of entry will be normalized.
 	 *
-	 * @param importEntry
-	 *            The entry to save or to update.
+	 * @param importEntry The entry to save or to update.
 	 */
 	public void saveOrUpdate(final UserOrgEditionVo importEntry) {
 		saveOrUpdate(importEntry, false);
@@ -684,8 +646,7 @@ public class UserOrgResource extends AbstractOrgResource {
 	/**
 	 * Convert the import format to the internal format.
 	 *
-	 * @param importEntry
-	 *            The raw imported user.
+	 * @param importEntry The raw imported user.
 	 * @return The internal format of the user.
 	 */
 	private UserOrg toUserOrg(final UserOrgEditionVo importEntry) {
@@ -709,8 +670,7 @@ public class UserOrgResource extends AbstractOrgResource {
 	 * Note : even if the user requesting this deletion has no right on the groups the involved user, this operation can
 	 * be performed.
 	 *
-	 * @param user
-	 *            The user to delete. A normalized form of this parameter will be used for this operation.
+	 * @param user The user to delete. A normalized form of this parameter will be used for this operation.
 	 */
 	@DELETE
 	@Path("{user}")
@@ -743,8 +703,7 @@ public class UserOrgResource extends AbstractOrgResource {
 	 * Note : even if the user requesting this operation has no right on the groups of the involved user, this operation
 	 * can be performed.
 	 *
-	 * @param user
-	 *            The user to lock. A normalized form of this parameter will be used for this operation.
+	 * @param user The user to lock. A normalized form of this parameter will be used for this operation.
 	 */
 	@DELETE
 	@Path("{user}/lock")
@@ -765,8 +724,8 @@ public class UserOrgResource extends AbstractOrgResource {
 	 * Note : even if the user requesting this operation has no right on the groups the involved user, this operation
 	 * can be performed.
 	 *
-	 * @param user
-	 *            The user to move to isolate zone. A normalized form of this parameter will be used for this operation.
+	 * @param user The user to move to isolate zone. A normalized form of this parameter will be used for this
+	 *             operation.
 	 */
 	@DELETE
 	@Path("{user}/isolate")
@@ -785,8 +744,7 @@ public class UserOrgResource extends AbstractOrgResource {
 	 * Note : even if the user requesting this enable has no right on the groups the involved user, this operation can
 	 * be performed.
 	 *
-	 * @param user
-	 *            The user to unlock. A normalized form of this parameter will be used for this operation.
+	 * @param user The user to unlock. A normalized form of this parameter will be used for this operation.
 	 */
 	@PUT
 	@Path("{user}/unlock")
@@ -805,8 +763,7 @@ public class UserOrgResource extends AbstractOrgResource {
 	 * Note : even if the user requesting this enable has no right on the groups the involved user, this operation can
 	 * be performed.
 	 *
-	 * @param user
-	 *            The user to restore. A normalized form of this parameter will be used for this operation.
+	 * @param user The user to restore. A normalized form of this parameter will be used for this operation.
 	 */
 	@PUT
 	@Path("{user}/restore")
@@ -826,8 +783,7 @@ public class UserOrgResource extends AbstractOrgResource {
 	 * Note: This operation can be performed even if the principal has no right on the groups related to the involved
 	 * user.
 	 *
-	 * @param uid
-	 *            The user identifier to restore. A normalized form of this parameter will be used for this operation.
+	 * @param uid The user identifier to restore. A normalized form of this parameter will be used for this operation.
 	 * @return The generated password.
 	 */
 	@PUT
@@ -851,8 +807,7 @@ public class UserOrgResource extends AbstractOrgResource {
 	/**
 	 * Log password reset action triggered by authenticated and privileged user.
 	 *
-	 * @param user
-	 *            Target user to log.
+	 * @param user Target user to log.
 	 */
 	private void logAdminReset(final UserOrg user) {
 		final var logReset = new PasswordResetAudit();
@@ -863,8 +818,7 @@ public class UserOrgResource extends AbstractOrgResource {
 	/**
 	 * Check the current user can reset the given user password.
 	 *
-	 * @param user
-	 *            The user to alter.
+	 * @param user The user to alter.
 	 * @return The internal representation of found user.
 	 */
 	private UserOrg checkResetRight(final String user) {
@@ -885,10 +839,8 @@ public class UserOrgResource extends AbstractOrgResource {
 	/**
 	 * Check the current user can delete, enable or disable the given user entry.
 	 *
-	 * @param user
-	 *            The user to alter.
-	 * @param hard
-	 *            When <code>true</code> the user is completely deleted, in other case, this a simple disable.
+	 * @param user The user to alter.
+	 * @param hard When <code>true</code> the user is completely deleted, in other case, this a simple disable.
 	 * @return The internal representation of found user.
 	 */
 	private UserOrg checkDeletionRight(final String user, final String mode) {
@@ -909,10 +861,8 @@ public class UserOrgResource extends AbstractOrgResource {
 	/**
 	 * Check the groups of given users would contain at least another user when it will be deleted.
 	 *
-	 * @param userOrg
-	 *            User o delete and to check the memberships.
-	 * @param allGroups
-	 *            Map of group by groupName
+	 * @param userOrg   User o delete and to check the memberships.
+	 * @param allGroups Map of group by groupName
 	 */
 	private void checkLastMemberInGroups(final UserOrg userOrg, final Map<String, GroupOrg> allGroups) {
 		for (final var group : userOrg.getGroups()) {
@@ -927,10 +877,8 @@ public class UserOrgResource extends AbstractOrgResource {
 	 * Generate a new password of given user and tag it as secured. The password generation is delegated to the first
 	 * password plug-in available. When no plug-in is found, the user is not tagged as secured.
 	 *
-	 * @param user
-	 *            The user to update.
-	 * @param quiet
-	 *            Flag to turn-off the possible notification such as mail.
+	 * @param user  The user to update.
+	 * @param quiet Flag to turn-off the possible notification such as mail.
 	 * @return The new generated password. When <code>null</code> no password could be generated, and the user is not
 	 *         tagged as secured.
 	 */
@@ -949,10 +897,8 @@ public class UserOrgResource extends AbstractOrgResource {
 	 * Return the {@link UserOrg} list corresponding to the given attribute/value without using cache for the search,
 	 * but using it for the instances.
 	 *
-	 * @param attribute
-	 *            The attribute name to match.
-	 * @param value
-	 *            The attribute value to match.
+	 * @param attribute The attribute name to match.
+	 * @param value     The attribute value to match.
 	 * @return the found users. May be empty.
 	 */
 	public List<UserOrg> findAllBy(final String attribute, final String value) {
@@ -962,8 +908,7 @@ public class UserOrgResource extends AbstractOrgResource {
 	/**
 	 * Return the {@link UserOrg} corresponding to the given attribute/value without using cache.
 	 *
-	 * @param user
-	 *            The user to find. A normalized form will be used for the search.
+	 * @param user The user to find. A normalized form will be used for the search.
 	 * @return the found user or <code>null</code> when not found. Groups are not fetched for this operation.
 	 */
 	public UserOrg findByIdNoCache(final String user) {
@@ -973,10 +918,8 @@ public class UserOrgResource extends AbstractOrgResource {
 	/**
 	 * Update internal user with the new user. Note the security is not checked there.
 	 *
-	 * @param userOrg
-	 *            The internal user to update. Note this must be the internal instance
-	 * @param newUser
-	 *            The new user data. Note this will not be the stored instance.
+	 * @param userOrg The internal user to update. Note this must be the internal instance
+	 * @param newUser The new user data. Note this will not be the stored instance.
 	 */
 	private void updateCompanyAsNeeded(final UserOrg userOrg, final UserOrg newUser) {
 		// Check the company
@@ -989,8 +932,7 @@ public class UserOrgResource extends AbstractOrgResource {
 	/**
 	 * Return the group corresponding to the given department.
 	 *
-	 * @param department
-	 *            The department to match.
+	 * @param department The department to match.
 	 * @return The group corresponding to the given department or <code>null</code>.
 	 */
 	private GroupOrg toDepartmentGroup(final String department) {
@@ -1001,10 +943,8 @@ public class UserOrgResource extends AbstractOrgResource {
 	 * Update internal user with the new user for following attributes : department and local identifier. Note the
 	 * security is not checked there.
 	 *
-	 * @param userOrg
-	 *            The user to update. Note this must be the internal instance.
-	 * @param newUser
-	 *            The new user data. Note this will not be the stored instance.
+	 * @param userOrg The user to update. Note this must be the internal instance.
+	 * @param newUser The new user data. Note this will not be the stored instance.
 	 */
 	public void mergeUser(final UserOrg userOrg, final UserOrg newUser) {
 		var needUpdate = false;

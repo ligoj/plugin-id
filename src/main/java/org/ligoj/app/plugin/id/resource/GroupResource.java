@@ -5,7 +5,6 @@ package org.ligoj.app.plugin.id.resource;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import javax.transaction.Transactional;
 import javax.ws.rs.GET;
@@ -77,8 +76,7 @@ public class GroupResource extends AbstractContainerResource<GroupOrg, GroupEdit
 	 * Return groups matching to given criteria. The visible groups, trees and companies are checked. The returned
 	 * groups of each user depends on the groups the user can see/write in CN form.
 	 *
-	 * @param uriInfo
-	 *            filter data.
+	 * @param uriInfo filter data.
 	 * @return found groups.
 	 */
 	@GET
@@ -109,8 +107,7 @@ public class GroupResource extends AbstractContainerResource<GroupOrg, GroupEdit
 	/**
 	 * Indicates a group exists or not.
 	 *
-	 * @param group
-	 *            the group name. Exact match is required, so a normalized version.
+	 * @param group the group name. Exact match is required, so a normalized version.
 	 * @return <code>true</code> if the group exists.
 	 */
 	@GET
@@ -121,7 +118,7 @@ public class GroupResource extends AbstractContainerResource<GroupOrg, GroupEdit
 
 	@Override
 	protected String toDn(final GroupEditionVo container, final ContainerScope scope) {
-        var parentDn = scope.getDn();
+		var parentDn = scope.getDn();
 		container.setParent(StringUtils.trimToNull(Normalizer.normalize(container.getParent())));
 		if (container.getParent() != null) {
 			// Check the parent is also inside the type, a new DN will be built
@@ -139,20 +136,17 @@ public class GroupResource extends AbstractContainerResource<GroupOrg, GroupEdit
 	/**
 	 * Convert the given user UIDs to a the corresponding DN. The users must exists.
 	 *
-	 * @param uids
-	 *            The UIDs to convert.
+	 * @param uids The UIDs to convert.
 	 * @return The corresponding DN.
 	 */
 	private List<String> toDn(final List<String> uids) {
-		return CollectionUtils.emptyIfNull(uids).stream().map(getUser()::findByIdExpected).map(UserOrg::getDn)
-				.collect(Collectors.toList());
+		return CollectionUtils.emptyIfNull(uids).stream().map(getUser()::findByIdExpected).map(UserOrg::getDn).toList();
 	}
 
 	/**
 	 * Empty this group by removing all members if supported by the repository.
 	 *
-	 * @param id
-	 *            The group to empty.
+	 * @param id The group to empty.
 	 */
 	@POST
 	@Path("empty/{id}")
