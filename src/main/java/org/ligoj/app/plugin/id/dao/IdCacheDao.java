@@ -229,7 +229,7 @@ public class IdCacheDao {
 	}
 
 	/**
-	 * Remove all user membership to this group. Sub groups are not removed.
+	 * Remove all user membership to this group. Subgroups are not removed.
 	 *
 	 * @param group
 	 *            the group to empty.
@@ -455,9 +455,9 @@ public class IdCacheDao {
 	 * @param containers
 	 *            The existing containers.
 	 * @param receiverType
-	 *            The receiver type to update. And also the same type than the given containers.
+	 *            The receiver type to update. And also the same type as the given containers.
 	 * @param resourceType
-	 *            The delegate resource type to update. And also the same type than the given containers.
+	 *            The delegate resource type to update. And also the same type as the given containers.
 	 * @return The amount of updated DN references.
 	 */
 	private long updateDelegateDn(final Map<String, ? extends CacheContainer> containers,

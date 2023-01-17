@@ -22,6 +22,7 @@ import org.ligoj.app.iam.IamProvider;
 import org.ligoj.app.iam.UserOrg;
 import org.ligoj.app.plugin.id.dao.AbstractMemCacheRepository.CacheDataType;
 import org.ligoj.bootstrap.AbstractDataGeneratorTest;
+import org.ligoj.bootstrap.core.INamableBean;
 import org.ligoj.bootstrap.core.SpringUtils;
 import org.mockito.Mockito;
 import org.springframework.context.ApplicationContext;
@@ -101,8 +102,8 @@ class TestAbstractMemCacheRepositoryTest extends AbstractDataGeneratorTest {
 
 		final var ldapData = repository.getData();
 
-		Assertions.assertEquals("Company", ((CompanyOrg) ldapData.get(CacheDataType.COMPANY).get("company")).getName());
-		Assertions.assertEquals("dnc", ((CompanyOrg) ldapData.get(CacheDataType.COMPANY).get("company")).getDn());
+		Assertions.assertEquals("Company", ((INamableBean<String>) ldapData.get(CacheDataType.COMPANY).get("company")).getName());
+		Assertions.assertEquals("dnc", ldapData.get(CacheDataType.COMPANY).get("company").getDn());
 		final var groupLdap = (GroupOrg) ldapData.get(CacheDataType.GROUP).get("group");
 		Assertions.assertEquals("dn", groupLdap.getDn());
 		Assertions.assertEquals("group", groupLdap.getId());

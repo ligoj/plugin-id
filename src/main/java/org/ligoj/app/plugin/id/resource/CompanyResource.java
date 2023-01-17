@@ -95,7 +95,7 @@ public class CompanyResource extends AbstractContainerResource<CompanyOrg, Conta
 	 * 
 	 * @return <code>true</code> when the current user is inside the internal scope of people.
 	 */
-	public boolean isUserInternalCommpany() {
+	public boolean isUserInternalCompany() {
 		return ObjectUtils.defaultIfNull(getUserCompanyDn(), "")
 				.endsWith(ObjectUtils.defaultIfNull(getUser().getPeopleInternalBaseDn(), ""));
 	}

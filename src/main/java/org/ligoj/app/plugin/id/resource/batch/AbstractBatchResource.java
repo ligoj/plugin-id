@@ -46,7 +46,7 @@ public abstract class AbstractBatchResource<B extends BatchElement> {
 	private CsvForBean csvForBean;
 
 	/**
-	 * Hold pending and previous imports. Key is an identifier built from the user name requesting the import, and a
+	 * Hold pending and previous imports. Key is an identifier built from the username requesting the import, and a
 	 * random String. This table is clean before each import.
 	 */
 	private final Map<String, BatchTaskVo<B>> imports = new ConcurrentHashMap<>();
@@ -121,7 +121,7 @@ public abstract class AbstractBatchResource<B extends BatchElement> {
 	 * @param <T>
 	 *            The task type running this batch.
 	 * @param quiet
-	 *            Optional flag to turn-off the possible notification such as mail. Default value is <code>false</code>.
+	 *            Optional flag to turn off the possible notification such as mail. Default value is <code>false</code>.
 	 * @return the import identifier.
 	 * @throws IOException
 	 *             When CSV read failed.
@@ -132,7 +132,7 @@ public abstract class AbstractBatchResource<B extends BatchElement> {
 		try {
 			return batchInternal(uploadedFile, columns, encoding, defaultColumns, batchType, taskType, quiet);
 		} catch (final TechnicalException io) {
-			// Handle technical exception there to associate to to csv-file parameter.
+			// Handle technical exception there to associate to csv-file parameter.
 			throw new ValidationJsonException("csv-file", io.getMessage());
 		}
 	}

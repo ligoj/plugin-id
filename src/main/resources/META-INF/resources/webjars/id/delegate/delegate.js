@@ -11,7 +11,7 @@ define(function () {
 		search: false,
 
 		/**
-		 * Edited delegates's identifier
+		 * Edited delegates' identifier
 		 */
 		currentId: 0,
 
@@ -154,8 +154,8 @@ define(function () {
 						orderable: false,
 						render: function (value) {
 							if (value) {
-								var editlink = '<a class="update"><i class="fas fa-pencil-alt" data-toggle="tooltip" title="' + current.$messages.update + '"></i></a>';
-								return editlink + '<a class="delete"><i class="fas fa-times" data-toggle="tooltip" title="' + current.$messages.delete + '"></i></a>';
+								const editLink = `<a class="update"><i class="fas fa-pencil-alt" data-toggle="tooltip" title="${current.$messages.update}"></i></a>`;
+								return editLink + `<a class="delete"><i class="fas fa-times" data-toggle="tooltip" title="${current.$messages.delete}"></i></a>`;
 							}
 							return '&nbsp;';
 						}

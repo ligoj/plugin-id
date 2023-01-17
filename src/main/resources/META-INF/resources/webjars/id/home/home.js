@@ -12,7 +12,7 @@ define(function () {
 		suspendSearch: false,
 
 		/**
-		 * Edited users's identifier
+		 * Edited users' identifier
 		 */
 		currentId: 0,
 
@@ -291,20 +291,20 @@ define(function () {
 							width: '36px',
 							orderable: false,
 							render: function (_i, _j, data) {
-								var editlink = '<a class="update"><i class="fas fa-pencil-alt" data-toggle="tooltip" title="' + current.$messages.update + '"></i></a>';
+								let editLink = '<a class="update"><i class="fas fa-pencil-alt" data-toggle="tooltip" title="' + current.$messages.update + '"></i></a>';
 								if (data.canWrite) {
-									editlink += '<div class="btn-group"><i data-toggle="dropdown" class="fas fa-cog"></i><ul class="dropdown-menu dropdown-menu-right">';
+									editLink += '<div class="btn-group"><i data-toggle="dropdown" class="fas fa-cog"></i><ul class="dropdown-menu dropdown-menu-right">';
 									if (data.isolated) {
 										// Isolated -> restore
-										editlink += '<li><a class="restore"><i class="menu-icon fa fa-sign-in"></i> ' + current.$messages.restore + '</a></li>';
+										editLink += '<li><a class="restore"><i class="menu-icon fa fa-sign-in"></i> ' + current.$messages.restore + '</a></li>';
 									} else if (data.locked) {
 										// Locked -> unlock or isolate
-										editlink += '<li><a class="unlock"><i class="menu-icon fa fa-unlock"></i> ' + current.$messages.unlock + '</a></li>';
-										editlink += '<li><a class="isolate"><i class="menu-icon fa fa-sign-out"></i> ' + current.$messages.isolate + '</a></li>';
+										editLink += '<li><a class="unlock"><i class="menu-icon fa fa-unlock"></i> ' + current.$messages.unlock + '</a></li>';
+										editLink += '<li><a class="isolate"><i class="menu-icon fa fa-sign-out"></i> ' + current.$messages.isolate + '</a></li>';
 									} else {
 										// Unlocked -> lock or isolate
-										editlink += '<li><a class="lock"><i class="menu-icon fa fa-lock"></i> ' + current.$messages.lock + '</a></li>';
-										editlink += '<li><a class="isolate"><i class="menu-icon fa fa-sign-out"></i> ' + current.$messages.isolate + '</a></li>';
+										editLink += '<li><a class="lock"><i class="menu-icon fa fa-lock"></i> ' + current.$messages.lock + '</a></li>';
+										editLink += '<li><a class="isolate"><i class="menu-icon fa fa-sign-out"></i> ' + current.$messages.isolate + '</a></li>';
 									}
 	
 									// Delete icon

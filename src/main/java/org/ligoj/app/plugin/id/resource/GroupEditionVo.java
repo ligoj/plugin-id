@@ -21,17 +21,17 @@ public class GroupEditionVo extends ContainerEditionVo {
 	private String parent;
 
 	/**
-	 * Department number or name, multi-valued. May be used to link user department attribute.
+	 * Department number or name, multivalued. May be used to link user department attribute.
 	 */
 	private List<String> departments;
 
 	/**
-	 * Assistant of this group, multi-valued. Must be UID of the related users. Must exists.
+	 * Assistant of this group, multivalued. Must be UID of the related users. Must exist.
 	 */
 	private List<String> assistants;
 
 	/**
-	 * Owner of this group, multi-valued. Must be UID of the related users. Must exists.
+	 * Owner of this group, multivalued. Must be UID of the related users. Must exist.
 	 */
 	private List<String> owners;
 

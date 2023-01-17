@@ -42,6 +42,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 @Transactional
 class GroupResourceTest extends AbstractContainerResourceTest {
 
+	public static final String GROUP_FUNCTION = "Fonction";
 	private GroupResource resource;
 
 	@BeforeEach
@@ -95,7 +96,7 @@ class GroupResourceTest extends AbstractContainerResourceTest {
 		Assertions.assertEquals(0, group0.getCountVisible());
 		Assertions.assertTrue(group0.isCanAdmin());
 		Assertions.assertTrue(group0.isCanWrite());
-		Assertions.assertEquals("Fonction", group0.getScope());
+		Assertions.assertEquals(GROUP_FUNCTION, group0.getScope());
 		Assertions.assertEquals("dig", group0.getId());
 		Assertions.assertFalse(group0.isLocked());
 
@@ -105,7 +106,7 @@ class GroupResourceTest extends AbstractContainerResourceTest {
 		Assertions.assertEquals(0, group10.getCountVisible());
 		Assertions.assertTrue(group10.isCanAdmin());
 		Assertions.assertTrue(group10.isCanWrite());
-		Assertions.assertEquals("Fonction", group10.getScope());
+		Assertions.assertEquals(GROUP_FUNCTION, group10.getScope());
 		Assertions.assertEquals(ContainerType.GROUP, group10.getContainerType());
 		Assertions.assertTrue(group10.isLocked());
 
@@ -131,7 +132,7 @@ class GroupResourceTest extends AbstractContainerResourceTest {
 				.thenReturn(new GroupOrg("cn=DIG AS,cn=DIG AS,cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com", "DIG AS", null));
 		final ContainerWithScopeVo group = resource.findByName("dig as");
 		Assertions.assertEquals("DIG AS", group.getName());
-		Assertions.assertEquals("Fonction", group.getScope());
+		Assertions.assertEquals(GROUP_FUNCTION, group.getScope());
 	}
 
 	@Test
@@ -189,7 +190,7 @@ class GroupResourceTest extends AbstractContainerResourceTest {
 	}
 
 	private void createInternal(final GroupEditionVo group, final String expected) {
-		final ContainerScope scope = containerScopeRepository.findByName("Fonction");
+		final ContainerScope scope = containerScopeRepository.findByName(GROUP_FUNCTION);
 		group.setName("new-group");
 		group.setScope(scope.getId());
 		final GroupOrg groupOrg1 = new GroupOrg("cn=new-group", "new-group", null);
@@ -224,7 +225,7 @@ class GroupResourceTest extends AbstractContainerResourceTest {
 
 	@Test
 	void toDnParent() {
-		final ContainerScope scope = containerScopeRepository.findByName("Fonction");
+		final ContainerScope scope = containerScopeRepository.findByName(GROUP_FUNCTION);
 		final GroupEditionVo group = new GroupEditionVo();
 		group.setName("new-group");
 		group.setParent(" DiG ");
@@ -235,7 +236,7 @@ class GroupResourceTest extends AbstractContainerResourceTest {
 
 	@Test
 	void toDnParentInvalid() {
-		final ContainerScope scope = containerScopeRepository.findByName("Fonction");
+		final ContainerScope scope = containerScopeRepository.findByName(GROUP_FUNCTION);
 		final GroupEditionVo group = new GroupEditionVo();
 		group.setName("new-group");
 		group.setParent(" DiG ");
@@ -248,7 +249,7 @@ class GroupResourceTest extends AbstractContainerResourceTest {
 
 	@Test
 	void toDn() {
-		final ContainerScope scope = containerScopeRepository.findByName("Fonction");
+		final ContainerScope scope = containerScopeRepository.findByName(GROUP_FUNCTION);
 		final GroupEditionVo group = new GroupEditionVo();
 		group.setName("new-group");
 		Assertions.assertEquals("cn=new-group,ou=fonction,ou=groups,dc=sample,dc=com", resource.toDn(group, scope));

@@ -180,7 +180,7 @@ public abstract class AbstractPluginIdResource<U extends IUserRepository> extend
 	}
 
 	/**
-	 * Generate a application login from an account.
+	 * Generate an application login from an account.
 	 *
 	 * @param account The current authenticated account in this security provider.
 	 * @return a corresponding application login candidate from an account.
@@ -193,7 +193,7 @@ public abstract class AbstractPluginIdResource<U extends IUserRepository> extend
 			throw new NotAuthorizedException("cannot-build-application-login");
 		}
 
-		return trimFirstName.substring(0, 1) + trimLastName;
+		return trimFirstName.charAt(0) + trimLastName;
 	}
 
 	private String normalize(final String string) {

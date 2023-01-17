@@ -38,7 +38,7 @@ public class ContainerScope extends AbstractNamedEntity<Integer> {
 	public static final String TYPE_PROJECT = "Project";
 
 	/**
-	 * The "Distinguished Name" parent of of container's DN. The base DN is not included into this String.
+	 * The "Distinguished Name" parent of container's DN. The base DN is not included into this String.
 	 */
 	@NotNull
 	@NotBlank

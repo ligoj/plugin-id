@@ -10,7 +10,7 @@ import lombok.Setter;
 
 /**
  * Container with scope.<br>
- * DN is not exposed, Original CN (not normalized) is exposed as {@link #name}
+ * DN is not exposed, Original CN (not normalized) is exposed as {@link #getName()}}
  */
 @Getter
 @Setter

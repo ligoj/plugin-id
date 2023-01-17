@@ -24,17 +24,17 @@ public class GroupImportEntry implements BatchElement {
 	// Special attributes
 
 	/**
-	 * Department number or name, multi-valued. May be used to link user department attribute. Must be UID of the related users.
+	 * Department number or name, multivalued. May be used to link user department attribute. Must be UID of the related users.
 	 */
 	private String department;
 
 	/**
-	 * Assistant of this group, multi-valued. Must be UID of the related users.
+	 * Assistant of this group, multivalued. Must be UID of the related users.
 	 */
 	private String assistant;
 
 	/**
-	 * Owner of this group, multi-valued. Must be UID of the related users.
+	 * Owner of this group, multivalued. Must be UID of the related users.
 	 */
 	private String owner;
 

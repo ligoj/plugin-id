@@ -55,7 +55,7 @@ public final class DnUtils {
 	}
 
 	/**
-	 * Indicates the given parent DN collection contains the exact exact DN or sub DN
+	 * Indicates the given parent DN collection contains the exact DN or sub DN
 	 * 
 	 * @param parentDns
 	 *            Collection of parent DNs.

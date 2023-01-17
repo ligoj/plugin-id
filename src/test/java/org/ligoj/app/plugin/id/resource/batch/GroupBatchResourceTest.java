@@ -87,7 +87,6 @@ class GroupBatchResourceTest extends AbstractBatchTest {
 			throws IOException, InterruptedException {
 		initSpringSecurityContext(DEFAULT_USER);
 		final long id = resource.full(input, headers, encoding, false);
-		Assertions.assertNotNull(id);
 		@SuppressWarnings("unchecked")
 		final BatchTaskVo<U> importTask = (BatchTaskVo<U>) resource.getImportTask(id);
 		Assertions.assertEquals(id, importTask.getId());
@@ -149,7 +148,7 @@ class GroupBatchResourceTest extends AbstractBatchTest {
 		mockTask.securityHelper = securityHelper;
 		mockTask.containerScopeResource = Mockito.mock(ContainerScopeResource.class);
 		Mockito.when(applicationContext.getBean(SessionSettings.class)).thenReturn(new SessionSettings());
-		Mockito.when(applicationContext.getBean((Class<?>) ArgumentMatchers.any(Class.class))).thenAnswer((Answer<Object>) invocation -> {
+		Mockito.when(applicationContext.getBean((Class<?>) ArgumentMatchers.any(Class.class))).thenAnswer(invocation -> {
 			final Class<?> requiredType = (Class<Object>) invocation.getArguments()[0];
 			if (requiredType == GroupFullTask.class) {
 				return mockTask;

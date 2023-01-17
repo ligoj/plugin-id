@@ -243,7 +243,7 @@ public class UserOrgResource extends AbstractOrgResource {
 	}
 
 	/**
-	 * Return a specific user from his/her login. When user does not exist or is within a non visible company, return a
+	 * Return a specific user from his/her login. When user does not exist or is within a non-visible company, return a
 	 * 404.
 	 *
 	 * @param user The user to find. A normalized form will be used for the search.
@@ -270,7 +270,7 @@ public class UserOrgResource extends AbstractOrgResource {
 	}
 
 	/**
-	 * Add given user to the a group.
+	 * Add given user to a group.
 	 *
 	 * @param user  The user to add.
 	 * @param group The group to update.
@@ -282,7 +282,7 @@ public class UserOrgResource extends AbstractOrgResource {
 	}
 
 	/**
-	 * Remove given user from the a group.
+	 * Remove given user from a group.
 	 *
 	 * @param user  The user to remove.
 	 * @param group The group to update.
@@ -346,13 +346,13 @@ public class UserOrgResource extends AbstractOrgResource {
 	 * Create the given user.
 	 *
 	 * @param user  The user definition, and associated groups. Initial groups are checked.User definition is checked.
-	 * @param quiet Flag to turn-off the possible notification such as mail.
+	 * @param quiet Flag to turn off the possible notification such as mail.
 	 */
 	public void create(final UserOrgEditionVo user, final boolean quiet) {
 		// Check the right on the company and the groups
 		validateChanges(securityHelper.getLogin(), user);
 
-		// Check the user does not exists
+		// Check the user does not exist
 		if (getUser().findById(user.getId()) != null) {
 			throw new ValidationJsonException(USER_KEY, "already-exist", "0", USER_KEY, "1", user.getId());
 		}
@@ -456,7 +456,7 @@ public class UserOrgResource extends AbstractOrgResource {
 	 * Validate assigned groups, and return corresponding group identifiers. The groups must be visible by the
 	 * principal, and added/removed groups from the user must be writable by the principal.
 	 *
-	 * @param previousGroups The current user's groups.used to validate the changes.
+	 * @param previousGroups The current user's groups used to validate the changes.
 	 * @param desiredGroups  The groups the principal user has assigned to the user. In this list, there are some
 	 *                       read-only groups previously assigned to this user. Only the changes are checked.
 	 * @param delegates      The delegates (read/write) of the principal user.
@@ -500,7 +500,7 @@ public class UserOrgResource extends AbstractOrgResource {
 	 *
 	 * @param delegates the available delegates of current principal user.
 	 * @param userOrg   The internal user entry to update.
-	 * @param groups    The writable groups identifiers to be set to the user in addition of the non visible or writable
+	 * @param groups    The writable groups identifiers to be set to the user in addition of the non-visible or writable
 	 *                  groups by the current principal user..
 	 * @return the merged group identifiers to be set internally.
 	 */
@@ -567,7 +567,7 @@ public class UserOrgResource extends AbstractOrgResource {
 
 	/**
 	 * Create the user is not exist and update the related groups and company.<br>
-	 * The mail of the entry will replace the one of the repository if it one does not contain any mail. If entry did
+	 * The mail of the entry will replace the one of the repository if it does not contain any mail. If entry did
 	 * not exist or, if there was no password (or a dummy one), it will be set to the one of import of a new generated
 	 * password. <br>
 	 * When mail or password is updated a mail is sent to the user with the account, and eventually the new
@@ -575,7 +575,7 @@ public class UserOrgResource extends AbstractOrgResource {
 	 * Groups of entry will be normalized.
 	 *
 	 * @param importEntry The entry to save or to update.
-	 * @param quiet       Flag to turn-off the possible notification such as mail.
+	 * @param quiet       Flag to turn off the possible notification such as mail.
 	 */
 	private void saveOrUpdate(final UserOrgEditionVo importEntry, final boolean quiet) {
 
@@ -692,7 +692,7 @@ public class UserOrgResource extends AbstractOrgResource {
 	}
 
 	/**
-	 * Disable an user. The user's password is cleared (empty) and a flag is added to tag this user as locked to prevent
+	 * Disable a user. The user's password is cleared (empty) and a flag is added to tag this user as locked to prevent
 	 * further password reset. Other properties are untouched.<br>
 	 * Rules, order is important :
 	 * <ul>
@@ -741,7 +741,7 @@ public class UserOrgResource extends AbstractOrgResource {
 	 * exist</li>
 	 * <li>User must exist</li>
 	 * </ul>
-	 * Note : even if the user requesting this enable has no right on the groups the involved user, this operation can
+	 * Note : even if the user requesting this enablement has no right on the groups the involved user, this operation can
 	 * be performed.
 	 *
 	 * @param user The user to unlock. A normalized form of this parameter will be used for this operation.
@@ -760,7 +760,7 @@ public class UserOrgResource extends AbstractOrgResource {
 	 * exist</li>
 	 * <li>User must exist</li>
 	 * </ul>
-	 * Note : even if the user requesting this enable has no right on the groups the involved user, this operation can
+	 * Note : even if the user requesting this enablement has no right on the groups the involved user, this operation can
 	 * be performed.
 	 *
 	 * @param user The user to restore. A normalized form of this parameter will be used for this operation.
@@ -773,7 +773,7 @@ public class UserOrgResource extends AbstractOrgResource {
 
 	/**
 	 * Reset a user password, send a mail to him and to the user (principal) requesting this action.<br>
-	 * This action is audited when succeed. Rules, order is important :
+	 * This action is audited when succeeded. Rules, order is important :
 	 * <ul>
 	 * <li>Only users managing the company of this user can perform the operation, if not, act as if the user did not
 	 * exist</li>
@@ -829,7 +829,7 @@ public class UserOrgResource extends AbstractOrgResource {
 		final var companyDn = getCompany().findById(userOrg.getCompany()).getDn();
 		if (delegateRepository.findByMatchingDnForWrite(securityHelper.getLogin(), companyDn, DelegateType.TREE)
 				.isEmpty()) {
-			// Report this attempt to delete a non writable user
+			// Report this attempt to delete a non-writable user
 			log.warn("Attempt to reset the password of a user '{}' out of scope", user);
 			throw new ValidationJsonException(USER_KEY, READ_ONLY, "0", "user", "1", user);
 		}
@@ -840,7 +840,7 @@ public class UserOrgResource extends AbstractOrgResource {
 	 * Check the current user can delete, enable or disable the given user entry.
 	 *
 	 * @param user The user to alter.
-	 * @param hard When <code>true</code> the user is completely deleted, in other case, this a simple disable.
+	 * @param mode Declared action, only used there for the log.
 	 * @return The internal representation of found user.
 	 */
 	private UserOrg checkDeletionRight(final String user, final String mode) {
@@ -878,7 +878,7 @@ public class UserOrgResource extends AbstractOrgResource {
 	 * password plug-in available. When no plug-in is found, the user is not tagged as secured.
 	 *
 	 * @param user  The user to update.
-	 * @param quiet Flag to turn-off the possible notification such as mail.
+	 * @param quiet Flag to turn off the possible notification such as mail.
 	 * @return The new generated password. When <code>null</code> no password could be generated, and the user is not
 	 *         tagged as secured.
 	 */

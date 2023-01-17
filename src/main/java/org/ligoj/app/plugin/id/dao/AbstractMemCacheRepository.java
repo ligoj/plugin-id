@@ -220,7 +220,7 @@ public abstract class AbstractMemCacheRepository {
 
 	/**
 	 * Reset the database cache with the LDAP data. Note there is no synchronization for this method. Initial first
-	 * concurrent calls may note involve the cache.
+	 * concurrent calls may not involve the cache.
 	 *
 	 * @return The cached LDAP data..
 	 */
@@ -246,9 +246,9 @@ public abstract class AbstractMemCacheRepository {
 
 	/**
 	 * Reset the database cache with the LDAP data. Note there is no synchronization for this method. Initial first
-	 * concurrent calls may note involve the cache.
+	 * concurrent calls may not involve the cache.
 	 *
-	 * @return The fresh LDAP data..
+	 * @return The fresh LDAP data.
 	 */
 	protected Map<CacheDataType, Map<String, ? extends ResourceOrg>> refreshData() {
 		final Map<CacheDataType, Map<String, ? extends ResourceOrg>> result = new EnumMap<>(CacheDataType.class);

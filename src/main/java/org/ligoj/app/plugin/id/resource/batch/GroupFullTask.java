@@ -34,7 +34,7 @@ public class GroupFullTask extends AbstractBatchTask<GroupImportEntry> {
 		edition.setParent(StringUtils.trimToNull(entry.getParent()));
 		edition.setScope(containerScopeResource.findByName(entry.getScope()).getId());
 
-		// Split muti-valued data
+		// Split multi-valued data
 		edition.setAssistants(toList(entry.getAssistant()));
 		edition.setDepartments(toList(entry.getDepartment()));
 		edition.setOwners(toList(entry.getOwner()));

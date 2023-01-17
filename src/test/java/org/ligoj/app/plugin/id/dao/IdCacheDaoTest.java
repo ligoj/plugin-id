@@ -329,7 +329,7 @@ class IdCacheDaoTest extends AbstractJpaTest {
 
 		// Add delegates related to some containers
 
-		// Broken, non existing related group
+		// Broken, non-existing related group
 		final DelegateOrg brokenDelegate = new DelegateOrg();
 		brokenDelegate.setName("broken");
 		brokenDelegate.setDn("dn=group1");
@@ -404,7 +404,7 @@ class IdCacheDaoTest extends AbstractJpaTest {
 		Assertions.assertEquals("dn=group1",
 				delegateOrgRepository.findOneExpected(updateDelegate.getId()).getReceiverDn());
 
-		// Up to date delegate
+		// Up-to-date delegate
 		Assertions.assertEquals("dn=company1", delegateOrgRepository.findOneExpected(up2dateDelegate.getId()).getDn());
 		Assertions.assertEquals("dn=group1",
 				delegateOrgRepository.findOneExpected(up2dateDelegate.getId()).getReceiverDn());

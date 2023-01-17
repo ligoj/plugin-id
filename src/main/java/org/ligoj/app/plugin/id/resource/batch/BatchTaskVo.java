@@ -32,7 +32,7 @@ public class BatchTaskVo<B extends BatchElement> {
 	/**
 	 * Import status.
 	 */
-	private ImportStatus status = new ImportStatus();
+	private final ImportStatus status = new ImportStatus();
 
 	/**
 	 * User principal requesting the import.

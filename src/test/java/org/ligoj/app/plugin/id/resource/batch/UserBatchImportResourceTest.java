@@ -72,7 +72,6 @@ class UserBatchImportResourceTest extends AbstractUserBatchResourceTest {
 			final String encoding) throws IOException, InterruptedException {
 		initSpringSecurityContext(DEFAULT_USER);
 		final long id = resource.execute(input, headers, encoding, false);
-		Assertions.assertNotNull(id);
 		@SuppressWarnings("unchecked")
 		final BatchTaskVo<U> importTask = (BatchTaskVo<U>) resource.getImportTask(id);
 		Assertions.assertEquals(id, importTask.getId());

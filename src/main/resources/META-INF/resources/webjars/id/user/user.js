@@ -75,7 +75,7 @@ define(function () {
 					_('company').val(data.company);
 					_('groups').attr('rows', data.groups.length).val(data.groups.join('\n'));
 
-					// Loacked account management
+					// Locked account management
 					if (data.locked) {
 						_('locked').removeClass('hidden');
 						_('locked-since').val(moment(data.locked).format(formatManager.messages.shortdateMomentJs));

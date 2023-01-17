@@ -210,7 +210,7 @@ public abstract class AbstractContainerResource<T extends ContainerOrg, V extend
 			throw new ValidationJsonException("name", "read-only", "0", getTypeName(), "1", container.getName());
 		}
 
-		// Check the container does not exists
+		// Check the container does not exist
 		if (getRepository().findById(Normalizer.normalize(container.getName())) != null) {
 			throw new ValidationJsonException("name", "already-exist", "0", getTypeName(), "1", container.getName());
 		}

@@ -31,7 +31,7 @@ public abstract class AbstractBatchTest extends AbstractAppTest {
 		Assertions.assertNotNull(importTask);
 		Assertions.assertNotNull(importTask.getStatus().getStart());
 
-		// Let the import to be proceeded
+		// Let the import proceeding
 		for (int i = 1000; i-- > 0;) {
 			Thread.sleep(10);
 			if (importTask.getStatus().getEnd() != null) {

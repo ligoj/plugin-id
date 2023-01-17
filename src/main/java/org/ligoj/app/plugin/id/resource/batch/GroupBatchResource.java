@@ -34,13 +34,13 @@ public class GroupBatchResource extends AbstractBatchResource<GroupImportEntry> 
 	 * Upload a file of entries to create or update groups. The whole entry is replaced.
 	 * 
 	 * @param uploadedFile
-	 *            Entries file to import. Currently support only CSV format.
+	 *            Entries file to import. Currently, support only CSV format.
 	 * @param columns
 	 *            the CSV header names.
 	 * @param encoding
 	 *            CSV encoding. Default is UTF-8.
 	 * @param quiet
-	 *            Optional flag to turn-off the possible notification such as mail. Default value is <code>false</code>.
+	 *            Optional flag to turn off the possible notification such as mail. Default value is <code>false</code>.
 	 * @return the import identifier.
 	 * @throws IOException
 	 *             When CSV read failed.

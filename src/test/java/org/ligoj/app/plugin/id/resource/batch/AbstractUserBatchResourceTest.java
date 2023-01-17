@@ -25,7 +25,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 /**
- * Test of {@link UserBatchResource}
+ * Test of {@link UserOrgResource}
  */
 @ExtendWith(SpringExtension.class)
 @ContextConfiguration(locations = "classpath:/META-INF/spring/application-context-test.xml")
@@ -48,7 +48,7 @@ abstract class AbstractUserBatchResourceTest extends AbstractBatchTest {
 		mockTaskUpdate.resource = mockResource;
 		mockTaskUpdate.securityHelper = securityHelper;
 		Mockito.when(applicationContext.getBean(SessionSettings.class)).thenReturn(new SessionSettings());
-		Mockito.when(applicationContext.getBean((Class<?>) ArgumentMatchers.any(Class.class))).thenAnswer((Answer<Object>) invocation -> {
+		Mockito.when(applicationContext.getBean((Class<?>) ArgumentMatchers.any(Class.class))).thenAnswer(invocation -> {
 			final Class<?> requiredType = (Class<Object>) invocation.getArguments()[0];
 			if (requiredType == UserFullTask.class) {
 				return mockTask;

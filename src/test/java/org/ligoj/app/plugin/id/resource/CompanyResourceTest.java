@@ -299,7 +299,7 @@ class CompanyResourceTest extends AbstractContainerResourceTest {
 	}
 
 	@Test
-	void isUserInternalCommpanyExternal() {
+	void isUserInternalCompanyExternal() {
 		initSpringSecurityContext("mlavoine");
 		final UserOrg user = new UserOrg();
 		user.setCompany("ext");
@@ -307,19 +307,19 @@ class CompanyResourceTest extends AbstractContainerResourceTest {
 		Mockito.when(userRepository.findById("mlavoine")).thenReturn(user);
 		Mockito.when(companyRepository.findById("ext")).thenReturn(company);
 		Mockito.when(userRepository.getPeopleInternalBaseDn()).thenReturn("ou=internal,dc=sample,dc=com");
-		Assertions.assertFalse(resource.isUserInternalCommpany());
+		Assertions.assertFalse(resource.isUserInternalCompany());
 	}
 
 	@Test
-	void isUserInternalCommpanyAny() {
+	void isUserInternalCompanyAny() {
 		initSpringSecurityContext("any");
 		Mockito.when(userRepository.findById("any")).thenReturn(null);
 		Mockito.when(userRepository.getPeopleInternalBaseDn()).thenReturn("ou=internal,dc=sample,dc=com");
-		Assertions.assertFalse(resource.isUserInternalCommpany());
+		Assertions.assertFalse(resource.isUserInternalCompany());
 	}
 
 	@Test
-	void isUserInternalCommpany() {
+	void isUserInternalCompany() {
 		initSpringSecurityContext("mmartin");
 		final UserOrg user = new UserOrg();
 		user.setCompany("sub");
@@ -327,7 +327,7 @@ class CompanyResourceTest extends AbstractContainerResourceTest {
 		Mockito.when(userRepository.findById("mmartin")).thenReturn(user);
 		Mockito.when(companyRepository.findById("sub")).thenReturn(company);
 		Mockito.when(userRepository.getPeopleInternalBaseDn()).thenReturn("ou=internal,dc=sample,dc=com");
-		Assertions.assertTrue(resource.isUserInternalCommpany());
+		Assertions.assertTrue(resource.isUserInternalCompany());
 	}
 
 }

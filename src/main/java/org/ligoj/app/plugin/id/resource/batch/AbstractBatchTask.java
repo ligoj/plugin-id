@@ -53,7 +53,7 @@ public abstract class AbstractBatchTask<B extends BatchElement> implements Runna
 	 * Process an entry.
 	 * 
 	 * @param entry A batch entry.
-	 * @param quiet Flag to turn-off the possible notification such as mail.
+	 * @param quiet Flag to turn off the possible notification such as mail.
 	 * @throws Exception Any error cause the abortion for this entry.
 	 */
 	protected abstract void doBatch(B entry, boolean quiet) throws Exception; // NOSONAR Allow global error there

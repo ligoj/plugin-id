@@ -134,7 +134,7 @@ public class GroupResource extends AbstractContainerResource<GroupOrg, GroupEdit
 	}
 
 	/**
-	 * Convert the given user UIDs to a the corresponding DN. The users must exists.
+	 * Convert the given user UIDs to the corresponding DN. The users must exist.
 	 *
 	 * @param uids The UIDs to convert.
 	 * @return The corresponding DN.
