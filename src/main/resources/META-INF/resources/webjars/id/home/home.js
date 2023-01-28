@@ -308,13 +308,13 @@ define(function () {
 									}
 	
 									// Delete icon
-									editlink += '<li><a class="delete"><i class="menu-icon fa fa-trash-alt"></i> ' + current.$messages.delete + '</a></li>';
-									editlink += '<li><a class="reset"><i class="menu-icon fas fa-sync-alt"></i> ' + current.$messages.reset + '</a></li>';
-									editlink += '</ul>';
-									editlink += '</div>';
+									editLink += '<li><a class="delete"><i class="menu-icon fa fa-trash-alt"></i> ' + current.$messages.delete + '</a></li>';
+									editLink += '<li><a class="reset"><i class="menu-icon fas fa-sync-alt"></i> ' + current.$messages.reset + '</a></li>';
+									editLink += '</ul>';
+									editLink += '</div>';
 								}
 
-								return editlink;
+								return editLink;
 							}
 						}
 					]
