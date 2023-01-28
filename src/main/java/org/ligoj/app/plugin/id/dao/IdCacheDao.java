@@ -350,11 +350,11 @@ public class IdCacheDao {
 		final var start = System.currentTimeMillis();
 
 		// Remove all CACHE_* entries
-		log.info("Clearing database ...");
+		log.info("Clearing cache entries ...");
 		clear();
 
 		// Insert data into database
-		log.info("Inserting data ...");
+		log.info("Inserting cache entries: {} groups, {} companies, {} users", groups.size(), companies.size(), users.size());
 		final var cacheCompanies = persistCompanies(companies);
 		em.flush();
 		final var cacheGroups = persistGroups(groups);
