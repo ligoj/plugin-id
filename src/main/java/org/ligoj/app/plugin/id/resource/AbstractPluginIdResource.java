@@ -3,14 +3,7 @@
  */
 package org.ligoj.app.plugin.id.resource;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-
-import javax.cache.annotation.CacheKey;
-import javax.cache.annotation.CacheResult;
-import javax.ws.rs.NotAuthorizedException;
-
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.ligoj.app.api.Normalizer;
@@ -20,12 +13,16 @@ import org.ligoj.app.iam.IamConfigurationProvider;
 import org.ligoj.app.iam.UserOrg;
 import org.ligoj.app.resource.plugin.AbstractToolPluginResource;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 
-import lombok.extern.slf4j.Slf4j;
+import javax.cache.annotation.CacheKey;
+import javax.cache.annotation.CacheResult;
+import javax.ws.rs.NotAuthorizedException;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Plug-in Identity base class.
@@ -53,9 +50,6 @@ public abstract class AbstractPluginIdResource<U extends IUserRepository> extend
 
 	@Autowired
 	protected UserOrgResource userResource;
-
-	@Autowired
-	protected ApplicationContext context;
 
 	protected abstract AbstractPluginIdResource<U> getSelf();
 

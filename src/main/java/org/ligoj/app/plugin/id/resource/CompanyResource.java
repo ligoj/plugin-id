@@ -3,17 +3,6 @@
  */
 package org.ligoj.app.plugin.id.resource;
 
-import java.util.Collections;
-import java.util.stream.Collectors;
-
-import javax.transaction.Transactional;
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.UriInfo;
-
 import org.apache.commons.lang3.ObjectUtils;
 import org.ligoj.app.iam.CompanyOrg;
 import org.ligoj.app.iam.ContainerOrg;
@@ -30,6 +19,16 @@ import org.ligoj.bootstrap.core.validation.ValidationJsonException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.transaction.Transactional;
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.UriInfo;
+import java.util.Collections;
+import java.util.stream.Collectors;
+
 /**
  * Resource for companies.
  */
@@ -38,11 +37,6 @@ import org.springframework.stereotype.Service;
 @Produces(MediaType.APPLICATION_JSON)
 @Transactional
 public class CompanyResource extends AbstractContainerResource<CompanyOrg, ContainerEditionVo, CacheCompany> {
-
-	/**
-	 * Attribute name used as filter and path.
-	 */
-	public static final String COMPANY_ATTRIBUTE = "company";
 
 	@Autowired
 	private CacheCompanyRepository cacheCompanyRepository;
