@@ -15,6 +15,7 @@ import javax.persistence.PersistenceContext;
 import javax.persistence.PersistenceContextType;
 import javax.transaction.Transactional;
 
+import lombok.Getter;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.time.DurationFormatUtils;
 import org.ligoj.app.iam.CompanyOrg;
@@ -54,6 +55,9 @@ public class IdCacheDao {
 
 	@Autowired
 	private DelegateOrgRepository delegateOrgRepository;
+
+	@Getter
+	private long cacheRefreshTime = 0;
 
 	/**
 	 * Add a group to a group.
@@ -276,7 +280,7 @@ public class IdCacheDao {
 	 */
 	private int persistMemberships(final Map<String, UserOrg> users, final Map<String, CacheGroup> cacheGroups,
 			final Map<String, CacheCompany> cacheCompanies) {
-        var memberships = 0;
+		var memberships = 0;
 		for (final var user : users.values()) {
 
 			// Persist users
@@ -366,10 +370,10 @@ public class IdCacheDao {
 		final var updatedDelegate = updateDelegateDn(cacheGroups, cacheCompanies);
 		em.flush();
 		em.clear();
-		log.info(
-				"Done in {} : {} groups, {} companies, {} users, {} memberships, {} project groups, {} updated delegates",
-				DurationFormatUtils.formatDurationHMS(System.currentTimeMillis() - start), cacheGroups.size(),
-				cacheCompanies.size(), users.size(), memberships, subscribedProjects, updatedDelegate);
+		log.info("Updated cache: {} groups, {} companies, {} users, {} memberships, {} project groups, {} updated delegates in {}",
+			cacheGroups.size(), cacheCompanies.size(), users.size(), memberships, subscribedProjects, updatedDelegate,
+			DurationFormatUtils.formatDurationHMS(System.currentTimeMillis() - start));
+		cacheRefreshTime = System.currentTimeMillis();
 	}
 
 	/**
@@ -462,7 +466,7 @@ public class IdCacheDao {
 	 */
 	private long updateDelegateDn(final Map<String, ? extends CacheContainer> containers,
 			final ReceiverType receiverType, final DelegateType resourceType) {
-        var count = updateDelegateDn(containers, receiverType, "receiverType", DelegateOrg::getReceiver,
+		var count = updateDelegateDn(containers, receiverType, "receiverType", DelegateOrg::getReceiver,
 				DelegateOrg::getReceiverDn, DelegateOrg::setReceiverDn);
 		count += updateDelegateDn(containers, resourceType, "type", DelegateOrg::getName, DelegateOrg::getDn,
 				DelegateOrg::setDn);
