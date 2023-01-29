@@ -3,13 +3,6 @@
  */
 package org.ligoj.app.plugin.id.resource.batch;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
-
-import javax.transaction.Transactional;
-
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -27,12 +20,17 @@ import org.ligoj.bootstrap.resource.system.session.SessionSettings;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
 import org.mockito.exceptions.base.MockitoException;
-import org.mockito.stubbing.Answer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+
+import javax.transaction.Transactional;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 
 /**
  * Test of {@link GroupBatchResource}
@@ -77,10 +75,6 @@ class GroupBatchResourceTest extends AbstractBatchTest {
 			Assertions.assertTrue(group.getAssistants().isEmpty());
 			Assertions.assertNull(group.getParent());
 		})).create(null);
-	}
-
-	protected <U extends BatchElement> BatchTaskVo<U> full(final InputStream input, final String[] headers) throws IOException, InterruptedException {
-		return full(input, headers, "cp1252");
 	}
 
 	protected <U extends BatchElement> BatchTaskVo<U> full(final InputStream input, final String[] headers, final String encoding)
