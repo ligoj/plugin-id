@@ -5,7 +5,7 @@ package org.ligoj.app.plugin.id;
 
 import java.util.Collection;
 
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotNull;
 
 import org.apache.commons.lang3.StringUtils;
 import org.ligoj.app.api.Normalizer;

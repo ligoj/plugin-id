@@ -15,8 +15,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 
-import javax.transaction.Transactional;
-import javax.ws.rs.core.UriInfo;
+import jakarta.transaction.Transactional;
+import jakarta.ws.rs.core.UriInfo;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;

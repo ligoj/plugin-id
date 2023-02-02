@@ -6,7 +6,7 @@ package org.ligoj.app.plugin.id.resource.batch;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
-import javax.transaction.Transactional;
+import jakarta.transaction.Transactional;
 
 import org.apache.cxf.jaxrs.provider.ServerProviderFactory;
 import org.junit.jupiter.api.AfterEach;

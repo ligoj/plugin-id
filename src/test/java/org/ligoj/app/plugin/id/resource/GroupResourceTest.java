@@ -8,8 +8,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.transaction.Transactional;
-import javax.ws.rs.core.UriInfo;
+import jakarta.transaction.Transactional;
+import jakarta.ws.rs.core.UriInfo;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;

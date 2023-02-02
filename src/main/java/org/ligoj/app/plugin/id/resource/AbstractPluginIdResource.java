@@ -19,7 +19,7 @@ import org.springframework.security.core.Authentication;
 
 import javax.cache.annotation.CacheKey;
 import javax.cache.annotation.CacheResult;
-import javax.ws.rs.NotAuthorizedException;
+import jakarta.ws.rs.NotAuthorizedException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;

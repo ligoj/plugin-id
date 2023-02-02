@@ -6,8 +6,8 @@ package org.ligoj.app.plugin.id.resource;
 import java.util.Arrays;
 import java.util.Collections;
 
-import javax.transaction.Transactional;
-import javax.ws.rs.NotAuthorizedException;
+import jakarta.transaction.Transactional;
+import jakarta.ws.rs.NotAuthorizedException;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;

@@ -3,8 +3,8 @@
  */
 package org.ligoj.app.plugin.id.resource.batch;
 
-import javax.persistence.Transient;
-import javax.validation.constraints.NotNull;
+import jakarta.persistence.Transient;
+import jakarta.validation.constraints.NotNull;
 
 import org.ligoj.app.plugin.id.resource.UserOrgEditionVo;
 

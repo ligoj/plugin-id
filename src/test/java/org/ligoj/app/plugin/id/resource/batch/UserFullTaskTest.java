@@ -6,7 +6,7 @@ package org.ligoj.app.plugin.id.resource.batch;
 import java.util.Collections;
 import java.util.List;
 
-import javax.ws.rs.ext.ExceptionMapper;
+import jakarta.ws.rs.ext.ExceptionMapper;
 
 import org.apache.commons.lang3.reflect.FieldUtils;
 import org.apache.cxf.endpoint.Endpoint;

@@ -6,8 +6,8 @@ package org.ligoj.app.plugin.id.resource;
 import java.io.IOException;
 import java.util.List;
 
-import javax.transaction.Transactional;
-import javax.ws.rs.core.UriInfo;
+import jakarta.transaction.Transactional;
+import jakarta.ws.rs.core.UriInfo;
 
 import org.apache.cxf.jaxrs.impl.MetadataMap;
 import org.junit.jupiter.api.Assertions;
