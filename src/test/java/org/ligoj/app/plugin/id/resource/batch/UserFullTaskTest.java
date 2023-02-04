@@ -23,7 +23,7 @@ import org.ligoj.bootstrap.core.resource.mapper.FailSafeExceptionMapper;
 import org.ligoj.bootstrap.core.security.SecurityHelper;
 import org.mockito.Mockito;
 
-import com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider;
+import com.fasterxml.jackson.jakarta.rs.json.JacksonJsonProvider;
 
 /**
  * Test of {@link UserFullTask}
