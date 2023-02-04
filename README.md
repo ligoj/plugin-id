@@ -2,8 +2,6 @@
 API plugin used for compatibility check
 
 [![Build Status](https://app.travis-ci.com/github/ligoj/plugin-id.svg?branch=master)](https://app.travis-ci.com/github/ligoj/plugin-id)
-[![Build Status](https://circleci.com/gh/ligoj/plugin-id.svg?style=svg)](https://circleci.com/gh/ligoj/plugin-id)
-[![Build Status](https://ci.appveyor.com/api/projects/status/5926fmf0p5qp9j16/branch/master?svg=true)](https://ci.appveyor.com/project/ligoj/plugin-id/branch/master)
 [![Coverage](https://sonarcloud.io/api/project_badges/measure?project=org.ligoj.plugin%3Aplugin-id&metric=coverage)](https://sonarcloud.io/dashboard?id=org.ligoj.plugin%3Aplugin-id)
 [![Quality Gate](https://sonarcloud.io/api/project_badges/measure?metric=alert_status&project=org.ligoj.plugin:plugin-id)](https://sonarcloud.io/dashboard/index/org.ligoj.plugin:plugin-id)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/abf810c094e44c0691f71174c707d6ed)](https://www.codacy.com/gh/ligoj/plugin-id?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=ligoj/plugin-id&amp;utm_campaign=Badge_Grade)
@@ -11,7 +9,7 @@ API plugin used for compatibility check
 [![License](http://img.shields.io/:license-mit-blue.svg)](http://fabdouglas.mit-license.org/)
 
 [Ligoj](https://github.com/ligoj/ligoj) Identity plugin
-This a very complex plugin managing a lot security constraints depending on the authorization of current user and are massively based on RBAC and delegates.
+This a very complex plugin managing security constraints depending on the authorization of current user and are massively based on RBAC and delegates.
 Provides the following features :
 - User, group and company management
 - Scope of container (group and company) to name macro set of containers
