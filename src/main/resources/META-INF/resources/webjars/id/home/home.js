@@ -378,7 +378,7 @@ define(function () {
                 id: g.name,
                 text: g.name,
                 locked: !g.canWrite
-            }));
+            })));
 
 			// id and company are read-only
 			if (uc.id) {
