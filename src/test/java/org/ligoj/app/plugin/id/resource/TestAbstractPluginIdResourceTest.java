@@ -3,12 +3,8 @@
  */
 package org.ligoj.app.plugin.id.resource;
 
-import java.util.Arrays;
-import java.util.Collections;
-
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.NotAuthorizedException;
-
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -26,6 +22,9 @@ import org.springframework.security.core.Authentication;
 import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+
+import java.util.Arrays;
+import java.util.Collections;
 
 /**
  * Test class of {@link AbstractPluginIdResource}
@@ -84,18 +83,14 @@ class TestAbstractPluginIdResourceTest extends AbstractJpaTest {
 	void toLoginNoFirstName() {
 		final var user = new UserOrg();
 		user.setLastName("Last123");
-		Assertions.assertThrows(NotAuthorizedException.class, () -> {
-			resource.toLogin(user);
-		});
+		Assertions.assertThrows(NotAuthorizedException.class, () -> resource.toLogin(user));
 	}
 
 	@Test
 	void toLoginNoLastName() {
 		final var user = new UserOrg();
 		user.setFirstName("First");
-		Assertions.assertThrows(NotAuthorizedException.class, () -> {
-			resource.toLogin(user);
-		});
+		Assertions.assertThrows(NotAuthorizedException.class, () -> resource.toLogin(user));
 	}
 
 	@Test
@@ -111,9 +106,7 @@ class TestAbstractPluginIdResourceTest extends AbstractJpaTest {
 		user.setLastName("Last123");
 		user.setName("secondarylogin");
 		user.setCompany("ligoj");
-		Assertions.assertThrows(TechnicalException.class, () -> {
-			resource.newApplicationUser(user);
-		});
+		Assertions.assertThrows(TechnicalException.class, () -> resource.newApplicationUser(user));
 	}
 
 	@Test
@@ -127,9 +120,7 @@ class TestAbstractPluginIdResourceTest extends AbstractJpaTest {
 		user.setLastName("Last123");
 		user.setName("secondarylogin");
 		user.setCompany("ligoj");
-		Assertions.assertThrows(RuntimeException.class, () -> {
-			resource.newApplicationUser(user);
-		});
+		Assertions.assertThrows(RuntimeException.class, () -> resource.newApplicationUser(user));
 	}
 
 	@Test
@@ -247,9 +238,7 @@ class TestAbstractPluginIdResourceTest extends AbstractJpaTest {
 		Mockito.doReturn(Arrays.asList(existing, existing)).when(userResource).findAllBy("mails",
 				"marc.martin@sample.com");
 
-		Assertions.assertThrows(NotAuthorizedException.class, () -> {
-			resource.toApplicationUser(userRepository, authentication);
-		});
+		Assertions.assertThrows(NotAuthorizedException.class, () -> resource.toApplicationUser(userRepository, authentication));
 	}
 
 	@Test
@@ -264,9 +253,7 @@ class TestAbstractPluginIdResourceTest extends AbstractJpaTest {
 
 		final var authentication = new UsernamePasswordAuthenticationToken("login", null);
 		Mockito.doReturn(existing).when(userRepository).findOneBy("id", "login");
-		Assertions.assertThrows(NotAuthorizedException.class, () -> {
-			resource.toApplicationUser(userRepository, authentication);
-		});
+		Assertions.assertThrows(NotAuthorizedException.class, () -> resource.toApplicationUser(userRepository, authentication));
 	}
 
 	@Test

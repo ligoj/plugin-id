@@ -4,7 +4,7 @@
  * Licensed under MIT (https://github.com/ligoj/ligoj/blob/master/LICENSE)
  */
 define(function () {
-	var current = {
+	const current = {
 		initialize: function () {
 			_('showAgreement').on('click', function () {
 				_('agree').prop('checked', true).attr('disabled', 'disabled');
@@ -95,19 +95,11 @@ define(function () {
 				success: function (data) {
 					current.displayUploadPartialResult(data.status);
 					$('.import-progress').removeClass('progress-bar-striped').html(current.$messages.finished);
-					var $summary = $('.import-summary');
-					var errors = 0;
-					var index;
-					for (index = 0; index < data.entries.length; index++) {
-						data.entries[index].statusText && errors++;
-					}
-					if (errors) {
+					const $summary = $('.import-summary');
+					const errors = data.entries.filter(e => e.statusText).map(e => `${ (e.id || e.user)} : ${errorManager.manageBadRequestError(e.statusText)}`);
+					if (errors.length) {
 						// At least one error to display
-						$summary.append('<br>Errors (' + errors + '): ');
-						for (index = 0; index < data.entries.length; index++) {
-							var entry = data.entries[index];
-							entry.statusText && $summary.append('<br>&nbsp;' + (entry.id || entry.user) + ' : ' + errorManager.manageBadRequestError(entry.statusText));
-						}
+						$summary.append(`<br>Errors (${errors.length}): ${errors.join('<br>&nbsp;')}`);
 					}
 					$summary.removeClass('alert-info').addClass(errors ? 'alert-danger' : 'alert-success');
 					if (callback) {

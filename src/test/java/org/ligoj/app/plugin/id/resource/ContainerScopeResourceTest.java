@@ -164,9 +164,7 @@ class ContainerScopeResourceTest extends AbstractJpaTest {
 		vo.setName("Name");
 		vo.setType(ContainerType.GROUP);
 		vo.setDn("ou=projects,dc=sample,dc=com");
-		Assertions.assertThrows(DataIntegrityViolationException.class, () -> {
-			resource.create(vo);
-		});
+		Assertions.assertThrows(DataIntegrityViolationException.class, () -> resource.create(vo));
 	}
 
 	/**
@@ -178,9 +176,7 @@ class ContainerScopeResourceTest extends AbstractJpaTest {
 		vo.setName("Project");
 		vo.setDn("dc=sample,dc=com");
 		vo.setType(ContainerType.GROUP);
-		Assertions.assertThrows(DataIntegrityViolationException.class, () -> {
-			resource.create(vo);
-		});
+		Assertions.assertThrows(DataIntegrityViolationException.class, () -> resource.create(vo));
 	}
 
 	/**
