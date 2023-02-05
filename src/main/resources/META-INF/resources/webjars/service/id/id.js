@@ -2,7 +2,7 @@
  * Licensed under MIT (https://github.com/ligoj/ligoj/blob/master/LICENSE)
  */
 define(function () {
-	var current = {
+	const current = {
 
 		/**
 		 * Member table
@@ -45,7 +45,7 @@ define(function () {
 		 */
 		renderFeatures: function (subscription) {
 			// Add group link
-			var result = current.$super('renderServiceLink')('users', '#/home/project/' + subscription.project + '/subscription/' + subscription.id, 'service:id:group-manage');
+			let result = current.$super('renderServiceLink')('users', '#/home/project/' + subscription.project + '/subscription/' + subscription.id, 'service:id:group-manage');
 
 			// Help
 			result += current.$super('renderServiceHelpLink')(subscription.parameters, 'service:id:help');
@@ -93,14 +93,10 @@ define(function () {
 						};
 					},
 					results: function (data, page) {
-						var result = [];
-						$(data.data).each(function () {
-							this.text = this.id + ' [<small>' + current.$super('getFullName')(this) + '</small>]';
-							result.push(this);
-						});
+						data.data.forEach(d => d.text = `${d.id} [<small>${current.$super('getFullName')(d)}</small>]`);
 						return {
 							more: data.recordsFiltered > page * 10,
-							results: result
+							results: data.data
 						};
 					}
 				}
@@ -117,8 +113,8 @@ define(function () {
 
 			// Add the selected user to the current group
 			_('add-user').on('click', function () {
-				var user = _('search-user').val();
-				var group = current.group;
+				const user = _('search-user').val();
+				const group = current.group;
 
 				// Clear the selection
 				_('search-user').select2('val', '');
@@ -143,8 +139,8 @@ define(function () {
 
 			// Remove the selected user from the current group
 			_('members-table').on('click', '.remove-user', function () {
-				var user = current.table.fnGetData($(this).closest('tr')[0]).id;
-				var group = current.group;
+				const user = current.table.fnGetData($(this).closest('tr')[0]).id;
+				const group = current.group;
 				$.ajax({
 					dataType: 'json',
 					url: REST_PATH + 'service/id/user/' + encodeURIComponent(user) + '/group/' + encodeURIComponent(group),
@@ -193,11 +189,7 @@ define(function () {
 					orderable: false,
 					className: 'hidden-xs hidden-sm truncate',
 					render: function (_i, _j, data) {
-						var groups = [];
-						$(data.groups).each(function () {
-							groups.push(this.name);
-						});
-						return groups;
+						return data.groups.map(g => g.name);
 					}
 				}, {
 					data: null,

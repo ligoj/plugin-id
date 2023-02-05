@@ -34,7 +34,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 @ContextConfiguration(locations = "classpath:/META-INF/spring/application-context-test.xml")
 @Rollback
 @Transactional
-public class TestAbstractPluginIdResourceTest extends AbstractJpaTest {
+class TestAbstractPluginIdResourceTest extends AbstractJpaTest {
 
 	@Autowired
 	private UserOrgResource userResource;

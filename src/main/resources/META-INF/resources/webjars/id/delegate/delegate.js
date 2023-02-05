@@ -2,7 +2,7 @@
  * Licensed under MIT (https://github.com/ligoj/ligoj/blob/master/LICENSE)
  */
 define(function () {
-	var current = {
+	const current = {
 
 		/**
 		 * Flag objects
@@ -44,9 +44,9 @@ define(function () {
 			}).on('show.bs.modal', function (event) {
 				validationManager.reset($(this));
 				validationManager.mapping.name = 'resource';
-				var $source = $(event.relatedTarget);
-				var $tr = $source.closest('tr');
-				var uc = ($tr.length && current.table.fnGetData($tr[0])) || undefined;
+				const $source = $(event.relatedTarget);
+				const $tr = $source.closest('tr');
+				let uc = ($tr.length && current.table.fnGetData($tr[0])) || undefined;
 				uc = uc && uc.id ? uc : {};
 				current.currentId = uc.id;
 				_('canAdmin').prop('checked', uc.canAdmin || false);
@@ -68,7 +68,7 @@ define(function () {
 
 			$('.search-type').on('click', function () {
 				$(this).addClass('active').siblings().removeClass('active');
-				var type = $(this).val();
+				const type = $(this).val();
 				current.table.fnSettings().ajax = REST_PATH + 'security/delegate' + (type ? '?type=' + type.toUpperCase() : '');
 				current.table.api().ajax.reload();
 			});
@@ -82,8 +82,8 @@ define(function () {
 		 * @param inputId {string} Identifier of input determining the resource or the receiver. Used to find the couple "type/input"
 		 */
 		updateDropdownIcon: function (inputId, type, value) {
-			var $input = _(inputId);
-			var $group = $input.closest('.form-group');
+			const $input = _(inputId);
+			const $group = $input.closest('.form-group');
 
 			// Update the selected drop down item
 			$group.find('.dropdown-menu [data-type].active').removeClass('active');
@@ -94,7 +94,7 @@ define(function () {
 
 			// Invalidate the previous select2
 			$input.removeAttr('placeholder').select2('destroy');
-			var select2Init = current.$main['newSelect2'+type.capitalize()];
+			const select2Init = current.$main['newSelect2'+type.capitalize()];
 			if (typeof select2Init === 'function') {
 				// Select2 input available, build it and push the right data/value
 				select2Init($input, (type === 'group' || type === 'company') ? '/admin' : undefined).select2(typeof value === 'object' ? 'data' : 'val', value || null);
@@ -173,8 +173,8 @@ define(function () {
 		},
 
 		formToObject: function () {
-			var $popup = _('popup');
-			var result = {
+			const $popup = _('popup');
+			const result = {
 				id: current.currentId,
 				receiver: _('receiver').val(),
 				receiverType: $popup.find('[data-group="receiver"]').find('[data-type].active').attr('data-type'),
@@ -192,7 +192,7 @@ define(function () {
 		},
 
 		save: function () {
-			var data = current.formToObject();
+			const data = current.formToObject();
 			$.ajax({
 				type: current.currentId ? 'PUT' : 'POST',
 				url: REST_PATH + 'security/delegate',
@@ -223,8 +223,8 @@ define(function () {
 				});
 			} else {
 				// Requires a confirmation
-				var entity = current.table.fnGetData($(this).closest('tr')[0]);
-				var display = current.$main.getResourceLink(entity.receiver, entity.receiverType) + ' <i class="fas fa-arrow-right"></i> ' + current.$main.getResourceLink(entity.name, entity.type);
+				const entity = current.table.fnGetData($(this).closest('tr')[0]);
+				const display = current.$main.getResourceLink(entity.receiver, entity.receiverType) + ' <i class="fas fa-arrow-right"></i> ' + current.$main.getResourceLink(entity.name, entity.type);
 				bootbox.confirmDelete(function (confirmed) {
 					confirmed && current.deleteDelegate(entity.id, display);
 				}, display);

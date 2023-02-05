@@ -2,7 +2,7 @@
  * Licensed under MIT (https://github.com/ligoj/ligoj/blob/master/LICENSE)
  */
 define(function () {
-	var current = {
+	const current = {
 
 		/**
 		 * Flag objects
@@ -47,9 +47,9 @@ define(function () {
 				_('name').trigger('focus');
 			}).on('show.bs.modal', function (event) {
 				validationManager.reset($(this));
-				var $source = $(event.relatedTarget);
-				var $tr = $source.closest('tr');
-				var uc = ($tr.length && current.table.fnGetData($tr[0])) || undefined;
+				const $source = $(event.relatedTarget);
+				const $tr = $source.closest('tr');
+				let uc = ($tr.length && current.table.fnGetData($tr[0])) || undefined;
 				uc = uc && uc.id ? uc : {};
 				current.currentId = uc.id;
 				_('modal-title').html(Handlebars.compile(current.$messages['container-scope-title'])(current.$messages[current.containerType]));
@@ -115,7 +115,7 @@ define(function () {
 		},
 
 		save: function () {
-			var data = current.formToObject();
+			const data = current.formToObject();
 			$.ajax({
 				type: current.currentId ? 'PUT' : 'POST',
 				url: REST_PATH + 'service/id/container-scope',
@@ -147,8 +147,8 @@ define(function () {
 				});
 			} else {
 				// Requires a confirmation
-				var entity = current.table.fnGetData($(this).closest('tr')[0]);
-				var display = entity.name + '/' + entity.type;
+				const entity = current.table.fnGetData($(this).closest('tr')[0]);
+				const display = entity.name + '/' + entity.type;
 				bootbox.confirmDelete(function (confirmed) {
 					confirmed && current.deleteEntry(entity.id, display);
 				}, text);

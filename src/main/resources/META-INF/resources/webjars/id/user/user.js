@@ -2,7 +2,7 @@
  * Licensed under MIT (https://github.com/ligoj/ligoj/blob/master/LICENSE)
  */
 define(function () {
-	var current = {
+	const current = {
 
 		user: null,
 
@@ -23,9 +23,9 @@ define(function () {
 			validationManager.reset(_('_change'));
 
 			// validation
-			var newPassword = _('new-password').val();
-			var newPasswordConfirm = _('password-confirm').val();
-			var valid = true;
+			const newPassword = _('new-password').val();
+			const newPasswordConfirm = _('password-confirm').val();
+			let valid = true;
 			if (newPassword !== newPasswordConfirm) {
 				valid = false;
 				validationManager.addError($('#new-password,#password-confirm'), {

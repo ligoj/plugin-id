@@ -111,9 +111,7 @@ class ContainerScopeResourceTest extends AbstractJpaTest {
 	 */
 	@Test
 	void findByIdInvalid() {
-		Assertions.assertThrows(JpaObjectRetrievalFailureException.class, () -> {
-			Assertions.assertNull(resource.findById(0));
-		});
+		Assertions.assertThrows(JpaObjectRetrievalFailureException.class, () -> resource.findById(0));
 	}
 
 	/**

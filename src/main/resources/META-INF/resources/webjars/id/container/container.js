@@ -2,7 +2,7 @@
  * Licensed under MIT (https://github.com/ligoj/ligoj/blob/master/LICENSE)
  */
 define(function () {
-	var current = {
+	const current = {
 
 		/**
 		 * Flag objects
@@ -26,7 +26,7 @@ define(function () {
 		onHashChange: function (parameter) {
 			// Search mode
 			current.currentId = null;
-			var previousContainerType = current.containerType;
+			const previousContainerType = current.containerType;
 			current.containerType = parameter || 'group';
 
 			// Update dynamic title
@@ -59,11 +59,9 @@ define(function () {
 				_('name').focus();
 			}).on('show.bs.modal', function (event) {
 				validationManager.reset($(this));
-				var $source = $(event.relatedTarget);
-				var $tr = $source.closest('tr');
-				var uc = ($tr.length && current.table.fnGetData($tr[0])) || undefined;
-				uc = uc && uc.id ? uc : {};
-				current.currentId = uc.id;
+				const $source = $(event.relatedTarget);
+				const $tr = $source.closest('tr');
+				current.currentId = ($tr.length && current.table.fnGetData($tr[0]))?.id;
 				_('name').val(null);
 				_('modal-title').html(current.$messages[current.containerType]);
 			});
@@ -114,7 +112,7 @@ define(function () {
 						};
 					},
 					results: function (data, page) {
-						var result = [];
+						const result = [];
 						$(data.data).each(function () {
 							if (!this.locked) {
 								result.push({id: this.id, text: this.name});
@@ -160,7 +158,7 @@ define(function () {
 						orderable: false,
 						className: 'hidden-xs truncate',
 						render: function (_i, _j, data) {
-							return data.count ? data.count === data.countVisible ? data.countVisible : data.countVisible + '(' + data.count + ')' : '';
+							return data.count ? data.count === data.countVisible ? data.countVisible : `${data.countVisible}(${data.count})` : '';
 						}
 					}, {
 						data: 'canAdmin',
@@ -188,14 +186,14 @@ define(function () {
 						orderable: false,
 						width: current.containerType === 'group' ? '34px' : '16px',
 						render: function (_i, _j, data) {
-							var result = '';
+							let result = '';
 							if (data.canWrite && data.containerType === 'group' && data.count) {
 								// Empty the container, for now only for group
-								result += '<a class="empty"><i class="fas fa-user-times" data-toggle="tooltip" title="' + current.$messages['empty-group'] + '"></i></a>';
+								result += `<a class="empty"><i class="fas fa-user-times" data-toggle="tooltip" title="${current.$messages['empty-group']}"></i></a>`;
 							}
 							if (data.locked !== true && data.canAdmin && (data.containerType === 'group' || data.count === 0)) {
 								// Delete the container
-								result += '<a class="delete"><i class="fas fa-trash-alt" data-toggle="tooltip" title="' + current.$messages['delete'] + '"></i></a>';
+								result += `<a class="delete"><i class="fas fa-trash-alt" data-toggle="tooltip" title="${current.$messages['delete']}"></i></a>`;
 							}
 							return result || '&nbsp;';
 						}
@@ -219,16 +217,14 @@ define(function () {
 		},
 
 		formToObject: function () {
-			var result = {
+			return {
 				name: _('name').val(),
 				scope: _('scope').val()
 			};
-
-			return result;
 		},
 
 		save: function () {
-			var data = current.formToObject();
+			const data = current.formToObject();
 			$.ajax({
 				type: 'POST',
 				url: REST_PATH + 'service/id/' + current.containerType,
@@ -259,7 +255,7 @@ define(function () {
 				});
 			} else {
 				// Requires a confirmation
-				var entity = current.table.fnGetData($(this).closest('tr')[0]);
+				const entity = current.table.fnGetData($(this).closest('tr')[0]);
 				bootbox.confirmDelete(function (confirmed) {
 					confirmed && current.deleteContainer(entity.name);
 				}, entity.name + '(' + entity.containerType + '-' + entity.type + ')');
@@ -282,7 +278,7 @@ define(function () {
 				});
 			} else {
 				// Requires a confirmation
-				var entity = current.table.fnGetData($(this).closest('tr')[0]);
+				const entity = current.table.fnGetData($(this).closest('tr')[0]);
 				bootbox.dialog({
 					message: Handlebars.compile(current.$messages['empty-group-details'])([
 						entity.name, entity.count, entity.count - entity.countVisible

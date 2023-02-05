@@ -2,7 +2,7 @@
  * Licensed under MIT (https://github.com/ligoj/ligoj/blob/master/LICENSE)
  */
 define(function () {
-	var current = {
+	const current = {
 
 		/**
 		 * Flag objects
@@ -30,12 +30,11 @@ define(function () {
 			current.initializeSearch();
 			if (parameters) {
 				current.suspendSearch = true;
-				var params = parameters.split('/');
-				for (var idx = 0; idx < params.length; idx++) {
-					var kv = params[idx].split('=');
+				parameters.split('/').forEach(p => {
+					let kv = p.split('=');
 					// Group/company filtering
 					kv.length === 2 && _('search-' + kv[0]).select2('data', kv[1]).closest('.form-group').removeClass('is-empty');
-				}
+				});
 				current.suspendSearch = false;
 			}
 			
@@ -64,9 +63,9 @@ define(function () {
 				e.preventDefault();
 				current.save();
 			}).on('show.bs.modal', function (event) {
-				var $source = $(event.relatedTarget);
-				var $tr = $source.closest('tr');
-				var uc = ($tr.length && current.table.fnGetData($tr[0])) || {};
+				const $source = $(event.relatedTarget);
+				const $tr = $source.closest('tr');
+				let uc = ($tr.length && current.table.fnGetData($tr[0])) || {};
 
 				// 'Create another user' option, is only available for creation mode
 				_('create-another').removeAttr('checked').closest('label')[uc.id ? 'addClass' : 'removeClass']('hide');
@@ -75,11 +74,10 @@ define(function () {
 			_('company').select2({
 				minimumInputLength: 0,
 				initSelection: function (element, callback) {
-					var data = {
-						id: element.val(),
-						text: element.val()
-					};
-					callback(data);
+					callback({
+                        id: element.val(),
+                        text: element.val()
+                    });
 				},
 				formatSearching: function () {
 					return current.$messages.loading;
@@ -98,13 +96,9 @@ define(function () {
 						};
 					},
 					results: function (data, page) {
-						var result = [];
-						$(data.data).each(function () {
-							result.push({id: this, text: this});
-						});
 						return {
 							more: data.recordsFiltered > page * 10,
-							results: result
+							results: data.data.map(d=>({id: d, text: d}))
 						};
 					}
 				}
@@ -132,13 +126,9 @@ define(function () {
 						};
 					},
 					results: function (data, page) {
-						var result = [];
-						$(data.data).each(function () {
-							result.push({id: this, text: this});
-						});
 						return {
 							more: data.recordsFiltered > page * 10,
-							results: result
+							results: data.data.map(d=>({id: d, text: d}))
 						};
 					}
 				}
@@ -149,7 +139,7 @@ define(function () {
 				current.refreshDataTable();
 			});
 			_('mail').on('blur', function () {
-				var mail = _('mail').val();
+				const mail = _('mail').val();
 				if (new RegExp('.*@(gmail\\.com|(yahoo|free|sfr|live|hotmail)\\.fr)', 'i').exec(mail)) {
 					validationManager.addWarn(_('mail'), 'warn-mail-perso');
 				} else {
@@ -164,7 +154,7 @@ define(function () {
 				_('quiet').prop('checked', false);
 				current.$parent.unscheduleUploadStep();
 			}).on('submit', function (e) {
-				var mode = $(this).find('.import-options input:checked').is('.import-options-full') ? 'full' : 'atomic';
+				const mode = $(this).find('.import-options input:checked').is('.import-options-full') ? 'full' : 'atomic';
 				_('quiet').val(_('quiet').is(':checked') ? 'true' : 'false');
 				$(this).ajaxSubmit({
 					url: REST_PATH + 'service/id/user/batch/' + mode,
@@ -246,8 +236,8 @@ define(function () {
 					serverSide: true,
 					searching: true,
 					ajax: function() {
-						var company = $('#search-company').select2('data');
-						var group = $('#search-group').select2('data');
+						const company = $('#search-company').select2('data');
+						const group = $('#search-group').select2('data');
 						if (company || group) {
 							return REST_PATH + 'service/id/user?' + (company ? 'company=' + (company.id || company) : '') + ((company && group) ? '&' : '') + (group ? 'group=' + (group.id || group) : '');
 						}
@@ -280,11 +270,7 @@ define(function () {
 							orderable: false,
 							className: 'hidden-sm hidden-xs truncate',
 							render: function (_i, _j, data) {
-								var groups = [];
-								$(data.groups).each(function () {
-									groups.push(this.name);
-								});
-								return groups;
+								return data.groups.map(d => d.name);
 							}
 						}, {
 							data: null,
@@ -345,7 +331,7 @@ define(function () {
 		save: function () {
 			// Might be a long operation, add a pending indicator
 			_('confirmCreate').button('loading');
-			var data = current.formToObject();
+			const data = current.formToObject();
 			$.ajax({
 				type: current.currentId ? 'PUT' : 'POST',
 				url: REST_PATH + 'service/id/user',
@@ -388,19 +374,11 @@ define(function () {
 			_('localId').val(uc.localId || '');
 			_('mail').val((uc.mails && uc.mails[0]) || '');
 			_('company').select2('val', uc.company || null);
-			if (uc.groups && uc.groups.length) {
-				var groupsAsTag = [];
-				$(uc.groups).each(function () {
-					groupsAsTag.push({
-						id: this.name,
-						text: this.name,
-						locked: !this.canWrite
-					});
-				});
-				_('groups').select2('data', groupsAsTag);
-			} else {
-				_('groups').select2('data', []);
-			}
+			_('groups').select2('data', (uc.groups || []).map(g => ({
+                id: g.name,
+                text: g.name,
+                locked: !g.canWrite
+            }));
 
 			// id and company are read-only
 			if (uc.id) {
@@ -410,8 +388,8 @@ define(function () {
 			}
 
 			// Mark as read-only the fields the user cannot update
-			var $inputs = _('popup').find('input[type="text"]').not('#groups').not('.select2-input,.select2-focusser');
-			if (uc.canWrite || !(uc.id && true)) {
+			const $inputs = _('popup').find('input[type="text"]').not('#groups').not('.select2-input,.select2-focusser');
+			if (uc.canWrite || !uc.id) {
 				$inputs.removeAttr('readonly');
 				if (uc.isolated) {
 					_('company').attr('readonly', 'readonly');
@@ -425,7 +403,7 @@ define(function () {
 		 * Delete the selected user after popup confirmation, or directly from its identifier.
 		 */
 		deleteUser: function (id, name) {
-			if ((typeof id) === 'string') {
+			if (typeof id === 'string') {
 				// Delete without confirmation
 				$.ajax({
 					type: 'DELETE',
@@ -437,7 +415,7 @@ define(function () {
 				});
 			} else {
 				// Requires a confirmation
-				var entity = current.table.fnGetData($(this).closest('tr')[0]);
+				const entity = current.table.fnGetData($(this).closest('tr')[0]);
 				bootbox.confirmDelete(function (confirmed) {
 					confirmed && current.deleteUser(entity.id, entity.firstName + ' ' + entity.lastName);
 				}, entity.id + ' [' + current.$main.getFullName(entity) + ']');
@@ -499,7 +477,7 @@ define(function () {
 				});
 			} else {
 				// Requires a confirmation
-				var entity = current.table.fnGetData($item.closest('tr')[0]);
+				const entity = current.table.fnGetData($item.closest('tr')[0]);
 				bootbox.confirm(function (confirmed) {
 					confirmed && current.confirmUserOperation($item, entity.id, entity.firstName + ' ' + entity.lastName, operation, operated, method);
 				}, current.$messages[operation], Handlebars.compile(current.$messages[operation + '-confirm'])(entity.id + ' [' + current.$main.getFullName(entity) + ']'), current.$messages[operation]);
@@ -510,9 +488,9 @@ define(function () {
 		 * Enable/Unlock the selected user.
 		 */
 		userOperation: function ($item, operation, operated) {
-			var entity = current.table.fnGetData($item.closest('tr')[0]);
-			var id = entity.id;
-			var name = entity.firstName + ' ' + entity.lastName;
+			const entity = current.table.fnGetData($item.closest('tr')[0]);
+			const id = entity.id;
+			const name = entity.firstName + ' ' + entity.lastName;
 			$.ajax({
 				type: 'PUT',
 				url: REST_PATH + 'service/id/user/' + id + '/' + operation,

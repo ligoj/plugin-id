@@ -5,6 +5,7 @@ package org.ligoj.app.plugin.id.resource.batch;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 
 import org.junit.jupiter.api.Assertions;
@@ -26,15 +27,16 @@ class UserBatchUpdateResourceTest extends AbstractUserBatchResourceTest {
 	private UserBatchUpdateResource resource;
 
 	@Test
-	void executeCsvError() {
+	void executeCsvError() throws UnsupportedEncodingException {
 		final UserBatchUpdateResource resource = new UserBatchUpdateResource();
 		applicationContext.getAutowireCapableBeanFactory().autowireBean(resource);
+		final var input = new ByteArrayInputStream("fdaugan;mail".getBytes("cp1252"));
 		Assertions.assertEquals(
 				"csv-file:Too much values for type org.ligoj.app.plugin.id.resource.batch.UserUpdateEntry. Expected : 1, got : 2 : [fdaugan, mail]",
 				Assertions.assertThrows(ValidationJsonException.class,
-						() -> resource.batch(new ByteArrayInputStream("fdaugan;mail".getBytes("cp1252")),
-								new String[] { "user" }, "cp1252", new String[] { "user" }, UserUpdateEntry.class,
-								UserAtomicTask.class, false))
+								() -> resource.batch(input,
+										new String[]{"user"}, "cp1252", new String[]{"user"}, UserUpdateEntry.class,
+										UserAtomicTask.class, false))
 						.getMessage());
 	}
 
@@ -55,7 +57,7 @@ class UserBatchUpdateResourceTest extends AbstractUserBatchResourceTest {
 
 		final long id = resource.execute(
 				new ByteArrayInputStream("fdaugan;mail;any.daugan@sample.com".getBytes("cp1252")),
-				new String[] { "user", "operation", "value" }, "cp1252", false);
+				new String[]{"user", "operation", "value"}, "cp1252", false);
 		BatchTaskVo<UserUpdateEntry> importTask = resource.getImportTask(id);
 		Assertions.assertEquals(id, importTask.getId());
 		importTask = waitImport(importTask);
