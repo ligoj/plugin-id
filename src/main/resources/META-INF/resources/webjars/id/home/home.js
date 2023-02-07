@@ -323,8 +323,8 @@ define(function () {
 				department: $('#department').val() || null,
 				localId: $('#localId').val() || null,
 				mail: $('#mail').val() || null,
-				company: $('#company').val(),
-				groups: $('#groups').val() ? $('#groups').val().split(',') : []
+				company: $('#company').val().toLowerCase(),
+				groups: $('#groups').val() ? $('#groups').val().toLowerCase().split(',') : []
 			};
 		},
 

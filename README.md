@@ -1,4 +1,4 @@
-## :link: Ligoj Identity plugin [![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.ligoj.plugin/plugin-id/badge.svg)](https://maven-badges.herokuapp.com/maven-central/org.ligoj.plugin/plugin-id) [![Download](https://api.bintray.com/packages/ligoj/maven-repo/plugin-id/images/download.svg) ](https://bintray.com/ligoj/maven-repo/plugin-id/_latestVersion)
+## :link: Ligoj Identity plugin [![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.ligoj.plugin/plugin-id/badge.svg)](https://maven-badges.herokuapp.com/maven-central/org.ligoj.plugin/plugin-id)
 API plugin used for compatibility check
 
 [![Coverage](https://sonarcloud.io/api/project_badges/measure?project=org.ligoj.plugin%3Aplugin-id&metric=coverage)](https://sonarcloud.io/dashboard?id=org.ligoj.plugin%3Aplugin-id)
