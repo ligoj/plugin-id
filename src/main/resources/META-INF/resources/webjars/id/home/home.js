@@ -2,6 +2,15 @@
  * Licensed under MIT (https://github.com/ligoj/ligoj/blob/master/LICENSE)
  */
 define(function () {
+	function validateMail() {
+		const mail = _('mail').val();
+		if (mail.match(/^.*@(gmail|yahoo|free|sfr|live|hotmail)\.[a-zA-Z]+$/i)) {
+			validationManager.addWarn(_('mail'), 'warn-mail-perso');
+		} else {
+			validationManager.reset(_('mail'));
+		}
+	}
+
 	const current = {
 
 		/**
@@ -37,10 +46,10 @@ define(function () {
 				});
 				current.suspendSearch = false;
 			}
-			
+
 			// Also initialize the datatables component
 			current.initializeDataTable();
-			$(function() {
+			$(function () {
 				_('search').trigger('focus');
 			});
 		},
@@ -75,9 +84,9 @@ define(function () {
 				minimumInputLength: 0,
 				initSelection: function (element, callback) {
 					callback({
-                        id: element.val(),
-                        text: element.val()
-                    });
+						id: element.val(),
+						text: element.val()
+					});
 				},
 				formatSearching: function () {
 					return current.$messages.loading;
@@ -98,7 +107,7 @@ define(function () {
 					results: function (data, page) {
 						return {
 							more: data.recordsFiltered > page * 10,
-							results: data.data.map(d=>({id: d, text: d}))
+							results: data.data.map(d => ({ id: d, text: d }))
 						};
 					}
 				}
@@ -128,7 +137,7 @@ define(function () {
 					results: function (data, page) {
 						return {
 							more: data.recordsFiltered > page * 10,
-							results: data.data.map(d=>({id: d, text: d}))
+							results: data.data.map(d => ({ id: d, text: d }))
 						};
 					}
 				}
@@ -138,45 +147,15 @@ define(function () {
 			$('#search-group,#search-company').on('change', function () {
 				current.refreshDataTable();
 			});
-			_('mail').on('blur', function () {
-				const mail = _('mail').val();
-				if (new RegExp('.*@(gmail\\.com|(yahoo|free|sfr|live|hotmail)\\.fr)', 'i').exec(mail)) {
-					validationManager.addWarn(_('mail'), 'warn-mail-perso');
-				} else {
-					validationManager.reset(_('mail'));
-				}
-			});
-			_('importPopup').on('shown.bs.modal', function () {
-				$('.import-options input:checked').trigger('focus');
-			}).on('show.bs.modal', function () {
-				$('.import-progress').attr('aria-valuenow', '0').css('width', '0%').removeClass('progress-bar progress-bar-striped progress-bar-striped').empty();
-				$('.import-summary').addClass('hide').empty();
-				_('quiet').prop('checked', false);
-				current.$parent.unscheduleUploadStep();
-			}).on('submit', function (e) {
-				const mode = $(this).find('.import-options input:checked').is('.import-options-full') ? 'full' : 'atomic';
-				_('quiet').val(_('quiet').is(':checked') ? 'true' : 'false');
-				$(this).ajaxSubmit({
-					url: REST_PATH + 'service/id/user/batch/' + mode,
-					type: 'POST',
-					dataType: 'json',
-					beforeSubmit: function () {
-						// Reset the summary
-						$('.import-summary').html('Uploading...').removeClass('alert-danger').removeClass('alert-success').addClass('alert-info').removeClass('hide');
-						$('.import-progress').addClass('progress-bar progress-bar-striped progress-bar-striped');
-						validationManager.reset(_('importPopup'));
-						validationManager.mapping.DEFAULT = 'csv-file';
-					},
-					success: function (id) {
-						$('.import-summary').html('Processing...');
-						current.$parent.scheduleUploadStep('service/id/user/batch/' + mode, id, function() {
-							current.table && current.table.api().ajax.reload();
-						});
-					}
-				});
-				e.preventDefault();
-				return false;
-			});
+			_('mail').on('blur', validateMail);
+			_('importPopup')
+				.on('shown.bs.modal', () => $('.import-options input:checked').trigger('focus'))
+				.on('show.bs.modal', function () {
+					$('.import-progress').attr('aria-valuenow', '0').css('width', '0%').removeClass('progress-bar progress-bar-striped progress-bar-striped').empty();
+					$('.import-summary').addClass('hide').empty();
+					_('quiet').prop('checked', false);
+					current.$parent.unscheduleUploadStep();
+				}).on('submit', () => current.saveBatch());
 			$('.import-options input').on('change', function () {
 				$('.import-options-details').addClass('hidden').filter($(this).hasClass('import-options-full') ? '.import-options-full' : '.import-options-atomic').removeClass('hidden');
 			});
@@ -197,13 +176,13 @@ define(function () {
 				current.$parent.requireAgreement(current.showPopup, $(this));
 			});
 
-			_('rest-password-popup').on('hide.bs.modal', function() { 
+			_('rest-password-popup').on('hide.bs.modal', function () {
 				_('generated-password').val('');
-			}).on('show.bs.modal', function() { 
+			}).on('show.bs.modal', function () {
 				_('show-password').removeAttr('checked');
 			});
 
-			_('show-password').on('change', function (){
+			_('show-password').on('change', function () {
 				if ($(this).is(':checked')) {
 					_('generated-password')[0].type = "text";
 				} else {
@@ -235,7 +214,7 @@ define(function () {
 					dom: 'rt<"row"<"col-xs-6"i><"col-xs-6"p>>',
 					serverSide: true,
 					searching: true,
-					ajax: function() {
+					ajax: function () {
 						const company = $('#search-company').select2('data');
 						const group = $('#search-group').select2('data');
 						if (company || group) {
@@ -292,7 +271,7 @@ define(function () {
 										editLink += '<li><a class="lock"><i class="menu-icon fa fa-lock"></i> ' + current.$messages.lock + '</a></li>';
 										editLink += '<li><a class="isolate"><i class="menu-icon fa fa-sign-out"></i> ' + current.$messages.isolate + '</a></li>';
 									}
-	
+
 									// Delete icon
 									editLink += '<li><a class="delete"><i class="menu-icon fa fa-trash-alt"></i> ' + current.$messages.delete + '</a></li>';
 									editLink += '<li><a class="reset"><i class="menu-icon fas fa-sync-alt"></i> ' + current.$messages.reset + '</a></li>';
@@ -326,6 +305,30 @@ define(function () {
 				company: $('#company').val().toLowerCase(),
 				groups: $('#groups').val() ? $('#groups').val().toLowerCase().split(',') : []
 			};
+		},
+
+		saveBatch: function () {
+			const $popup = _('importPopup');
+			const mode = $popup.find('.import-options input:checked').is('.import-options-full') ? 'full' : 'atomic';
+			_('quiet').val(_('quiet').is(':checked') ? 'true' : 'false');
+			$popup.ajaxSubmit({
+				url: REST_PATH + 'service/id/user/batch/' + mode,
+				type: 'POST',
+				dataType: 'json',
+				beforeSubmit: function () {
+					// Reset the summary
+					$('.import-summary').html('Uploading...').removeClass('alert-danger alert-success hide').addClass('alert-info');
+					$('.import-progress').addClass('progress-bar progress-bar-striped progress-bar-striped');
+					validationManager.reset(_('importPopup'));
+					validationManager.mapping.DEFAULT = 'csv-file';
+				},
+				success: function (id) {
+					$('.import-summary').html('Processing...');
+					current.$parent.scheduleUploadStep('service/id/user/batch/' + mode, id, () => current.table?.api().ajax.reload());
+				}
+			});
+			e.preventDefault();
+			return false;
 		},
 
 		save: function () {
@@ -375,10 +378,10 @@ define(function () {
 			_('mail').val((uc.mails && uc.mails[0]) || '');
 			_('company').select2('val', uc.company || null);
 			_('groups').select2('data', (uc.groups || []).map(g => ({
-                id: g.name,
-                text: g.name,
-                locked: !g.canWrite
-            })));
+				id: g.name,
+				text: g.name,
+				locked: !g.canWrite
+			})));
 
 			// id and company are read-only
 			if (uc.id) {
@@ -425,7 +428,7 @@ define(function () {
 		/**
 		 * Reset the selected user password after popup confirmation, or directly from its identifier.
 		 */
-		resetUserPassword: function(id, name) {
+		resetUserPassword: function (id, name) {
 			current.confirmUserOperation($(this), id, name, 'reset', 'reseted', 'PUT');
 		},
 
