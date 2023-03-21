@@ -623,7 +623,7 @@ public class UserOrgResource extends AbstractOrgResource {
 		newUser.setDn(getUser().toDn(newUser));
 		updateCompanyAsNeeded(oldUser, newUser);
 
-		// Then, update the no secured attributes : first name, etc.
+		// Then, update the unsecured attributes : first name, etc.
 		final var hadNoMail = oldUser.getMails().isEmpty();
 		getUser().updateUser(newUser);
 
