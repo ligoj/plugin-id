@@ -98,13 +98,13 @@ class TestAbstractPluginIdResourceTest extends AbstractJpaTest {
 		resource.userResource = Mockito.mock(UserOrgResource.class);
 		Mockito.when(resource.userResource.findByIdNoCache("flast123")).thenReturn(null);
 		Mockito.doThrow(new TechnicalException("")).when(resource.userResource)
-				.saveOrUpdate(ArgumentMatchers.any(UserOrgEditionVo.class));
+				.saveOrUpdate(ArgumentMatchers.any(UserOrgEditionVo.class), Mockito.eq(true));
 
 		final var user = new UserOrg();
 		user.setMails(Collections.singletonList("fabrice.daugan@sample.com"));
 		user.setFirstName("First");
 		user.setLastName("Last123");
-		user.setName("secondarylogin");
+		user.setName("secondaryLogin");
 		user.setCompany("ligoj");
 		Assertions.assertThrows(TechnicalException.class, () -> resource.newApplicationUser(user));
 	}
@@ -167,9 +167,9 @@ class TestAbstractPluginIdResourceTest extends AbstractJpaTest {
 		Mockito.doReturn(null).when(userResource).findByIdNoCache("flast123");
 		Mockito.doAnswer(invocation -> {
 			TestAbstractPluginIdResourceTest.this.userResource
-					.saveOrUpdate((UserOrgEditionVo) invocation.getArguments()[0]);
+					.saveOrUpdate((UserOrgEditionVo) invocation.getArguments()[0], true);
 			return null;
-		}).when(userResource).saveOrUpdate(Mockito.any());
+		}).when(userResource).saveOrUpdate(Mockito.any(), Mockito.eq(true));
 
 		// Create a new IAM node plugged to the primary node
 		final var user = new UserOrg();
@@ -180,7 +180,7 @@ class TestAbstractPluginIdResourceTest extends AbstractJpaTest {
 		user.setCompany("ligoj");
 		Mockito.doReturn(user).when(userRepository).findOneBy("id", "secondarylogin");
 		Assertions.assertEquals("flast123", resource.toApplicationUser(userRepository, authentication));
-		Mockito.verify(userResource).saveOrUpdate(Mockito.any());
+		Mockito.verify(userResource).saveOrUpdate(Mockito.any(), Mockito.eq(true));
 	}
 
 	@Test
@@ -210,9 +210,9 @@ class TestAbstractPluginIdResourceTest extends AbstractJpaTest {
 		Mockito.doReturn(null).when(userResource).findByIdNoCache("mmartin1");
 		Mockito.doAnswer(invocation -> {
 			TestAbstractPluginIdResourceTest.this.userResource
-					.saveOrUpdate((UserOrgEditionVo) invocation.getArguments()[0]);
+					.saveOrUpdate((UserOrgEditionVo) invocation.getArguments()[0], true);
 			return null;
-		}).when(userResource).saveOrUpdate(Mockito.any());
+		}).when(userResource).saveOrUpdate(Mockito.any(), Mockito.eq(true));
 
 		Mockito.doReturn(existing).when(userRepository).findOneBy("id", "mmartin");
 		Assertions.assertEquals("mmartin1", resource.toApplicationUser(userRepository, authentication));
@@ -296,9 +296,9 @@ class TestAbstractPluginIdResourceTest extends AbstractJpaTest {
 		Mockito.doReturn(null).when(userResource).findByIdNoCache("flast123");
 		Mockito.doAnswer(invocation -> {
 			TestAbstractPluginIdResourceTest.this.userResource
-					.saveOrUpdate((UserOrgEditionVo) invocation.getArguments()[0]);
+					.saveOrUpdate((UserOrgEditionVo) invocation.getArguments()[0], true);
 			return null;
-		}).when(userResource).saveOrUpdate(Mockito.any());
+		}).when(userResource).saveOrUpdate(Mockito.any(), Mockito.eq(true));
 
 		Assertions.assertEquals("flast123", resource.authenticate(authentication, "service:id:test:node1", false).getPrincipal());
 	}

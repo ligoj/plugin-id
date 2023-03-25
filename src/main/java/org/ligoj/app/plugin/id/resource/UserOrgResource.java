@@ -209,7 +209,7 @@ public class UserOrgResource extends AbstractOrgResource {
 	}
 
 	/**
-	 * Return a intersection of given set of visible companies and the optional requested company.
+	 * Return an intersection of given set of visible companies and the optional requested company.
 	 */
 	private Set<String> computeFilteredCompanies(final String requestedCompany,
 			final Collection<String> visibleCompanies) {
@@ -334,12 +334,12 @@ public class UserOrgResource extends AbstractOrgResource {
 	@PUT
 	public void update(final UserOrgEditionVo user) {
 		// Check the right on the company and the groups
-		validateChanges(securityHelper.getLogin(), user);
+		final var hasAttributeChange = validateChanges(securityHelper.getLogin(), user);
 
 		// Check the user exists
 		getUser().findByIdExpected(user.getId());
 
-		saveOrUpdate(user);
+		saveOrUpdate(user, hasAttributeChange);
 	}
 
 	/**
@@ -357,7 +357,7 @@ public class UserOrgResource extends AbstractOrgResource {
 			throw new ValidationJsonException(USER_KEY, "already-exist", "0", USER_KEY, "1", user.getId());
 		}
 
-		saveOrUpdate(user, quiet);
+		saveOrUpdate(user, quiet, true);
 	}
 
 	/**
@@ -388,7 +388,7 @@ public class UserOrgResource extends AbstractOrgResource {
 	 * <li>Involved changed groups must writable by the principal user. Otherwise indicate the read-only state.</li>
 	 * </ul>
 	 */
-	private void validateChanges(final String principal, final UserOrgEditionVo importEntry) {
+	private boolean validateChanges(final String principal, final UserOrgEditionVo importEntry) {
 		// First cleanup the entry
 		normalize(importEntry);
 
@@ -428,6 +428,7 @@ public class UserOrgResource extends AbstractOrgResource {
 			// Compute merged group identifiers
 			importEntry.setGroups(new ArrayList<>(mergeGroups(delegates, userOrg, importEntry.getGroups())));
 		}
+		return hasAttributeChange;
 	}
 
 	/**
@@ -549,19 +550,19 @@ public class UserOrgResource extends AbstractOrgResource {
 	/**
 	 * Indicate the two user details have attribute differences
 	 */
-	@SuppressWarnings("unchecked")
 	private boolean hasAttributeChange(final UserOrgEditionVo importEntry, final UserOrg userOrg) {
 		return userOrg == null
 				|| hasAttributeChange(importEntry, userOrg, SimpleUser::getFirstName, SimpleUser::getLastName,
-						SimpleUser::getCompany, SimpleUser::getLocalId, SimpleUser::getDepartment)
+				SimpleUser::getCompany, SimpleUser::getLocalId, SimpleUser::getDepartment)
 				|| !userOrg.getMails().contains(importEntry.getMail());
 	}
 
 	/**
 	 * Indicate the two user details have attribute differences
 	 */
+	@SafeVarargs
 	private boolean hasAttributeChange(final SimpleUser user1, final SimpleUser user2,
-			@SuppressWarnings("unchecked") final Function<SimpleUser, String>... equals) {
+			final Function<SimpleUser, String>... equals) {
 		return Arrays.stream(equals).anyMatch(f -> !StringUtils.equals(f.apply(user2), f.apply(user1)));
 	}
 
@@ -574,10 +575,11 @@ public class UserOrgResource extends AbstractOrgResource {
 	 * password.<br>
 	 * Groups of entry will be normalized.
 	 *
-	 * @param importEntry The entry to save or to update.
-	 * @param quiet       Flag to turn off the possible notification such as mail.
+	 * @param importEntry        The entry to save or to update.
+	 * @param quiet              Flag to turn off the possible notification such as mail.
+	 * @param hasAttributeChange When <code>false</code>, underlying user database will not be updated, only membership as needed.
 	 */
-	private void saveOrUpdate(final UserOrgEditionVo importEntry, final boolean quiet) {
+	private void saveOrUpdate(final UserOrgEditionVo importEntry, final boolean quiet, final boolean hasAttributeChange) {
 
 		// Create as needed the user, groups will be proceeded after.
 		final var repository = getUser();
@@ -590,7 +592,7 @@ public class UserOrgResource extends AbstractOrgResource {
 
 			// Set the password
 			updatePassword(newUser, quiet);
-		} else {
+		} else if (hasAttributeChange) {
 			updateUser(user, newUser, quiet);
 		}
 
@@ -600,17 +602,18 @@ public class UserOrgResource extends AbstractOrgResource {
 
 	/**
 	 * Create the user is not exist and update the related groups and company.<br>
-	 * The mail of the entry will replace the one of the repository if it one does not contain any mail. If entry did
+	 * The mail of the entry will replace the one of the repository if it does not contain any mail. If entry did
 	 * not exist or, if there was no password (or a dummy one), it will be set to the one of import of a new generated
 	 * password. <br>
 	 * When mail or password is updated a mail is sent to the user with the account, and eventually the new
 	 * password.<br>
 	 * Groups of entry will be normalized.
 	 *
-	 * @param importEntry The entry to save or to update.
+	 * @param importEntry        The entry to save or to update.
+	 * @param hasAttributeChange When <code>false</code>, underlying user database will not be updated, only membership as needed.
 	 */
-	public void saveOrUpdate(final UserOrgEditionVo importEntry) {
-		saveOrUpdate(importEntry, false);
+	public void saveOrUpdate(final UserOrgEditionVo importEntry, final boolean hasAttributeChange) {
+		saveOrUpdate(importEntry, false, hasAttributeChange);
 	}
 
 	/**
@@ -660,7 +663,7 @@ public class UserOrgResource extends AbstractOrgResource {
 	}
 
 	/**
-	 * Delete an user.<br>
+	 * Delete a user.<br>
 	 * Rules, order is important :
 	 * <ul>
 	 * <li>Only users managing the company of this user can perform the deletion, if not, act as if the user did not
@@ -679,7 +682,7 @@ public class UserOrgResource extends AbstractOrgResource {
 		final var userOrg = checkDeletionRight(user, "delete");
 
 		// Hard deletion
-		// Check the group : You can't delete an user if he is the last member
+		// Check the group : You can't delete a user if he is the last member
 		// of a group
 		final var allGroups = getGroup().findAll();
 		checkLastMemberInGroups(userOrg, allGroups);
@@ -712,8 +715,8 @@ public class UserOrgResource extends AbstractOrgResource {
 	}
 
 	/**
-	 * Isolate an user. The user is locked and also is moved to a different location from the user repository. This move
-	 * ensure some tools to lost this user. Usually the target location is outside the scope/branch of users the other
+	 * Isolate a user. The user is locked and also is moved to a different location from the user repository. This move
+	 * ensures the tools lose sight of this user. Usually the target location is outside the scope/branch of users the other
 	 * tools are watching.<br>
 	 * All memberships are updated, the user's DN is changed, all groups must be updated. Rules, order is important :
 	 * <ul>
@@ -851,7 +854,7 @@ public class UserOrgResource extends AbstractOrgResource {
 		final var companyDn = getCompany().findById(userOrg.getCompany()).getDn();
 		if (delegateRepository.findByMatchingDnForWrite(securityHelper.getLogin(), companyDn, DelegateType.COMPANY)
 				.isEmpty()) {
-			// Report this attempt to delete a non writable user
+			// Report this attempt to delete a non-writable user
 			log.warn("Attempt to {} a user '{}' out of scope", mode, user);
 			throw new ValidationJsonException(USER_KEY, READ_ONLY, "0", "user", "1", user);
 		}
@@ -880,7 +883,7 @@ public class UserOrgResource extends AbstractOrgResource {
 	 * @param user  The user to update.
 	 * @param quiet Flag to turn off the possible notification such as mail.
 	 * @return The new generated password. When <code>null</code> no password could be generated, and the user is not
-	 *         tagged as secured.
+	 * tagged as secured.
 	 */
 	protected String updatePassword(final UserOrg user, final boolean quiet) {
 		return applicationContext.getBeansOfType(IPasswordGenerator.class).values().stream().findFirst().map(p -> {

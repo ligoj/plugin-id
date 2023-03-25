@@ -147,7 +147,7 @@ public abstract class AbstractPluginIdResource<U extends IUserRepository> extend
 			userEdition.setName(nextFreeLogin(toLogin(account)));
 
 			// This user can be created in the primary repository
-			userResource.saveOrUpdate(userEdition);
+			userResource.saveOrUpdate(userEdition, true);
 
 			return userEdition.getId();
 		}
