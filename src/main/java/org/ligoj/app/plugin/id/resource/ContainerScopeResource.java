@@ -148,10 +148,12 @@ public class ContainerScopeResource {
 	 * Retrieve a type by its name.
 	 * 
 	 * @param name
-	 *            type name.
+	 *            Type name.
 	 * @return corresponding {@link ContainerScope}.
 	 */
-	public ContainerScope findByName(final String name) {
+	@GET
+	@Path("name/{name}")
+	public ContainerScope findByName(@PathParam("name") final String name) {
 		return repository.findByNameExpected(name);
 	}
 
