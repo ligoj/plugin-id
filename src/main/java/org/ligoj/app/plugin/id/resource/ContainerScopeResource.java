@@ -11,6 +11,8 @@ import java.util.function.Function;
 import javax.cache.annotation.CacheKey;
 import javax.cache.annotation.CacheRemoveAll;
 import javax.cache.annotation.CacheResult;
+
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.DELETE;
@@ -53,6 +55,7 @@ public class ContainerScopeResource {
 	 * Ordered columns.
 	 */
 	private static final Map<String, String> ORDERED_COLUMNS = new HashMap<>();
+
 	static {
 		ORDERED_COLUMNS.put("name", "name");
 		ORDERED_COLUMNS.put("dn", "dn");
@@ -62,9 +65,8 @@ public class ContainerScopeResource {
 	/**
 	 * Return all {@link ContainerScope} in descendant order by DN in order to
 	 * match the finest associations first.
-	 * 
-	 * @param type
-	 *            The {@link ContainerType} to filter. Required.
+	 *
+	 * @param type The {@link ContainerType} to filter. Required.
 	 * @return all {@link ContainerScope}.
 	 */
 	@CacheResult(cacheName = "container-scopes")
@@ -74,11 +76,9 @@ public class ContainerScopeResource {
 
 	/**
 	 * Return all types matching to given criteria.
-	 * 
-	 * @param type
-	 *            filtered {@link ContainerType}.
-	 * @param uriInfo
-	 *            Filter data including criteria.
+	 *
+	 * @param type    filtered {@link ContainerType}.
+	 * @param uriInfo Filter data including criteria.
 	 * @return Found group types.
 	 */
 	@GET
@@ -93,9 +93,8 @@ public class ContainerScopeResource {
 
 	/**
 	 * Update a {@link ContainerScope}.
-	 * 
-	 * @param bean
-	 *            new {@link ContainerScope} to update.
+	 *
+	 * @param bean new {@link ContainerScope} to update.
 	 */
 	@PUT
 	@Consumes(MediaType.APPLICATION_JSON)
@@ -106,9 +105,8 @@ public class ContainerScopeResource {
 
 	/**
 	 * Create a new {@link ContainerScope}.
-	 * 
-	 * @param bean
-	 *            new {@link ContainerScope} to persist.
+	 *
+	 * @param bean new {@link ContainerScope} to persist.
 	 * @return new identifier.
 	 */
 	@POST
@@ -120,9 +118,8 @@ public class ContainerScopeResource {
 
 	/**
 	 * Validate and clean the type.
-	 * 
-	 * @param entity
-	 *            The entity to check.
+	 *
+	 * @param entity The entity to check.
 	 * @return The given parameter.
 	 */
 	protected ContainerScope check(final ContainerScope entity) {
@@ -133,9 +130,8 @@ public class ContainerScopeResource {
 
 	/**
 	 * Retrieve a type by its identifier.
-	 * 
-	 * @param id
-	 *            Type identifier.
+	 *
+	 * @param id Type identifier.
 	 * @return Corresponding {@link ContainerScope}.
 	 */
 	@GET
@@ -146,11 +142,17 @@ public class ContainerScopeResource {
 
 	/**
 	 * Retrieve a type by its name.
-	 * 
-	 * @param name
-	 *            Type name.
+	 *
+	 * @param type Scope type name.
+	 * @param name Scope name.
 	 * @return corresponding {@link ContainerScope}.
 	 */
+	@GET
+	@Path("name/{type}/{name}")
+	public ContainerScope findByName(@PathParam("type") final ContainerType type, @PathParam("name") final String name) {
+		return repository.findAllBy("type", type, new String[]{"name"}, name).stream().findFirst().orElseThrow(() -> new EntityNotFoundException(name));
+	}
+
 	@GET
 	@Path("name/{name}")
 	public ContainerScope findByName(@PathParam("name") final String name) {
@@ -160,9 +162,8 @@ public class ContainerScopeResource {
 	/**
 	 * Delete {@link ContainerScope} from its identifier. Only non-locked
 	 * objects can be deleted.
-	 * 
-	 * @param id
-	 *            Identifier of {@link ContainerScope} to delete.
+	 *
+	 * @param id Identifier of {@link ContainerScope} to delete.
 	 */
 	@DELETE
 	@Path("{id}")

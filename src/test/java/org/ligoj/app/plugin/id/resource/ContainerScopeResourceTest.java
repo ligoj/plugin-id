@@ -124,6 +124,11 @@ class ContainerScopeResourceTest extends AbstractJpaTest {
 	}
 
 	@Test
+	void findByTypeAndName() {
+		checkType(resource.findByName(ContainerType.GROUP, "Project"));
+	}
+
+	@Test
 	void findByName() {
 		checkType(resource.findByName("Project"));
 	}

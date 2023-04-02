@@ -154,7 +154,7 @@ class GroupBatchResourceTest extends AbstractBatchTest {
 		container.setId(1);
 		container.setName("Fonction");
 		container.setType(ContainerType.GROUP);
-		Mockito.when(mockTask.containerScopeResource.findByName("Fonction")).thenReturn(container);
+		Mockito.when(mockTask.containerScopeResource.findByName(ContainerType.GROUP, "Fonction")).thenReturn(container);
 	}
 
 	@BeforeEach

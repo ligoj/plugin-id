@@ -4,6 +4,7 @@
 package org.ligoj.app.plugin.id.resource.batch;
 
 import org.apache.commons.lang3.StringUtils;
+import org.ligoj.app.model.ContainerType;
 import org.ligoj.app.plugin.id.resource.ContainerScopeResource;
 import org.ligoj.app.plugin.id.resource.GroupEditionVo;
 import org.ligoj.app.plugin.id.resource.GroupResource;
@@ -32,7 +33,7 @@ public class GroupFullTask extends AbstractBatchTask<GroupImportEntry> {
 		final var edition = new GroupEditionVo();
 		edition.setName(entry.getName());
 		edition.setParent(StringUtils.trimToNull(entry.getParent()));
-		edition.setScope(containerScopeResource.findByName(entry.getScope()).getId());
+		edition.setScope(containerScopeResource.findByName(ContainerType.GROUP, entry.getScope()).getId());
 
 		// Split multi-valued data
 		edition.setAssistants(toList(entry.getAssistant()));
