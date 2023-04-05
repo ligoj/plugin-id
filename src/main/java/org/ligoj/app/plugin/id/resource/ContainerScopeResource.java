@@ -148,7 +148,7 @@ public class ContainerScopeResource {
 	 * @return corresponding {@link ContainerScope}.
 	 */
 	@GET
-	@Path("name/{type}/{name}")
+	@Path("name/{name}/{type}")
 	public ContainerScope findByName(@PathParam("type") final ContainerType type, @PathParam("name") final String name) {
 		return repository.findAllBy("type", type, new String[]{"name"}, name).stream().findFirst().orElseThrow(() -> new EntityNotFoundException(name));
 	}
