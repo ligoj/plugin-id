@@ -347,8 +347,9 @@ public class UserOrgResource extends AbstractOrgResource {
 	 *
 	 * @param user  The user definition, and associated groups. Initial groups are checked.User definition is checked.
 	 * @param quiet Flag to turn off the possible notification such as mail.
+	 * @return The generated password if was expected in the user definition.
 	 */
-	public void create(final UserOrgEditionVo user, final boolean quiet) {
+	public String create(final UserOrgEditionVo user, final boolean quiet) {
 		// Check the right on the company and the groups
 		validateChanges(securityHelper.getLogin(), user);
 
@@ -358,16 +359,18 @@ public class UserOrgResource extends AbstractOrgResource {
 		}
 
 		saveOrUpdate(user, quiet, true);
+		return user.getGeneratedPassword();
 	}
 
 	/**
 	 * Create the given user.
 	 *
 	 * @param user The user definition, and associated groups. Initial groups are checked.User definition is checked.
+	 * @return The generated password if was expected in the user definition.
 	 */
 	@POST
-	public void create(final UserOrgEditionVo user) {
-		create(user, false);
+	public String create(final UserOrgEditionVo user) {
+		return create(user, false);
 	}
 
 	/**
@@ -591,7 +594,10 @@ public class UserOrgResource extends AbstractOrgResource {
 			user = repository.create(newUser);
 
 			// Set the password
-			updatePassword(newUser, quiet);
+			final var generatedPassword = updatePassword(newUser, quiet);
+			if (importEntry.isReturnGeneratePassword()) {
+				importEntry.setGeneratedPassword(generatedPassword);
+			}
 		} else if (hasAttributeChange) {
 			updateUser(user, newUser, quiet);
 		}

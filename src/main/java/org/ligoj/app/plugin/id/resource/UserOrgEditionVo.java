@@ -5,6 +5,7 @@ package org.ligoj.app.plugin.id.resource;
 
 import java.util.Collection;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -41,5 +42,13 @@ public class UserOrgEditionVo extends SimpleUser {
 	 * read-only groups.
 	 */
 	private Collection<String> groups;
+
+	/**
+	 * When true, generated password is returned.
+	 */
+	private boolean returnGeneratePassword;
+
+	@JsonIgnore
+	private String generatedPassword;
 
 }
