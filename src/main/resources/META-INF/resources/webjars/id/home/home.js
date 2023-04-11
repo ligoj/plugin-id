@@ -249,8 +249,11 @@ define(function () {
 							data: 'groups',
 							orderable: false,
 							className: 'hidden-sm hidden-xs truncate',
-							render: function (_i, _j, data) {
-								return data.groups.map(d => d.name);
+							render: function (_i, mode, data) {
+							    if (mode === 'display') {
+								    return data.groups.map(d => `<span class="label label-default">${d.name}</span>`).join(' ');
+								}
+                                return data.groups.map(d => d.name).join(',');
 							}
 						}, {
 							data: null,
