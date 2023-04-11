@@ -71,6 +71,7 @@ define(function () {
 			}).on('submit', function (e) {
 				e.preventDefault();
 				current.save();
+				return false;
 			}).on('show.bs.modal', function (event) {
 				const $source = $(event.relatedTarget);
 				const $tr = $source.closest('tr');
@@ -225,7 +226,7 @@ define(function () {
 					columns: [
 						{
 							data: 'id',
-							width: '80px',
+							width: '120px',
 							render: function (_i, _j, data) {
 								return current.$main.getUserLoginLink(data);
 							}
