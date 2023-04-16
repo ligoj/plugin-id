@@ -128,14 +128,14 @@ define(function () {
 						data: 'receiver',
 						render: {
 						    display : (_i, _mode, data) => current.$main.getResourceLink(data.receiver, data.receiverType),
-						    _: value => value.id
+						    filter: value => value.id
 						}
 					}, {
 						data: 'resource',
 						className: 'hidden-xs truncate',
 						render: {
                             display : (_i, _mode, data) => current.$main.getResourceLink(data.name, data.type),
-                            _: value => data.name
+                            filter: value => data.name
                         }
 					}, {
 						data: 'canAdmin',
