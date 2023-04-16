@@ -98,9 +98,7 @@ define(function () {
 					return current.$messages.loading;
 				},
 				ajax: {
-					url: function () {
-						return REST_PATH + 'service/id/container-scope/' + current.containerType;
-					},
+					url: () => REST_PATH + 'service/id/container-scope/' + current.containerType,
 					dataType: 'json',
 					data: function (term, page) {
 						return {
@@ -136,9 +134,7 @@ define(function () {
 				serverSide: true,
 				searching: true,
 				destroy: true,
-				ajax: function () {
-					return REST_PATH + 'service/id/' + current.containerType;
-				},
+				ajax: () => REST_PATH + 'service/id/' + current.containerType,
 				createdRow: function (nRow) {
 					$(nRow).find('.delete').on('click', current.deleteContainer);
 					$(nRow).find('.empty').on('click', current.emptyContainer);
@@ -146,27 +142,22 @@ define(function () {
 				columns: [
 					{
 						data: 'name',
-						render: function (_i, _j, data) {
-							return '<a href="#/id/home/' + data.containerType + '=' + data.name + '">' + data.name + '</a>';
-						}
+						render: (_i, _j, data) => '<a href="#/id/home/' + data.containerType + '=' + data.name + '">' + data.name + '</a>'
 					}, {
 						data: 'scope',
 						orderable: false
 					}, {
 						data: 'count',
 						width: '64px',
+						type: 'num',
 						orderable: false,
 						className: 'hidden-xs truncate',
-						render: function (_i, _j, data) {
-							return data.count ? data.count === data.countVisible ? data.countVisible : `${data.countVisible}(${data.count})` : '';
-						}
+						render: (_i, _j, data) => data.count ? data.count === data.countVisible ? data.countVisible : `${data.countVisible}(${data.count})` : ''
 					}, {
 						data: 'canAdmin',
 						orderable: false,
 						width: '16px',
-						render: function (_i, _j, data) {
-							return data.canAdmin ? '<i class="fas fa-check"></i>' : '&nbsp;';
-						}
+						render: (_i, _j, data) => data.canAdmin ? '<i class="fas fa-check"></i>' : '&nbsp;'
 					}, {
 						data: 'canWrite',
 						orderable: false,
@@ -178,9 +169,7 @@ define(function () {
 						data: 'locked',
 						orderable: false,
 						width: '16px',
-						render: function (_i, _j, data) {
-							return data.locked ? '<i class="fas fa-check"></i>' : '&nbsp;';
-						}
+						render: (_i, _j, data) => data.locked ? '<i class="fas fa-check"></i>' : '&nbsp;'
 					}, {
 						data: null,
 						orderable: false,
@@ -216,18 +205,16 @@ define(function () {
 			});
 		},
 
-		formToObject: function () {
-			return {
+		formToObject: () => ({
 				name: _('name').val(),
 				scope: _('scope').val()
-			};
-		},
+		}),
 
 		save: function () {
 			const data = current.formToObject();
 			$.ajax({
 				type: 'POST',
-				url: REST_PATH + 'service/id/' + current.containerType,
+				url: () => REST_PATH + 'service/id/' + current.containerType,
 				dataType: 'text',
 				contentType: 'application/json',
 				data: JSON.stringify(data),
@@ -247,7 +234,7 @@ define(function () {
 				// Delete without confirmation
 				$.ajax({
 					type: 'DELETE',
-					url: REST_PATH + 'service/id/' + current.containerType + '/' + id,
+					url: () => REST_PATH + 'service/id/' + current.containerType + '/' + id,
 					success: function () {
 						notifyManager.notify(Handlebars.compile(current.$messages.deleted)(id));
 						current.table && current.table.api().ajax.reload();
@@ -270,7 +257,7 @@ define(function () {
 				// Delete without confirmation
 				$.ajax({
 					type: 'POST',
-					url: REST_PATH + 'service/id/' + current.containerType + '/empty/' + id,
+					url: () => REST_PATH + 'service/id/' + current.containerType + '/empty/' + id,
 					success: function () {
 						notifyManager.notify(Handlebars.compile(current.$messages.updated)(id));
 						current.table && current.table.api().ajax.reload();
