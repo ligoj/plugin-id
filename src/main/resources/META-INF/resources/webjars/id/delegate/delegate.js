@@ -46,13 +46,13 @@ define(function () {
 				validationManager.mapping.name = 'resource';
 				const $source = $(event.relatedTarget);
 				const $tr = $source.closest('tr');
-				let uc = ($tr.length && current.table.fnGetData($tr[0])) || undefined;
-				uc = uc && uc.id ? uc : {};
+				let uc = ($tr.length && current.table.fnGetData($tr[0])) || null;
+				uc = uc?.id ? uc : {};
 				current.currentId = uc.id;
 				_('canAdmin').prop('checked', uc.canAdmin || false);
 				_('canWrite').prop('checked', uc.canWrite || false);
-				current.updateDropdownIcon('receiver', uc.receiverType || 'user', uc.receiver || null);
-				current.updateDropdownIcon('resource', uc.type || 'group', uc.name || null);
+				current.updateDropdownIcon('receiver', uc.receiverType || 'user', uc.receiver?.name);
+				current.updateDropdownIcon('resource', uc.type || 'group', uc.name);
 			}).on('click', '.dropdown-menu [data-type]', function() {
 				// Toggle selection
 				current.updateDropdownIcon($(this).closest('[data-group]').attr('data-group'), $(this).attr('data-type'));
@@ -60,7 +60,7 @@ define(function () {
 
 			// Global datatables filter
 			_('search').on('keyup', function () {
-				current.table && current.table.fnFilter($(this).val());
+				current.table?.fnFilter($(this).val());
 			});
 
 			// Display the right component for selected type
@@ -126,28 +126,29 @@ define(function () {
 				columns: [
 					{
 						data: 'receiver',
-						ordering: false,
-						render: function (_i, _j, data) {
-							return current.$main.getResourceLink(data.receiver, data.receiverType);
+						render: {
+						    display : (_i, _mode, data) => current.$main.getResourceLink(data.receiver, data.receiverType),
+						    _: value => value.id
 						}
 					}, {
-						data: 'type',
+						data: 'resource',
 						className: 'hidden-xs truncate',
-						render: function (_i, _j, data) {
-							return current.$main.getResourceLink(data.name, data.type);
-						}
+						render: {
+                            display : (_i, _mode, data) => current.$main.getResourceLink(data.name, data.type),
+                            _: value => data.name
+                        }
 					}, {
 						data: 'canAdmin',
 						width: '16px',
-						render: function (value) {
-							return value ? '<i class="fas fa-check"></i>' : '&nbsp;';
-						}
+						render: {
+                            display : value => value ? '<i class="fas fa-check"></i>' : '&nbsp;',
+                        }
 					}, {
 						data: 'canWrite',
 						width: '16px',
-						render: function (value) {
-							return value ? '<i class="fas fa-check"></i>' : '&nbsp;';
-						}
+						render: {
+                            display : value => value ? '<i class="fas fa-check"></i>' : '&nbsp;',
+                        }
 					}, {
 						data: 'managed',
 						width: '32px',
@@ -201,7 +202,7 @@ define(function () {
 				data: JSON.stringify(data),
 				success: function (data) {
 					notifyManager.notify(Handlebars.compile(current.$messages[current.currentId ? 'updated' : 'created'])(current.currentId || data));
-					current.table && current.table.api().ajax.reload();
+					current.table?.api().ajax.reload();
 					_('popup').modal('hide');
 				}
 			});
@@ -218,7 +219,7 @@ define(function () {
 					url: REST_PATH + 'security/delegate/' + id,
 					success: function () {
 						notifyManager.notify(Handlebars.compile(current.$messages.deleted)(text + '(' + id + ')'));
-						current.table && current.table.api().ajax.reload();
+						current.table?.api().ajax.reload();
 					}
 				});
 			} else {
