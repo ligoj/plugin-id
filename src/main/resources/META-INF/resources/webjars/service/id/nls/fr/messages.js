@@ -19,5 +19,6 @@ define({
 	'service:id:added-member': 'Utilisateur {{[0]}} a été ajouté au groupe {{[1]}}',
 	'service:id:remove-member': 'Retirer cet utilisateur du groupe',
 	'service:id:removed-member': 'Utilisateur {{[0]}} a été retiré du groupe {{[1]}}',
-	'service:id:group-manage': 'Gestion de l\'équipe'
+	'service:id:group-manage': 'Gestion de l\'équipe',
+    'service:id:sub-group-help': 'Appartenance héritée.<br>Cet utilisateur appartient à l\'un des sous-groupes de ce groupe. Il ne peut être retiré ici de ce group, et lorsqu\'il sera retiré de tous les sou-groupes, n\'apparaitra plus ici.'
 });

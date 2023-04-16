@@ -20,9 +20,10 @@ define({
 		'service:id:activity-group': 'Group activity report',
 		'service:id:add-member': 'Add this user to the current group',
 		'service:id:added-member': 'User {{[0]}} has been added to group {{[1]}}',
+		'service:id:group-manage': 'Manage team',
 		'service:id:remove-member': 'Remove this user to the current group',
 		'service:id:removed-member': 'User {{[0]}} has been removed from group {{[1]}}',
-		'service:id:group-manage': 'Manage team'
+		'service:id:sub-group-help': 'Inherited membership.<br/>This users belongs to one of child groups of the current group. The user cannot be removed there from this group, and when removed from all sub-groups won\'t appear anymore there.'
 	},
 	fr: true
 });

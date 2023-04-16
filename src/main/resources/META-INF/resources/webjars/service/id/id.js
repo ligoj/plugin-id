@@ -162,13 +162,11 @@ define(function () {
 				serverSide: true,
 				destroy: true,
 				searching: true,
-				ajax: function () {
-					return REST_PATH + 'service/id/user?group=' + encodeURIComponent(current.group);
-				},
+				ajax: () => REST_PATH + 'service/id/user?group=' + encodeURIComponent(current.group),
 				columns: [{
 					data: 'id',
-					width: '80px',
-					render: (_i, _j, data) => current.$super('getUserLoginLink')(data)
+					width: '120px',
+					render: (_i, _mode, data) => current.$super('getUserLoginLink')(data)
 				}, {
 					data: 'firstName',
 					className: 'truncate'
@@ -191,9 +189,15 @@ define(function () {
 					data: null,
 					width: '16px',
 					orderable: false,
-					render: function () {
-						return '<a class="remove-user"><i class="fas fa-user-times" data-toggle="tooltip" title="' + current.$messages['service:id:remove-member'] + '"></i></a>';
-					}
+					render: function (data) {
+                        if (data.canWriteGroups) {
+                            if (data.groups?.find(g => g.name?.toLowerCase() === current.group.toLowerCase())) {
+                                return `<a class="remove-user"><i class="fas fa-user-times" data-toggle="tooltip" title="${current.$messages['service:id:remove-member']}"></i></a>`;
+                            }
+                            // Transitive ownership
+                            return `<i class="fas fa-info-circle" data-toggle="tooltip" title="${current.$messages['service:id:sub-group-help']}"></i>`;
+                        }
+                    }
 				}]
 			});
 		}
