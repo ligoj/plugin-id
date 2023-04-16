@@ -294,11 +294,11 @@ public class UserOrgResource extends AbstractOrgResource {
 	}
 
 	/**
-	 * Performs an operation on a group and a user.
+	 * Performs an operation on a group for a user.
 	 *
 	 * @param user    The user to move.
 	 * @param group   The group to update.
-	 * @param updater The function to execute on computed groups of current user.
+	 * @param updater The function to execute on computed groups regarding the givent user: add or remove
 	 */
 	private void updateGroupUser(final String user, final String group,
 			final BiPredicate<Collection<String>, String> updater) {
@@ -313,7 +313,7 @@ public class UserOrgResource extends AbstractOrgResource {
 		validateWriteGroup(group, delegates);
 
 		// Compute the new groups
-		final Set<String> newGroups = new HashSet<>(userOrg.getGroups());
+		final var newGroups = new HashSet<>(userOrg.getGroups());
 		if (updater.test(newGroups, group)) {
 
 			// Replace the user groups by the normalized groups including the
