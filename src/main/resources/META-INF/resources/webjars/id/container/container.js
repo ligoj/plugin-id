@@ -30,10 +30,8 @@ define(function () {
 			current.containerType = parameter || 'group';
 
 			// Update dynamic title
-			current.$messages.title = current.$messages[current.containerType];
-			document.title = current.$messages.title;
-			$('.cascade-title').text(current.$messages.title);
-			
+			current.$cascade.setTitle(current.$messages[current.containerType]);
+
 			current.initializeSearch();
 			if (current.table === null || (current.table && previousContainerType && previousContainerType !== current.containerType)) {
 				// Initialize the datatables when type is changed
