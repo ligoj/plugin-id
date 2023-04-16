@@ -97,7 +97,7 @@ define(function () {
 					dataType: 'json',
 					data: function (term, page) {
 						return {
-							q: term, // search term
+							q: term,
 							rows: 15,
 							page: page,
 							filters: '{}',
@@ -210,75 +210,75 @@ define(function () {
 		initializeDataTable: function () {
 			if (current.table) {
 				current.refreshDataTable();
-			} else {
-				current.table = _('table').dataTable({
-					dom: 'rt<"row"<"col-xs-6"i><"col-xs-6"p>>',
-					serverSide: true,
-					searching: true,
-					ajax: function () {
-						const company = $('#search-company').select2('data');
-						const group = $('#search-group').select2('data');
-						if (company || group) {
-							return REST_PATH + 'service/id/user?' + (company ? 'company=' + (company.id || company) : '') + ((company && group) ? '&' : '') + (group ? 'group=' + (group.id || group) : '');
-						}
-						return REST_PATH + 'service/id/user';
-					},
-					columns: [
-						{
-							data: 'id',
-							width: '120px',
-							render: (_i, _mode, data) => current.$main.getUserLoginLink(data)
-						}, {
-							data: 'firstName',
-							className: 'truncate'
-						}, {
-							data: 'lastName',
-							className: 'truncate'
-						}, {
-							data: 'company',
-							className: 'hidden-xs truncate'
-						}, {
-							data: 'mails',
-							className: 'hidden-md hidden-sm hidden-xs truncate',
-							render: mails => (mails?.length) ? '<a href="mailto:' + mails[0] + '">' + mails[0] + '</a>' : ''
-						}, {
-							data: 'groups',
-							className: 'hidden-sm hidden-xs truncate',
-                            render: value => value.map(d => `<span class="label label-default">${d.name}</span>`).join(' ')
-						}, {
-							data: null,
-							width: '36px',
-							orderable: false,
-							render: function (_i, _j, data) {
-								let editLink = '<a class="update"><i class="fas fa-pencil-alt" data-toggle="tooltip" title="' + current.$messages.update + '"></i></a>';
-								if (data.canWrite) {
-									editLink += '<div class="btn-group"><i data-toggle="dropdown" class="fas fa-cog"></i><ul class="dropdown-menu dropdown-menu-right">';
-									if (data.isolated) {
-										// Isolated -> restore
-										editLink += '<li><a class="restore"><i class="menu-icon fa fa-sign-in"></i> ' + current.$messages.restore + '</a></li>';
-									} else if (data.locked) {
-										// Locked -> unlock or isolate
-										editLink += '<li><a class="unlock"><i class="menu-icon fa fa-unlock"></i> ' + current.$messages.unlock + '</a></li>';
-										editLink += '<li><a class="isolate"><i class="menu-icon fa fa-sign-out"></i> ' + current.$messages.isolate + '</a></li>';
-									} else {
-										// Unlocked -> lock or isolate
-										editLink += '<li><a class="lock"><i class="menu-icon fa fa-lock"></i> ' + current.$messages.lock + '</a></li>';
-										editLink += '<li><a class="isolate"><i class="menu-icon fa fa-sign-out"></i> ' + current.$messages.isolate + '</a></li>';
-									}
-
-									// Delete icon
-									editLink += '<li><a class="delete"><i class="menu-icon fa fa-trash-alt"></i> ' + current.$messages.delete + '</a></li>';
-									editLink += '<li><a class="reset"><i class="menu-icon fas fa-sync-alt"></i> ' + current.$messages.reset + '</a></li>';
-									editLink += '</ul>';
-									editLink += '</div>';
-								}
-
-								return editLink;
-							}
-						}
-					]
-				});
+				return;
 			}
+			current.table = _('table').dataTable({
+				dom: 'rt<"row"<"col-xs-6"i><"col-xs-6"p>>',
+				serverSide: true,
+				searching: true,
+				ajax: function () {
+					const company = $('#search-company').select2('data');
+					const group = $('#search-group').select2('data');
+					if (company || group) {
+						return REST_PATH + 'service/id/user?' + (company ? 'company=' + (company.id || company) : '') + ((company && group) ? '&' : '') + (group ? 'group=' + (group.id || group) : '');
+					}
+					return REST_PATH + 'service/id/user';
+				},
+				columns: [{
+					data: 'id',
+					width: '120px',
+					render: (_i, _mode, data) => current.$main.getUserLoginLink(data)
+				}, {
+					data: 'firstName',
+					className: 'truncate'
+				}, {
+					data: 'lastName',
+					className: 'truncate'
+				}, {
+					data: 'company',
+					className: 'hidden-xs truncate'
+				}, {
+					data: 'mails',
+					orderable: false,
+					className: 'hidden-md hidden-sm hidden-xs truncate',
+					render: mails => (mails?.length) ? '<a href="mailto:' + mails[0] + '">' + mails[0] + '</a>' : ''
+				}, {
+					data: 'groups',
+					orderable: false,
+					className: 'hidden-sm hidden-xs truncate',
+					render: value => value.map(d => `<span class="label label-default">${d.name}</span>`).join(' ')
+				}, {
+					data: null,
+					width: '36px',
+					orderable: false,
+					render: function (_i, _j, data) {
+						let editLink = '<a class="update"><i class="fas fa-pencil-alt" data-toggle="tooltip" title="' + current.$messages.update + '"></i></a>';
+						if (data.canWrite) {
+							editLink += '<div class="btn-group"><i data-toggle="dropdown" class="fas fa-cog"></i><ul class="dropdown-menu dropdown-menu-right">';
+							if (data.isolated) {
+								// Isolated -> restore
+								editLink += '<li><a class="restore"><i class="menu-icon fa fa-sign-in"></i> ' + current.$messages.restore + '</a></li>';
+							} else if (data.locked) {
+								// Locked -> unlock or isolate
+								editLink += '<li><a class="unlock"><i class="menu-icon fa fa-unlock"></i> ' + current.$messages.unlock + '</a></li>';
+								editLink += '<li><a class="isolate"><i class="menu-icon fa fa-sign-out"></i> ' + current.$messages.isolate + '</a></li>';
+							} else {
+								// Unlocked -> lock or isolate
+								editLink += '<li><a class="lock"><i class="menu-icon fa fa-lock"></i> ' + current.$messages.lock + '</a></li>';
+								editLink += '<li><a class="isolate"><i class="menu-icon fa fa-sign-out"></i> ' + current.$messages.isolate + '</a></li>';
+							}
+
+							// Delete icon
+							editLink += '<li><a class="delete"><i class="menu-icon fa fa-trash-alt"></i> ' + current.$messages.delete + '</a></li>';
+							editLink += '<li><a class="reset"><i class="menu-icon fas fa-sync-alt"></i> ' + current.$messages.reset + '</a></li>';
+							editLink += '</ul>';
+							editLink += '</div>';
+						}
+
+						return editLink;
+					}
+				}]
+			});
 		},
 
 		showPopup: function ($context) {

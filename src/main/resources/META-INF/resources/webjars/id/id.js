@@ -96,7 +96,7 @@ define(function () {
 					current.displayUploadPartialResult(data.status);
 					$('.import-progress').removeClass('progress-bar-striped').html(current.$messages.finished);
 					const $summary = $('.import-summary');
-					const errors = data.entries.filter(e => e.statusText).map(e => `${ (e.id || e.user)} : ${errorManager.manageBadRequestError(e.statusText)}`);
+					const errors = data.entries.filter(e => e.statusText).map(e => `${(e.id || e.user)} : ${errorManager.manageBadRequestError(e.statusText)}`);
 					if (errors.length) {
 						// At least one error to display
 						$summary.append(`<br>Errors (${errors.length}): ${errors.join('<br>&nbsp;')}`);
