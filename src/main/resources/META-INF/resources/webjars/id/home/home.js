@@ -227,9 +227,7 @@ define(function () {
 						{
 							data: 'id',
 							width: '120px',
-							render: function (_i, _j, data) {
-								return current.$main.getUserLoginLink(data);
-							}
+							render: (_i, _mode, data) => current.$main.getUserLoginLink(data)
 						}, {
 							data: 'firstName',
 							className: 'truncate'
@@ -242,19 +240,11 @@ define(function () {
 						}, {
 							data: 'mails',
 							className: 'hidden-md hidden-sm hidden-xs truncate',
-							render: function (mails) {
-								return (mails && mails.length) ? '<a href="mailto:' + mails[0] + '">' + mails[0] + '</a>' : '';
-							}
+							render: mails => (mails?.length) ? '<a href="mailto:' + mails[0] + '">' + mails[0] + '</a>' : ''
 						}, {
 							data: 'groups',
-							orderable: false,
 							className: 'hidden-sm hidden-xs truncate',
-							render: function (_i, mode, data) {
-							    if (mode === 'display') {
-								    return data.groups.map(d => `<span class="label label-default">${d.name}</span>`).join(' ');
-								}
-                                return data.groups.map(d => d.name).join(',');
-							}
+                            render: value => value.map(d => `<span class="label label-default">${d.name}</span>`).join(' ')
 						}, {
 							data: null,
 							width: '36px',
