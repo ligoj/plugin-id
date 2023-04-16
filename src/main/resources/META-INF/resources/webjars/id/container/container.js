@@ -176,13 +176,13 @@ define(function () {
 						width: current.containerType === 'group' ? '34px' : '16px',
 						render: function (_i, _j, data) {
 							let result = '';
-							if (data.canWrite && data.containerType === 'group' && data.count) {
-								// Empty the container, for now only for group
-								result += `<a class="empty"><i class="fas fa-user-times" data-toggle="tooltip" title="${current.$messages['empty-group']}"></i></a>`;
-							}
 							if (data.locked !== true && data.canAdmin && (data.containerType === 'group' || data.count === 0)) {
 								// Delete the container
 								result += `<a class="delete"><i class="fas fa-trash-alt" data-toggle="tooltip" title="${current.$messages['delete']}"></i></a>`;
+							}
+							if (data.canWrite && data.containerType === 'group' && data.count) {
+								// Empty the container, for now only for group
+								result += `<a class="empty"><i class="fas fa-user-times" data-toggle="tooltip" title="${current.$messages['empty-group']}"></i></a>`;
 							}
 							return result || '&nbsp;';
 						}
