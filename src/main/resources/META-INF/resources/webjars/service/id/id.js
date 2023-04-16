@@ -168,9 +168,7 @@ define(function () {
 				columns: [{
 					data: 'id',
 					width: '80px',
-					render: function (_i, _j, data) {
-						return current.$super('getUserLoginLink')(data);
-					}
+					render: (_i, _j, data) => current.$super('getUserLoginLink')(data)
 				}, {
 					data: 'firstName',
 					className: 'truncate'
@@ -188,9 +186,7 @@ define(function () {
 					data: 'groups',
 					orderable: false,
 					className: 'hidden-xs hidden-sm truncate',
-					render: function (_i, _j, data) {
-						return data.groups.map(g => g.name);
-					}
+					render: value => value.map(g => g.name)
 				}, {
 					data: null,
 					width: '16px',

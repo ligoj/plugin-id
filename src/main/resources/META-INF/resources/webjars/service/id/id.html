@@ -1,7 +1,7 @@
 <form id="subscribe-configuration-id" class="hide form-horizontal subscribe-configuration">
       <fieldset>
             <legend>
-                  <span class="project-name"></span> / {{service:id:group}} <span id="group-name"></span>
+                  <span class="project-name"></span> / <span class="subscription-icon-tool"></span> <i class="fas fa-chevron-right"></i> <i class="fas fa-users" data-toggle="tooltip" title="{{service:id:group}}"></i> <span id="group-name"></span>
             </legend>
             <div class="row">
                   <div class="col-sm-8 col-md-9 col-lg-10">
@@ -21,7 +21,7 @@
       			<div class="form-group has-feedback">
       				<div class="col-xs-12 has-feedback">
       					<input type="text" class="form-control" placeholder="{{firstName}},{{lastName}},..." id="subscribe-configuration-id-search" aria-controls="table" />
-      					<span class="fas fa-search form-control-feedback"></span>
+      					<label for="subscribe-configuration-id-search"><span class="fas fa-search form-control-feedback"></span></label>
       				</div>
       			</div>
       		</div>
