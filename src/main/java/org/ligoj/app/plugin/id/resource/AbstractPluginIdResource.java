@@ -39,6 +39,11 @@ public abstract class AbstractPluginIdResource<U extends IUserRepository> extend
 	private static final Object USER_LOCK = new Object();
 
 	/**
+	 * Lock object used to synchronize the node configuration.
+	 */
+	private static final Object NODE_CONFIGURATION_LOCK = new Object();
+
+	/**
 	 * The default authentication property name.
 	 */
 	private static final String DEFAULT_ID = "id";
@@ -228,14 +233,16 @@ public abstract class AbstractPluginIdResource<U extends IUserRepository> extend
 	 * @return The IAM configuration related to the given node.
 	 */
 	protected IamConfiguration refreshConfiguration(final String node) {
-		return nodeConfigurations.compute(node, (n, m) -> {
-			final var iam = new IamConfiguration();
-			final var repository = getUserRepository(node);
-			iam.setNode(node);
-			iam.setUserRepository(repository);
-			copyConfiguration(iam, repository);
-			return iam;
-		});
+		synchronized (NODE_CONFIGURATION_LOCK) {
+			return nodeConfigurations.compute(node, (n, m) -> {
+				final var iam = new IamConfiguration();
+				final var repository = getUserRepository(node);
+				iam.setNode(node);
+				iam.setUserRepository(repository);
+				copyConfiguration(iam, repository);
+				return iam;
+			});
+		}
 	}
 
 	/**
