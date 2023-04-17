@@ -212,7 +212,7 @@ define(function () {
 			const data = current.formToObject();
 			$.ajax({
 				type: 'POST',
-				url: () => REST_PATH + 'service/id/' + current.containerType,
+				url: REST_PATH + 'service/id/' + current.containerType,
 				dataType: 'text',
 				contentType: 'application/json',
 				data: JSON.stringify(data),
@@ -232,7 +232,7 @@ define(function () {
 				// Delete without confirmation
 				$.ajax({
 					type: 'DELETE',
-					url: () => REST_PATH + 'service/id/' + current.containerType + '/' + id,
+					url: REST_PATH + 'service/id/' + current.containerType + '/' + id,
 					success: function () {
 						notifyManager.notify(Handlebars.compile(current.$messages.deleted)(id));
 						current.table && current.table.api().ajax.reload();
@@ -255,7 +255,7 @@ define(function () {
 				// Delete without confirmation
 				$.ajax({
 					type: 'POST',
-					url: () => REST_PATH + 'service/id/' + current.containerType + '/empty/' + id,
+					url: REST_PATH + 'service/id/' + current.containerType + '/empty/' + id,
 					success: function () {
 						notifyManager.notify(Handlebars.compile(current.$messages.updated)(id));
 						current.table && current.table.api().ajax.reload();
