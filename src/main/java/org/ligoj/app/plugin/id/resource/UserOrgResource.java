@@ -554,10 +554,17 @@ public class UserOrgResource extends AbstractOrgResource {
 	 * Indicate the two user details have attribute differences
 	 */
 	private boolean hasAttributeChange(final UserOrgEditionVo importEntry, final UserOrg userOrg) {
-		return userOrg == null
+		return hasAttributeChange(importEntry, userOrg == null, "new")
 				|| hasAttributeChange(importEntry, userOrg, SimpleUser::getFirstName, SimpleUser::getLastName,
 				SimpleUser::getCompany, SimpleUser::getLocalId, SimpleUser::getDepartment)
-				|| !userOrg.getMails().contains(importEntry.getMail());
+				|| hasAttributeChange(importEntry, !userOrg.getMails().contains(importEntry.getMail()), "mail");
+	}
+
+	private boolean hasAttributeChange(final SimpleUser importEntry, boolean hasChange, String source) {
+		if (hasChange) {
+			log.info("At least one change required for user {}, source: {}", importEntry.getId(), source);
+		}
+		return hasChange;
 	}
 
 	/**
@@ -566,7 +573,11 @@ public class UserOrgResource extends AbstractOrgResource {
 	@SafeVarargs
 	private boolean hasAttributeChange(final SimpleUser user1, final SimpleUser user2,
 			final Function<SimpleUser, String>... equals) {
-		return Arrays.stream(equals).anyMatch(f -> !StringUtils.equals(f.apply(user2), f.apply(user1)));
+		final var predicateFalse = Arrays.stream(equals)
+				.filter(f -> !StringUtils.equalsIgnoreCase(StringUtils.trimToNull(f.apply(user2)),
+						StringUtils.trimToNull(f.apply(user1)))).findFirst().orElse(null);
+		return predicateFalse != null && hasAttributeChange(user1, true,
+				String.format("'%s' != '%s'", predicateFalse.apply(user1), predicateFalse.apply(user2)));
 	}
 
 	/**
