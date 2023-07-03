@@ -141,13 +141,13 @@ define(function () {
 						data: 'canAdmin',
 						width: '16px',
 						render: {
-                            display : value => value ? '<i class="fas fa-check"></i>' : '&nbsp;',
+                            display : value => value ? `<i class="fas fa-check" title="${current.$messages['admin-help']}" data-toggle="tooltip"></i>` : '&nbsp;',
                         }
 					}, {
 						data: 'canWrite',
 						width: '16px',
 						render: {
-                            display : value => value ? '<i class="fas fa-check"></i>' : '&nbsp;',
+                            display : value => value ? `<i class="fas fa-check" title="${current.$messages['write-help']}" data-toggle="tooltip"></i>` : '&nbsp;',
                         }
 					}, {
 						data: 'managed',

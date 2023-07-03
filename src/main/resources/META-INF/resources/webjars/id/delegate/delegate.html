@@ -1,3 +1,6 @@
+<div class="alert alert-info">
+	{{delegate-message}}
+</div>
 <div class="row">
 	<div class="col-sm-9 col-md-10">
 		<div class="row">
@@ -37,10 +40,10 @@
 <table id="table" class="table table-striped table-bordered justified">
 	<thead>
 		<tr>
-			<th>{{receiver}}</th>
-			<th>{{resource}}</th>
-			<th><i class="fas fa-wrench" title="{{admin}}"></i></th>
-			<th><i class="fas fa-pencil-alt" title="{{write}}"></i></th>
+			<th title="{{receiver-help}}" data-toggle="tooltip">{{receiver}}</th>
+			<th title="{{resource-help}}" data-toggle="tooltip">{{resource}}</th>
+			<th><i class="fas fa-wrench" title="{{admin-help}}" data-toggle="tooltip"></i></th>
+			<th><i class="fas fa-pencil-alt" title="{{write-help}}" data-toggle="tooltip"></i></th>
 			<th>{{actions}}</th>
 		</tr>
 	</thead>
@@ -62,8 +65,28 @@
 			</div>
 			<div class="modal-body">
 				<div class="form-horizontal">
+
+					<div class="form-group required" data-group="resource">
+						<label class="col-xs-4 control-label" for="resource" title="{{resource-help}}" data-toggle="tooltip" data-container="body">{{resource}}</label>
+						<div class="col-xs-8">
+							<div class="input-group">
+								<div class="input-group-btn">
+									<button class="btn btn-default dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+										<i class="fas fa-users"></i>   <span class="caret"></span>
+									</button>
+									<ul class="dropdown-menu">
+										<li data-type="group" class="active"><a><i class="fas fa-users fa-fw"></i> {{group}}</a></li>
+										<li data-type="company"><a><i class="far fa-building fa-fw"></i> {{company}}</a></li>
+										<li data-type="tree"><a><i class="fas fa-code-branch fa-rotate-90 fa-fw"></i> {{tree}}</a></li>
+									</ul>
+								</div>
+								<input type="text" id="resource" class="form-control" required>
+							</div>
+						</div>
+					</div>
+
 					<div class="form-group required" data-group="receiver">
-						<label class="col-xs-4 control-label" for="receiver">{{receiver}}</label>
+						<label class="col-xs-4 control-label" for="receiver" title="{{receiver-help}}" data-toggle="tooltip" data-container="body">{{receiver}}</label>
 						<div class="col-xs-8">
 							<div class="input-group">
 								<div class="input-group-btn">
@@ -81,33 +104,15 @@
 						</div>
 					</div>
 
-					<div class="form-group required" data-group="resource">
-						<label class="col-xs-4 control-label" for="resource">{{resource}}</label>
-						<div class="col-xs-8">
-							<div class="input-group">
-								<div class="input-group-btn">
-									<button class="btn btn-default dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-										<i class="fas fa-users"></i>   <span class="caret"></span>
-									</button>
-									<ul class="dropdown-menu">
-										<li data-type="group" class="active"><a><i class="fas fa-users fa-fw"></i> {{group}}</a></li>
-										<li data-type="company"><a><i class="far fa-building fa-fw"></i> {{company}}</a></li>
-										<li data-type="tree"><a><i class="fas fa-code-branch fa-rotate-90 fa-fw"></i> {{tree}}</a></li>
-									</ul>
-								</div>
-								<input type="text" id="resource" class="form-control" required>
-							</div>
-						</div>
-					</div>
 					<div class="form-group">
 						<div class="col-sm-offset-4 col-sm-5">
-							<div class="checkbox">
+							<div class="checkbox" title="{{admin-help}}" data-toggle="tooltip" data-container="body">
 								<label for="canAdmin">
 									<input type="checkbox" id="canAdmin">
 									<span>{{admin}}</span>
 								</label>
 							</div>
-							<div class="checkbox">
+							<div class="checkbox" title="{{write-help}}" data-toggle="tooltip" data-container="body">
 								<label for="canWrite">
 									<input type="checkbox" id="canWrite">
 									<span>{{write}}</span>

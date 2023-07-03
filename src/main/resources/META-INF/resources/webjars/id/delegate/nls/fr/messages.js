@@ -6,8 +6,11 @@ define({
 	'delegate': 'Délégation',
 	'resourceType': 'Type de ressource',
 	'resource': 'Ressource',
+	'resource-help' : 'Une ressource d\'une délégation est le groupe, la société ou l\'arbre d\'organisation visible, que vous voulez partager avec un receveur. Seules les ressources avec le niveau d\'accès administration peuvent être partagées.',
 	'receiverType' : 'Type de receveur',
 	'receiver' : 'Receveur',
+	'receiver-help' : 'Un receveur d\'une délégation est le groupe, la société ou l\'utilisateur visible, qui va recevoir les droits de voir et optionnellement modifier et partager la ressource.',
+    'delegate-message': 'Les délégations permetent à des utilisateur, groupes et sociétés de partager une partie de leurs droits à d\'autres receveurs',
 	'tree': 'Arbre',
 	'delegate-audience': {
 		'receiver-user' : 'Utilisateur {{{[0]}} sera capable de ',

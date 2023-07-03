@@ -7,8 +7,11 @@ define({
 		'delegate': 'Delegate',
 		'resourceType': 'Resource type',
 		'resource': 'Resource',
+        'resource-help' : 'A resource within a delegate is the visible group, company or organizational tree, that you want to share with a receiver. Only resources with administration access levels can be shared.',
 		'receiverType' : 'Receiver type',
 		'receiver' : 'Receiver',
+    	'receiver-help' : 'A receiver within a delegate is the visible group, company or user, that will get the right to see, and optionally modify and share the resource.',
+		'delegate-message': 'The delegates allow users, groups and companies to share a part of their rights to other receivers',
 		'tree': 'Tree',
 		'delegate-audience': {
 			'receiver-user' : 'User {{{[0]}} will be able to ',
