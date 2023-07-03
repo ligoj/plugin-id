@@ -255,7 +255,7 @@ public abstract class AbstractMemCacheRepository {
 		final Map<CacheDataType, Map<String, ? extends ResourceOrg>> result = new EnumMap<>(CacheDataType.class);
 
 		// Fetch origin data
-		log.info("Fetching origin data ...");
+		log.info("Fetching origin identity data ...");
 		final var groups = getGroup().findAllNoCache();
 		result.put(CacheDataType.COMPANY, getCompany().findAllNoCache());
 		result.put(CacheDataType.GROUP, groups);
