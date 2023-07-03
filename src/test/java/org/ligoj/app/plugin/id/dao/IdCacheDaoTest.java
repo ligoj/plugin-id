@@ -3,15 +3,7 @@
  */
 package org.ligoj.app.plugin.id.dao;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 import jakarta.transaction.Transactional;
-
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -20,19 +12,8 @@ import org.ligoj.app.iam.CompanyOrg;
 import org.ligoj.app.iam.GroupOrg;
 import org.ligoj.app.iam.UserOrg;
 import org.ligoj.app.iam.dao.DelegateOrgRepository;
-import org.ligoj.app.iam.model.CacheCompany;
-import org.ligoj.app.iam.model.CacheGroup;
-import org.ligoj.app.iam.model.CacheMembership;
-import org.ligoj.app.iam.model.CacheUser;
-import org.ligoj.app.iam.model.DelegateOrg;
-import org.ligoj.app.iam.model.DelegateType;
-import org.ligoj.app.iam.model.ReceiverType;
-import org.ligoj.app.model.CacheProjectGroup;
-import org.ligoj.app.model.Node;
-import org.ligoj.app.model.Parameter;
-import org.ligoj.app.model.ParameterValue;
-import org.ligoj.app.model.Project;
-import org.ligoj.app.model.Subscription;
+import org.ligoj.app.iam.model.*;
+import org.ligoj.app.model.*;
 import org.ligoj.bootstrap.AbstractJpaTest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -40,11 +21,13 @@ import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
+import java.util.*;
+
 /**
  * Test class of {@link IdCacheDao}
  */
 @ExtendWith(SpringExtension.class)
-@ContextConfiguration(locations = { "classpath:/META-INF/spring/application-context-test.xml" })
+@ContextConfiguration(locations = {"classpath:/META-INF/spring/application-context-test.xml"})
 @Rollback
 @Transactional
 class IdCacheDaoTest extends AbstractJpaTest {
@@ -57,7 +40,7 @@ class IdCacheDaoTest extends AbstractJpaTest {
 
 	@Test
 	void addGroupToGroup() {
-		dao.create(new GroupOrg("dng3", "NameSG-other", null));
+		dao.create(new GroupOrg("dng3", "NameSG-other", null), Collections.emptyMap());
 		Assertions.assertEquals(0, em.createQuery("FROM CacheMembership WHERE group.id = :id AND subGroup.id = :sid")
 				.setParameter("id", "group").setParameter("sid", "namesg-other").getResultList().size());
 		dao.addGroupToGroup(new GroupOrg("dng3", "NameSG-other", null), new GroupOrg("dng", "Group", null));
@@ -92,24 +75,10 @@ class IdCacheDaoTest extends AbstractJpaTest {
 	}
 
 	@Test
-	void clear() {
-		Assertions.assertNotNull(em.find(CacheCompany.class, "another-company"));
-		Assertions.assertNotNull(em.find(CacheGroup.class, "group"));
-		Assertions.assertNotNull(em.find(CacheUser.class, "u0"));
-		Assertions.assertEquals(2, em.createQuery("FROM CacheMembership").getResultList().size());
-		em.clear();
-		dao.clear();
-		Assertions.assertEquals(0, em.createQuery("FROM CacheMembership").getResultList().size());
-		Assertions.assertEquals(0, em.createQuery("FROM CacheGroup").getResultList().size());
-		Assertions.assertEquals(0, em.createQuery("FROM CacheUser").getResultList().size());
-		Assertions.assertEquals(0, em.createQuery("FROM CacheMembership").getResultList().size());
-	}
-
-	@Test
 	void createGroup() {
 		Assertions.assertEquals(0, em.createQuery("FROM CacheGroup WHERE id = :id").setParameter("id", "namesg-other")
 				.getResultList().size());
-		dao.create(new GroupOrg("dng3", "NameSG-other", null));
+		dao.create(new GroupOrg("dng3", "NameSG-other", null), Collections.emptyMap());
 		final CacheGroup group = em.find(CacheGroup.class, "namesg-other");
 		Assertions.assertNotNull(group);
 		Assertions.assertEquals("namesg-other", group.getId());
@@ -309,7 +278,7 @@ class IdCacheDaoTest extends AbstractJpaTest {
 
 	@Test
 	void reset() {
-		final Map<String, CompanyOrg> companies = new HashMap<>();
+		final var companies = new HashMap<String, CompanyOrg>();
 		companies.put("company", new CompanyOrg("dn=company1", "Company"));
 		final Map<String, GroupOrg> groups = new HashMap<>();
 		final Set<String> members = new HashSet<>();

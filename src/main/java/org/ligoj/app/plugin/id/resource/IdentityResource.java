@@ -49,7 +49,7 @@ public class IdentityResource extends AbstractServicePlugin {
 	public static final String PARAMETER_OU = SERVICE_KEY + ":ou";
 
 	/**
-	 * Pattern determining the login is valid for a authentication.
+	 * Pattern determining the login is valid for an authentication.
 	 */
 	public static final String PARAMETER_UID_PATTERN = SERVICE_KEY + ":uid-pattern";
 
@@ -74,7 +74,7 @@ public class IdentityResource extends AbstractServicePlugin {
 
 	/**
 	 * Return <code>true</code> if the given user is an administrator.
-	 * @param user The user name.
+	 * @param user The username.
 	 * @return <code>true</code> if the given user is an administrator.
 	 */
 	@CacheResult(cacheName = "user-is-admin")

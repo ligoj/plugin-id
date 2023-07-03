@@ -3,19 +3,12 @@
  */
 package org.ligoj.app.plugin.id.dao;
 
-import java.util.Map;
-import java.util.Optional;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.BiConsumer;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.PersistenceContextType;
 import jakarta.transaction.Transactional;
-
 import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.time.DurationFormatUtils;
 import org.ligoj.app.iam.CompanyOrg;
@@ -23,21 +16,23 @@ import org.ligoj.app.iam.ContainerOrg;
 import org.ligoj.app.iam.GroupOrg;
 import org.ligoj.app.iam.UserOrg;
 import org.ligoj.app.iam.dao.DelegateOrgRepository;
-import org.ligoj.app.iam.model.CacheCompany;
-import org.ligoj.app.iam.model.CacheContainer;
-import org.ligoj.app.iam.model.CacheGroup;
-import org.ligoj.app.iam.model.CacheMembership;
-import org.ligoj.app.iam.model.CacheUser;
-import org.ligoj.app.iam.model.DelegateOrg;
-import org.ligoj.app.iam.model.DelegateType;
-import org.ligoj.app.iam.model.ReceiverType;
+import org.ligoj.app.iam.model.*;
 import org.ligoj.app.model.CacheProjectGroup;
 import org.ligoj.app.model.Project;
 import org.ligoj.bootstrap.core.DescribedBean;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Persistable;
 import org.springframework.stereotype.Repository;
 
-import lombok.extern.slf4j.Slf4j;
+import java.util.Collections;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * Cache synchronization from SQL cache to database.
@@ -62,10 +57,8 @@ public class IdCacheDao {
 	/**
 	 * Add a group to a group.
 	 *
-	 * @param subGroup
-	 *            the group to add the parent group.
-	 * @param group
-	 *            the group to update.
+	 * @param subGroup the group to add the parent group.
+	 * @param group    the group to update.
 	 */
 	public void addGroupToGroup(final GroupOrg subGroup, final GroupOrg group) {
 		addGroupToGroupInternal(em.find(CacheGroup.class, subGroup.getId()), group);
@@ -75,76 +68,81 @@ public class IdCacheDao {
 	 * Associate a group to another group.
 	 */
 	private void addGroupToGroupInternal(final CacheGroup entity, final GroupOrg group) {
-		final var membership = new CacheMembership();
-		final var cacheGroup = new CacheGroup();
-		cacheGroup.setId(group.getId());
-		membership.setSubGroup(entity);
-		membership.setGroup(cacheGroup);
-		em.persist(membership);
+		updateGroupToGroupInternal(entity, em.find(CacheGroup.class, group.getId()), Collections.emptySet());
 	}
 
 	/**
 	 * Add a user to a group.
 	 *
-	 * @param user
-	 *            the user to add to the group.
-	 * @param group
-	 *            the group to update.
+	 * @param user  the user to add to the group.
+	 * @param group the group to update.
 	 */
 	public void addUserToGroup(final UserOrg user, final GroupOrg group) {
-		addUserToGroupInternal(em.find(CacheUser.class, user.getId()), em.find(CacheGroup.class, group.getId()));
+		updateUserToGroupInternal(em.find(CacheUser.class, user.getId()), em.find(CacheGroup.class, group.getId()), Collections.emptySet());
 	}
 
 	/**
 	 * Associate a user to a group.
 	 */
-	private void addUserToGroupInternal(final CacheUser entity, final CacheGroup group) {
-		final var membership = new CacheMembership();
-		membership.setUser(entity);
-		membership.setGroup(group);
-		em.persist(membership);
+	private void updateUserToGroupInternal(final CacheUser entity, final CacheGroup group, final Set<String> cacheGroups) {
+		if (!cacheGroups.contains(group.getId())) {
+			// New membership
+			final var membership = new CacheMembership();
+			membership.setUser(entity);
+			membership.setGroup(group);
+			em.persist(membership);
+		}
 	}
 
 	/**
-	 * Remove all data from database.
+	 * Associate a subgroup to a group.
 	 */
-	public void clear() {
-		em.createQuery("DELETE FROM CacheProjectGroup").executeUpdate();
-		em.createQuery("DELETE FROM CacheMembership").executeUpdate();
-		em.createQuery("DELETE FROM CacheUser").executeUpdate();
-		em.createQuery("DELETE FROM CacheGroup").executeUpdate();
-		em.createQuery("DELETE FROM CacheCompany").executeUpdate();
-		em.flush();
-		em.clear();
+	private void updateGroupToGroupInternal(final CacheGroup subGroup, final CacheGroup group, final Set<String> cacheGroups) {
+		if (!cacheGroups.contains(group.getId())) {
+			// New membership
+			final var membership = new CacheMembership();
+			membership.setSubGroup(subGroup);
+			membership.setGroup(group);
+			em.persist(membership);
+		}
 	}
 
 	/**
 	 * Persist a new company and flush.
 	 *
-	 * @param company
-	 *            the company to persist.
+	 * @param company  the company to persist.
+	 * @param entities the existing entities by ID.
+	 * @return The persisted {@link CacheCompany}
+	 */
+	public CacheCompany create(final CompanyOrg company, final Map<String, CacheCompany> entities) {
+		return createInternal(company, entities);
+	}
+
+	/**
+	 * Persist a new company and flush.
+	 *
+	 * @param company the company to persist.
 	 * @return The persisted {@link CacheCompany}
 	 */
 	public CacheCompany create(final CompanyOrg company) {
-		return createInternal(company);
+		return createInternal(company, Collections.emptyMap());
 	}
 
 	/**
 	 * Persist a new group and flush.
 	 *
-	 * @param group
-	 *            the group to persist.
+	 * @param group    the group to persist.
+	 * @param entities the existing entities by ID.
 	 * @return The persisted {@link CacheGroup}
 	 */
-	public CacheGroup create(final GroupOrg group) {
-		return createInternal(group);
+	public CacheGroup create(final GroupOrg group, final Map<String, CacheGroup> entities) {
+		return createInternal(group, entities);
 	}
 
 	/**
 	 * Persist a new user and flush
 	 *
-	 * @param user
-	 *            the user to persist.
+	 * @param user the user to persist.
 	 */
 	public void create(final UserOrg user) {
 		final var entity = toCacheUser(user);
@@ -161,40 +159,58 @@ public class IdCacheDao {
 	}
 
 	/**
-	 * Persist a new company
+	 * Persist a new company. Depending on the cached entities, a 'merge' or a 'persist' is executed.
 	 */
-	private CacheCompany createInternal(final CompanyOrg company) {
-		final var cacheCompany = toCacheCompany(company);
-		em.persist(cacheCompany);
-		return cacheCompany;
-	}
-
-	/**
-	 * Persist a new group and return it.
-	 */
-	private CacheGroup createInternal(final GroupOrg group) {
-		final var entity = toCacheGroup(group);
-		em.persist(entity);
+	private CacheCompany createInternal(final CompanyOrg company, final Map<String, CacheCompany> entities) {
+		final CacheCompany entity;
+		if (entities.containsKey(company.getId())) {
+			// Update as needed
+			entity = toCacheCompany(company, entities.get(company.getId()));
+			em.merge(entity);
+		} else {
+			entity = toCacheCompany(company, new CacheCompany());
+			em.persist(entity);
+		}
 		return entity;
 	}
 
 	/**
-	 * Persist a new user
+	 * Persist/update a group and return it.
 	 */
-	private CacheUser createInternal(final UserOrg user, final Map<String, CacheCompany> companies) {
-		final var entity = toCacheUserInternal(user);
+	private CacheGroup createInternal(final GroupOrg group, final Map<String, CacheGroup> entities) {
+		final CacheGroup entity;
+		if (entities.containsKey(group.getId())) {
+			// Update as needed
+			entity = toCacheGroup(group, entities.get(group.getId()));
+			em.merge(entity);
+		} else {
+			entity = toCacheGroup(group, new CacheGroup());
+			em.persist(entity);
+		}
+		return entity;
+	}
 
-		// Set the company if defined
-		entity.setCompany(Optional.ofNullable(user.getCompany()).map(companies::get).orElse(null));
-		em.persist(entity);
+	/**
+	 * Persist/update new user and return it.
+	 */
+	private CacheUser createInternal(final UserOrg user, final Map<String, CacheUser> entities, final Map<String, CacheCompany> companies) {
+		final CacheUser entity;
+		if (entities.containsKey(user.getId())) {
+			// Update as needed
+			entity = toCacheUserInternal(user, entities.get(user.getId()), companies);
+			em.merge(entity);
+		} else {
+			entity = toCacheUserInternal(user, new CacheUser(), companies);
+			em.persist(entity);
+		}
+
 		return entity;
 	}
 
 	/**
 	 * Delete a company. Warning, it is assumed there is no more user associated to the deleted company.
 	 *
-	 * @param company
-	 *            the company to delete.
+	 * @param company the company to delete.
 	 */
 	public void delete(final CompanyOrg company) {
 		em.createQuery("DELETE FROM CacheCompany WHERE id=:id").setParameter("id", company.getId()).executeUpdate();
@@ -205,8 +221,7 @@ public class IdCacheDao {
 	/**
 	 * Delete a group.
 	 *
-	 * @param group
-	 *            the group to delete.
+	 * @param group the group to delete.
 	 */
 	public void delete(final GroupOrg group) {
 		em.createQuery("DELETE FROM CacheProjectGroup WHERE group.id=:id").setParameter("id", group.getId())
@@ -221,8 +236,7 @@ public class IdCacheDao {
 	/**
 	 * Delete a user.
 	 *
-	 * @param user
-	 *            the user to delete.
+	 * @param user the user to delete.
 	 */
 	public void delete(final UserOrg user) {
 		em.createQuery("DELETE FROM CacheMembership WHERE user.id=:id").setParameter("id", user.getId())
@@ -235,8 +249,7 @@ public class IdCacheDao {
 	/**
 	 * Remove all user membership to this group. Subgroups are not removed.
 	 *
-	 * @param group
-	 *            the group to empty.
+	 * @param group the group to empty.
 	 */
 	public void empty(final GroupOrg group) {
 		em.createQuery("DELETE FROM CacheMembership WHERE group.id=:id").setParameter("id", group.getId())
@@ -254,72 +267,137 @@ public class IdCacheDao {
 	}
 
 	/**
-	 * Persist companies and return saved entities
-	 */
-	private Map<String, CacheCompany> persistCompanies(final Map<String, CompanyOrg> companies) {
-		return companies.values().stream().map(this::create)
-				.collect(Collectors.toMap(CacheCompany::getId, Function.identity()));
-	}
-
-	/**
-	 * Persist groups and return saved entities
-	 */
-	private Map<String, CacheGroup> persistGroups(final Map<String, GroupOrg> groups) {
-		return groups.values().stream().map(this::create)
-				.collect(Collectors.toMap(CacheGroup::getId, Function.identity()));
-	}
-
-	/**
 	 * Persist association between users and groups.
 	 *
-	 * @param users
-	 *            The existing users.
-	 * @param cacheGroups
-	 *            The groups already persisted in database.
+	 * @param users       The new users reference.
+	 * @param groups      The new groups reference.
+	 * @param cacheGroups The groups already persisted in database.
 	 * @return the amount of persisted relations.
 	 */
-	private int persistMemberships(final Map<String, UserOrg> users, final Map<String, CacheGroup> cacheGroups,
+	private int persistUsersAndMemberships(final Map<String, UserOrg> users, final Map<String, GroupOrg> groups, final Map<String, CacheGroup> cacheGroups,
 			final Map<String, CacheCompany> cacheCompanies) {
+		final var cacheUsers = em.createQuery("FROM CacheUser", CacheUser.class)
+				.getResultList().stream().collect(Collectors.toMap(CacheUser::getId, Function.identity()));
+		final var userMemberships = em.createQuery("FROM CacheMembership WHERE user != null", CacheMembership.class)
+				.getResultList().stream().collect(
+						Collectors.groupingBy(c -> c.getUser().getId(),
+								Collectors.mapping(c -> c.getGroup().getId(),
+										Collectors.toSet())));
+		final var groupMemberships = em.createQuery("FROM CacheMembership WHERE subGroup != null", CacheMembership.class)
+				.getResultList().stream().collect(
+						Collectors.groupingBy(c -> c.getGroup().getId(),
+								Collectors.mapping(c -> c.getSubGroup().getId(),
+										Collectors.toSet())));
 		var memberships = 0;
-		for (final var user : users.values()) {
 
-			// Persist users
-			final var entity = createInternal(user, cacheCompanies);
+		// Persist users and memberships
+		for (final var user : users.values()) {
+			// Create/update user
+			final var entity = createInternal(user, cacheUsers, cacheCompanies);
+
+			// Create/update membership
+			final var cacheUserGroups = userMemberships.getOrDefault(user.getId(), Collections.emptySet());
 			for (final var group : user.getGroups()) {
-				addUserToGroupInternal(entity, cacheGroups.get(group));
-				memberships++;
+				updateUserToGroupInternal(entity, cacheGroups.get(group), cacheUserGroups);
 			}
+			memberships += user.getGroups().size();
+
+			// Remove old memberships
+			cacheUserGroups.removeAll(user.getGroups());
+			cacheUserGroups.forEach(g -> {
+				log.info("Deleting removed cache entry {}#{}-{} (user/group)", CacheMembership.class.getSimpleName(), user.getId(), g);
+				em.createQuery("DELETE FROM CacheMembership WHERE user.id=:user and group.id=:group")
+						.setParameter("user", user.getId())
+						.setParameter("group", g)
+						.executeUpdate();
+			});
 		}
+
+		// Persist subgroups and memberships
+		for (final var group : groups.values()) {
+			final var cachedGroup = cacheGroups.get(group.getId());
+			final var cacheSubGroups = groupMemberships.getOrDefault(group.getId(), Collections.emptySet());
+			for (final var subGroup : group.getSubGroups()) {
+				updateGroupToGroupInternal(cacheGroups.get(subGroup), cachedGroup, cacheSubGroups);
+			}
+			memberships += group.getSubGroups().size();
+
+			// Remove old memberships
+			cacheSubGroups.removeAll(group.getSubGroups());
+			cacheSubGroups.forEach(g -> {
+				log.info("Deleting removed cache entry {}#{}-{} (sub/group)", CacheMembership.class.getSimpleName(), g, group.getId());
+				em.createQuery("DELETE FROM CacheMembership WHERE subGroup.id=:subGroup and group.id=:group")
+						.setParameter("subGroup", g)
+						.setParameter("group", group.getId())
+						.executeUpdate();
+			});
+		}
+
+		// Remove old users
+		deleteOldCacheEntities(CacheUser.class, cacheUsers, users, u ->
+				em.createQuery("DELETE FROM CacheMembership WHERE user.id=:user")
+						.setParameter("user", u)
+						.executeUpdate());
 		return memberships;
 	}
 
 	/**
 	 * Persist association between project and groups.
 	 *
-	 * @param groups
-	 *            The groups already persisted in database.
+	 * @param groups The groups already persisted in database.
 	 * @return the amount of persisted relations.
 	 */
 	private int persistProjectGroups(final Map<String, CacheGroup> groups) {
+		final var entities = em.createQuery("FROM CacheProjectGroup WHERE group != null", CacheProjectGroup.class)
+				.getResultList().stream().collect(
+						Collectors.groupingBy(c -> c.getProject().getId(),
+								Collectors.mapping(c -> c.getGroup().getId(),
+										Collectors.toSet())));
+
 		final var allProjectGroup = cacheProjectGroupRepository.findAllProjectGroup();
 		for (final var projectGroup : allProjectGroup) {
-			final var project = new Project();
-			project.setId((int) projectGroup[0]);
-			final var entity = new CacheProjectGroup();
-			entity.setProject(project);
-			entity.setGroup(groups.get(projectGroup[1]));
-			em.persist(entity);
+			final var projectId = (int) projectGroup[0];
+			final var groupId = (String) projectGroup[1];
+			final var projectGroupIds = entities.get(projectId);
+			if (projectGroupIds == null || !projectGroupIds.contains(groupId)) {
+				// New association
+				final var project = new Project();
+				project.setId(projectId);
+				final var entity = new CacheProjectGroup();
+				entity.setProject(project);
+				entity.setGroup(groups.get(groupId));
+				em.persist(entity);
+			}
+
+			// Purge the old entries
+			if (projectGroupIds != null) {
+				projectGroupIds.remove(groupId);
+				if (projectGroupIds.isEmpty()) {
+					entities.remove(projectId);
+				}
+			}
 		}
+
+		// Remove old memberships
+		entities.keySet().forEach(project ->
+				entities.get(project).forEach(group -> {
+					log.info("Deleting removed cache entry {}#{}-{}", CacheProjectGroup.class.getSimpleName(), project, group);
+					em.createQuery("DELETE FROM CacheProjectGroup WHERE project.id=:project and group.id=:group")
+							.setParameter("project", project)
+							.setParameter("group", group)
+							.executeUpdate();
+				})
+		);
+
+
 		return allProjectGroup.size();
 	}
 
 	/**
 	 * Remove a group from a group.
 	 *
-	 * @param subGroup
-	 *            the user to remove from the group
-	 * @param group
-	 *            the group to update.
+	 * @param subGroup the user to remove from the group
+	 * @param group    the group to update.
 	 */
 	public void removeGroupFromGroup(final GroupOrg subGroup, final GroupOrg group) {
 		em.createQuery("DELETE FROM CacheMembership WHERE subGroup.id=:subGroup AND group.id=:group")
@@ -329,10 +407,8 @@ public class IdCacheDao {
 	/**
 	 * Remove a user from a group.
 	 *
-	 * @param user
-	 *            the user to remove from the group
-	 * @param group
-	 *            the group to update.
+	 * @param user  the user to remove from the group
+	 * @param group the group to update.
 	 */
 	public void removeUserFromGroup(final UserOrg user, final GroupOrg group) {
 		em.createQuery("DELETE FROM CacheMembership WHERE user.id=:user AND group.id=:group")
@@ -342,88 +418,126 @@ public class IdCacheDao {
 	/**
 	 * Reset the database cache with the provided groups/companies and users.
 	 *
-	 * @param users
-	 *            All users.
-	 * @param groups
-	 *            All groups.
-	 * @param companies
-	 *            All companies.
+	 * @param users     All users.
+	 * @param groups    All groups.
+	 * @param companies All companies.
 	 */
 	public void reset(final Map<String, CompanyOrg> companies, final Map<String, GroupOrg> groups,
 			final Map<String, UserOrg> users) {
 		final var start = System.currentTimeMillis();
 
-		// Remove all CACHE_* entries
-		log.info("Clearing cache entries ...");
-		clear();
-
 		// Insert data into database
-		log.info("Inserting cache entries: {} groups, {} companies, {} users", groups.size(), companies.size(), users.size());
-		final var cacheCompanies = persistCompanies(companies);
+		log.info("Updating cache entries: {} groups, {} companies, {} users", groups.size(), companies.size(), users.size());
 		em.flush();
-		final var cacheGroups = persistGroups(groups);
+		em.clear();
+
+		// Update companies
+		final var oldCompanies = em.createQuery("FROM CacheCompany", CacheCompany.class)
+				.getResultList().stream().collect(Collectors.toMap(CacheCompany::getId, Function.identity()));
+		final var cacheCompanies = companies.values().stream().map(c -> create(c, oldCompanies))
+				.collect(Collectors.toMap(CacheCompany::getId, Function.identity()));
 		em.flush();
-		final var memberships = persistMemberships(users, cacheGroups, cacheCompanies);
+
+		// Update groups
+		final var oldGroups = em.createQuery("FROM CacheGroup", CacheGroup.class)
+				.getResultList().stream().collect(Collectors.toMap(CacheGroup::getId, Function.identity()));
+		final var cacheGroups = groups.values().stream().map(c -> create(c, oldGroups))
+				.collect(Collectors.toMap(CacheGroup::getId, Function.identity()));
+		em.flush();
+
+		final var memberships = persistUsersAndMemberships(users, groups, cacheGroups, cacheCompanies);
 		em.flush();
 		final var subscribedProjects = persistProjectGroups(cacheGroups);
 		em.flush();
 		final var updatedDelegate = updateDelegateDn(cacheGroups, cacheCompanies);
 		em.flush();
+
+		// Remove old groups and companies
+		deleteOldCacheEntities(CacheGroup.class, oldGroups, groups, g -> {
+					log.info("Deleting removed cache entry {}#{} (sub/groups)", CacheMembership.class.getSimpleName(), g);
+					em.createQuery("DELETE FROM CacheMembership WHERE group.id=:group OR subGroup.id=:group")
+							.setParameter("group", g)
+							.executeUpdate();
+				}
+		);
+
+		deleteOldCacheEntities(CacheCompany.class, oldCompanies, companies, null);
+		em.flush();
+
 		em.clear();
+
+		// Cleanup, remove deleted
+
 		log.info("Updated cache: {} groups, {} companies, {} users, {} memberships, {} project groups, {} updated delegates in {}",
-			cacheGroups.size(), cacheCompanies.size(), users.size(), memberships, subscribedProjects, updatedDelegate,
-			DurationFormatUtils.formatDurationHMS(System.currentTimeMillis() - start));
+				groups.size(), companies.size(), users.size(), memberships, subscribedProjects, updatedDelegate,
+				DurationFormatUtils.formatDurationHMS(System.currentTimeMillis() - start));
 		cacheRefreshTime = System.currentTimeMillis();
+	}
+
+	private <T extends Persistable<String>> void deleteOldCacheEntities(final Class<T> entityClass, final Map<String, T> oldEntities,
+			final Map<String, ?> newEntities,
+			Consumer<String> onDelete) {
+		final var ids = oldEntities.keySet();
+		ids.removeAll(newEntities.keySet());
+		if (onDelete != null) {
+			ids.forEach(onDelete);
+		}
+		ids.forEach(u -> {
+			log.info("Deleting removed cache entry {}#{}", entityClass.getSimpleName(), u);
+			em.createQuery("DELETE FROM " + entityClass.getSimpleName() + " WHERE id=:id")
+					.setParameter("id", u)
+					.executeUpdate();
+		});
 	}
 
 	/**
 	 * Transform company to JPA.
 	 */
-	private CacheCompany toCacheCompany(final CompanyOrg company) {
-		return fillCacheContainer(company, new CacheCompany());
+	private CacheCompany toCacheCompany(final CompanyOrg company, final CacheCompany entity) {
+		return fillCacheContainer(company, entity);
 	}
 
 	/**
 	 * Transform group to JPA.
 	 */
-	private CacheGroup toCacheGroup(final GroupOrg group) {
-		return fillCacheContainer(group, new CacheGroup());
+	private CacheGroup toCacheGroup(final GroupOrg group, final CacheGroup entity) {
+		return fillCacheContainer(group, entity);
 	}
 
 	/**
 	 * Transform user to JPA.
 	 */
 	private CacheUser toCacheUser(final UserOrg user) {
-		final var entity = toCacheUserInternal(user);
-
-		// Set the company if defined
-		entity.setCompany(Optional.ofNullable(user.getCompany()).map(c -> {
-			final var company = new CacheCompany();
-			company.setId(user.getCompany());
-			return company;
-		}).orElse(null));
-		return entity;
+		return toCacheUserInternal(user, new CacheUser(), null);
 	}
 
 	/**
 	 * Transform user to JPA.
 	 */
-	private CacheUser toCacheUserInternal(final UserOrg user) {
-		final var entity = new CacheUser();
+	private CacheUser toCacheUserInternal(final UserOrg user, final CacheUser entity, final Map<String, CacheCompany> companies) {
 		entity.setId(user.getId());
 		entity.setFirstName(user.getFirstName());
 		entity.setLastName(user.getLastName());
 		if (CollectionUtils.isNotEmpty(user.getMails())) {
 			entity.setMails(user.getMails().get(0));
 		}
+
+		// Set the company if defined
+		entity.setCompany(Optional.ofNullable(user.getCompany()).map(c -> {
+			if (companies == null) {
+				final var company = new CacheCompany();
+				company.setId(c);
+				return company;
+			}
+			return companies.get(c);
+		}).orElse(null));
 		return entity;
 	}
 
 	/**
 	 * Update given user.
 	 *
-	 * @param user
-	 *            user to update.
+	 * @param user user to update.
 	 */
 	public void update(final UserOrg user) {
 		final var entity = toCacheUser(user);
@@ -456,12 +570,9 @@ public class IdCacheDao {
 	/**
 	 * Update the receiver DN of delegates having an old DN. Delete all delegate having an invalid relation.
 	 *
-	 * @param containers
-	 *            The existing containers.
-	 * @param receiverType
-	 *            The receiver type to update. And also the same type as the given containers.
-	 * @param resourceType
-	 *            The delegate resource type to update. And also the same type as the given containers.
+	 * @param containers   The existing containers.
+	 * @param receiverType The receiver type to update. And also the same type as the given containers.
+	 * @param resourceType The delegate resource type to update. And also the same type as the given containers.
 	 * @return The amount of updated DN references.
 	 */
 	private long updateDelegateDn(final Map<String, ? extends CacheContainer> containers,

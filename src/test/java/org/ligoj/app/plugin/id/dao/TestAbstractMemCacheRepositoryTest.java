@@ -102,6 +102,7 @@ class TestAbstractMemCacheRepositoryTest extends AbstractDataGeneratorTest {
 
 		final var ldapData = repository.getData();
 
+		//noinspection unchecked
 		Assertions.assertEquals("Company", ((INamableBean<String>) ldapData.get(CacheDataType.COMPANY).get("company")).getName());
 		Assertions.assertEquals("dnc", ldapData.get(CacheDataType.COMPANY).get("company").getDn());
 		final var groupLdap = (GroupOrg) ldapData.get(CacheDataType.GROUP).get("group");
@@ -191,7 +192,7 @@ class TestAbstractMemCacheRepositoryTest extends AbstractDataGeneratorTest {
 
 		Assertions.assertEquals(newGroupLdap, repository.create(newGroupLdap));
 
-		Mockito.verify(repository.cache).create(newGroupLdap);
+		Mockito.verify(repository.cache).create(newGroupLdap, Collections.emptyMap());
 		Assertions.assertEquals(newGroupLdap, groups.get("g3"));
 	}
 

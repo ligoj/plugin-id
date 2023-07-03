@@ -3,6 +3,7 @@
  */
 package org.ligoj.app.plugin.id.dao;
 
+import java.util.Collections;
 import java.util.EnumMap;
 import java.util.Map;
 
@@ -112,7 +113,7 @@ public abstract class AbstractMemCacheRepository {
 	 * @return <code>group</code>
 	 */
 	public GroupOrg create(final GroupOrg group) {
-		cache.create(group);
+		cache.create(group, Collections.emptyMap());
 		getGroup().findAll().put(group.getId(), group);
 		return group;
 	}
