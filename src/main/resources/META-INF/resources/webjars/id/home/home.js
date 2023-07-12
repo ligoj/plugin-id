@@ -67,19 +67,23 @@ define(function () {
 
 			// User edition pop-up
 			_('popup').on('shown.bs.modal', function () {
-				current.currentId ? _('groups').select2('focus') : _('id').focus();
-			}).on('submit', function (e) {
-				e.preventDefault();
-				current.save();
-				return false;
+				if (current.currentId) {
+				    _('groups').select2('focus');
+				} else {
+				    _('id').focus();
+				}
 			}).on('show.bs.modal', function (event) {
 				const $source = $(event.relatedTarget);
 				const $tr = $source.closest('tr');
-				let uc = ($tr.length && current.table.fnGetData($tr[0])) || {};
+				const uc = ($tr.length && current.table.fnGetData($tr[0])) || {};
 
 				// 'Create another user' option, is only available for creation mode
 				_('create-another').removeAttr('checked').closest('label')[uc.id ? 'addClass' : 'removeClass']('hide');
 				current.fillPopup(uc);
+			}).on('submit', function (e) {
+				e.preventDefault();
+				current.save();
+				return false;
 			});
 			_('company').select2({
 				minimumInputLength: 0,
@@ -173,7 +177,14 @@ define(function () {
 				current.table && current.table.fnFilter($(this).val());
 			});
 
-			_('table').on('click', '.reset', current.resetUserPassword).on('click', '.delete', current.deleteUser).on('click', '.lock', current.lockUser).on('click', '.unlock', current.unlockUser).on('click', '.isolate', current.isolateUser).on('click', '.restore', current.restoreUser).on('click', '.update', function () {
+			_('table')
+			.on('click', '.reset', current.resetUserPassword)
+			.on('click', '.delete', current.deleteUser)
+			.on('click', '.lock', current.lockUser)
+			.on('click', '.unlock', current.unlockUser)
+			.on('click', '.isolate', current.isolateUser)
+			.on('click', '.restore', current.restoreUser)
+			.on('click', '.update', function () {
 				current.$parent.requireAgreement(current.showPopup, $(this));
 			});
 
@@ -385,7 +396,7 @@ define(function () {
 			}
 
 			// Mark as read-only the fields the user cannot update
-			const $inputs = _('popup').find('input[type="text"]').not('#groups').not('.select2-input,.select2-focusser');
+			const $inputs = _('popup').find('input[type="text"]').not('#groups').not('.select2-input,.select2-focusser,#id');
 			if (uc.canWrite || !uc.id) {
 				$inputs.removeAttr('readonly');
 				if (uc.isolated) {
