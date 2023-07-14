@@ -333,7 +333,7 @@ public class IdCacheDao {
 			});
 		}
 
-		// Remove old users
+		// Remove old users and related membership
 		deleteOldCacheEntities(CacheUser.class, cacheUsers, users, u ->
 				em.createQuery("DELETE FROM CacheMembership WHERE user.id=:user")
 						.setParameter("user", u)
@@ -455,18 +455,18 @@ public class IdCacheDao {
 		// Remove old groups and companies
 		deleteOldCacheEntities(CacheGroup.class, oldGroups, groups, g -> {
 					log.info("Deleting removed cache entry {}#{} (sub/groups)", CacheMembership.class.getSimpleName(), g);
-					em.createQuery("DELETE FROM CacheMembership WHERE group.id=:group OR subGroup.id=:group")
-							.setParameter("group", g)
-							.executeUpdate();
+			em.createQuery("DELETE FROM CacheMembership WHERE group.id=:group OR subGroup.id=:group")
+					.setParameter("group", g)
+					.executeUpdate();
+			em.createQuery("DELETE FROM CacheProjectGroup WHERE group.id=:group")
+					.setParameter("group", g)
+					.executeUpdate();
 				}
 		);
 
 		deleteOldCacheEntities(CacheCompany.class, oldCompanies, companies, null);
 		em.flush();
-
 		em.clear();
-
-		// Cleanup, remove deleted
 
 		log.info("Updated cache: {} groups, {} companies, {} users, {} memberships, {} project groups, {} updated delegates in {}",
 				groups.size(), companies.size(), users.size(), memberships, subscribedProjects, updatedDelegate,
