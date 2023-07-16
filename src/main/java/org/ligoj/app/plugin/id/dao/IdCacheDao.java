@@ -359,7 +359,7 @@ public class IdCacheDao {
 			final var projectId = (int) projectGroup[0];
 			final var groupId = (String) projectGroup[1];
 			final var projectGroupIds = entities.get(projectId);
-			if (projectGroupIds == null || !projectGroupIds.contains(groupId)) {
+			if ((projectGroupIds == null || !projectGroupIds.contains(groupId)) && groups.containsKey(groupId)) {
 				// New association
 				final var project = new Project();
 				project.setId(projectId);

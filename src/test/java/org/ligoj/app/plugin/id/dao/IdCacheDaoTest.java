@@ -40,17 +40,17 @@ class IdCacheDaoTest extends AbstractJpaTest {
 
 	@Test
 	void addGroupToGroup() {
-		dao.create(new GroupOrg("dng3", "NameSG-other", null), Collections.emptyMap());
+		dao.create(new GroupOrg("dng3", "Name-SG-other", null), Collections.emptyMap());
 		Assertions.assertEquals(0, em.createQuery("FROM CacheMembership WHERE group.id = :id AND subGroup.id = :sid")
-				.setParameter("id", "group").setParameter("sid", "namesg-other").getResultList().size());
-		dao.addGroupToGroup(new GroupOrg("dng3", "NameSG-other", null), new GroupOrg("dng", "Group", null));
+				.setParameter("id", "group").setParameter("sid", "name-sg-other").getResultList().size());
+		dao.addGroupToGroup(new GroupOrg("dng3", "Name-SG-other", null), new GroupOrg("dng", "Group", null));
 
 		final List<CacheMembership> memberships = em
 				.createQuery("FROM CacheMembership WHERE group.id = :id AND subGroup.id = :sid", CacheMembership.class)
-				.setParameter("id", "group").setParameter("sid", "namesg-other").getResultList();
+				.setParameter("id", "group").setParameter("sid", "name-sg-other").getResultList();
 		Assertions.assertEquals(1, memberships.size());
 		Assertions.assertEquals("group", memberships.get(0).getGroup().getId());
-		Assertions.assertEquals("namesg-other", memberships.get(0).getSubGroup().getId());
+		Assertions.assertEquals("name-sg-other", memberships.get(0).getSubGroup().getId());
 		Assertions.assertNull(memberships.get(0).getUser());
 	}
 
@@ -76,13 +76,13 @@ class IdCacheDaoTest extends AbstractJpaTest {
 
 	@Test
 	void createGroup() {
-		Assertions.assertEquals(0, em.createQuery("FROM CacheGroup WHERE id = :id").setParameter("id", "namesg-other")
+		Assertions.assertEquals(0, em.createQuery("FROM CacheGroup WHERE id = :id").setParameter("id", "name-sg-other")
 				.getResultList().size());
-		dao.create(new GroupOrg("dng3", "NameSG-other", null), Collections.emptyMap());
-		final CacheGroup group = em.find(CacheGroup.class, "namesg-other");
+		dao.create(new GroupOrg("dng3", "Name-SG-other", null), Collections.emptyMap());
+		final CacheGroup group = em.find(CacheGroup.class, "name-sg-other");
 		Assertions.assertNotNull(group);
-		Assertions.assertEquals("namesg-other", group.getId());
-		Assertions.assertEquals("NameSG-other", group.getName());
+		Assertions.assertEquals("name-sg-other", group.getId());
+		Assertions.assertEquals("Name-SG-other", group.getName());
 		Assertions.assertEquals("dng3", group.getDescription());
 	}
 
@@ -298,6 +298,25 @@ class IdCacheDaoTest extends AbstractJpaTest {
 
 		// Add delegates related to some containers
 
+		// Broken, non-existing project related group
+		final var brokenGroup = new CacheGroup();
+		brokenGroup.setId("broken-project-group");
+		brokenGroup.setName("broken_project_group");
+		brokenGroup.setDescription("cn=broken_project_group");
+		em.persist(brokenGroup);
+
+		final var project = new Project();
+		project.setName("broken_project_group");
+		project.setPkey("broken-project-group");
+		em.persist(project);
+		em.flush();
+
+		final var brokenProjectGroup = new CacheProjectGroup();
+		brokenProjectGroup.setGroup(brokenGroup);
+		brokenProjectGroup.setProject(project);
+		em.persist(brokenProjectGroup);
+		em.flush();
+
 		// Broken, non-existing related group
 		final DelegateOrg brokenDelegate = new DelegateOrg();
 		brokenDelegate.setName("broken");
@@ -379,9 +398,9 @@ class IdCacheDaoTest extends AbstractJpaTest {
 				delegateOrgRepository.findOneExpected(up2dateDelegate.getId()).getReceiverDn());
 
 		// Check the project groups
-		final List<CacheProjectGroup> pgroups = em.createQuery("FROM CacheProjectGroup", CacheProjectGroup.class)
+		final List<CacheProjectGroup> pGroups = em.createQuery("FROM CacheProjectGroup", CacheProjectGroup.class)
 				.getResultList();
-		Assertions.assertEquals(1, pgroups.size());
+		Assertions.assertEquals(1, pGroups.size());
 	}
 
 	@Test
