@@ -1,4 +1,4 @@
 parameter.id;data;node.id;subscription.id!
-service:id:group;ligoj-gstack;;5
+service:id:group;ligoj-jupiter;;5
 service:id:group;broken;;6
 service:id:uid-pattern;.*;service:id:ldap:dig

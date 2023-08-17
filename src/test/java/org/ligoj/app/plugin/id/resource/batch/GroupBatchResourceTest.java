@@ -99,14 +99,14 @@ class GroupBatchResourceTest extends AbstractBatchTest {
 	// "name", "type", "parent", "owner", "seealso", "department"
 	@Test
 	void fullFull() throws IOException, InterruptedException {
-		final BatchTaskVo<GroupImportEntry> importTask = full("Special;Fonction;Operations;700301,700302;fdaugan,alongchu;jdoe5,wuser");
+		final BatchTaskVo<GroupImportEntry> importTask = full("Special;Fonction;Operations;700301,700302;fdaugan,admin-test;jdoe5,wuser");
 
 		// Check the result
 		final GroupImportEntry importEntry = checkImportTask(importTask);
 		Assertions.assertEquals("Special", importEntry.getName());
 		Assertions.assertEquals("Fonction", importEntry.getScope());
 		Assertions.assertEquals("Operations", importEntry.getParent());
-		Assertions.assertEquals("fdaugan,alongchu", importEntry.getOwner());
+		Assertions.assertEquals("fdaugan,admin-test", importEntry.getOwner());
 		Assertions.assertEquals("jdoe5,wuser", importEntry.getAssistant());
 		Assertions.assertEquals("700301,700302", importEntry.getDepartment());
 		Assertions.assertTrue(importEntry.getStatus());
