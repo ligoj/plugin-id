@@ -298,7 +298,7 @@ public class UserOrgResource extends AbstractOrgResource {
 	 *
 	 * @param user    The user to move.
 	 * @param group   The group to update.
-	 * @param updater The function to execute on computed groups regarding the givent user: add or remove
+	 * @param updater The function to execute on computed groups regarding the given user: add or remove
 	 */
 	private void updateGroupUser(final String user, final String group,
 			final BiPredicate<Collection<String>, String> updater) {
@@ -505,7 +505,7 @@ public class UserOrgResource extends AbstractOrgResource {
 	 * @param delegates the available delegates of current principal user.
 	 * @param userOrg   The internal user entry to update.
 	 * @param groups    The writable groups identifiers to be set to the user in addition of the non-visible or writable
-	 *                  groups by the current principal user..
+	 *                  groups by the current principal user.
 	 * @return the merged group identifiers to be set internally.
 	 */
 	private Collection<String> mergeGroups(final List<DelegateOrg> delegates, final UserOrg userOrg,
