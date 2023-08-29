@@ -576,8 +576,11 @@ public class UserOrgResource extends AbstractOrgResource {
 		final var predicateFalse = Arrays.stream(equals)
 				.filter(f -> !StringUtils.equalsIgnoreCase(StringUtils.trimToNull(f.apply(user2)),
 						StringUtils.trimToNull(f.apply(user1)))).findFirst().orElse(null);
-		return predicateFalse != null && hasAttributeChange(user1, true,
-				String.format("'%s' != '%s'", predicateFalse.apply(user1), predicateFalse.apply(user2)));
+		if (predicateFalse != null) {
+			return hasAttributeChange(user1, true,
+					String.format("'%s' != '%s'", predicateFalse.apply(user1), predicateFalse.apply(user2)));
+		}
+		return false;
 	}
 
 	/**
