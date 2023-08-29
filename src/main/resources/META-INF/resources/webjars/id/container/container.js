@@ -82,7 +82,7 @@ define(function () {
 					success: function (id) {
 						$('.import-summary').html('Processing...');
 						current.$parent.scheduleUploadStep('service/id/group/batch', id, function() {
-							current.table && current.table.api().ajax.reload();
+							current.table?.api().ajax.reload();
 						});
 					}
 				});
@@ -218,7 +218,7 @@ define(function () {
 				data: JSON.stringify(data),
 				success: function () {
 					notifyManager.notify(Handlebars.compile(current.$messages.created)(data.name));
-					current.table && current.table.api().ajax.reload();
+					current.table?.api().ajax.reload();
 					_('popup').modal('hide');
 				}
 			});
@@ -235,7 +235,7 @@ define(function () {
 					url: REST_PATH + 'service/id/' + current.containerType + '/' + id,
 					success: function () {
 						notifyManager.notify(Handlebars.compile(current.$messages.deleted)(id));
-						current.table && current.table.api().ajax.reload();
+						current.table?.api().ajax.reload();
 					}
 				});
 			} else {
@@ -258,7 +258,7 @@ define(function () {
 					url: REST_PATH + 'service/id/' + current.containerType + '/empty/' + id,
 					success: function () {
 						notifyManager.notify(Handlebars.compile(current.$messages.updated)(id));
-						current.table && current.table.api().ajax.reload();
+						current.table?.api().ajax.reload();
 					}
 				});
 			} else {

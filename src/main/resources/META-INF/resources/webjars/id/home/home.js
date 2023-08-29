@@ -4,7 +4,7 @@
 define(function () {
 	function validateMail() {
 		const mail = _('mail').val();
-		if (mail.match(/^.*@(gmail|yahoo|free|sfr|live|hotmail)\.[a-zA-Z]+$/i)) {
+		if (mail.match(/^.*@(gmail|yahoo|free|sfr|live|hotmail)\.[a-z]+$/i)) {
 			validationManager.addWarn(_('mail'), 'warn-mail-perso');
 		} else {
 			validationManager.reset(_('mail'));
@@ -174,7 +174,7 @@ define(function () {
 			});
 			// Global datatables filter
 			_('search').on('keyup', function () {
-				current.table && current.table.fnFilter($(this).val());
+				current.table?.fnFilter($(this).val());
 			});
 
 			_('table')
@@ -352,7 +352,7 @@ define(function () {
 					} else {
 						notifyManager.notify(Handlebars.compile(current.$messages['created-account'])(data));
 					}
-					current.table && current.table.api().ajax.reload();
+					current.table?.api().ajax.reload();
 					if ($('#create-another:checked').length) {
 						// Only reset the popup
 						current.fillPopup({});
@@ -380,7 +380,7 @@ define(function () {
 			_('lastName').val(uc.lastName || '');
 			_('department').val(uc.department || '');
 			_('localId').val(uc.localId || '');
-			_('mail').val((uc.mails && uc.mails[0]) || '');
+			_('mail').val((uc.mails?.[0]) || '');
 			_('company').select2('val', uc.company || null);
 			_('groups').select2('data', (uc.groups || []).map(g => ({
 				id: g.name,
@@ -418,7 +418,7 @@ define(function () {
 					url: REST_PATH + 'service/id/user/' + id,
 					success: function () {
 						notifyManager.notify(Handlebars.compile(current.$messages.deleted)(name));
-						current.table && current.table.api().ajax.reload();
+						current.table?.api().ajax.reload();
 					}
 				});
 			} else {
@@ -475,7 +475,7 @@ define(function () {
 					url: REST_PATH + 'service/id/user/' + id + '/' + operation,
 					success: function (data) {
 						notifyManager.notify(Handlebars.compile(current.$messages[operated + '-confirm'])(name));
-						current.table && current.table.api().ajax.reload();
+						current.table?.api().ajax.reload();
 						if (operation === 'reset') {
 							// Callback the popup to display the generated password
 							_('generated-password').val(data);
@@ -504,7 +504,7 @@ define(function () {
 				url: REST_PATH + 'service/id/user/' + id + '/' + operation,
 				success: function () {
 					notifyManager.notify(Handlebars.compile(current.$messages[operated + '-confirm'])(name));
-					current.table && current.table.api().ajax.reload();
+					current.table?.api().ajax.reload();
 				}
 			});
 		}

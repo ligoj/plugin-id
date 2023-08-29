@@ -102,7 +102,7 @@ define(function () {
 				}
 			}).on('change', function (e) {
 				// Member might be selected, enable the 'add' button
-				if (e.added && e.added.id) {
+				if (e.added?.id) {
 					// Enable the button
 					_('add-user').removeAttr('disabled');
 				} else {
@@ -127,14 +127,14 @@ define(function () {
 					type: 'PUT',
 					success: function () {
 						notifyManager.notify(Handlebars.compile(current.$messages['service:id:added-member'])([user, group]));
-						current.table && current.table.api().ajax.reload();
+						current.table?.api().ajax.reload();
 					}
 				});
 			});
 
 			// Global datatables filter
 			_('subscribe-configuration-id-search').on('keyup', function () {
-				current.table && current.table.fnFilter($(this).val());
+				current.table?.fnFilter($(this).val());
 			});
 
 			// Remove the selected user from the current group
@@ -147,7 +147,7 @@ define(function () {
 					type: 'DELETE',
 					success: function () {
 						notifyManager.notify(Handlebars.compile(current.$messages['service:id:removed-member'])([user, group]));
-						current.table && current.table.api().ajax.reload();
+						current.table?.api().ajax.reload();
 					}
 				});
 			});

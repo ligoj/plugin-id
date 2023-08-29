@@ -50,7 +50,7 @@ define(function () {
 				const $source = $(event.relatedTarget);
 				const $tr = $source.closest('tr');
 				let uc = ($tr.length && current.table.fnGetData($tr[0])) || undefined;
-				uc = uc && uc.id ? uc : {};
+				uc = uc?.id ? uc : {};
 				current.currentId = uc.id;
 				_('modal-title').html(Handlebars.compile(current.$messages['container-scope-title'])(current.$messages[current.containerType]));
 				_('name').val(uc.name || null);
@@ -63,7 +63,7 @@ define(function () {
 
 			// Global datatables filter
 			_('search').on('keyup', function () {
-				current.table && current.table.fnFilter($(this).val());
+				current.table?.fnFilter($(this).val());
 			});
 
 			// Also initialize the datatables component
@@ -125,7 +125,7 @@ define(function () {
 				success: function (data) {
 					notifyManager.notify(Handlebars.compile(
 						current.$messages[current.currentId ? 'updated' : 'created'])(current.currentId || data));
-					current.table && current.table.api().ajax.reload();
+					current.table?.api().ajax.reload();
 					_('popup').modal('hide');
 				}
 			});
@@ -142,7 +142,7 @@ define(function () {
 					url: REST_PATH + 'service/id/container-scope/' + id,
 					success: function () {
 						notifyManager.notify(Handlebars.compile(current.$messages.deleted)(text + '(' + id + ')'));
-						current.table && current.table.api().ajax.reload();
+						current.table?.api().ajax.reload();
 					}
 				});
 			} else {
