@@ -141,7 +141,7 @@ public class ContainerScopeResource {
 	}
 
 	/**
-	 * Retrieve a type by its name.
+	 * Retrieve a {@link ContainerScope} by its name and type.
 	 *
 	 * @param type Scope type name.
 	 * @param name Scope name.
@@ -153,6 +153,12 @@ public class ContainerScopeResource {
 		return repository.findAllBy("type", type, new String[]{"name"}, name).stream().findFirst().orElseThrow(() -> new EntityNotFoundException(name));
 	}
 
+	/**
+	 * Return a {@link ContainerScope}  by its name only.
+	 *
+	 * @param name Scope name.
+	 * @return corresponding {@link ContainerScope}.
+	 */
 	@GET
 	@Path("name/{name}")
 	public ContainerScope findByName(@PathParam("name") final String name) {

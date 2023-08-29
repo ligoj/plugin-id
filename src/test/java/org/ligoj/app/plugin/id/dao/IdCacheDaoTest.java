@@ -45,7 +45,7 @@ class IdCacheDaoTest extends AbstractJpaTest {
 				.setParameter("id", "group").setParameter("sid", "name-sg-other").getResultList().size());
 		dao.addGroupToGroup(new GroupOrg("dng3", "Name-SG-other", null), new GroupOrg("dng", "Group", null));
 
-		final List<CacheMembership> memberships = em
+		var memberships = em
 				.createQuery("FROM CacheMembership WHERE group.id = :id AND subGroup.id = :sid", CacheMembership.class)
 				.setParameter("id", "group").setParameter("sid", "name-sg-other").getResultList();
 		Assertions.assertEquals(1, memberships.size());
@@ -79,7 +79,7 @@ class IdCacheDaoTest extends AbstractJpaTest {
 		Assertions.assertEquals(0, em.createQuery("FROM CacheGroup WHERE id = :id").setParameter("id", "name-sg-other")
 				.getResultList().size());
 		dao.create(new GroupOrg("dng3", "Name-SG-other", null), Collections.emptyMap());
-		final CacheGroup group = em.find(CacheGroup.class, "name-sg-other");
+		var group = em.find(CacheGroup.class, "name-sg-other");
 		Assertions.assertNotNull(group);
 		Assertions.assertEquals("name-sg-other", group.getId());
 		Assertions.assertEquals("Name-SG-other", group.getName());
@@ -87,10 +87,25 @@ class IdCacheDaoTest extends AbstractJpaTest {
 	}
 
 	@Test
+	void createCompany() {
+		Assertions.assertEquals(0, em.createQuery("FROM CacheCompany WHERE id = :id").setParameter("id", "new-company")
+				.getResultList().size());
+		dao.create(new CompanyOrg("New Company", "new-company"));
+		final var company = em.find(CacheCompany.class, "new-company");
+		Assertions.assertNotNull(company);
+		Assertions.assertEquals("new-company", company.getId());
+		Assertions.assertEquals("new-company", company.getName());
+		Assertions.assertEquals("New Company", company.getDescription());
+
+		// Redundant creation
+		dao.create(new CompanyOrg("New Company", "new-company"), Map.of("new-company", company));
+	}
+
+	@Test
 	void createUser() {
 		Assertions.assertEquals(1, em.createQuery("FROM CacheMembership WHERE user.id = :id").setParameter("id", "u0")
 				.getResultList().size());
-		final CacheCompany company = new CacheCompany();
+		final var company = new CacheCompany();
 		company.setId("company");
 		company.setName("Company");
 		company.setDescription("cn=company");
@@ -110,12 +125,12 @@ class IdCacheDaoTest extends AbstractJpaTest {
 	void deleteCompany() {
 		Assertions.assertEquals(2, em.createQuery("FROM CacheMembership WHERE group.id = :id")
 				.setParameter("id", "group").getResultList().size());
-		final UserOrg user = new UserOrg();
+		final var user = new UserOrg();
 		user.setId("u0");
 		dao.delete(user);
 		Assertions.assertNotNull(em.find(CacheGroup.class, "group"));
 		em.clear();
-		final CompanyOrg company = new CompanyOrg("dna", "another-company");
+		final var company = new CompanyOrg("dna", "another-company");
 
 		dao.delete(company);
 
@@ -133,7 +148,7 @@ class IdCacheDaoTest extends AbstractJpaTest {
 		Assertions.assertNotNull(em.find(CacheUser.class, "u0"));
 		Assertions.assertNotNull(em.find(CacheGroup.class, "group"));
 		em.clear();
-		final CompanyOrg company = new CompanyOrg("dna", "another-company");
+		final var company = new CompanyOrg("dna", "another-company");
 		Assertions.assertThrows(DataIntegrityViolationException.class, () -> dao.delete(company));
 	}
 
@@ -141,7 +156,7 @@ class IdCacheDaoTest extends AbstractJpaTest {
 	void deleteGroup() {
 		Assertions.assertEquals(2, em.createQuery("FROM CacheMembership WHERE group.id = :id")
 				.setParameter("id", "group").getResultList().size());
-		final GroupOrg group = new GroupOrg("dng", "Group", null);
+		final var group = new GroupOrg("dng", "Group", null);
 
 		dao.delete(group);
 
@@ -156,7 +171,7 @@ class IdCacheDaoTest extends AbstractJpaTest {
 	void deleteUser() {
 		Assertions.assertEquals(1, em.createQuery("FROM CacheMembership WHERE user.id = :id").setParameter("id", "u0")
 				.getResultList().size());
-		final UserOrg user = new UserOrg();
+		final var user = new UserOrg();
 		user.setId("u0");
 
 		dao.delete(user);
@@ -172,7 +187,7 @@ class IdCacheDaoTest extends AbstractJpaTest {
 	void empty() {
 		Assertions.assertEquals(2, em.createQuery("FROM CacheMembership WHERE group.id = :id")
 				.setParameter("id", "group").getResultList().size());
-		final GroupOrg group = new GroupOrg("dng", "Group", null);
+		final var group = new GroupOrg("dng", "Group", null);
 		dao.empty(group);
 		Assertions.assertNotNull(em.find(CacheGroup.class, "group"));
 		Assertions.assertEquals(0, em.createQuery("FROM CacheMembership WHERE group.id = :id")
@@ -181,59 +196,108 @@ class IdCacheDaoTest extends AbstractJpaTest {
 
 	@BeforeEach
 	void initDbCache() {
-		final CacheCompany company = new CacheCompany();
+		final var company = new CacheCompany();
 		company.setId("another-company");
 		company.setName("Another-Company");
 		company.setDescription("dna"); // DN
 		em.persist(company);
-		final CacheGroup group = new CacheGroup();
+		final var group = new CacheGroup();
 		group.setId("group");
 		group.setName("Group");
 		group.setDescription("dng"); // DN
 		em.persist(group);
-		final CacheGroup subgroup = new CacheGroup();
+
+		final var deletedGroup = new CacheGroup();
+		deletedGroup.setId("old-group");
+		deletedGroup.setName("OldGroup");
+		deletedGroup.setDescription("old-dng"); // DN
+		em.persist(deletedGroup);
+
+		final var subgroup = new CacheGroup();
 		subgroup.setId("another-group");
 		subgroup.setName("Another-Group");
 		subgroup.setDescription("dng2"); // DN
 		em.persist(subgroup);
-		final CacheUser user = new CacheUser();
+		final var user = new CacheUser();
 		user.setId("u0");
 		user.setCompany(company);
 		em.persist(user);
-		final CacheMembership membership = new CacheMembership();
+		final var membership = new CacheMembership();
 		membership.setGroup(group);
 		membership.setUser(user);
 		em.persist(membership);
-		final CacheMembership membershipSubGroup = new CacheMembership();
+
+		final var membershipSubGroup = new CacheMembership();
 		membershipSubGroup.setGroup(group);
 		membershipSubGroup.setSubGroup(subgroup);
 		em.persist(membershipSubGroup);
 
 		// Project group
-		final Project project = new Project();
+		final var project = new Project();
 		project.setPkey("pj");
 		project.setName("Project");
 		project.setTeamLeader("u0");
 		em.persist(project);
 
-		final Node node = new Node();
+		final var node = new Node();
 		node.setId("service:id");
 		node.setName("ID");
 		em.persist(node);
 
-		final Subscription subscription = new Subscription();
+		// Valid subscription
+		var subscription = new Subscription();
 		subscription.setNode(node);
 		subscription.setProject(project);
 		em.persist(subscription);
 
-		final Parameter parameter = new Parameter();
+		final var parameter = new Parameter();
 		parameter.setOwner(node);
 		parameter.setId("service:id:group");
 		em.persist(parameter);
 
-		final ParameterValue value = new ParameterValue();
+		var value = new ParameterValue();
 		value.setParameter(parameter);
 		value.setData("group");
+		value.setSubscription(subscription);
+		em.persist(value);
+
+		// Subscription related to a deleted group, with "CacheProjectGroup" and already linked
+		subscription = new Subscription();
+		subscription.setNode(node);
+		subscription.setProject(project);
+		em.persist(subscription);
+		value = new ParameterValue();
+		value.setParameter(parameter);
+		value.setData("group2");
+		value.setSubscription(subscription);
+		em.persist(value);
+
+		// Subscription related to a deleted group
+		subscription = new Subscription();
+		subscription.setNode(node);
+		subscription.setProject(project);
+		em.persist(subscription);
+
+		value = new ParameterValue();
+		value.setParameter(parameter);
+		value.setData("deleted-group");
+		value.setSubscription(subscription);
+		em.persist(value);
+
+		// Subscription related to another deleted group, without "CacheProjectGroup"
+		final var projectUnlinked = new Project();
+		projectUnlinked.setPkey("pj2");
+		projectUnlinked.setName("Project2");
+		projectUnlinked.setTeamLeader("u0");
+		em.persist(projectUnlinked);
+		subscription = new Subscription();
+		subscription.setNode(node);
+		subscription.setProject(projectUnlinked);
+		em.persist(subscription);
+
+		value = new ParameterValue();
+		value.setParameter(parameter);
+		value.setData("deleted-group2");
 		value.setSubscription(subscription);
 		em.persist(value);
 
@@ -242,7 +306,7 @@ class IdCacheDaoTest extends AbstractJpaTest {
 	}
 
 	private UserOrg newUser() {
-		final UserOrg user = new UserOrg();
+		final var user = new UserOrg();
 		user.setId("u");
 		user.setFirstName("f");
 		user.setLastName("l");
@@ -253,7 +317,7 @@ class IdCacheDaoTest extends AbstractJpaTest {
 	}
 
 	private UserOrg newUser(final String login) {
-		final UserOrg user = new UserOrg();
+		final var user = new UserOrg();
 		user.setId(login);
 		return user;
 	}
@@ -280,21 +344,88 @@ class IdCacheDaoTest extends AbstractJpaTest {
 	void reset() {
 		final var companies = new HashMap<String, CompanyOrg>();
 		companies.put("company", new CompanyOrg("dn=company1", "Company"));
-		final Map<String, GroupOrg> groups = new HashMap<>();
-		final Set<String> members = new HashSet<>();
+		final var groups = new HashMap<String, GroupOrg>();
+		final var members = new HashSet<String>();
 		members.add("u");
-		final GroupOrg group = new GroupOrg("dn=group1", "Group", members);
+		final var group = new GroupOrg("dn=group1", "Group", members);
+		final var group2 = new GroupOrg("dn=group2", "Group2", members);
+		final var group3 = new GroupOrg("dn=group3", "Group3", members);
+		group.setSubGroups(Set.of("group"));
 		groups.put("group", group);
-		final UserOrg user = newUser();
-		final UserOrg user2 = new UserOrg();
+		groups.put("group2", group2);
+		groups.put("group3", group3);
+		final var user = newUser();
+		final var user2 = new UserOrg();
 		user2.setId("u2");
 		user2.setFirstName("f");
 		user2.setLastName("l");
 		user2.setCompany("company");
 		user2.setGroups(Collections.emptyList());
-		final Map<String, UserOrg> users = new HashMap<>();
+		final var users = new HashMap<String, UserOrg>();
 		users.put("u", user);
 		users.put("u2", user2);
+
+		// Updated users
+		final var cacheUser2 = new CacheUser();
+		cacheUser2.setId("u2");
+		cacheUser2.setCompany(em.find(CacheCompany.class, "company"));
+		em.persist(cacheUser2);
+		final var cacheMembership = new CacheMembership();
+		cacheMembership.setGroup(em.find(CacheGroup.class, "old-group")); // Membership will be removed
+		cacheMembership.setUser(cacheUser2);
+		em.persist(cacheMembership);
+		final var cacheGroup2 = new CacheGroup();
+		cacheGroup2.setId("group2");
+		cacheGroup2.setName("Group2");
+		cacheGroup2.setDescription("dng2"); // DN
+		em.persist(cacheGroup2);
+
+		// No change for these memberships
+		final var cacheMembership2 = new CacheMembership();
+		cacheMembership2.setGroup(cacheGroup2);
+		cacheMembership2.setUser(cacheUser2);
+		em.persist(cacheMembership2);
+		final var membershipSubGroup = new CacheMembership();
+		membershipSubGroup.setGroup(em.find(CacheGroup.class, "group"));
+		membershipSubGroup.setSubGroup(cacheGroup2);
+		em.persist(membershipSubGroup);
+
+		final var deletedCompany = new CacheCompany();
+		deletedCompany.setId("deleted-company");
+		deletedCompany.setDescription("deleted-company");
+		deletedCompany.setName("deleted-company");
+		em.persist(deletedCompany);
+		final var deletedGroup = new CacheGroup();
+		deletedGroup.setId("deleted-group");
+		deletedGroup.setDescription("deleted-group");
+		deletedGroup.setName("deleted-group");
+		em.persist(deletedGroup);
+		final var deletedUser = new CacheUser();
+		deletedUser.setId("deleted-user");
+		deletedUser.setCompany(deletedCompany);
+		em.persist(deletedUser);
+		final var deletedMembershipFromDeletedUser = new CacheMembership();
+		deletedMembershipFromDeletedUser.setGroup(deletedGroup);
+		deletedMembershipFromDeletedUser.setUser(deletedUser);
+		em.persist(deletedMembershipFromDeletedUser);
+
+
+		// Unlinked memberships
+		final var cacheGroup3 = new CacheGroup();
+		cacheGroup3.setId("group3");
+		cacheGroup3.setDescription("Group3");
+		cacheGroup3.setName("group3");
+		em.persist(cacheGroup3);
+
+		final var unlinkedMembershipSubGroup = new CacheMembership();
+		unlinkedMembershipSubGroup.setGroup(em.find(CacheGroup.class, "group"));
+		unlinkedMembershipSubGroup.setSubGroup(cacheGroup3);
+		em.persist(unlinkedMembershipSubGroup);
+
+		final var unlinkedMembership = new CacheMembership();
+		unlinkedMembership.setGroup(deletedGroup);
+		unlinkedMembership.setUser(deletedUser);
+		em.persist(unlinkedMembership);
 
 		// Add delegates related to some containers
 
@@ -311,14 +442,20 @@ class IdCacheDaoTest extends AbstractJpaTest {
 		em.persist(project);
 		em.flush();
 
-		final var brokenProjectGroup = new CacheProjectGroup();
-		brokenProjectGroup.setGroup(brokenGroup);
-		brokenProjectGroup.setProject(project);
-		em.persist(brokenProjectGroup);
+		final var unlinkedProjectGroup = new CacheProjectGroup();
+		unlinkedProjectGroup.setGroup(cacheGroup2);
+		unlinkedProjectGroup.setProject(em.createQuery("FROM Project WHERE pkey = :pkey", Project.class).setParameter("pkey", "pj").getSingleResult());
+		em.persist(unlinkedProjectGroup);
+		em.flush();
+
+		final var brokenProjectGroup2 = new CacheProjectGroup();
+		brokenProjectGroup2.setGroup(brokenGroup);
+		brokenProjectGroup2.setProject(project);
+		em.persist(brokenProjectGroup2);
 		em.flush();
 
 		// Broken, non-existing related group
-		final DelegateOrg brokenDelegate = new DelegateOrg();
+		final var brokenDelegate = new DelegateOrg();
 		brokenDelegate.setName("broken");
 		brokenDelegate.setDn("dn=group1");
 		brokenDelegate.setType(DelegateType.GROUP);
@@ -328,7 +465,7 @@ class IdCacheDaoTest extends AbstractJpaTest {
 		delegateOrgRepository.saveAndFlush(brokenDelegate);
 
 		// Valid but DN need update
-		final DelegateOrg updateDelegate = new DelegateOrg();
+		final var updateDelegate = new DelegateOrg();
 		updateDelegate.setName("company");
 		updateDelegate.setDn("dn=old-company");
 		updateDelegate.setType(DelegateType.COMPANY);
@@ -338,7 +475,7 @@ class IdCacheDaoTest extends AbstractJpaTest {
 		delegateOrgRepository.saveAndFlush(updateDelegate);
 
 		// Valid but DN and up-to-date
-		final DelegateOrg up2dateDelegate = new DelegateOrg();
+		final var up2dateDelegate = new DelegateOrg();
 		up2dateDelegate.setName("company");
 		up2dateDelegate.setDn("dn=company1");
 		up2dateDelegate.setType(DelegateType.COMPANY);
@@ -362,21 +499,21 @@ class IdCacheDaoTest extends AbstractJpaTest {
 		Assertions.assertNull(em.find(CacheUser.class, "u0"));
 
 		// Check the new state
-		final CacheCompany company = em.find(CacheCompany.class, "company");
+		final var company = em.find(CacheCompany.class, "company");
 		Assertions.assertNotNull(company);
 		Assertions.assertEquals("company", company.getId());
 		Assertions.assertEquals("Company", company.getName());
 		Assertions.assertEquals("dn=company1", company.getDescription());
 
-		final CacheGroup group2 = em.find(CacheGroup.class, "group");
-		Assertions.assertNotNull(group2);
-		Assertions.assertEquals("group", group2.getId());
-		Assertions.assertEquals("Group", group2.getName());
-		Assertions.assertEquals("dn=group1", group2.getDescription());
+		final var groupFromEm = em.find(CacheGroup.class, "group");
+		Assertions.assertNotNull(groupFromEm);
+		Assertions.assertEquals("group", groupFromEm.getId());
+		Assertions.assertEquals("Group", groupFromEm.getName());
+		Assertions.assertEquals("dn=group1", groupFromEm.getDescription());
 		checkUser();
-		final List<CacheMembership> memberships = em.createQuery("FROM CacheMembership", CacheMembership.class)
+		final var memberships = em.createQuery("FROM CacheMembership", CacheMembership.class)
 				.getResultList();
-		Assertions.assertEquals(1, memberships.size());
+		Assertions.assertEquals(2, memberships.size());
 		Assertions.assertEquals("group", memberships.get(0).getGroup().getId());
 		Assertions.assertNull(memberships.get(0).getSubGroup());
 		Assertions.assertEquals("u", memberships.get(0).getUser().getId());
@@ -398,16 +535,19 @@ class IdCacheDaoTest extends AbstractJpaTest {
 				delegateOrgRepository.findOneExpected(up2dateDelegate.getId()).getReceiverDn());
 
 		// Check the project groups
-		final List<CacheProjectGroup> pGroups = em.createQuery("FROM CacheProjectGroup", CacheProjectGroup.class)
+		final var pGroups = em.createQuery("FROM CacheProjectGroup", CacheProjectGroup.class)
 				.getResultList();
-		Assertions.assertEquals(1, pGroups.size());
+		Assertions.assertEquals(2, pGroups.size()); // Group & Group2
+
+		// Redundant reset
+		dao.reset(companies, groups, users);
 	}
 
 	@Test
 	void updateUser() {
 		Assertions.assertEquals(1, em.createQuery("FROM CacheMembership WHERE user.id = :id").setParameter("id", "u0")
 				.getResultList().size());
-		final UserOrg newUser = newUser();
+		final var newUser = newUser();
 		newUser.setId("u0");
 		newUser.setFirstName("F");
 		newUser.setLastName("L");
@@ -417,14 +557,14 @@ class IdCacheDaoTest extends AbstractJpaTest {
 
 		Assertions.assertNotNull(em.find(CacheCompany.class, "another-company"));
 		Assertions.assertNotNull(em.find(CacheGroup.class, "group"));
-		final CacheUser user3 = em.find(CacheUser.class, "u0");
+		final var user3 = em.find(CacheUser.class, "u0");
 		Assertions.assertNotNull(user3);
 		Assertions.assertEquals("u0", user3.getId());
 		Assertions.assertEquals("another-company", user3.getCompany().getId());
 		Assertions.assertEquals("F", user3.getFirstName());
 		Assertions.assertEquals("L", user3.getLastName());
 		Assertions.assertNull(user3.getMails());
-		final List<CacheMembership> memberships = em
+		final var memberships = em
 				.createQuery("FROM CacheMembership WHERE user.id = :id", CacheMembership.class).setParameter("id", "u0")
 				.getResultList();
 		Assertions.assertEquals(1, memberships.size());

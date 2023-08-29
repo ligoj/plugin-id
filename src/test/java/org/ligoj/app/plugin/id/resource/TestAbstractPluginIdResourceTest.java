@@ -57,11 +57,11 @@ class TestAbstractPluginIdResourceTest extends AbstractJpaTest {
 
 	@Test
 	void refreshConfiguration() throws InterruptedException {
-		final AtomicInteger deathCounter = new AtomicInteger();
+		final var deathCounter = new AtomicInteger();
 		Mockito.when(TestAbstractPluginIdResourceTest.this.userRepository.getCompanyRepository()).thenAnswer(
 				(Answer<ICompanyRepository>) invocation -> {
 					Thread.sleep(200);
-					if (deathCounter.incrementAndGet() >2) {
+					if (deathCounter.incrementAndGet() > 2) {
 						throw new RuntimeException("Expected lock exception for coverage");
 					}
 					return null;
@@ -93,6 +93,7 @@ class TestAbstractPluginIdResourceTest extends AbstractJpaTest {
 		thread1.join();
 		thread2.join();
 		thread3.join();
+		Assertions.assertEquals(3, deathCounter.get());
 	}
 
 	@Test

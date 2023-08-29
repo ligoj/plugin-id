@@ -3,19 +3,11 @@
  */
 package org.ligoj.app.plugin.id.resource;
 
-import java.util.Collection;
-import java.util.List;
-
 import jakarta.transaction.Transactional;
-import jakarta.ws.rs.GET;
-import jakarta.ws.rs.POST;
-import jakarta.ws.rs.Path;
-import jakarta.ws.rs.PathParam;
-import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.UriInfo;
-
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.ligoj.app.api.Normalizer;
@@ -27,6 +19,7 @@ import org.ligoj.app.iam.dao.CacheGroupRepository;
 import org.ligoj.app.iam.model.CacheGroup;
 import org.ligoj.app.model.ContainerType;
 import org.ligoj.app.plugin.id.DnUtils;
+import org.ligoj.app.plugin.id.dao.IdCacheDao;
 import org.ligoj.app.plugin.id.model.ContainerScope;
 import org.ligoj.bootstrap.core.json.TableItem;
 import org.ligoj.bootstrap.core.json.datatable.DataTableAttributes;
@@ -34,6 +27,9 @@ import org.ligoj.bootstrap.core.resource.BusinessException;
 import org.ligoj.bootstrap.core.validation.ValidationJsonException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.util.Collection;
+import java.util.List;
 
 /**
  * Group resource.
@@ -47,7 +43,7 @@ public class GroupResource extends AbstractContainerResource<GroupOrg, GroupEdit
 	/**
 	 * Attribute name used as filter and path.
 	 */
-	public static final String GROUP_ATTRIBUTE = "group";
+	public static final String GROUP_ATTRIBUTE = IdCacheDao.GROUP_ATTRIBUTE;
 
 	@Autowired
 	private CompanyResource organizationResource;

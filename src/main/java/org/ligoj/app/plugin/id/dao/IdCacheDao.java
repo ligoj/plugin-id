@@ -42,6 +42,15 @@ import java.util.stream.Collectors;
 @Slf4j
 public class IdCacheDao {
 
+	/**
+	 * Attribute name used as filter and path "group".
+	 */
+	public static final String GROUP_ATTRIBUTE = "group";
+	/**
+	 * Attribute name used as filter and path "user".
+	 */
+	public static final String USER_ATTRIBUTE = "user";
+
 	@PersistenceContext(type = PersistenceContextType.TRANSACTION, unitName = "pu")
 	private EntityManager em;
 
@@ -82,7 +91,7 @@ public class IdCacheDao {
 	}
 
 	/**
-	 * Associate a user to a group.
+	 * Associate a user to a group (membership) using the cache groups to prevent duplicate membership entries.
 	 */
 	private void updateUserToGroupInternal(final CacheUser entity, final CacheGroup group, final Set<String> cacheGroups) {
 		if (!cacheGroups.contains(group.getId())) {
@@ -95,7 +104,7 @@ public class IdCacheDao {
 	}
 
 	/**
-	 * Associate a subgroup to a group.
+	 * Associate a subgroup to a group using the cache groups to prevent duplicate entries.
 	 */
 	private void updateGroupToGroupInternal(final CacheGroup subGroup, final CacheGroup group, final Set<String> cacheGroups) {
 		if (!cacheGroups.contains(group.getId())) {
@@ -307,8 +316,8 @@ public class IdCacheDao {
 			cacheUserGroups.forEach(g -> {
 				log.info("Deleting removed cache entry {}#{}-{} (user/group)", CacheMembership.class.getSimpleName(), user.getId(), g);
 				em.createQuery("DELETE FROM CacheMembership WHERE user.id=:user and group.id=:group")
-						.setParameter("user", user.getId())
-						.setParameter("group", g)
+						.setParameter(USER_ATTRIBUTE, user.getId())
+						.setParameter(GROUP_ATTRIBUTE, g)
 						.executeUpdate();
 			});
 		}
@@ -328,7 +337,7 @@ public class IdCacheDao {
 				log.info("Deleting removed cache entry {}#{}-{} (sub/group)", CacheMembership.class.getSimpleName(), g, group.getId());
 				em.createQuery("DELETE FROM CacheMembership WHERE subGroup.id=:subGroup and group.id=:group")
 						.setParameter("subGroup", g)
-						.setParameter("group", group.getId())
+						.setParameter(GROUP_ATTRIBUTE, group.getId())
 						.executeUpdate();
 			});
 		}
@@ -336,7 +345,7 @@ public class IdCacheDao {
 		// Remove old users and related membership
 		deleteOldCacheEntities(CacheUser.class, cacheUsers, users, u ->
 				em.createQuery("DELETE FROM CacheMembership WHERE user.id=:user")
-						.setParameter("user", u)
+						.setParameter(USER_ATTRIBUTE, u)
 						.executeUpdate());
 		return memberships;
 	}
@@ -372,9 +381,6 @@ public class IdCacheDao {
 			// Purge the old entries
 			if (projectGroupIds != null) {
 				projectGroupIds.remove(groupId);
-				if (projectGroupIds.isEmpty()) {
-					entities.remove(projectId);
-				}
 			}
 		}
 
@@ -384,7 +390,7 @@ public class IdCacheDao {
 					log.info("Deleting removed cache entry {}#{}-{}", CacheProjectGroup.class.getSimpleName(), project, group);
 					em.createQuery("DELETE FROM CacheProjectGroup WHERE project.id=:project and group.id=:group")
 							.setParameter("project", project)
-							.setParameter("group", group)
+							.setParameter(GROUP_ATTRIBUTE, group)
 							.executeUpdate();
 				})
 		);
@@ -401,7 +407,7 @@ public class IdCacheDao {
 	 */
 	public void removeGroupFromGroup(final GroupOrg subGroup, final GroupOrg group) {
 		em.createQuery("DELETE FROM CacheMembership WHERE subGroup.id=:subGroup AND group.id=:group")
-				.setParameter("group", group.getId()).setParameter("subGroup", subGroup.getId()).executeUpdate();
+				.setParameter(GROUP_ATTRIBUTE, group.getId()).setParameter("subGroup", subGroup.getId()).executeUpdate();
 	}
 
 	/**
@@ -412,7 +418,7 @@ public class IdCacheDao {
 	 */
 	public void removeUserFromGroup(final UserOrg user, final GroupOrg group) {
 		em.createQuery("DELETE FROM CacheMembership WHERE user.id=:user AND group.id=:group")
-				.setParameter("group", group.getId()).setParameter("user", user.getId()).executeUpdate();
+				.setParameter(GROUP_ATTRIBUTE, group.getId()).setParameter(USER_ATTRIBUTE, user.getId()).executeUpdate();
 	}
 
 	/**
@@ -455,12 +461,12 @@ public class IdCacheDao {
 		// Remove old groups and companies
 		deleteOldCacheEntities(CacheGroup.class, oldGroups, groups, g -> {
 					log.info("Deleting removed cache entry {}#{} (sub/groups)", CacheMembership.class.getSimpleName(), g);
-			em.createQuery("DELETE FROM CacheMembership WHERE group.id=:group OR subGroup.id=:group")
-					.setParameter("group", g)
-					.executeUpdate();
-			em.createQuery("DELETE FROM CacheProjectGroup WHERE group.id=:group")
-					.setParameter("group", g)
-					.executeUpdate();
+					em.createQuery("DELETE FROM CacheMembership WHERE group.id=:group OR subGroup.id=:group")
+							.setParameter(GROUP_ATTRIBUTE, g)
+							.executeUpdate();
+					em.createQuery("DELETE FROM CacheProjectGroup WHERE group.id=:group")
+							.setParameter(GROUP_ATTRIBUTE, g)
+							.executeUpdate();
 				}
 		);
 
