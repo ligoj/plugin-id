@@ -38,8 +38,8 @@ public abstract class AbstractContainerResourceTest extends AbstractAppTest {
 	@BeforeEach
 	void prepareData() throws IOException {
 		persistEntities("csv",
-				new Class[] { DelegateOrg.class, ContainerScope.class, CacheCompany.class, CacheUser.class, CacheGroup.class, CacheMembership.class },
-				StandardCharsets.UTF_8.name());
+				new Class<?>[] { DelegateOrg.class, ContainerScope.class, CacheCompany.class, CacheUser.class, CacheGroup.class, CacheMembership.class },
+				StandardCharsets.UTF_8);
 		cacheManager.getCache("container-scopes").clear();
 
 		iamProvider = Mockito.mock(IamProvider.class);

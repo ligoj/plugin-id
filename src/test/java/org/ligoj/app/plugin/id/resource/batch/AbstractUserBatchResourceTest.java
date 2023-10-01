@@ -3,11 +3,7 @@
  */
 package org.ligoj.app.plugin.id.resource.batch;
 
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-
 import jakarta.transaction.Transactional;
-
 import org.apache.cxf.jaxrs.provider.ServerProviderFactory;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -18,11 +14,13 @@ import org.ligoj.bootstrap.core.SpringUtils;
 import org.ligoj.bootstrap.resource.system.session.SessionSettings;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
-import org.mockito.stubbing.Answer;
 import org.springframework.context.ApplicationContext;
 import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 
 /**
  * Test of {@link UserOrgResource}
@@ -69,7 +67,7 @@ abstract class AbstractUserBatchResourceTest extends AbstractBatchTest {
 
 	@BeforeEach
 	void prepareData() throws IOException {
-		persistEntities("csv", new Class[] { DelegateOrg.class }, StandardCharsets.UTF_8.name());
+		persistEntities("csv", new Class<?>[] { DelegateOrg.class }, StandardCharsets.UTF_8);
 	}
 
 }

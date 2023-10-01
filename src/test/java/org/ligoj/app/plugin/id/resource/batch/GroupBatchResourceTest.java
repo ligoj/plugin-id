@@ -159,7 +159,7 @@ class GroupBatchResourceTest extends AbstractBatchTest {
 
 	@BeforeEach
 	void prepareData() throws IOException {
-		persistEntities("csv", new Class[] { DelegateOrg.class }, StandardCharsets.UTF_8.name());
+		persistEntities("csv", new Class<?>[] { DelegateOrg.class }, StandardCharsets.UTF_8);
 	}
 
 	@AfterEach

@@ -4,6 +4,7 @@
 package org.ligoj.app.plugin.id.resource;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 import jakarta.transaction.Transactional;
@@ -45,7 +46,7 @@ class ContainerScopeResourceTest extends AbstractJpaTest {
 
 	@BeforeEach
 	void setUpEntities() throws IOException {
-		persistEntities("csv", new Class[] { ContainerScope.class }, "UTF-8");
+		persistEntities("csv", new Class<?>[] { ContainerScope.class }, StandardCharsets.UTF_8);
 	}
 
 	@Test
