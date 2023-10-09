@@ -37,4 +37,9 @@ public class ContainerEditionVo {
 	@NotNull
 	private Integer scope;
 
+	/**
+	 * Optional parent/company group name. Must exist.
+	 */
+	private String parent;
+
 }

@@ -61,7 +61,7 @@ class UserOrgResourceTest extends AbstractAppTest {
 
 	@BeforeEach
 	void prepareData() throws IOException {
-		persistEntities("csv", new Class[]{DelegateOrg.class, CacheCompany.class, CacheGroup.class, CacheUser.class,
+		persistEntities("csv", new Class<?>[]{DelegateOrg.class, CacheCompany.class, CacheGroup.class, CacheUser.class,
 				CacheMembership.class}, StandardCharsets.UTF_8);
 		iamProvider = Mockito.mock(IamProvider.class);
 		final IamConfiguration configuration = Mockito.mock(IamConfiguration.class);
@@ -546,9 +546,6 @@ class UserOrgResourceTest extends AbstractAppTest {
 				new HashSet<>(Arrays.asList("wuser", "user1")));
 		final var groupsMap = new HashMap<String, GroupOrg>();
 		groupsMap.put("dig", groupOrg1);
-		final var user = new UserOrg();
-		user.setCompany("ing");
-		user.setGroups(Collections.singleton("dig"));
 		Mockito.when(userRepository.findByIdExpected("mtuyer", "wuser")).thenThrow(
 				new ValidationJsonException("id", BusinessException.KEY_UNKNOWN_ID, "0", "user", "1", "mtuyer"));
 		Mockito.when(companyRepository.findById("ing")).thenReturn(company);

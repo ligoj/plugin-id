@@ -61,7 +61,13 @@ define(function () {
 				const $tr = $source.closest('tr');
 				current.currentId = ($tr.length && current.table.fnGetData($tr[0]))?.id;
 				_('name').val(null);
-				_('modal-title').html(current.$messages[current.containerType]);
+				_('parent').val(null);
+				_('modal-title').html(`${current.$messages['new']} ${current.$messages[current.containerType]}`);
+				if (current.containerType == 'group') {
+				    _('popup').find('.d-group').removeClass('hidden');
+				} else {
+                    _('popup').find('.d-group').addClass('hidden');
+                }
 			});
 			_('importPopup').on('show.bs.modal', function () {
 				$('.import-progress').attr('aria-valuenow', '0').css('width', '0%').removeClass('progress-bar progress-bar-striped progress-bar-striped').empty();
@@ -121,6 +127,34 @@ define(function () {
 					}
 				}
 			});
+
+			_('parent').select2({
+				minimumInputLength: 0,
+				formatSearching: function () {
+					return current.$messages.loading;
+				},
+				ajax: {
+					url: () => REST_PATH + 'service/id/' + current.containerType + '/filter/write',
+					dataType: 'json',
+					data: function (term, page) {
+						return {
+							q: term, // search term
+							rows: 15,
+							page: page,
+							sidx: 'name',
+							sord: 'asc'
+						};
+					},
+					results: function (data, page) {
+						const result = data.data.map(d=>({id: d, text: d}));
+						return {
+							more: data.recordsFiltered > page * 10,
+							results: result
+						};
+					}
+				}
+			});
+
 		},
 
 		/**
@@ -205,7 +239,8 @@ define(function () {
 
 		formToObject: () => ({
 				name: _('name').val(),
-				scope: _('scope').val()
+				scope: _('scope').val(),
+				parent: _('parent').val()
 		}),
 
 		save: function () {

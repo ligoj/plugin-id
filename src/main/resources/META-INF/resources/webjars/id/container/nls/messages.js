@@ -5,6 +5,7 @@ define({
 	root: {
 		'create-another': 'Create another group',
 		'locked-details': 'A locked container is a type considered as organizational or vital',
+		'parent': 'Parent',
 		'group-import-message': 'Group import is a blocking exclusive repository operation',
 		'empty-group': 'Remove users from this group',
 		'empty-group-title': 'Remove users',

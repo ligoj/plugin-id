@@ -3,23 +3,15 @@
  */
 package org.ligoj.app.plugin.id.dao;
 
+import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
+import org.ligoj.app.api.Normalizer;
+import org.ligoj.app.iam.*;
+import org.springframework.beans.factory.annotation.Autowired;
+
 import java.util.Collections;
 import java.util.EnumMap;
 import java.util.Map;
-
-import org.ligoj.app.api.Normalizer;
-import org.ligoj.app.iam.CompanyOrg;
-import org.ligoj.app.iam.GroupOrg;
-import org.ligoj.app.iam.ICompanyRepository;
-import org.ligoj.app.iam.IGroupRepository;
-import org.ligoj.app.iam.IUserRepository;
-import org.ligoj.app.iam.IamProvider;
-import org.ligoj.app.iam.ResourceOrg;
-import org.ligoj.app.iam.UserOrg;
-import org.springframework.beans.factory.annotation.Autowired;
-
-import lombok.Setter;
-import lombok.extern.slf4j.Slf4j;
 
 /**
  * In memory cache with JPA back-end cache for users/groups/companies.
@@ -63,19 +55,18 @@ public abstract class AbstractMemCacheRepository {
 	protected Map<CacheDataType, Map<String, ? extends ResourceOrg>> data;
 
 	/**
-	 * Add the group to the given group.Cache is also updated.
+	 * Add the group to the given group. Cache is also updated.
 	 *
 	 * @param subGroup The group to add to the other group.
 	 * @param group    The group to update.
 	 */
 	public void addGroupToGroup(final GroupOrg subGroup, final GroupOrg group) {
-
 		// Add to JPA cache
 		cache.addGroupToGroup(subGroup, group);
 
 		// Also update the membership cache
 		group.getSubGroups().add(subGroup.getId());
-		subGroup.getGroups().add(group.getId());
+		subGroup.setParent(group.getId());
 	}
 
 	/**
@@ -276,7 +267,7 @@ public abstract class AbstractMemCacheRepository {
 
 		// Also update the membership cache
 		group.getSubGroups().remove(subGroup.getId());
-		subGroup.getGroups().remove(group.getId());
+		subGroup.setParent(null);
 	}
 
 	/**

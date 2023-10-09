@@ -3,6 +3,13 @@
  */
 package org.ligoj.app.plugin.id.resource;
 
+import jakarta.transaction.Transactional;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.core.Context;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.UriInfo;
 import org.apache.commons.lang3.ObjectUtils;
 import org.ligoj.app.iam.CompanyOrg;
 import org.ligoj.app.iam.ContainerOrg;
@@ -19,13 +26,6 @@ import org.ligoj.bootstrap.core.validation.ValidationJsonException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import jakarta.transaction.Transactional;
-import jakarta.ws.rs.GET;
-import jakarta.ws.rs.Path;
-import jakarta.ws.rs.Produces;
-import jakarta.ws.rs.core.Context;
-import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.UriInfo;
 import java.util.Collections;
 import java.util.stream.Collectors;
 
@@ -60,7 +60,7 @@ public class CompanyResource extends AbstractContainerResource<CompanyOrg, Conta
 
 	/**
 	 * Return the company name of current user.
-	 * 
+	 *
 	 * @return The company name of current user or <code>null</code> if the current user is not in the repository.
 	 */
 	public CompanyOrg getUserCompany() {
@@ -73,7 +73,7 @@ public class CompanyResource extends AbstractContainerResource<CompanyOrg, Conta
 
 	/**
 	 * Return the company DN of current user.
-	 * 
+	 *
 	 * @return the company DN of current user or <code>null</code> if the current user is not in the repository.
 	 */
 	private String getUserCompanyDn() {
@@ -86,7 +86,7 @@ public class CompanyResource extends AbstractContainerResource<CompanyOrg, Conta
 
 	/**
 	 * Indicates the current user is inside the internal scope of people.
-	 * 
+	 *
 	 * @return <code>true</code> when the current user is inside the internal scope of people.
 	 */
 	public boolean isUserInternalCompany() {
@@ -97,9 +97,8 @@ public class CompanyResource extends AbstractContainerResource<CompanyOrg, Conta
 	/**
 	 * Return groups matching to given criteria. The visible groups, trees and companies are checked. The returned
 	 * groups of each user depends on the groups the user can see/write in CN form.
-	 * 
-	 * @param uriInfo
-	 *            filter data.
+	 *
+	 * @param uriInfo filter data.
 	 * @return found groups.
 	 */
 	@GET
@@ -110,9 +109,10 @@ public class CompanyResource extends AbstractContainerResource<CompanyOrg, Conta
 		final var visibleCompanies = getContainers();
 		final var visibleCompaniesAsString = visibleCompanies.stream().map(CompanyOrg::getId)
 				.collect(Collectors.toSet());
-		final var writeCompanies = getContainersForWrite();
-		final var adminCompanies = getContainersForAdmin();
+		final var writeCompanies = getContainersIdForWrite();
+		final var adminCompanies = getContainersIdForAdmin();
 		final var users = getUser().findAll();
+		final var companies = getCompany().findAll();
 
 		// Search the companies
 		final var findAll = getRepository().findAll(visibleCompanies,
@@ -122,17 +122,18 @@ public class CompanyResource extends AbstractContainerResource<CompanyOrg, Conta
 		// Apply pagination and secure the users data
 		return paginationJson.applyPagination(uriInfo, findAll, rawCompany -> {
 			// Build the secured company with counter
-			final var securedUser = newContainerCountVo(rawCompany, writeCompanies, adminCompanies, types);
+			final var securedCompany = new ContainerCountVo();
+			fillContainerCountVo(rawCompany, writeCompanies, adminCompanies, types, securedCompany, companies);
 
 			// Computed the total members, unrestricted visibility
-			securedUser.setCount(
+			securedCompany.setCount(
 					(int) users.values().stream().filter(user -> rawCompany.getId().equals(user.getCompany())).count());
 
 			// Computed the visible members : same company and visible company
-			securedUser.setCountVisible(
+			securedCompany.setCountVisible(
 					(int) users.values().stream().filter(user -> rawCompany.getId().equals(user.getCompany()))
 							.filter(user -> visibleCompaniesAsString.contains(user.getCompany())).count());
-			return securedUser;
+			return securedCompany;
 		});
 	}
 

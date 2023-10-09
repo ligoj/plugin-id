@@ -8,6 +8,8 @@ import org.ligoj.app.model.ContainerType;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.List;
+
 /**
  * Container where visible users are counted.<br>
  * DN is not exposed.
@@ -45,4 +47,10 @@ public class ContainerCountVo extends ContainerWithScopeVo {
 	 * Container type.
 	 */
 	private ContainerType containerType;
+
+	/**
+	 * Parent groups/companies, from the topmost to the closest parent
+	 */
+	private List<String> parents;
+
 }

@@ -28,7 +28,6 @@ import org.ligoj.bootstrap.core.validation.ValidationJsonException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.Collection;
 import java.util.List;
 
 /**
@@ -79,24 +78,26 @@ public class GroupResource extends AbstractContainerResource<GroupOrg, GroupEdit
 	public TableItem<ContainerCountVo> findAll(@Context final UriInfo uriInfo) {
 		final var types = containerScopeResource.findAllDescOrder(ContainerType.GROUP);
 		final var companies = getCompany().findAll();
-		final Collection<CompanyOrg> visibleCompanies = organizationResource.getContainers();
-		final var writeGroups = getContainersForWrite();
-		final var adminGroups = getContainersForAdmin();
+		final var visibleCompanies = organizationResource.getContainers();
+		final var writeGroups = getContainersIdForWrite();
+		final var adminGroups = getContainersIdForAdmin();
 		final var users = getUser().findAll();
+		final var groups = getGroup().findAll();
 
 		// Search the groups
-		final var findAll = getContainers(DataTableAttributes.getSearch(uriInfo),
+		final var page = getContainers(DataTableAttributes.getSearch(uriInfo),
 				paginationJson.getPageRequest(uriInfo, ORDERED_COLUMNS));
 
 		// Apply pagination and secure the users data
-		return paginationJson.applyPagination(uriInfo, findAll, rawGroup -> {
-			final var securedUserOrg = newContainerCountVo(rawGroup, writeGroups, adminGroups, types);
-			securedUserOrg.setCount(rawGroup.getMembers().size());
+		return paginationJson.applyPagination(uriInfo, page, rawGroup -> {
+			final var securedGroup = new ContainerCountVo();
+			fillContainerCountVo(rawGroup, writeGroups, adminGroups, types, securedGroup, groups);
+			securedGroup.setCount(rawGroup.getMembers().size());
 			// Computed the visible members
-			securedUserOrg.setCountVisible((int) rawGroup.getMembers().stream().map(users::get).map(UserOrg::getCompany)
+			securedGroup.setCountVisible((int) rawGroup.getMembers().stream().map(users::get).map(UserOrg::getCompany)
 					.map(companies::get).map(CompanyOrg::getCompanyTree)
 					.filter(c -> CollectionUtils.containsAny(visibleCompanies, c)).count());
-			return securedUserOrg;
+			return securedGroup;
 		});
 	}
 

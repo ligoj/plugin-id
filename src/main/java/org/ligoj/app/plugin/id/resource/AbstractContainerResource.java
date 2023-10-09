@@ -3,26 +3,11 @@
  */
 package org.ligoj.app.plugin.id.resource;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import jakarta.ws.rs.DELETE;
-import jakarta.ws.rs.GET;
-import jakarta.ws.rs.POST;
-import jakarta.ws.rs.Path;
-import jakarta.ws.rs.PathParam;
+import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.UriInfo;
-
+import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.ligoj.app.api.Normalizer;
 import org.ligoj.app.iam.ContainerOrg;
 import org.ligoj.app.iam.IContainerRepository;
@@ -44,18 +29,16 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 
-import lombok.AllArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * Basic container operations.
  *
- * @param <T>
- *            The container type.
- * @param <V>
- *            The container edition bean type.
- * @param <C>
- *            The container cache type.
+ * @param <T> The container type.
+ * @param <V> The container edition bean type.
+ * @param <C> The container cache type.
  */
 @Slf4j
 public abstract class AbstractContainerResource<T extends ContainerOrg, V extends ContainerEditionVo, C extends CacheContainer>
@@ -125,8 +108,7 @@ public abstract class AbstractContainerResource<T extends ContainerOrg, V extend
 	/**
 	 * Constructor with mandatory fields.
 	 *
-	 * @param type
-	 *            The container type.
+	 * @param type The container type.
 	 */
 	protected AbstractContainerResource(final ContainerType type) {
 		this.type = type;
@@ -135,8 +117,7 @@ public abstract class AbstractContainerResource<T extends ContainerOrg, V extend
 	/**
 	 * Check the container can be deleted by the current user.
 	 *
-	 * @param container
-	 *            The container to delete.
+	 * @param container The container to delete.
 	 */
 	protected void checkForDeletion(final ContainerOrg container) {
 
@@ -162,8 +143,7 @@ public abstract class AbstractContainerResource<T extends ContainerOrg, V extend
 	 * The delegation system is involved for this operation and requires administration privilege on the parent tree or
 	 * group/company.
 	 *
-	 * @param container
-	 *            The container to create.
+	 * @param container The container to create.
 	 * @return The identifier of created {@link org.ligoj.app.iam.ContainerOrg}.
 	 */
 	@POST
@@ -182,8 +162,7 @@ public abstract class AbstractContainerResource<T extends ContainerOrg, V extend
 	 * group/company.<br>
 	 * Note this is for internal use since the returned object corresponds to the internal representation.
 	 *
-	 * @param container
-	 *            The container to create.
+	 * @param container The container to create.
 	 * @return The created {@link org.ligoj.app.iam.ContainerOrg} internal identifier.
 	 */
 	public T createInternal(final V container) {
@@ -223,8 +202,7 @@ public abstract class AbstractContainerResource<T extends ContainerOrg, V extend
 	 * Delete an existing container.<br>
 	 * The delegation system is involved for this operation and requires administration privilege on this container.
 	 *
-	 * @param id
-	 *            The container's identifier.
+	 * @param id The container's identifier.
 	 */
 	@DELETE
 	@Path("{id}")
@@ -242,10 +220,9 @@ public abstract class AbstractContainerResource<T extends ContainerOrg, V extend
 	/**
 	 * Find a container from its identifier.
 	 *
-	 * @param id
-	 *            The container's identifier. Will be normalized.
+	 * @param id The container's identifier. Will be normalized.
 	 * @return The container from its identifier. <code>null</code> if the container is not found or cannot be seen by
-	 *         the current user
+	 * the current user
 	 */
 	public T findById(final String id) {
 		return getRepository().findById(securityHelper.getLogin(), id);
@@ -255,8 +232,7 @@ public abstract class AbstractContainerResource<T extends ContainerOrg, V extend
 	 * Find a container from its identifier. If the container is not found or cannot be seen by the current user, the
 	 * error code {@link org.ligoj.bootstrap.core.resource.BusinessException#KEY_UNKNOWN_ID} will be returned.
 	 *
-	 * @param id
-	 *            The container's identifier. Will be normalized.
+	 * @param id The container's identifier. Will be normalized.
 	 * @return The container from its identifier.
 	 */
 	public T findByIdExpected(final String id) {
@@ -267,8 +243,7 @@ public abstract class AbstractContainerResource<T extends ContainerOrg, V extend
 	 * Return the container matching to given name. Case is sensitive. Visibility is checked against security context.
 	 * DN is not exposed.
 	 *
-	 * @param name
-	 *            the container name. Exact match is required, so a normalized version.
+	 * @param name the container name. Exact match is required, so a normalized version.
 	 * @return Container (CN) with its type.
 	 */
 	@GET
@@ -297,10 +272,8 @@ public abstract class AbstractContainerResource<T extends ContainerOrg, V extend
 	/**
 	 * Return containers the current user can see.
 	 *
-	 * @param criteria
-	 *            Optional criteria, can be <code>null</code>.
-	 * @param pageRequest
-	 *            Optional {@link Pageable}, can be <code>null</code>.
+	 * @param criteria    Optional criteria, can be <code>null</code>.
+	 * @param pageRequest Optional {@link Pageable}, can be <code>null</code>.
 	 * @return ordered containers the current user can see.
 	 */
 	public Page<T> getContainers(final String criteria, final Pageable pageRequest) {
@@ -311,15 +284,14 @@ public abstract class AbstractContainerResource<T extends ContainerOrg, V extend
 	 * Return containers the current user can see. A user always sees his company, as if he had a company delegation to
 	 * see it.
 	 *
-	 * @param uriInfo
-	 *            filter data.
+	 * @param uriInfo filter data.
 	 * @return containers the current user can see.
 	 */
 	@GET
 	@Path("filter/read")
 	public TableItem<String> getContainers(@Context final UriInfo uriInfo) {
 		return paginationJson.applyPagination(uriInfo, getCacheRepository().findAll(securityHelper.getLogin(),
-				DataTableAttributes.getSearch(uriInfo), paginationJson.getPageRequest(uriInfo, ORDERED_COLUMNS)),
+						DataTableAttributes.getSearch(uriInfo), paginationJson.getPageRequest(uriInfo, ORDERED_COLUMNS)),
 				CacheContainer::getName);
 	}
 
@@ -333,17 +305,36 @@ public abstract class AbstractContainerResource<T extends ContainerOrg, V extend
 	}
 
 	/**
+	 * Return containers' identifier the given user can manage with administration access.
+	 *
+	 * @return ordered containers the given user can manage with write access.
+	 */
+	public Set<String> getContainersIdForAdmin() {
+		return getContainersIdForX(getCacheRepository()::findAllAdmin);
+	}
+
+	/**
+	 * Return containers' identifier the current user can manage with provider access.
+	 *
+	 * @return ordered containers the given user can manage with write access.
+	 */
+	private Set<String> getContainersIdForX(Function<String, List<C>> dataProvider) {
+		final var all = getRepository().findAll();
+		return dataProvider.apply(securityHelper.getLogin()).stream().map(CacheContainer::getId).filter(all::containsKey)
+				.collect(Collectors.toSet());
+	}
+
+	/**
 	 * Return containers the current user can manage with administration access.
 	 *
-	 * @param uriInfo
-	 *            filter data.
+	 * @param uriInfo filter data.
 	 * @return containers the current user can manage.
 	 */
 	@GET
 	@Path("filter/admin")
 	public TableItem<String> getContainersForAdmin(@Context final UriInfo uriInfo) {
 		return paginationJson.applyPagination(uriInfo, getCacheRepository().findAllAdmin(securityHelper.getLogin(),
-				DataTableAttributes.getSearch(uriInfo), paginationJson.getPageRequest(uriInfo, ORDERED_COLUMNS)),
+						DataTableAttributes.getSearch(uriInfo), paginationJson.getPageRequest(uriInfo, ORDERED_COLUMNS)),
 				CacheContainer::getName);
 	}
 
@@ -357,17 +348,25 @@ public abstract class AbstractContainerResource<T extends ContainerOrg, V extend
 	}
 
 	/**
+	 * Return containers' identifier the given user can manage with write access.
+	 *
+	 * @return ordered containers the given user can manage with write access.
+	 */
+	public Set<String> getContainersIdForWrite() {
+		return getContainersIdForX(getCacheRepository()::findAllWrite);
+	}
+
+	/**
 	 * Return containers the current user can manage with write access.
 	 *
-	 * @param uriInfo
-	 *            filter data.
+	 * @param uriInfo filter data.
 	 * @return containers the current user can manage.
 	 */
 	@GET
 	@Path("filter/write")
 	public TableItem<String> getContainersForWrite(@Context final UriInfo uriInfo) {
 		return paginationJson.applyPagination(uriInfo, getCacheRepository().findAllWrite(securityHelper.getLogin(),
-				DataTableAttributes.getSearch(uriInfo), paginationJson.getPageRequest(uriInfo, ORDERED_COLUMNS)),
+						DataTableAttributes.getSearch(uriInfo), paginationJson.getPageRequest(uriInfo, ORDERED_COLUMNS)),
 				CacheContainer::getName);
 	}
 
@@ -385,41 +384,46 @@ public abstract class AbstractContainerResource<T extends ContainerOrg, V extend
 	/**
 	 * Build a new secured container managing the effective visibility and rights.
 	 *
-	 * @param rawContainer
-	 *            the raw container contained sensitive data.
-	 * @param canWrite
-	 *            The containers the principal user can write.
-	 * @param canAdmin
-	 *            The containers the principal user can administer.
-	 * @param types
-	 *            The defined type with locking information.
-	 * @return A secured container with right and lock information the current user has.
+	 * @param rawContainer     the raw container contained sensitive data.
+	 * @param canWrite         The containers the principal user can write.
+	 * @param canAdmin         The containers the principal user can administer.
+	 * @param types            The defined type with locking information.
+	 * @param securedContainer The container count object to fill.
 	 */
-	protected ContainerCountVo newContainerCountVo(final ContainerOrg rawContainer, final Set<T> canWrite,
-			final Set<T> canAdmin, final List<ContainerScope> types) {
-		final var securedUserOrg = new ContainerCountVo();
-		NamedBean.copy(rawContainer, securedUserOrg);
-		securedUserOrg.setCanWrite(canWrite.contains(rawContainer));
-		securedUserOrg.setCanAdmin(canAdmin.contains(rawContainer));
-		securedUserOrg.setContainerType(type);
+	protected void fillContainerCountVo(final T rawContainer, final Set<String> canWrite,
+			final Set<String> canAdmin, final List<ContainerScope> types, final ContainerCountVo securedContainer,
+			final Map<String, T> all) {
+		NamedBean.copy(rawContainer, securedContainer);
+		securedContainer.setCanWrite(canWrite.contains(rawContainer.getId()));
+		securedContainer.setCanAdmin(canAdmin.contains(rawContainer.getId()));
+		securedContainer.setContainerType(type);
 
 		// Find the closest type
 		final var scope = toScope(types, rawContainer);
 		if (scope != null) {
-			securedUserOrg.setScope(scope.getName());
-			securedUserOrg.setLocked(scope.isLocked());
+			securedContainer.setScope(scope.getName());
+			securedContainer.setLocked(scope.isLocked());
 		}
-		securedUserOrg.setLocked(securedUserOrg.isLocked() || rawContainer.isLocked());
-		return securedUserOrg;
+		securedContainer.setLocked(securedContainer.isLocked() || rawContainer.isLocked());
+		final var parent = rawContainer.getParent();
+		if (parent != null) {
+			securedContainer.setParents(new ArrayList<>());
+			fillParents(securedContainer.getParents(), rawContainer, all);
+		}
+	}
+
+	private void fillParents(final List<String> target, final T currentGroup, final Map<String, T> all) {
+		if (currentGroup.getParent() != null) {
+			target.add(currentGroup.getParent());
+			fillParents(target, all.get(currentGroup.getParent()), all);
+		}
 	}
 
 	/**
 	 * Return the DN from the container and the computed scope.
 	 *
-	 * @param container
-	 *            The container to convert.
-	 * @param scope
-	 *            The container scope.
+	 * @param container The container to convert.
+	 * @param scope     The container scope.
 	 * @return The DN from the container and the computed scope.
 	 */
 	protected abstract String toDn(V container, ContainerScope scope);
@@ -427,20 +431,19 @@ public abstract class AbstractContainerResource<T extends ContainerOrg, V extend
 	/**
 	 * Return the internal representation of the container set. Not existing cache items are removed.
 	 *
-	 * @param cacheItems
-	 *            The database base cache containers to convert.
+	 * @param cacheItems The database base cache containers to convert.
 	 * @return The internal representation of container set. Ordered is kept.
 	 */
 	protected Set<T> toInternal(final Collection<C> cacheItems) {
-		return cacheItems.stream().map(CacheContainer::getId).map(getRepository().findAll()::get)
+		final var all = getRepository().findAll();
+		return cacheItems.stream().map(CacheContainer::getId).map(all::get)
 				.filter(Objects::nonNull).collect(Collectors.toCollection(LinkedHashSet::new));
 	}
 
 	/**
 	 * Return the internal representation of the container set as a {@link Page}.
 	 *
-	 * @param cacheItems
-	 *            The database base page cache containers to convert.
+	 * @param cacheItems The database base page cache containers to convert.
 	 * @return The internal representation of {@link org.ligoj.app.iam.model.CacheCompany} set. Ordered by the name.
 	 */
 	protected Page<T> toInternal(final Page<C> cacheItems) {
@@ -452,10 +455,8 @@ public abstract class AbstractContainerResource<T extends ContainerOrg, V extend
 	 * Return the closest {@link ContainerScope} name associated to the given container. Order of scopes is important
 	 * since the first matching item from this list is returned.
 	 *
-	 * @param scopes
-	 *            The available scopes.
-	 * @param container
-	 *            The containers to check.
+	 * @param scopes    The available scopes.
+	 * @param container The containers to check.
 	 * @return The closest {@link ContainerScope} or <code>null</code> if not found.
 	 */
 	public ContainerScope toScope(final List<ContainerScope> scopes, final ContainerOrg container) {
@@ -466,8 +467,7 @@ public abstract class AbstractContainerResource<T extends ContainerOrg, V extend
 	/**
 	 * Simple transformer, securing sensible date. DN is not forwarded.
 	 *
-	 * @param rawGroup
-	 *            The group to convert.
+	 * @param rawGroup The group to convert.
 	 * @return The container including the scope and without sensible data.
 	 */
 	protected ContainerWithScopeVo toVo(final T rawGroup) {

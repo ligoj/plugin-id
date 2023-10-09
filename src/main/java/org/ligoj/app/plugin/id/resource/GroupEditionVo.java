@@ -16,11 +16,6 @@ import lombok.Setter;
 public class GroupEditionVo extends ContainerEditionVo {
 
 	/**
-	 * Optional parent group name. Must exists.
-	 */
-	private String parent;
-
-	/**
 	 * Department number or name, multivalued. May be used to link user department attribute.
 	 */
 	private List<String> departments;

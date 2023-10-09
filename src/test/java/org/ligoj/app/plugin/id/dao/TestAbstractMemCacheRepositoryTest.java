@@ -3,29 +3,18 @@
  */
 package org.ligoj.app.plugin.id.dao;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.ligoj.app.iam.CompanyOrg;
-import org.ligoj.app.iam.GroupOrg;
-import org.ligoj.app.iam.ICompanyRepository;
-import org.ligoj.app.iam.IGroupRepository;
-import org.ligoj.app.iam.IUserRepository;
-import org.ligoj.app.iam.IamConfiguration;
-import org.ligoj.app.iam.IamProvider;
-import org.ligoj.app.iam.UserOrg;
+import org.ligoj.app.iam.*;
 import org.ligoj.app.plugin.id.dao.AbstractMemCacheRepository.CacheDataType;
 import org.ligoj.bootstrap.AbstractDataGeneratorTest;
 import org.ligoj.bootstrap.core.INamableBean;
 import org.ligoj.bootstrap.core.SpringUtils;
 import org.mockito.Mockito;
 import org.springframework.context.ApplicationContext;
+
+import java.util.*;
 
 /**
  * Test class of {@link AbstractMemCacheRepository}
@@ -89,7 +78,7 @@ class TestAbstractMemCacheRepositoryTest extends AbstractDataGeneratorTest {
 		Mockito.when(userRepository.findAll()).thenReturn(users);
 
 		repository = new SampleIdMemCacheRepository();
-		repository.setIamProvider(new IamProvider[] { iamProvider });
+		repository.setIamProvider(new IamProvider[]{iamProvider});
 		repository.setCache(Mockito.mock(IdCacheDao.class));
 	}
 
@@ -149,19 +138,18 @@ class TestAbstractMemCacheRepositoryTest extends AbstractDataGeneratorTest {
 
 		// Check the initial status
 		Assertions.assertEquals(0, child.getSubGroups().size());
-		Assertions.assertEquals(0, child.getGroups().size());
-		Assertions.assertEquals(0, parent.getGroups().size());
+		Assertions.assertNull(child.getParent());
+		Assertions.assertNull(parent.getParent());
 		Assertions.assertEquals(0, parent.getSubGroups().size());
 
 		repository.addGroupToGroup(child, parent);
 
 		// Check the new status
-		Assertions.assertEquals(1, child.getGroups().size());
 		Assertions.assertEquals(0, child.getSubGroups().size());
-		Assertions.assertEquals(0, parent.getGroups().size());
+		Assertions.assertNull(parent.getParent());
 		Assertions.assertEquals(1, parent.getSubGroups().size());
 		Assertions.assertTrue(parent.getSubGroups().contains("group"));
-		Assertions.assertTrue(child.getGroups().contains("group2"));
+		Assertions.assertEquals("group2", child.getParent());
 	}
 
 	@Test
@@ -169,20 +157,20 @@ class TestAbstractMemCacheRepositoryTest extends AbstractDataGeneratorTest {
 		final var parent = groupLdap2;
 		final var child = groupLdap;
 		parent.getSubGroups().add(child.getId());
-		child.getGroups().add(parent.getId());
+		child.setParent(parent.getId());
 
 		// Check the initial status
-		Assertions.assertEquals(1, child.getGroups().size());
+		Assertions.assertNotNull(child.getParent());
 		Assertions.assertEquals(0, child.getSubGroups().size());
-		Assertions.assertEquals(0, parent.getGroups().size());
-		Assertions.assertEquals(1, parent.getSubGroups().size());
+		Assertions.assertEquals("group2", child.getParent());
+		Assertions.assertIterableEquals(List.of("group"), parent.getSubGroups());
 
 		repository.removeGroupFromGroup(child, parent);
 
 		// Check the new status
-		Assertions.assertEquals(0, child.getGroups().size());
+		Assertions.assertNull(child.getParent());
 		Assertions.assertEquals(0, child.getSubGroups().size());
-		Assertions.assertEquals(0, parent.getGroups().size());
+		Assertions.assertNull(parent.getParent());
 		Assertions.assertEquals(0, parent.getSubGroups().size());
 	}
 
