@@ -3,34 +3,12 @@
  */
 package org.ligoj.app.plugin.id.resource;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
-import java.util.function.BiPredicate;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-
 import jakarta.transaction.Transactional;
-import jakarta.ws.rs.DELETE;
-import jakarta.ws.rs.GET;
-import jakarta.ws.rs.POST;
-import jakarta.ws.rs.PUT;
-import jakarta.ws.rs.Path;
-import jakarta.ws.rs.PathParam;
-import jakarta.ws.rs.Produces;
-import jakarta.ws.rs.QueryParam;
+import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.UriInfo;
-
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -39,11 +17,7 @@ import org.apache.cxf.jaxrs.impl.UriInfoImpl;
 import org.apache.cxf.message.Message;
 import org.apache.cxf.message.MessageImpl;
 import org.ligoj.app.api.Normalizer;
-import org.ligoj.app.iam.CompanyOrg;
-import org.ligoj.app.iam.GroupOrg;
-import org.ligoj.app.iam.IPasswordGenerator;
-import org.ligoj.app.iam.SimpleUser;
-import org.ligoj.app.iam.UserOrg;
+import org.ligoj.app.iam.*;
 import org.ligoj.app.iam.dao.DelegateOrgRepository;
 import org.ligoj.app.iam.model.DelegateOrg;
 import org.ligoj.app.iam.model.DelegateType;
@@ -60,7 +34,10 @@ import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import lombok.extern.slf4j.Slf4j;
+import java.util.*;
+import java.util.function.BiPredicate;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * User resource.
@@ -150,8 +127,7 @@ public class UserOrgResource extends AbstractOrgResource {
 	private Page<UserOrg> findAllNotSecure(final Set<GroupOrg> visibleGroups, final String company, final String group,
 			final String criteria, @Context final UriInfo uriInfo) {
 		final var pageRequest = paginationJson.getPageRequest(uriInfo, ORDERED_COLUMNS);
-
-		final Collection<String> visibleCompanies = companyResource.getContainers().stream().map(CompanyOrg::getId)
+		final var visibleCompanies = companyResource.getContainers().stream().map(CompanyOrg::getId)
 				.collect(Collectors.toSet());
 		final var allGroups = getGroup().findAll();
 
@@ -159,8 +135,7 @@ public class UserOrgResource extends AbstractOrgResource {
 		final var filteredCompanies = computeFilteredCompanies(Normalizer.normalize(company), visibleCompanies);
 
 		// The groups to use
-		final Collection<GroupOrg> filteredGroups = group == null ? null
-				: computeFilteredGroups(group, visibleGroups, allGroups);
+		final var filteredGroups = group == null ? null : computeFilteredGroups(group, visibleGroups, allGroups);
 
 		// Search the users
 		return getUser().findAll(filteredGroups, filteredCompanies, StringUtils.trimToNull(criteria), pageRequest);
@@ -182,8 +157,8 @@ public class UserOrgResource extends AbstractOrgResource {
 			@Context final UriInfo uriInfo) {
 		final var visibleGroups = groupResource.getContainers();
 		final var writableGroups = groupResource.getContainersForWrite();
-		final var companies = companyResource.getContainersForWrite();
-		final var writableCompanies = companies.stream().map(CompanyOrg::getId).collect(Collectors.toSet());
+		final var writableCompanies = companyResource.getContainersForWrite();
+		final var writableCompaniesIds = writableCompanies.stream().map(CompanyOrg::getId).collect(Collectors.toSet());
 
 		// Search the users
 		final var findAll = findAllNotSecure(visibleGroups, company, group, criteria, uriInfo);
@@ -193,7 +168,7 @@ public class UserOrgResource extends AbstractOrgResource {
 
 			final var securedUserOrg = new UserOrgVo();
 			rawUserOrg.copy(securedUserOrg);
-			securedUserOrg.setCanWrite(writableCompanies.contains(rawUserOrg.getCompany()));
+			securedUserOrg.setCanWrite(writableCompaniesIds.contains(rawUserOrg.getCompany()));
 			securedUserOrg.setCanWriteGroups(!writableGroups.isEmpty());
 
 			// Show only the groups that are also visible to current user
