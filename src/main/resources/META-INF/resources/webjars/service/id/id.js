@@ -134,7 +134,9 @@ define(function () {
 
 			// Global datatables filter
 			_('subscribe-configuration-id-search').on('keyup', function () {
-				current.table?.fnFilter($(this).val());
+                if (current.table?.fnSettings()?.oPreviousSearch?.sSearch || '' !== $(this).val()) {
+                    current.table?.fnFilter($(this).val());
+                }
 			});
 
 			// Remove the selected user from the current group

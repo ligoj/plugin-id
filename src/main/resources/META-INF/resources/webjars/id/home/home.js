@@ -47,8 +47,6 @@ define(function () {
 				current.suspendSearch = false;
 			}
 
-			// Also initialize the datatables component
-			current.initializeDataTable();
 			$(function () {
 				_('search').trigger('focus');
 			});
@@ -174,7 +172,9 @@ define(function () {
 			});
 			// Global datatables filter
 			_('search').on('keyup', function () {
-				current.table?.fnFilter($(this).val());
+                if (current.table?.fnSettings()?.oPreviousSearch?.sSearch || '' !== $(this).val()) {
+				    current.table?.fnFilter($(this).val());
+				}
 			});
 
 			_('table')

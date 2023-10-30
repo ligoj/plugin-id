@@ -63,8 +63,10 @@ define(function () {
 
 			// Global datatables filter
 			_('search').on('keyup', function () {
-				current.table?.fnFilter($(this).val());
-			});
+                if (current.table?.fnSettings()?.oPreviousSearch?.sSearch || '' !== $(this).val()) {
+				    current.table?.fnFilter($(this).val());
+				}
+            });
 
 			// Also initialize the datatables component
 			current.initializeDataTable();
