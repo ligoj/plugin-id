@@ -3,6 +3,7 @@
  */
 package org.ligoj.app.plugin.id.resource;
 
+import jakarta.ws.rs.NotAuthorizedException;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -19,7 +20,6 @@ import org.springframework.security.core.Authentication;
 
 import javax.cache.annotation.CacheKey;
 import javax.cache.annotation.CacheResult;
-import jakarta.ws.rs.NotAuthorizedException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -60,13 +60,13 @@ public abstract class AbstractPluginIdResource<U extends IUserRepository> extend
 
 	@Override
 	public Authentication authenticate(final Authentication authentication, final String node, final boolean primary) {
-		@SuppressWarnings("unchecked")
-		final var repository = (U) getSelf().getConfiguration(node).getUserRepository();
+		@SuppressWarnings("unchecked") final var repository = (U) getSelf().getConfiguration(node).getUserRepository();
 
 		// Authenticate the user
-		if (repository.authenticate(authentication.getName(), (String) authentication.getCredentials())) {
+		final var user = repository.authenticate(authentication.getName(), (String) authentication.getCredentials());
+		if (user != null) {
 			// Return a new authentication based on resolved application user
-			return primary ? authentication
+			return primary ? new UsernamePasswordAuthenticationToken(user.getId(), null)
 					: new UsernamePasswordAuthenticationToken(toApplicationUser(repository, authentication), null);
 		}
 		throw new BadCredentialsException("");
@@ -99,7 +99,7 @@ public abstract class AbstractPluginIdResource<U extends IUserRepository> extend
 	/**
 	 * Return the local identity property name. In the most case, will be a constant, but in some cases, the property
 	 * name is determined dynamically depending on the available authentication principal
-	 * 
+	 *
 	 * @param repository     The current repository.
 	 * @param authentication The current authentication.
 	 * @return The property name.
@@ -207,7 +207,7 @@ public abstract class AbstractPluginIdResource<U extends IUserRepository> extend
 
 	/**
 	 * Ensure the configuration is loaded for the given node. Cache is involved.
-	 * 
+	 *
 	 * @param node The node identifier, also used as cache key.
 	 * @return The IAM configuration related to the given node.
 	 */
@@ -228,7 +228,7 @@ public abstract class AbstractPluginIdResource<U extends IUserRepository> extend
 	/**
 	 * Refresh the IAM configuration related to the given node. The {@link #nodeConfigurations} is replaced by a new
 	 * {@link IamConfiguration} instance.
-	 * 
+	 *
 	 * @param node The node identifier.
 	 * @return The IAM configuration related to the given node.
 	 */
@@ -247,7 +247,7 @@ public abstract class AbstractPluginIdResource<U extends IUserRepository> extend
 
 	/**
 	 * Copy the repository details to the IAM configuration.
-	 * 
+	 *
 	 * @param iam        The target IAM configuration.
 	 * @param repository The current {@link IUserRepository} instance.
 	 */
