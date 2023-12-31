@@ -231,12 +231,12 @@ public class IdCacheDaoImpl implements IdCacheDao {
 			final Map<String, CacheCompany> cacheCompanies) {
 		final var cacheUsers = em.createQuery("FROM CacheUser", CacheUser.class)
 				.getResultList().stream().collect(Collectors.toMap(CacheUser::getId, Function.identity()));
-		final var userMemberships = em.createQuery("FROM CacheMembership WHERE user != null", CacheMembership.class)
+		final var userMemberships = em.createQuery("FROM CacheMembership WHERE user is not null", CacheMembership.class)
 				.getResultList().stream().collect(
 						Collectors.groupingBy(c -> c.getUser().getId(),
 								Collectors.mapping(c -> c.getGroup().getId(),
 										Collectors.toSet())));
-		final var groupMemberships = em.createQuery("FROM CacheMembership WHERE subGroup != null", CacheMembership.class)
+		final var groupMemberships = em.createQuery("FROM CacheMembership WHERE subGroup is not null", CacheMembership.class)
 				.getResultList().stream().collect(
 						Collectors.groupingBy(c -> c.getGroup().getId(),
 								Collectors.mapping(c -> c.getSubGroup().getId(),
@@ -301,7 +301,7 @@ public class IdCacheDaoImpl implements IdCacheDao {
 	 * @return the amount of persisted relations.
 	 */
 	private int persistProjectGroups(final Map<String, CacheGroup> groups) {
-		final var entities = em.createQuery("FROM CacheProjectGroup WHERE group != null", CacheProjectGroup.class)
+		final var entities = em.createQuery("FROM CacheProjectGroup WHERE group is not null", CacheProjectGroup.class)
 				.getResultList().stream().collect(
 						Collectors.groupingBy(c -> c.getProject().getId(),
 								Collectors.mapping(c -> c.getGroup().getId(),
@@ -454,7 +454,7 @@ public class IdCacheDaoImpl implements IdCacheDao {
 		entity.setFirstName(user.getFirstName());
 		entity.setLastName(user.getLastName());
 		if (CollectionUtils.isNotEmpty(user.getMails())) {
-			entity.setMails(user.getMails().get(0));
+			entity.setMails(user.getMails().getFirst());
 		}
 
 		// Set the company if defined
