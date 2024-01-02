@@ -297,14 +297,17 @@ class TestAbstractPluginIdResourceTest extends AbstractJpaTest {
 	@Test
 	void authenticatePrimary() {
 		final var authentication = new UsernamePasswordAuthenticationToken(SECONDARY_LOGIN, "secret");
-		Mockito.doReturn(true).when(userRepository).authenticate(SECONDARY_LOGIN, "secret");
-		Assertions.assertSame(authentication, resource.authenticate(authentication, "service:id:test:node1", true));
+		final var user =new UserOrg();
+		user.setId(SECONDARY_LOGIN);
+		Mockito.doReturn(user).when(userRepository).authenticate(SECONDARY_LOGIN, "secret");
+		final var ressult = resource.authenticate(authentication, "service:id:test:node1", true);
+		Assertions.assertEquals(SECONDARY_LOGIN, ressult.getName());
 	}
 
 	@Test
 	void authenticateSecondary() {
 		final var authentication = new UsernamePasswordAuthenticationToken(SECONDARY_LOGIN, "secret");
-		Mockito.doReturn(true).when(userRepository).authenticate(SECONDARY_LOGIN, "secret");
+		Mockito.doReturn(new UserOrg()).when(userRepository).authenticate(SECONDARY_LOGIN, "secret");
 
 		// Create a new IAM node plugged to the primary node
 		final var user = new UserOrg();
