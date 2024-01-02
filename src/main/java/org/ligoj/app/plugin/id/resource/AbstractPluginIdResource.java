@@ -116,15 +116,15 @@ public abstract class AbstractPluginIdResource<U extends IUserRepository> extend
 	 */
 	protected String toApplicationUser(final UserOrg account) {
 		// Find the user by the mail in the primary repository
-		final var usersByMail = userResource.findAllBy("mails", account.getMails().get(0));
+		final var usersByMail = userResource.findAllBy("mails", account.getMails().getFirst());
 		if (usersByMail.isEmpty()) {
 			// No more try, account can be created in the application repository with a free login
 			return newApplicationUser(account);
 		}
 		if (usersByMail.size() == 1) {
 			// Everything is checked, account can be merged into the existing application user
-			userResource.mergeUser(usersByMail.get(0), account);
-			return usersByMail.get(0).getId();
+			userResource.mergeUser(usersByMail.getFirst(), account);
+			return usersByMail.getFirst().getId();
 		}
 
 		// Too many matching mail
@@ -146,7 +146,7 @@ public abstract class AbstractPluginIdResource<U extends IUserRepository> extend
 			final var userEdition = new UserOrgEditionVo();
 			account.copy(userEdition);
 			userEdition.setGroups(Collections.emptyList());
-			userEdition.setMail(account.getMails().get(0));
+			userEdition.setMail(account.getMails().getFirst());
 
 			// Assign a free login
 			userEdition.setName(nextFreeLogin(toLogin(account)));
