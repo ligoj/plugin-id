@@ -36,16 +36,7 @@ define(function () {
 		onHashChange: function (parameters) {
 			// Search mode
 			current.currentId = null;
-			current.initializeSearch();
-			if (parameters) {
-				current.suspendSearch = true;
-				parameters.split('/').forEach(p => {
-					let kv = p.split('=');
-					// Group/company filtering
-					kv.length === 2 && _('search-' + kv[0]).select2('data', kv[1]).closest('.form-group').removeClass('is-empty');
-				});
-				current.suspendSearch = false;
-			}
+			current.initializeSearch(parameters);
 
 			$(function () {
 				_('search').trigger('focus');
@@ -55,11 +46,30 @@ define(function () {
 		/**
 		 * Initialize the search UI components
 		 */
-		initializeSearch: function () {
+		initializeSearch: function (parameters) {
+            current.suspendSearch = true;
 			if (current.search) {
 				_('search-company').select2('data', null);
 				_('search-group').select2('data', null);
-				return;
+			} else {
+    			current.$main.newSelect2Group('#search-group');
+	    		current.$main.newSelect2Company('#search-company');
+			}
+            if (parameters) {
+                let $lastInput = null;
+                parameters.split('/').forEach(p => {
+                    let kv = p.split('=');
+                    // Group/company filtering
+                    const $input = _('search-' + kv[0]);
+                    $input.val(kv[1]).select2('data', kv[1]);
+                    kv.length === 2 && $input.closest('.form-group').removeClass('is-empty');
+                });
+            }
+            current.suspendSearch = false;
+
+			if (current.search) {
+			    current.refreshDataTable();
+			    return;
 			}
 			current.search = true;
 
@@ -145,8 +155,6 @@ define(function () {
 					}
 				}
 			});
-			current.$main.newSelect2Group('#search-group');
-			current.$main.newSelect2Company('#search-company');
 			$('#search-group,#search-company').on('change', function () {
 				current.refreshDataTable();
 			});
