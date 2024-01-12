@@ -28,6 +28,9 @@ import org.ligoj.bootstrap.core.json.PaginationJson;
 import org.ligoj.bootstrap.core.json.TableItem;
 import org.ligoj.bootstrap.core.json.datatable.DataTableAttributes;
 import org.ligoj.bootstrap.core.validation.ValidationJsonException;
+import org.ligoj.bootstrap.resource.system.configuration.ConfigurationResource;
+import org.ligoj.bootstrap.resource.system.session.ISessionSettingsProvider;
+import org.ligoj.bootstrap.resource.system.session.SessionSettings;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.data.domain.Page;
@@ -47,7 +50,7 @@ import java.util.stream.Collectors;
 @Produces(MediaType.APPLICATION_JSON)
 @Slf4j
 @Transactional
-public class UserOrgResource extends AbstractOrgResource {
+public class UserOrgResource extends AbstractOrgResource implements ISessionSettingsProvider {
 
 	/**
 	 * Message key for read only resource : no "write" right.
@@ -66,6 +69,8 @@ public class UserOrgResource extends AbstractOrgResource {
 
 	@Autowired
 	private DelegateOrgRepository delegateRepository;
+	@Autowired
+	private ConfigurationResource configuration;
 
 	@Autowired
 	private PasswordResetAuditRepository passwordResetRepository;
@@ -124,11 +129,9 @@ public class UserOrgResource extends AbstractOrgResource {
 	 * @param uriInfo       filter data.
 	 * @return found users.
 	 */
-	private Page<UserOrg> findAllNotSecure(final Set<GroupOrg> visibleGroups, final String company, final String group,
-			final String criteria, @Context final UriInfo uriInfo) {
+	private Page<UserOrg> findAllNotSecure(final Set<GroupOrg> visibleGroups, final String company, final String group, final String criteria, @Context final UriInfo uriInfo) {
 		final var pageRequest = paginationJson.getPageRequest(uriInfo, ORDERED_COLUMNS);
-		final var visibleCompanies = companyResource.getContainers().stream().map(CompanyOrg::getId)
-				.collect(Collectors.toSet());
+		final var visibleCompanies = companyResource.getContainers().stream().map(CompanyOrg::getId).collect(Collectors.toSet());
 		final var allGroups = getGroup().findAll();
 
 		// The companies to use
@@ -152,9 +155,7 @@ public class UserOrgResource extends AbstractOrgResource {
 	 * @return found users.
 	 */
 	@GET
-	public TableItem<UserOrgVo> findAll(@QueryParam(SimpleUser.COMPANY_ALIAS) final String company,
-			@QueryParam(GROUP) final String group, @QueryParam(DataTableAttributes.SEARCH) final String criteria,
-			@Context final UriInfo uriInfo) {
+	public TableItem<UserOrgVo> findAll(@QueryParam(SimpleUser.COMPANY_ALIAS) final String company, @QueryParam(GROUP) final String group, @QueryParam(DataTableAttributes.SEARCH) final String criteria, @Context final UriInfo uriInfo) {
 		final var visibleGroups = groupResource.getContainers();
 		final var writableGroups = groupResource.getContainersForWrite();
 		final var writableCompanies = companyResource.getContainersForWrite();
@@ -172,13 +173,12 @@ public class UserOrgResource extends AbstractOrgResource {
 			securedUserOrg.setCanWriteGroups(!writableGroups.isEmpty());
 
 			// Show only the groups that are also visible to current user
-			securedUserOrg.setGroups(visibleGroups.stream()
-					.filter(mGroup -> rawUserOrg.getGroups().contains(mGroup.getId())).map(mGroup -> {
-						final var vo = new GroupVo();
-						vo.setCanWrite(writableGroups.contains(mGroup));
-						vo.setName(mGroup.getName());
-						return vo;
-					}).toList());
+			securedUserOrg.setGroups(visibleGroups.stream().filter(mGroup -> rawUserOrg.getGroups().contains(mGroup.getId())).map(mGroup -> {
+				final var vo = new GroupVo();
+				vo.setCanWrite(writableGroups.contains(mGroup));
+				vo.setName(mGroup.getName());
+				return vo;
+			}).toList());
 			return securedUserOrg;
 		});
 	}
@@ -186,8 +186,7 @@ public class UserOrgResource extends AbstractOrgResource {
 	/**
 	 * Return an intersection of given set of visible companies and the optional requested company.
 	 */
-	private Set<String> computeFilteredCompanies(final String requestedCompany,
-			final Collection<String> visibleCompanies) {
+	private Set<String> computeFilteredCompanies(final String requestedCompany, final Collection<String> visibleCompanies) {
 		// Restrict access to visible companies
 		final Set<String> filteredCompanies;
 		if (StringUtils.isBlank(requestedCompany)) {
@@ -207,14 +206,11 @@ public class UserOrgResource extends AbstractOrgResource {
 	/**
 	 * Computed visible groups.
 	 */
-	private List<GroupOrg> computeFilteredGroups(final String group, final Set<GroupOrg> visibleGroups,
-			final Map<String, GroupOrg> allGroups) {
+	private List<GroupOrg> computeFilteredGroups(final String group, final Set<GroupOrg> visibleGroups, final Map<String, GroupOrg> allGroups) {
 		// Restrict access to delegated groups
-		return Optional.ofNullable(allGroups.get(Normalizer.normalize(group)))
-				.map(fg -> allGroups.values().stream().filter(visibleGroups::contains)
-						// Filter the group, including the children
-						.filter(g -> DnUtils.equalsOrParentOf(fg.getDn(), g.getDn())).toList())
-				.orElse(Collections.emptyList());
+		return Optional.ofNullable(allGroups.get(Normalizer.normalize(group))).map(fg -> allGroups.values().stream().filter(visibleGroups::contains)
+				// Filter the group, including the children
+				.filter(g -> DnUtils.equalsOrParentOf(fg.getDn(), g.getDn())).toList()).orElse(Collections.emptyList());
 	}
 
 	/**
@@ -238,9 +234,7 @@ public class UserOrgResource extends AbstractOrgResource {
 
 		// Show only the groups of user that are also visible to current user
 		final var visibleGroups = groupResource.getContainers();
-		securedUserOrg
-				.setGroups(visibleGroups.stream().filter(mGroup -> rawUserOrg.getGroups().contains(mGroup.getId()))
-						.sorted().map(GroupOrg::getName).toList());
+		securedUserOrg.setGroups(visibleGroups.stream().filter(mGroup -> rawUserOrg.getGroups().contains(mGroup.getId())).sorted().map(GroupOrg::getName).toList());
 		return securedUserOrg;
 	}
 
@@ -275,8 +269,7 @@ public class UserOrgResource extends AbstractOrgResource {
 	 * @param group   The group to update.
 	 * @param updater The function to execute on computed groups regarding the given user: add or remove
 	 */
-	private void updateGroupUser(final String user, final String group,
-			final BiPredicate<Collection<String>, String> updater) {
+	private void updateGroupUser(final String user, final String group, final BiPredicate<Collection<String>, String> updater) {
 
 		// Get all delegates of current user
 		final var delegates = delegateRepository.findAllByUser(securityHelper.getLogin());
@@ -383,8 +376,7 @@ public class UserOrgResource extends AbstractOrgResource {
 		if (hasAttributeChange && !canWrite(delegates, companyDn, DelegateType.COMPANY)) {
 			// Visible but without write access
 			log.info("Attempt to create/update a read-only user '{}', company '{}'", importEntry.getId(), cleanCompany);
-			throw new ValidationJsonException(SimpleUser.COMPANY_ALIAS, READ_ONLY, "0", SimpleUser.COMPANY_ALIAS, "1",
-					importEntry.getCompany());
+			throw new ValidationJsonException(SimpleUser.COMPANY_ALIAS, READ_ONLY, "0", SimpleUser.COMPANY_ALIAS, "1", importEntry.getCompany());
 		}
 
 		// Replace with the normalized company
@@ -416,19 +408,15 @@ public class UserOrgResource extends AbstractOrgResource {
 	 * @param importEntry The user raw values to update.
 	 * @param delegates   The delegates (read/write) of the principal user.
 	 */
-	private void validateAndGroupsCN(final UserOrg userOrg, final UserOrgEditionVo importEntry,
-			final List<DelegateOrg> delegates) {
+	private void validateAndGroupsCN(final UserOrg userOrg, final UserOrgEditionVo importEntry, final List<DelegateOrg> delegates) {
 
 		// First complete the groups with the implicit ones from department
 		final var previous = Optional.ofNullable(userOrg).map(UserOrg::getDepartment).orElse(null);
 		if (ObjectUtils.notEqual(previous, importEntry.getDepartment())) {
-			Optional.ofNullable(toDepartmentGroup(previous)).map(GroupOrg::getId)
-					.ifPresent(importEntry.getGroups()::remove);
-			Optional.ofNullable(toDepartmentGroup(importEntry.getDepartment())).map(GroupOrg::getId)
-					.ifPresent(importEntry.getGroups()::add);
+			Optional.ofNullable(toDepartmentGroup(previous)).map(GroupOrg::getId).ifPresent(importEntry.getGroups()::remove);
+			Optional.ofNullable(toDepartmentGroup(importEntry.getDepartment())).map(GroupOrg::getId).ifPresent(importEntry.getGroups()::add);
 		}
-		validateAndGroupsCN(Optional.ofNullable(userOrg).map(UserOrg::getGroups).orElse(Collections.emptyList()),
-				importEntry.getGroups(), delegates);
+		validateAndGroupsCN(Optional.ofNullable(userOrg).map(UserOrg::getGroups).orElse(Collections.emptyList()), importEntry.getGroups(), delegates);
 	}
 
 	/**
@@ -440,8 +428,7 @@ public class UserOrgResource extends AbstractOrgResource {
 	 *                       read-only groups previously assigned to this user. Only the changes are checked.
 	 * @param delegates      The delegates (read/write) of the principal user.
 	 */
-	private void validateAndGroupsCN(final Collection<String> previousGroups, final Collection<String> desiredGroups,
-			final List<DelegateOrg> delegates) {
+	private void validateAndGroupsCN(final Collection<String> previousGroups, final Collection<String> desiredGroups, final List<DelegateOrg> delegates) {
 		// Check visibility of the desired groups
 		desiredGroups.forEach(g -> getGroup().findByIdExpected(securityHelper.getLogin(), g));
 
@@ -459,10 +446,9 @@ public class UserOrgResource extends AbstractOrgResource {
 	private void validateWriteGroup(final String updatedGroup, final List<DelegateOrg> delegates) {
 
 		// Check the visible updated groups can be edited by the principal
-		Optional.ofNullable(getGroup().findById(securityHelper.getLogin(), updatedGroup)).filter(Objects::nonNull)
-				.filter(g -> !canWrite(delegates, g.getDn(), DelegateType.GROUP)).ifPresent(g -> {
-					throw new ValidationJsonException(GROUP, READ_ONLY, "0", GROUP, "1", g.getId());
-				});
+		Optional.ofNullable(getGroup().findById(securityHelper.getLogin(), updatedGroup)).filter(g -> !canWrite(delegates, g.getDn(), DelegateType.GROUP)).ifPresent(g -> {
+			throw new ValidationJsonException(GROUP, READ_ONLY, "0", GROUP, "1", g.getId());
+		});
 	}
 
 	/**
@@ -483,8 +469,7 @@ public class UserOrgResource extends AbstractOrgResource {
 	 *                  groups by the current principal user.
 	 * @return the merged group identifiers to be set internally.
 	 */
-	private Collection<String> mergeGroups(final List<DelegateOrg> delegates, final UserOrg userOrg,
-			final Collection<String> groups) {
+	private Collection<String> mergeGroups(final List<DelegateOrg> delegates, final UserOrg userOrg, final Collection<String> groups) {
 		// Compute the groups merged groups
 		final Collection<String> newGroups = new HashSet<>(userOrg.getGroups());
 		newGroups.addAll(groups);
@@ -516,23 +501,18 @@ public class UserOrgResource extends AbstractOrgResource {
 	}
 
 	private boolean canWrite(final List<DelegateOrg> delegates, final String dn, final DelegateType type) {
-		return resource.isAdmin(securityHelper.getLogin())
-				|| delegates.stream().anyMatch(delegate -> canWrite(delegate, dn, type));
+		return resource.isAdmin(securityHelper.getLogin()) || delegates.stream().anyMatch(delegate -> canWrite(delegate, dn, type));
 	}
 
 	protected boolean canWrite(final DelegateOrg delegate, final String dn, final DelegateType type) {
-		return (delegate.getType() == type || delegate.getType() == DelegateType.TREE) && delegate.isCanWrite()
-				&& DnUtils.equalsOrParentOf(delegate.getDn(), dn);
+		return (delegate.getType() == type || delegate.getType() == DelegateType.TREE) && delegate.isCanWrite() && DnUtils.equalsOrParentOf(delegate.getDn(), dn);
 	}
 
 	/**
 	 * Indicate the two user details have attribute differences
 	 */
 	private boolean hasAttributeChange(final UserOrgEditionVo importEntry, final UserOrg userOrg) {
-		return hasAttributeChange(importEntry, userOrg == null, "new")
-				|| hasAttributeChange(importEntry, userOrg, SimpleUser::getFirstName, SimpleUser::getLastName,
-				SimpleUser::getCompany, SimpleUser::getLocalId, SimpleUser::getDepartment)
-				|| hasAttributeChange(importEntry, !userOrg.getMails().contains(importEntry.getMail()), "mail");
+		return hasAttributeChange(importEntry, userOrg == null, "new") || hasAttributeChange(importEntry, userOrg, SimpleUser::getFirstName, SimpleUser::getLastName, SimpleUser::getCompany, SimpleUser::getLocalId, SimpleUser::getDepartment) || hasAttributeChange(importEntry, !userOrg.getMails().contains(importEntry.getMail()), "mail");
 	}
 
 	private boolean hasAttributeChange(final SimpleUser importEntry, boolean hasChange, String source) {
@@ -546,14 +526,10 @@ public class UserOrgResource extends AbstractOrgResource {
 	 * Indicate the two user details have attribute differences
 	 */
 	@SafeVarargs
-	private boolean hasAttributeChange(final SimpleUser user1, final SimpleUser user2,
-			final Function<SimpleUser, String>... equals) {
-		final var predicateFalse = Arrays.stream(equals)
-				.filter(f -> !StringUtils.equalsIgnoreCase(StringUtils.trimToNull(f.apply(user2)),
-						StringUtils.trimToNull(f.apply(user1)))).findFirst().orElse(null);
+	private boolean hasAttributeChange(final SimpleUser user1, final SimpleUser user2, final Function<SimpleUser, String>... equals) {
+		final var predicateFalse = Arrays.stream(equals).filter(f -> !StringUtils.equalsIgnoreCase(StringUtils.trimToNull(f.apply(user2)), StringUtils.trimToNull(f.apply(user1)))).findFirst().orElse(null);
 		if (predicateFalse != null) {
-			return hasAttributeChange(user1, true,
-					String.format("'%s' != '%s'", predicateFalse.apply(user1), predicateFalse.apply(user2)));
+			return hasAttributeChange(user1, true, String.format("'%s' != '%s'", predicateFalse.apply(user1), predicateFalse.apply(user2)));
 		}
 		return false;
 	}
@@ -825,8 +801,7 @@ public class UserOrgResource extends AbstractOrgResource {
 
 		// Check the company
 		final var companyDn = getCompany().findById(userOrg.getCompany()).getDn();
-		if (delegateRepository.findByMatchingDnForWrite(securityHelper.getLogin(), companyDn, DelegateType.TREE)
-				.isEmpty()) {
+		if (delegateRepository.findByMatchingDnForWrite(securityHelper.getLogin(), companyDn, DelegateType.TREE).isEmpty()) {
 			// Report this attempt to delete a non-writable user
 			log.warn("Attempt to reset the password of a user '{}' out of scope", user);
 			throw new ValidationJsonException(USER_KEY, READ_ONLY, "0", "user", "1", user);
@@ -847,8 +822,7 @@ public class UserOrgResource extends AbstractOrgResource {
 
 		// Check the company
 		final var companyDn = getCompany().findById(userOrg.getCompany()).getDn();
-		if (delegateRepository.findByMatchingDnForWrite(securityHelper.getLogin(), companyDn, DelegateType.COMPANY)
-				.isEmpty()) {
+		if (delegateRepository.findByMatchingDnForWrite(securityHelper.getLogin(), companyDn, DelegateType.COMPANY).isEmpty()) {
 			// Report this attempt to delete a non-writable user
 			log.warn("Attempt to {} a user '{}' out of scope", mode, user);
 			throw new ValidationJsonException(USER_KEY, READ_ONLY, "0", "user", "1", user);
@@ -865,8 +839,7 @@ public class UserOrgResource extends AbstractOrgResource {
 	private void checkLastMemberInGroups(final UserOrg userOrg, final Map<String, GroupOrg> allGroups) {
 		for (final var group : userOrg.getGroups()) {
 			if (allGroups.get(group).getMembers().size() == 1) {
-				throw new ValidationJsonException(USER_KEY, "last-member-of-group", "user", userOrg.getId(), GROUP,
-						group);
+				throw new ValidationJsonException(USER_KEY, "last-member-of-group", "user", userOrg.getId(), GROUP, group);
 			}
 		}
 	}
@@ -950,12 +923,10 @@ public class UserOrgResource extends AbstractOrgResource {
 		// Merge department
 		if (ObjectUtils.notEqual(userOrg.getDepartment(), newUser.getDepartment())) {
 			// Remove membership from the old department if exist
-			Optional.ofNullable(toDepartmentGroup(userOrg.getDepartment()))
-					.ifPresent(g -> getGroup().removeUser(userOrg, g.getId()));
+			Optional.ofNullable(toDepartmentGroup(userOrg.getDepartment())).ifPresent(g -> getGroup().removeUser(userOrg, g.getId()));
 
 			// Add membership to the new department if exist
-			Optional.ofNullable(toDepartmentGroup(newUser.getDepartment()))
-					.ifPresent(g -> getGroup().addUser(userOrg, g.getId()));
+			Optional.ofNullable(toDepartmentGroup(newUser.getDepartment())).ifPresent(g -> getGroup().addUser(userOrg, g.getId()));
 
 			userOrg.setDepartment(newUser.getDepartment());
 			needUpdate = true;
@@ -970,5 +941,18 @@ public class UserOrgResource extends AbstractOrgResource {
 		if (needUpdate) {
 			getUser().updateUser(userOrg);
 		}
+	}
+
+	@Override
+	public void decorate(final SessionSettings settings) {
+		try {
+			// Add the user details when available
+			settings.getUserSettings().put("userDetails", findById(settings.getUserName()));
+		} catch (ValidationJsonException ve) {
+			// Ignore this error
+			log.debug("User being authenticated is not defined in primary identity provider ");
+		}
+		// Add user display
+		settings.getApplicationSettings().getData().computeIfAbsent("service:id:user-display", configuration::get);
 	}
 }
