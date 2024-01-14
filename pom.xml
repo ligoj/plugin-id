@@ -22,6 +22,16 @@
 		<url>https://github.com/ligoj/plugin-id.git</url>
 	</scm>
 
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>org.ligoj.bootstrap</groupId>
+				<artifactId>bootstrap-business</artifactId>
+				<version>3.1.13</version>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
+
 	<profiles>
 		<profile>
 			<id>github</id>
