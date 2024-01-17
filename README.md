@@ -31,10 +31,10 @@ Related plugins:
 
 # Plugin parameters
 
-| Parameter                         | Scode              | Default | Note                                                          |                     
-|-----------------------------------|--------------------|---------|---------------------------------------------------------------|
-| service:id:user-display-attribute | Global             | `id`    | Display mode of user. `mail` and `mail-short` are accepted.   |
-| service:id:uid-pattern            | Node, Subscription | `.*`    | Pattern determining the login is valid for an authentication. |
-| service:id:ou                     | Node, Subscription | `null`  | Parent OU.                                                    |
-| service:id:group                  | Node, Subscription | `null`  | Normalized Group name (CN).                                   |
-| service:id:parent-group           | Node, Subscription | `null`  | Normalized parent Group name (CN).                            |
+| Parameter               | Scode              | Default | Note                                                          |                     
+|-------------------------|--------------------|---------|---------------------------------------------------------------|
+| service:id:user-display | Global             | `id`    | Display mode of user. `mail` and `mail-short` are accepted.   |
+| service:id:uid-pattern  | Node, Subscription | `.*`    | Pattern determining the login is valid for an authentication. |
+| service:id:ou           | Node, Subscription | `null`  | Parent OU.                                                    |
+| service:id:group        | Node, Subscription | `null`  | Normalized Group name (CN).                                   |
+| service:id:parent-group | Node, Subscription | `null`  | Normalized parent Group name (CN).                            |
