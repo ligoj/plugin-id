@@ -106,7 +106,7 @@ public class UserOrgResource extends AbstractOrgResource implements ISessionSett
 	 *
 	 * @param company The optional company name to match.
 	 * @param group   The optional group name to match.
-	 * @return All matched users.
+	 * @return All matched unsorted users.
 	 */
 	public List<UserOrg> findAllNotSecure(final String company, final String group) {
 		final var visibleGroups = groupResource.getContainers();
@@ -371,7 +371,7 @@ public class UserOrgResource extends AbstractOrgResource implements ISessionSett
 
 		// Check the implied company and request changes
 		final var cleanCompany = Normalizer.normalize(importEntry.getCompany());
-		final var companyDn = getCompany().findByIdExpected(securityHelper.getLogin(), cleanCompany).getDn();
+		final var companyDn = getCompany().findByIdExpected(principal, cleanCompany).getDn();
 		final var hasAttributeChange = hasAttributeChange(importEntry, userOrg);
 		if (hasAttributeChange && !canWrite(delegates, companyDn, DelegateType.COMPANY)) {
 			// Visible but without write access
@@ -765,6 +765,13 @@ public class UserOrgResource extends AbstractOrgResource implements ISessionSett
 	@ResponseBody
 	@Produces(MediaType.TEXT_PLAIN)
 	public String resetPassword(@PathParam("user") final String uid) {
+		if (uid.equals(securityHelper.getLogin())) {
+			// Self-service reset password
+			final var user = getUser().findByIdExpected(uid);
+			return updatePassword(user, false);
+		}
+
+		// Administrative operation
 		final var user = checkResetRight(uid);
 		// Have to generate a new password
 		return Optional.ofNullable(updatePassword(user, false)).map(p -> {
