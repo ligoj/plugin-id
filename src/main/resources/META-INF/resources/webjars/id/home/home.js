@@ -21,6 +21,11 @@ define(function () {
 		suspendSearch: false,
 
 		/**
+		 * Extensions data
+		 */
+		extensions: null,
+
+		/**
 		 * Edited users' identifier
 		 */
 		currentId: 0,
@@ -235,14 +240,19 @@ define(function () {
 				dom: 'rt<"row"<"col-xs-6"i><"col-xs-6"p>>',
 				serverSide: true,
 				searching: true,
-				ajax: function () {
-					const company = $('#search-company').select2('data');
-					const group = $('#search-group').select2('data');
-					if (company || group) {
-						return REST_PATH + 'service/id/user?' + (company ? 'company=' + (company.id || company) : '') + ((company && group) ? '&' : '') + (group ? 'group=' + (group.id || group) : '');
-					}
-					return REST_PATH + 'service/id/user';
-				},
+				ajax: function(aoData, oSettings) {
+                    const company = $('#search-company').select2('data');
+                    const group = $('#search-group').select2('data');
+                    if (company || group) {
+                        url = REST_PATH + 'service/id/user?' + (company ? 'company=' + (company.id || company) : '') + ((company && group) ? '&' : '') + (group ? 'group=' + (group.id || group) : '');
+                    }
+                    url = REST_PATH + 'service/id/user';
+                    oSettings.ajax.callback = function (json, callback){
+                        current.extensions = json?.extensions;
+                        callback(json);
+                    };
+                    return url;
+                },
 				columns: [{
 					data: 'id',
 					width: '120px',
@@ -308,6 +318,7 @@ define(function () {
 		},
 
 		formToObject: function () {
+		debugger;
 			return {
 				id: ($('#id').val() || '').toLowerCase(),
 				firstName: $('#firstName').val() || null,
@@ -316,7 +327,14 @@ define(function () {
 				localId: $('#localId').val() || null,
 				mail: $('#mail').val() || null,
 				company: $('#company').val().toLowerCase(),
-				groups: $('#groups').val() ? $('#groups').val().toLowerCase().split(',') : []
+				groups: $('#groups').val() ? $('#groups').val().toLowerCase().split(',') : [],
+				customAttributes: (current.extensions?.customAttributes||[]).reduce((acc, a)=> {
+				    const value = _(`custom_${a}`).val();
+				    if (value !== null && value.trim().length) {
+				        acc[a] = value;
+				    }
+				    return acc;
+				}, {})
 			};
 		},
 
@@ -381,7 +399,23 @@ define(function () {
 		 * @param {Object} uc, the entity corresponding to the user.
 		 */
 		fillPopup: function (uc) {
-			validationManager.reset(_('popup'));
+		    const $popup = _('popup');
+
+		    // Add custom attributes
+		    $popup.find('.form-group.custom').empty().remove();
+		    (current.extensions?.customAttributes||[]).forEach(a => {
+		        $popup.find('.form-group').last().after(`
+                    <div class="form-group custom required">
+                        <label class="control-label col-sm-3" for="custom_${a}">${a}</label>
+                        <div class="col-sm-8">
+                            <input type="text" id="custom_${a}" class="form-control" required maxlength="255" />
+                        </div>
+                    </div>
+                `);
+			    _(`custom_${a}`).val(uc.customAttributes?.[a] || '');
+            });
+
+			validationManager.reset($popup);
 			current.currentId = uc.id;
 			_('id').val(uc.id || '');
 			_('firstName').val(uc.firstName || '');
@@ -404,7 +438,7 @@ define(function () {
 			}
 
 			// Mark as read-only the fields the user cannot update
-			const $inputs = _('popup').find('input[type="text"]').not('#groups').not('.select2-input,.select2-focusser,#id');
+			const $inputs = $popup.find('input[type="text"]').not('#groups').not('.select2-input,.select2-focusser,#id');
 			if (uc.canWrite || !uc.id) {
 				$inputs.removeAttr('readonly');
 				if (uc.isolated) {
