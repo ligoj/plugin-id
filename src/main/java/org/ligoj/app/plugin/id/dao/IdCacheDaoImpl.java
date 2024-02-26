@@ -10,6 +10,7 @@ import jakarta.transaction.Transactional;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.ListUtils;
 import org.apache.commons.lang3.time.DurationFormatUtils;
 import org.ligoj.app.iam.CompanyOrg;
 import org.ligoj.app.iam.ContainerOrg;
@@ -24,10 +25,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Persistable;
 import org.springframework.stereotype.Repository;
 
-import java.util.Collections;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
@@ -287,10 +285,12 @@ public class IdCacheDaoImpl implements IdCacheDao {
 		}
 
 		// Remove old users and related membership
-		deleteOldCacheEntities(CacheUser.class, cacheUsers, users, u ->
-				em.createQuery("DELETE FROM CacheMembership WHERE user.id=:user")
-						.setParameter(USER_ATTRIBUTE, u)
-						.executeUpdate());
+		deleteOldCacheEntities(CacheUser.class, cacheUsers, users, ids -> {
+			log.info("Deleting removed cache {} {} entries", CacheMembership.class.getSimpleName(), ids.size());
+			ListUtils.partition(ids, 1000).forEach(sIds -> em.createQuery("DELETE FROM CacheMembership WHERE user.id in (:ids)")
+					.setParameter("ids", sIds)
+					.executeUpdate());
+		});
 		return memberships;
 	}
 
@@ -388,16 +388,17 @@ public class IdCacheDaoImpl implements IdCacheDao {
 		em.flush();
 
 		// Remove old groups and companies
-		deleteOldCacheEntities(CacheGroup.class, oldGroups, groups, g -> {
-					log.info("Deleting removed cache entry {}#{} (sub/groups)", CacheMembership.class.getSimpleName(), g);
-					em.createQuery("DELETE FROM CacheMembership WHERE group.id=:group OR subGroup.id=:group")
-							.setParameter(GROUP_ATTRIBUTE, g)
-							.executeUpdate();
-					em.createQuery("DELETE FROM CacheProjectGroup WHERE group.id=:group")
-							.setParameter(GROUP_ATTRIBUTE, g)
-							.executeUpdate();
-				}
-		);
+		deleteOldCacheEntities(CacheGroup.class, oldGroups, groups, ids -> {
+			log.info("Deleting removed cache {} {} entries", CacheProjectGroup.class.getSimpleName(), ids.size());
+			ListUtils.partition(ids, 1000).forEach(sIds -> {
+				em.createQuery("DELETE FROM CacheMembership WHERE group.id in (:ids) OR subGroup.id in (:ids)")
+						.setParameter("ids", sIds)
+						.executeUpdate();
+				em.createQuery("DELETE FROM CacheProjectGroup WHERE group.id in (:ids)")
+						.setParameter("ids", sIds)
+						.executeUpdate();
+			});
+		});
 
 		deleteOldCacheEntities(CacheCompany.class, oldCompanies, companies, null);
 		em.flush();
@@ -411,18 +412,17 @@ public class IdCacheDaoImpl implements IdCacheDao {
 
 	private <T extends Persistable<String>> void deleteOldCacheEntities(final Class<T> entityClass, final Map<String, T> oldEntities,
 			final Map<String, ?> newEntities,
-			Consumer<String> onDelete) {
+			Consumer<List<String>> onDelete) {
 		final var ids = oldEntities.keySet();
 		ids.removeAll(newEntities.keySet());
+		var idsAsList = new ArrayList<>(ids);
 		if (onDelete != null) {
-			ids.forEach(onDelete);
+			onDelete.accept(idsAsList);
 		}
-		ids.forEach(u -> {
-			log.info("Deleting removed cache entry {}#{}", entityClass.getSimpleName(), u);
-			em.createQuery("DELETE FROM " + entityClass.getSimpleName() + " WHERE id=:id")
-					.setParameter("id", u)
-					.executeUpdate();
-		});
+		log.info("Deleting removed cache {} {} entries", entityClass.getSimpleName(), idsAsList.size());
+		ListUtils.partition(idsAsList, 1000).forEach(sIds -> em.createQuery("DELETE FROM " + entityClass.getSimpleName() + " WHERE id in (:ids)")
+				.setParameter("ids", sIds)
+				.executeUpdate());
 	}
 
 	/**
