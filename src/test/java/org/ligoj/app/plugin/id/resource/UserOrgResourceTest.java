@@ -5,6 +5,7 @@ package org.ligoj.app.plugin.id.resource;
 
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.core.UriInfo;
+import org.apache.commons.lang3.ArrayUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -139,6 +140,7 @@ class UserOrgResourceTest extends AbstractAppTest {
 		Mockito.when(companyRepository.findByIdExpected(DEFAULT_USER, "ing")).thenReturn(company);
 		groupFindById(DEFAULT_USER, "dig", groupOrg1);
 		Mockito.when(groupRepository.findAll()).thenReturn(groupsMap);
+		Mockito.when(userRepository.getCustomAttributes()).thenReturn(ArrayUtils.EMPTY_STRING_ARRAY);
 		Mockito.when(userRepository.findAll(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(),
 				ArgumentMatchers.any())).thenReturn(new PageImpl<>(new ArrayList<>(users.values())));
 		Mockito.when(resource.groupResource.getContainers()).thenReturn(new HashSet<>(groupsMap.values()));
@@ -181,6 +183,7 @@ class UserOrgResourceTest extends AbstractAppTest {
 		Mockito.when(groupRepository.findAll()).thenReturn(groupsMap);
 		Mockito.when(userRepository.findAll(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(),
 				ArgumentMatchers.any())).thenReturn(new PageImpl<>(new ArrayList<>(users.values())));
+		Mockito.when(userRepository.getCustomAttributes()).thenReturn(ArrayUtils.EMPTY_STRING_ARRAY);
 		Mockito.when(resource.groupResource.getContainers()).thenReturn(new HashSet<>(groupsMap.values()));
 		Mockito.when(resource.groupResource.getContainersForWrite()).thenReturn(new HashSet<>(groupsMap.values()));
 		Mockito.when(resource.companyResource.getContainers()).thenReturn(Collections.singleton(company));
@@ -226,6 +229,7 @@ class UserOrgResourceTest extends AbstractAppTest {
 		Mockito.when(companyRepository.findByIdExpected(DEFAULT_USER, "ligoj")).thenReturn(company2);
 		groupFindById(DEFAULT_USER, "dig", groupOrg1);
 		Mockito.when(groupRepository.findAll()).thenReturn(groupsMap);
+		Mockito.when(userRepository.getCustomAttributes()).thenReturn(ArrayUtils.EMPTY_STRING_ARRAY);
 		Mockito.when(userRepository.findAll(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(),
 				ArgumentMatchers.any())).thenReturn(new PageImpl<>(new ArrayList<>(users.values())));
 		Mockito.when(resource.groupResource.getContainers()).thenReturn(new HashSet<>(groupsMap.values()));
@@ -260,6 +264,7 @@ class UserOrgResourceTest extends AbstractAppTest {
 		final var company = new CompanyOrg("ou=ing,ou=france,ou=people,dc=sample,dc=com", "ing");
 		Mockito.when(companyRepository.findByIdExpected(DEFAULT_USER, "ing")).thenReturn(company);
 		groupFindById(DEFAULT_USER, "dig", groupOrg1);
+		Mockito.when(userRepository.getCustomAttributes()).thenReturn(ArrayUtils.EMPTY_STRING_ARRAY);
 		Mockito.when(userRepository.findAll(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(),
 				ArgumentMatchers.any())).thenReturn(new PageImpl<>(new ArrayList<>(users.values())));
 		Mockito.when(resource.groupResource.getContainers()).thenReturn(new HashSet<>(groupsMap.values()));
