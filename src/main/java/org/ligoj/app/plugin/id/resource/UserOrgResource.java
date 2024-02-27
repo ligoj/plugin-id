@@ -165,7 +165,7 @@ public class UserOrgResource extends AbstractOrgResource implements ISessionSett
 		final var findAll = findAllNotSecure(visibleGroups, company, group, criteria, uriInfo);
 
 		// Apply pagination and secure the users data
-		return paginationJson.applyPagination(uriInfo, findAll, rawUserOrg -> {
+		final var result =  paginationJson.applyPagination(uriInfo, findAll, rawUserOrg -> {
 
 			final var securedUserOrg = new UserOrgVo();
 			rawUserOrg.copy(securedUserOrg);
@@ -181,6 +181,11 @@ public class UserOrgResource extends AbstractOrgResource implements ISessionSett
 			}).toList());
 			return securedUserOrg;
 		});
+
+		// Forward custom attributes definition
+		result.setExtensions(Map.of("customAttributes", getUser().getCustomAttributes()));
+
+		return result;
 	}
 
 	/**
@@ -508,11 +513,21 @@ public class UserOrgResource extends AbstractOrgResource implements ISessionSett
 		return (delegate.getType() == type || delegate.getType() == DelegateType.TREE) && delegate.isCanWrite() && DnUtils.equalsOrParentOf(delegate.getDn(), dn);
 	}
 
+	private String mapToString(Map<String, String> map) {
+		if (map == null) {
+			return "";
+		}
+		return map.entrySet().stream().sorted(Map.Entry.comparingByKey()).map(Object::toString).collect(Collectors.joining());
+	}
+
 	/**
-	 * Indicate the two user details have attribute differences
+	 * Indicates the two user details have attribute differences.
 	 */
 	private boolean hasAttributeChange(final UserOrgEditionVo importEntry, final UserOrg userOrg) {
-		return hasAttributeChange(importEntry, userOrg == null, "new") || hasAttributeChange(importEntry, userOrg, SimpleUser::getFirstName, SimpleUser::getLastName, SimpleUser::getCompany, SimpleUser::getLocalId, SimpleUser::getDepartment) || hasAttributeChange(importEntry, !userOrg.getMails().contains(importEntry.getMail()), "mail");
+		return hasAttributeChange(importEntry, userOrg == null, "new")
+				|| hasAttributeChange(importEntry, userOrg, SimpleUser::getFirstName, SimpleUser::getLastName, SimpleUser::getCompany, SimpleUser::getLocalId, SimpleUser::getDepartment)
+				|| hasAttributeChange(importEntry, !mapToString(importEntry.getCustomAttributes()).equals(mapToString(userOrg.getCustomAttributes()) ), "customAttributes")
+				|| hasAttributeChange(importEntry, !userOrg.getMails().contains(importEntry.getMail()), "mail");
 	}
 
 	private boolean hasAttributeChange(final SimpleUser importEntry, boolean hasChange, String source) {
