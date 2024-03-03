@@ -74,7 +74,7 @@ class ContainerScopeResourceTest extends AbstractJpaTest {
 	void findAllCompany() {
 		final List<ContainerScope> result = resource.findAllDescOrder(ContainerType.COMPANY);
 		Assertions.assertEquals(2, result.size());
-		final ContainerScope type = result.get(0);
+		final ContainerScope type = result.getFirst();
 		Assertions.assertEquals("France", type.getName());
 		Assertions.assertEquals("ou=france,ou=people,dc=sample,dc=com", type.getDn());
 		Assertions.assertEquals(ContainerType.COMPANY, type.getType());
@@ -91,7 +91,7 @@ class ContainerScopeResourceTest extends AbstractJpaTest {
 		final TableItem<ContainerScope> result = resource.findAll(ContainerType.GROUP, uriInfo);
 		Assertions.assertEquals(1, result.getData().size());
 
-		final ContainerScope type = result.getData().get(0);
+		final ContainerScope type = result.getData().getFirst();
 		checkType(type);
 	}
 
@@ -186,11 +186,11 @@ class ContainerScopeResourceTest extends AbstractJpaTest {
 	}
 
 	/**
-	 * test update
+	 * Test update
 	 */
 	@Test
 	void update() {
-		final int id = repository.findAll(Sort.by("name")).get(0).getId();
+		final int id = repository.findAll(Sort.by("name")).getFirst().getId();
 
 		final ContainerScope vo = new ContainerScope();
 		vo.setId(id);
@@ -230,7 +230,7 @@ class ContainerScopeResourceTest extends AbstractJpaTest {
 	 */
 	@Test
 	void delete() {
-		final ContainerScope scope = repository.findAll(Sort.by("name")).get(0);
+		final ContainerScope scope = repository.findAll(Sort.by("name")).getFirst();
 		final int id = scope.getId();
 		Assertions.assertFalse(scope.isLocked());
 		final long initCount = repository.count();

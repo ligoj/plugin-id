@@ -67,7 +67,7 @@ public class UserAtomicTask extends AbstractBatchTask<UserUpdateEntry> {
 	}
 
 	@Override
-	protected void doBatch(final UserUpdateEntry entry, final boolean quiet) throws Exception {
+	protected void doBatch(final UserUpdateEntry entry, final boolean quiet) {
 
 		final var type = UPDATE_ACTION_TYPES.get(entry.getOperation());
 		if (type == null) {
@@ -105,7 +105,7 @@ public class UserAtomicTask extends AbstractBatchTask<UserUpdateEntry> {
 			FUNCTIONS.get(entry.getOperation()).accept(this, entry);
 			resource.update(entry.getUserEdit());
 		} else {
-			// Other self managed operation
+			// Other self-managed operation
 			FUNCTIONS.get(entry.getOperation()).accept(this, entry);
 		}
 	}

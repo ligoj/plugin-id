@@ -32,5 +32,5 @@ define({
 	'show-password' : 'Afficher le mot de passe',
 	'password' : 'Mot de passe',
 	'quiet': 'Silencieux',
-	'quiet-help': 'Un import silencieux n\'implique pas de notifications asociées à cet import'
+	'quiet-help': 'Un import silencieux n\'implique pas de notifications associées à cet import'
 });

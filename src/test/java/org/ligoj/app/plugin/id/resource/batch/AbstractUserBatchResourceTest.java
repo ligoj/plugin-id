@@ -61,7 +61,7 @@ abstract class AbstractUserBatchResourceTest extends AbstractBatchTest {
 	}
 
 	@AfterEach
-	void unmockApplicationContext() {
+	void removeMockApplicationContext() {
 		SpringUtils.setSharedApplicationContext(super.applicationContext);
 	}
 

@@ -48,7 +48,7 @@ public class PasswordResetAudit extends AbstractPersistable<Integer> {
 	private Date createdDate;
 
 	/**
-	 * Related user name/login/UID.
+	 * Related username/login/UID.
 	 */
 	@Setter
 	@NotBlank

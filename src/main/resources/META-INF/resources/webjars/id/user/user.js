@@ -78,7 +78,7 @@ define(function () {
 					// Locked account management
 					if (data.locked) {
 						_('locked').removeClass('hidden');
-						_('locked-since').val(moment(data.locked).format(formatManager.messages.shortdateMomentJs));
+						_('locked-since').val(moment(data.locked).format(formatManager.messages.shortDateMomentJs));
 					} else {
 						_('locked').addClass('hidden');
 					}

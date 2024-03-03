@@ -31,7 +31,7 @@ Related plugins:
 
 # Plugin parameters
 
-| Parameter               | Scode              | Default | Note                                                          |                     
+| Parameter               | Scope              | Default | Note                                                          |                     
 |-------------------------|--------------------|---------|---------------------------------------------------------------|
 | service:id:user-display | Global             | `id`    | Display mode of user. `mail` and `mail-short` are accepted.   |
 | service:id:uid-pattern  | Node, Subscription | `.*`    | Pattern determining the login is valid for an authentication. |

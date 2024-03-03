@@ -10,7 +10,7 @@ define({
 	'service:id:parent-group-description': 'Groupe parent optionnel qui contiendra le nouveau groupe créé',
 	'service:id:ou': 'Organisation',
 	'service:id:ou-description': 'Unité d\'organisation, ou client, utilisée comme préfixe au nom complet du groupe. Sera créée si elle n\'existe pas.',
-	'service:id:ou-not-exists': 'L\'organisation saisie n\'existe pas encore et sera créée. Etes-vous certain de la syntaxe?',
+	'service:id:ou-not-exists': 'L\'organisation saisie n\'existe pas encore et sera créée. Êtes-vous certain de la syntaxe?',
 	'service:id:group-simple-name': 'Nom simple',
 	'service:id:group-simple-name-description': 'Simple nom du groupe, sans le préfixe de l\'organisation',
 	'service:id:activity-project': 'Rapport d\'activité du projet',
