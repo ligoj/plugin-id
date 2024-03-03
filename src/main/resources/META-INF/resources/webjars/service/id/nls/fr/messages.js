@@ -4,7 +4,8 @@
 define({
 	'groups': 'Groupes',
 	'service:id': 'Identité',
-	'service:id:uid-pattern': 'Pattern de capture de l\'identifiant d\'utilisateur dans un DN',
+	'service:id:uid-pattern': 'Pattern d\'utilisateur',
+	'service:id:uid-pattern-description': 'Pattern de validation de l\'identifiant d\'utilisateur pour accepter une authentification',
 	'service:id:group': 'Groupe',
 	'service:id:parent-group': 'Groupe parent',
 	'service:id:parent-group-description': 'Groupe parent optionnel qui contiendra le nouveau groupe créé',
