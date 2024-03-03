@@ -318,7 +318,6 @@ define(function () {
 		},
 
 		formToObject: function () {
-		debugger;
 			return {
 				id: ($('#id').val() || '').toLowerCase(),
 				firstName: $('#firstName').val() || null,
