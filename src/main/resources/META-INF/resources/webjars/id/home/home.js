@@ -61,7 +61,6 @@ define(function () {
 	    		current.$main.newSelect2Company('#search-company');
 			}
             if (parameters) {
-                let $lastInput = null;
                 parameters.split('/').forEach(p => {
                     let kv = p.split('=');
                     // Group/company filtering
@@ -243,10 +242,12 @@ define(function () {
 				ajax: function(aoData, oSettings) {
                     const company = $('#search-company').select2('data');
                     const group = $('#search-group').select2('data');
+                    let url = null;
                     if (company || group) {
                         url = REST_PATH + 'service/id/user?' + (company ? 'company=' + (company.id || company) : '') + ((company && group) ? '&' : '') + (group ? 'group=' + (group.id || group) : '');
+                    } else {
+                        url = REST_PATH + 'service/id/user';
                     }
-                    url = REST_PATH + 'service/id/user';
                     oSettings.ajax.callback = function (json, callback){
                         current.extensions = json?.extensions;
                         callback(json);

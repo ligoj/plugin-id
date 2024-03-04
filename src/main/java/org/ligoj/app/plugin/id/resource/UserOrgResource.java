@@ -165,7 +165,7 @@ public class UserOrgResource extends AbstractOrgResource implements ISessionSett
 		final var findAll = findAllNotSecure(visibleGroups, company, group, criteria, uriInfo);
 
 		// Apply pagination and secure the users data
-		final var result =  paginationJson.applyPagination(uriInfo, findAll, rawUserOrg -> {
+		final var result = paginationJson.applyPagination(uriInfo, findAll, rawUserOrg -> {
 
 			final var securedUserOrg = new UserOrgVo();
 			rawUserOrg.copy(securedUserOrg);
@@ -513,7 +513,10 @@ public class UserOrgResource extends AbstractOrgResource implements ISessionSett
 		return (delegate.getType() == type || delegate.getType() == DelegateType.TREE) && delegate.isCanWrite() && DnUtils.equalsOrParentOf(delegate.getDn(), dn);
 	}
 
-	private String mapToString(Map<String, String> map) {
+	/**
+	 * Convert a map to a comparable string with sorted keys.
+	 */
+	String mapToString(Map<String, String> map) {
 		if (map == null) {
 			return "";
 		}
@@ -526,7 +529,7 @@ public class UserOrgResource extends AbstractOrgResource implements ISessionSett
 	private boolean hasAttributeChange(final UserOrgEditionVo importEntry, final UserOrg userOrg) {
 		return hasAttributeChange(importEntry, userOrg == null, "new")
 				|| hasAttributeChange(importEntry, userOrg, SimpleUser::getFirstName, SimpleUser::getLastName, SimpleUser::getCompany, SimpleUser::getLocalId, SimpleUser::getDepartment)
-				|| hasAttributeChange(importEntry, !mapToString(importEntry.getCustomAttributes()).equals(mapToString(userOrg.getCustomAttributes()) ), "customAttributes")
+				|| hasAttributeChange(importEntry, !mapToString(importEntry.getCustomAttributes()).equals(mapToString(userOrg.getCustomAttributes())), "customAttributes")
 				|| hasAttributeChange(importEntry, !userOrg.getMails().contains(importEntry.getMail()), "mail");
 	}
 
@@ -543,10 +546,11 @@ public class UserOrgResource extends AbstractOrgResource implements ISessionSett
 	@SafeVarargs
 	private boolean hasAttributeChange(final SimpleUser user1, final SimpleUser user2, final Function<SimpleUser, String>... equals) {
 		final var predicateFalse = Arrays.stream(equals).filter(f -> !StringUtils.equalsIgnoreCase(StringUtils.trimToNull(f.apply(user2)), StringUtils.trimToNull(f.apply(user1)))).findFirst().orElse(null);
-		if (predicateFalse != null) {
-			return hasAttributeChange(user1, true, String.format("'%s' != '%s'", predicateFalse.apply(user1), predicateFalse.apply(user2)));
+		if (predicateFalse == null) {
+			return false;
 		}
-		return false;
+		hasAttributeChange(user1, true, String.format("'%s' != '%s'", predicateFalse.apply(user1), predicateFalse.apply(user2)));
+		return true;
 	}
 
 	/**

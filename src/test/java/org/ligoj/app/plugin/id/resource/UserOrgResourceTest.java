@@ -4,8 +4,10 @@
 package org.ligoj.app.plugin.id.resource;
 
 import jakarta.transaction.Transactional;
+import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.core.UriInfo;
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.reflect.FieldUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -24,6 +26,9 @@ import org.ligoj.bootstrap.model.system.SystemAuthorization.AuthorizationType;
 import org.ligoj.bootstrap.model.system.SystemRole;
 import org.ligoj.bootstrap.model.system.SystemRoleAssignment;
 import org.ligoj.bootstrap.model.system.SystemUser;
+import org.ligoj.bootstrap.resource.system.configuration.ConfigurationResource;
+import org.ligoj.bootstrap.resource.system.session.ApplicationSettings;
+import org.ligoj.bootstrap.resource.system.session.SessionSettings;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
 import org.mockito.internal.verification.VerificationModeFactory;
@@ -199,8 +204,8 @@ class UserOrgResourceTest extends AbstractAppTest {
 		Assertions.assertTrue(userVo.isCanWriteGroups());
 	}
 
-	private <U extends SimpleUser> U getTestUser(final String user,  List<U> result) {
-		return result.stream().filter(u->user.equals(u.getId())).findFirst().orElse(null);
+	private <U extends SimpleUser> U getTestUser(final String user, List<U> result) {
+		return result.stream().filter(u -> user.equals(u.getId())).findFirst().orElse(null);
 	}
 
 	@Test
@@ -1132,9 +1137,9 @@ class UserOrgResourceTest extends AbstractAppTest {
 	void canWrite() {
 		final var delegate = new DelegateOrg();
 		delegate.setType(DelegateType.GROUP);
-		delegate.setDn("rightdn");
+		delegate.setDn("right_dn");
 		delegate.setCanWrite(true);
-		Assertions.assertTrue(resource.canWrite(delegate, "rightdn", DelegateType.GROUP));
+		Assertions.assertTrue(resource.canWrite(delegate, "right_dn", DelegateType.GROUP));
 	}
 
 	/**
@@ -1155,6 +1160,43 @@ class UserOrgResourceTest extends AbstractAppTest {
 		delegate.setType(DelegateType.GROUP);
 		delegate.setDn("right-dn");
 		Assertions.assertFalse(resource.canWrite(delegate, "right-dn", DelegateType.GROUP));
+	}
+
+	@Test
+	void mapToString() {
+		Assertions.assertEquals("", resource.mapToString(new HashMap<>()));
+		Assertions.assertEquals("", resource.mapToString(null));
+		Assertions.assertEquals("a=VAb=VB", resource.mapToString(Map.of("b", "VB", "a", "VA")));
+	}
+
+	@Test
+	void decorate() throws IllegalAccessException {
+		decorate(new UserOrgResource() {
+			public UserOrg findById(@PathParam("user") final String user) {
+				return new UserOrg();
+			}
+		});
+	}
+
+	private void decorate(UserOrgResource resource) throws IllegalAccessException {
+		var settings = new SessionSettings();
+		FieldUtils.writeDeclaredField(settings, "userName", "JUNIT", true);
+		FieldUtils.writeDeclaredField(settings, "applicationSettings", new ApplicationSettings(), true);
+		settings.setUserSettings(new HashMap<>());
+		var configuration = Mockito.mock(ConfigurationResource.class);
+		Mockito.when(configuration.get("service:id:user-display")).thenReturn("some");
+		FieldUtils.writeField(resource, "configuration", configuration, true);
+		resource.decorate(settings);
+		Assertions.assertEquals("some", settings.getApplicationSettings().getData().get("service:id:user-display"));
+	}
+
+	@Test
+	void decorateError() throws IllegalAccessException {
+		decorate(new UserOrgResource() {
+			public UserOrg findById(@PathParam("user") final String user) {
+				throw new ValidationJsonException();
+			}
+		});
 	}
 
 }
