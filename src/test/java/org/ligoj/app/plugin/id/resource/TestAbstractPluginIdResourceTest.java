@@ -296,10 +296,20 @@ class TestAbstractPluginIdResourceTest extends AbstractJpaTest {
 
 	@Test
 	void authenticatePrimary() {
-		final var authentication = new UsernamePasswordAuthenticationToken(SECONDARY_LOGIN, "secret");
+		final var authentication = new UsernamePasswordAuthenticationToken(PRIMARY_LOGIN, "secret");
+		final var user =new UserOrg();
+		user.setId(PRIMARY_LOGIN);
+		Mockito.doReturn(user).when(userRepository).authenticate(PRIMARY_LOGIN, "secret");
+		final var result = resource.authenticate(authentication, "service:id:test:node1", true);
+		Assertions.assertEquals(PRIMARY_LOGIN, result.getName());
+	}
+
+	@Test
+	void authenticatePrimaryAlternative() {
+		final var authentication = new UsernamePasswordAuthenticationToken(PRIMARY_LOGIN, "secret");
 		final var user =new UserOrg();
 		user.setId(SECONDARY_LOGIN);
-		Mockito.doReturn(user).when(userRepository).authenticate(SECONDARY_LOGIN, "secret");
+		Mockito.doReturn(user).when(userRepository).authenticate(PRIMARY_LOGIN, "secret");
 		final var result = resource.authenticate(authentication, "service:id:test:node1", true);
 		Assertions.assertEquals(SECONDARY_LOGIN, result.getName());
 	}

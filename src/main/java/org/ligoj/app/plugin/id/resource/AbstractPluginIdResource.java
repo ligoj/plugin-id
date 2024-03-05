@@ -65,13 +65,16 @@ public abstract class AbstractPluginIdResource<U extends IUserRepository> extend
 		// Authenticate the user
 		final var user = repository.authenticate(authentication.getName(), (String) authentication.getCredentials());
 		if (user != null) {
-			if (primary && user.getId().equals(authentication.getName())) {
-				// Return the provided authentication
-				return authentication;
+			if (primary) {
+				if (user.getId().equals(authentication.getName())) {
+					// Return the provided authentication
+					return authentication;
+				}
+				// Return a new authentication based on provided authentication user
+				return new UsernamePasswordAuthenticationToken(user.getId(), null);
 			}
 			// Return a new authentication based on resolved application user
-			return primary ? new UsernamePasswordAuthenticationToken(user.getId(), null)
-					: new UsernamePasswordAuthenticationToken(toApplicationUser(repository, authentication), null);
+			return new UsernamePasswordAuthenticationToken(toApplicationUser(repository, authentication), null);
 		}
 		throw new BadCredentialsException("");
 	}
