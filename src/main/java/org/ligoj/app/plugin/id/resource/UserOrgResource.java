@@ -546,11 +546,7 @@ public class UserOrgResource extends AbstractOrgResource implements ISessionSett
 	@SafeVarargs
 	private boolean hasAttributeChange(final SimpleUser user1, final SimpleUser user2, final Function<SimpleUser, String>... equals) {
 		final var predicateFalse = Arrays.stream(equals).filter(f -> !StringUtils.equalsIgnoreCase(StringUtils.trimToNull(f.apply(user2)), StringUtils.trimToNull(f.apply(user1)))).findFirst().orElse(null);
-		if (predicateFalse == null) {
-			return false;
-		}
-		hasAttributeChange(user1, true, String.format("'%s' != '%s'", predicateFalse.apply(user1), predicateFalse.apply(user2)));
-		return true;
+		return predicateFalse != null && hasAttributeChange(user1, true, String.format("'%s' != '%s'", predicateFalse.apply(user1), predicateFalse.apply(user2)));
 	}
 
 	/**
