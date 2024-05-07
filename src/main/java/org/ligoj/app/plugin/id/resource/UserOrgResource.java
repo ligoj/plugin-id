@@ -301,18 +301,19 @@ public class UserOrgResource extends AbstractOrgResource implements ISessionSett
 	/**
 	 * Update the given user.
 	 *
-	 * @param user The user definition, and associated groups. Group changes are checked.User definition changes are
+	 * @param user The user definition, and associated groups. Group changes  and user attributes changes are
 	 *             checked.
+	 * @return the update attributes and related changes. Currently only `groups` attributes is supported and contains only the
 	 */
 	@PUT
-	public void update(final UserOrgEditionVo user) {
+	public UserUpdateResult update(final UserOrgEditionVo user) {
 		// Check the right on the company and the groups
 		final var hasAttributeChange = validateChanges(securityHelper.getLogin(), user);
 
 		// Check the user exists
 		getUser().findByIdExpected(user.getId());
 
-		saveOrUpdate(user, hasAttributeChange);
+		return saveOrUpdate(user, hasAttributeChange);
 	}
 
 	/**
@@ -387,12 +388,10 @@ public class UserOrgResource extends AbstractOrgResource implements ISessionSett
 		// Replace with the normalized company
 		importEntry.setCompany(cleanCompany);
 
-		// Check the groups : one group not writable implies entry creation to
-		// fail
+		// Check the groups : one group not writable implies entry creation to fail
 		validateAndGroupsCN(userOrg, importEntry, delegates);
 
-		// Replace the user groups by the normalized groups including the ones
-		// the user does not see
+		// Replace the user groups by the normalized groups including the ones the user does not see
 		if (userOrg != null) {
 			// Check the company change
 			if (!userOrg.getCompany().equals(importEntry.getCompany())) {
@@ -481,8 +480,7 @@ public class UserOrgResource extends AbstractOrgResource implements ISessionSett
 		for (final var oldGroup : userOrg.getGroups()) {
 			final var oldGroupDn = getGroup().findById(oldGroup).getDn();
 			if (!groups.contains(oldGroup) && canWrite(delegates, oldGroupDn, DelegateType.GROUP)) {
-				// This group is writable, so it has been explicitly removed by
-				// the current user
+				// This group is writable, so it has been explicitly removed by the current user
 				newGroups.remove(oldGroup);
 			}
 		}
@@ -561,8 +559,9 @@ public class UserOrgResource extends AbstractOrgResource implements ISessionSett
 	 * @param importEntry        The entry to save or to update.
 	 * @param quiet              Flag to turn off the possible notification such as mail.
 	 * @param hasAttributeChange When <code>false</code>, underlying user database will not be updated, only membership as needed.
+	 * @return the updated attributes and related changes. Currently only `groups` attributes is supported and contains only the
 	 */
-	private void saveOrUpdate(final UserOrgEditionVo importEntry, final boolean quiet, final boolean hasAttributeChange) {
+	private UserUpdateResult saveOrUpdate(final UserOrgEditionVo importEntry, final boolean quiet, final boolean hasAttributeChange) {
 
 		// Create as needed the user, groups will be proceeded after.
 		final var repository = getUser();
@@ -583,7 +582,7 @@ public class UserOrgResource extends AbstractOrgResource implements ISessionSett
 		}
 
 		// Update membership
-		repository.updateMembership(importEntry.getGroups(), user);
+		return repository.updateMembership(importEntry.getGroups(), user);
 	}
 
 	/**
@@ -597,9 +596,10 @@ public class UserOrgResource extends AbstractOrgResource implements ISessionSett
 	 *
 	 * @param importEntry        The entry to save or to update.
 	 * @param hasAttributeChange When <code>false</code>, underlying user database will not be updated, only membership as needed.
+	 * @return the update attributes and related changes. Currently only `groups` attributes is supported and contains only the
 	 */
-	public void saveOrUpdate(final UserOrgEditionVo importEntry, final boolean hasAttributeChange) {
-		saveOrUpdate(importEntry, false, hasAttributeChange);
+	public UserUpdateResult saveOrUpdate(final UserOrgEditionVo importEntry, final boolean hasAttributeChange) {
+		return saveOrUpdate(importEntry, false, hasAttributeChange);
 	}
 
 	/**

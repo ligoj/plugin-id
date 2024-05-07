@@ -49,9 +49,9 @@ class IdCacheDaoTest extends AbstractJpaTest {
 				.createQuery("FROM CacheMembership WHERE group.id = :id AND subGroup.id = :sid", CacheMembership.class)
 				.setParameter("id", "group").setParameter("sid", "name-sg-other").getResultList();
 		Assertions.assertEquals(1, memberships.size());
-		Assertions.assertEquals("group", memberships.get(0).getGroup().getId());
-		Assertions.assertEquals("name-sg-other", memberships.get(0).getSubGroup().getId());
-		Assertions.assertNull(memberships.get(0).getUser());
+		Assertions.assertEquals("group", memberships.getFirst().getGroup().getId());
+		Assertions.assertEquals("name-sg-other", memberships.getFirst().getSubGroup().getId());
+		Assertions.assertNull(memberships.getFirst().getUser());
 	}
 
 	@Test
@@ -514,9 +514,9 @@ class IdCacheDaoTest extends AbstractJpaTest {
 		final var memberships = em.createQuery("FROM CacheMembership", CacheMembership.class)
 				.getResultList();
 		Assertions.assertEquals(2, memberships.size());
-		Assertions.assertEquals("group", memberships.get(0).getGroup().getId());
-		Assertions.assertNull(memberships.get(0).getSubGroup());
-		Assertions.assertEquals("u", memberships.get(0).getUser().getId());
+		Assertions.assertEquals("group", memberships.getFirst().getGroup().getId());
+		Assertions.assertNull(memberships.getFirst().getSubGroup());
+		Assertions.assertEquals("u", memberships.getFirst().getUser().getId());
 
 		// Check the state of the previous delegates
 		Assertions.assertEquals(2, delegateOrgRepository.count());
@@ -568,8 +568,8 @@ class IdCacheDaoTest extends AbstractJpaTest {
 				.createQuery("FROM CacheMembership WHERE user.id = :id", CacheMembership.class).setParameter("id", "u0")
 				.getResultList();
 		Assertions.assertEquals(1, memberships.size());
-		Assertions.assertEquals("group", memberships.get(0).getGroup().getId());
-		Assertions.assertNull(memberships.get(0).getSubGroup());
-		Assertions.assertEquals("u0", memberships.get(0).getUser().getId());
+		Assertions.assertEquals("group", memberships.getFirst().getGroup().getId());
+		Assertions.assertNull(memberships.getFirst().getSubGroup());
+		Assertions.assertEquals("u0", memberships.getFirst().getUser().getId());
 	}
 }

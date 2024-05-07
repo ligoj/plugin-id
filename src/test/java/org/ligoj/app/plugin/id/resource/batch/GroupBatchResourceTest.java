@@ -66,7 +66,7 @@ class GroupBatchResourceTest extends AbstractBatchTest {
 			if (data.getAllInvocations().size() != 1) {
 				throw new MockitoException("Expect one call");
 			}
-			final GroupEditionVo group = (GroupEditionVo) data.getAllInvocations().get(0).getArguments()[0];
+			final GroupEditionVo group = (GroupEditionVo) data.getAllInvocations().getFirst().getArguments()[0];
 			Assertions.assertNotNull(group);
 			Assertions.assertEquals("Ligoj France", group.getName());
 			Assertions.assertNotNull(group.getScope());
@@ -117,16 +117,16 @@ class GroupBatchResourceTest extends AbstractBatchTest {
 			if (data.getAllInvocations().size() != 1) {
 				throw new MockitoException("Expect one call");
 			}
-			final GroupEditionVo group = (GroupEditionVo) data.getAllInvocations().get(0).getArguments()[0];
+			final GroupEditionVo group = (GroupEditionVo) data.getAllInvocations().getFirst().getArguments()[0];
 			Assertions.assertNotNull(group);
 			Assertions.assertEquals("Special", group.getName());
 			Assertions.assertNotNull(group.getScope());
 			Assertions.assertEquals(2, group.getOwners().size());
-			Assertions.assertEquals("fdaugan", group.getOwners().get(0));
+			Assertions.assertEquals("fdaugan", group.getOwners().getFirst());
 			Assertions.assertEquals(2, group.getAssistants().size());
-			Assertions.assertEquals("jdoe5", group.getAssistants().get(0));
+			Assertions.assertEquals("jdoe5", group.getAssistants().getFirst());
 			Assertions.assertEquals(2, group.getDepartments().size());
-			Assertions.assertEquals("700301", group.getDepartments().get(0));
+			Assertions.assertEquals("700301", group.getDepartments().getFirst());
 			Assertions.assertEquals("Operations", group.getParent());
 		})).create(null);
 	}

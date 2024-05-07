@@ -476,7 +476,7 @@ define(function () {
 		 * Reset the selected user password after popup confirmation, or directly from its identifier.
 		 */
 		resetUserPassword: function (id, name) {
-			current.confirmUserOperation($(this), id, name, 'reset', 'reseted', 'PUT');
+			current.confirmUserOperation($(this), id, name, 'reset', 'reset-ok', 'PUT');
 		},
 
 		/**

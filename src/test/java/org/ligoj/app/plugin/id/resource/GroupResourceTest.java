@@ -79,7 +79,7 @@ class GroupResourceTest extends AbstractContainerResourceTest {
 		Assertions.assertEquals(2, groups.getRecordsFiltered());
 		Assertions.assertEquals(2, groups.getData().size());
 
-		final var group0 = groups.getData().get(0);
+		final var group0 = groups.getData().getFirst();
 		Assertions.assertEquals("DIG", group0.getName());
 		Assertions.assertEquals(1, group0.getCount());
 		Assertions.assertEquals(0, group0.getCountVisible());

@@ -19,7 +19,7 @@ public class MailComparator extends AbstractNameComparator {
 	 * Return a safe string representation of the mail of a user.
 	 */
 	private String toSafeString(final UserOrg o1) {
-		return o1.getMails().isEmpty() ? "" : o1.getMails().get(0);
+		return o1.getMails().isEmpty() ? "" : o1.getMails().getFirst();
 	}
 
 }

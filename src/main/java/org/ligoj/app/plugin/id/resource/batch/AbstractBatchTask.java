@@ -19,7 +19,7 @@ import lombok.extern.slf4j.Slf4j;
 
 /**
  * Base batch processor.
- * 
+ *
  * @param <B> The batch element type.
  */
 @Slf4j
@@ -37,7 +37,7 @@ public abstract class AbstractBatchTask<B extends BatchElement> implements Runna
 
 	@Override
 	public void run() {
-		log.info("Executing " + task.toString());
+		log.info("Executing {}", task.toString());
 
 		// Expose the current user
 		securityHelper.setUserName(task.getPrincipal());
@@ -51,7 +51,7 @@ public abstract class AbstractBatchTask<B extends BatchElement> implements Runna
 
 	/**
 	 * Process an entry.
-	 * 
+	 *
 	 * @param entry A batch entry.
 	 * @param quiet Flag to turn off the possible notification such as mail.
 	 * @throws Exception Any error cause the abortion for this entry.
@@ -60,7 +60,7 @@ public abstract class AbstractBatchTask<B extends BatchElement> implements Runna
 
 	/**
 	 * Process an entry.
-	 * 
+	 *
 	 * @param entry A batch entry.
 	 * @throws Exception Any error cause the abortion for this entry.
 	 */
@@ -96,7 +96,7 @@ public abstract class AbstractBatchTask<B extends BatchElement> implements Runna
 
 	/**
 	 * Configure the task.
-	 * 
+	 *
 	 * @param task The batch task.
 	 */
 	public void configure(final BatchTaskVo<B> task) {
@@ -107,7 +107,7 @@ public abstract class AbstractBatchTask<B extends BatchElement> implements Runna
 		// Save the CXF factory for JSON serialization
 		this.jaxrsFactory = getMessage() == null ? ServerProviderFactory.getInstance()
 				: (ServerProviderFactory) getMessage().getExchange().getEndpoint()
-						.get("org.apache.cxf.jaxrs.provider.ServerProviderFactory");
+				.get("org.apache.cxf.jaxrs.provider.ServerProviderFactory");
 	}
 
 	protected Message getMessage() {
@@ -116,7 +116,7 @@ public abstract class AbstractBatchTask<B extends BatchElement> implements Runna
 
 	/**
 	 * Split and normalize a string to a collection, ignoring empty items.
-	 * 
+	 *
 	 * @param rawValue The raw string to split.
 	 * @return A collection from the raw string.
 	 */

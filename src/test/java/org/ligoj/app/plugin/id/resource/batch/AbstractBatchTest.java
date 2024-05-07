@@ -23,7 +23,7 @@ public abstract class AbstractBatchTest extends AbstractAppTest {
 		Assertions.assertEquals(Boolean.TRUE, importTask.getStatus().getStatus());
 		Assertions.assertEquals(1, importTask.getStatus().getEntries());
 		Assertions.assertEquals(1, importTask.getStatus().getDone());
-		return importTask.getEntries().get(0);
+		return importTask.getEntries().getFirst();
 	}
 
 	protected <U extends BatchElement> BatchTaskVo<U> waitImport(final BatchTaskVo<U> importTask)

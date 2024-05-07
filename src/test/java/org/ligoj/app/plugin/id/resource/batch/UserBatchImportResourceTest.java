@@ -51,7 +51,7 @@ class UserBatchImportResourceTest extends AbstractUserBatchResourceTest {
 			if (data.getAllInvocations().size() != 1) {
 				throw new MockitoException("Expect one call");
 			}
-			final UserOrgEditionVo user = (UserOrgEditionVo) data.getAllInvocations().get(0).getArguments()[0];
+			final UserOrgEditionVo user = (UserOrgEditionVo) data.getAllInvocations().getFirst().getArguments()[0];
 			Assertions.assertNotNull(user);
 			Assertions.assertEquals("Sébastien", user.getFirstName());
 			Assertions.assertEquals("Loubli", user.getLastName());
@@ -97,15 +97,15 @@ class UserBatchImportResourceTest extends AbstractUserBatchResourceTest {
 		initSpringSecurityContext(DEFAULT_USER);
 		final BatchTaskVo<UserImportEntry> importTask = waitImport(
 				resource.getImportTask(resource.execute(input, new String[0], "cp1250", false)));
-		Assertions.assertEquals(Boolean.TRUE, importTask.getEntries().get(0).getStatus());
-		Assertions.assertNull(importTask.getEntries().get(0).getStatusText());
+		Assertions.assertEquals(Boolean.TRUE, importTask.getEntries().getFirst().getStatus());
+		Assertions.assertNull(importTask.getEntries().getFirst().getStatusText());
 
 		// Check user
 		Mockito.verify(mockResource, new DefaultVerificationMode(data -> {
 			if (data.getAllInvocations().size() != 1) {
 				throw new MockitoException("Expect one call");
 			}
-			final UserOrgEditionVo user = (UserOrgEditionVo) data.getAllInvocations().get(0).getArguments()[0];
+			final UserOrgEditionVo user = (UserOrgEditionVo) data.getAllInvocations().getFirst().getArguments()[0];
 			Assertions.assertNotNull(user);
 			Assertions.assertNotNull(user);
 			Assertions.assertEquals("Sébastien", user.getFirstName());
@@ -132,7 +132,7 @@ class UserBatchImportResourceTest extends AbstractUserBatchResourceTest {
 			if (data.getAllInvocations().size() != 1) {
 				throw new MockitoException("Expect one call");
 			}
-			final UserOrgEditionVo user = (UserOrgEditionVo) data.getAllInvocations().get(0).getArguments()[0];
+			final UserOrgEditionVo user = (UserOrgEditionVo) data.getAllInvocations().getFirst().getArguments()[0];
 			Assertions.assertNotNull(user);
 			Assertions.assertEquals("kloubli9", user.getId());
 			Assertions.assertEquals(1, user.getGroups().size());
@@ -149,8 +149,8 @@ class UserBatchImportResourceTest extends AbstractUserBatchResourceTest {
 		initSpringSecurityContext(DEFAULT_USER);
 		final BatchTaskVo<UserImportEntry> importTask = waitImport(
 				resource.getImportTask(resource.execute(input, new String[0], "cp1250", false)));
-		Assertions.assertEquals("message", importTask.getEntries().get(0).getStatusText());
-		Assertions.assertEquals(Boolean.FALSE, importTask.getEntries().get(0).getStatus());
+		Assertions.assertEquals("message", importTask.getEntries().getFirst().getStatusText());
+		Assertions.assertEquals(Boolean.FALSE, importTask.getEntries().getFirst().getStatus());
 	}
 
 	@Test
@@ -158,10 +158,8 @@ class UserBatchImportResourceTest extends AbstractUserBatchResourceTest {
 		final InputStream input = new ByteArrayInputStream(
 				"Loubli;Sébastien;kloubli4;my.address@sample.com;ligoj;jira".getBytes("cp1250"));
 		initSpringSecurityContext(DEFAULT_USER);
-		Assertions.assertEquals("csv-file:Invalid header __?__", Assertions.assertThrows(ValidationJsonException.class, () -> {
-			resource.execute(input, new String[] { "lastName", "firstName", "id", "__?__", "company", "groups" },
-					"cp1250", false);
-		}).getMessage());
+		Assertions.assertEquals("csv-file:Invalid header __?__", Assertions.assertThrows(ValidationJsonException.class, () -> resource.execute(input, new String[] { "lastName", "firstName", "id", "__?__", "company", "groups" },
+				"cp1250", false)).getMessage());
 	}
 
 	@Test
@@ -169,9 +167,7 @@ class UserBatchImportResourceTest extends AbstractUserBatchResourceTest {
 		final InputStream input = new ByteArrayInputStream(
 				"Loubli;Sébastien;;my.address@sample.com;ligoj;jira".getBytes("cp1250"));
 		initSpringSecurityContext(DEFAULT_USER);
-		MatcherUtil.assertThrows(Assertions.assertThrows(ConstraintViolationException.class, () -> {
-			resource.execute(input, new String[0], "cp1250", false);
-		}), "id", "NotBlank");
+		MatcherUtil.assertThrows(Assertions.assertThrows(ConstraintViolationException.class, () -> resource.execute(input, new String[0], "cp1250", false)), "id", "NotBlank");
 	}
 
 	@Test

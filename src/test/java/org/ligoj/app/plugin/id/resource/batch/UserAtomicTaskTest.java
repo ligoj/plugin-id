@@ -50,9 +50,7 @@ class UserAtomicTaskTest extends AbstractSecurityTest {
 	void doBatchInvalidOperation() {
 		final UserUpdateEntry entry = new UserUpdateEntry();
 		entry.setOperation("any");
-		MatcherUtil.assertThrows(Assertions.assertThrows(ValidationJsonException.class, () -> {
-			task.doBatch(entry);
-		}),  "operation", "unsupported-operation");
+		MatcherUtil.assertThrows(Assertions.assertThrows(ValidationJsonException.class, () -> task.doBatch(entry)),  "operation", "unsupported-operation");
 	}
 
 	@Test
@@ -60,9 +58,7 @@ class UserAtomicTaskTest extends AbstractSecurityTest {
 		final UserUpdateEntry entry = new UserUpdateEntry();
 		entry.setOperation("lock");
 		entry.setValue("any");
-		MatcherUtil.assertThrows(Assertions.assertThrows(ValidationJsonException.class, () -> {
-			task.doBatch(entry);
-		}), "value", "null-value-expected");
+		MatcherUtil.assertThrows(Assertions.assertThrows(ValidationJsonException.class, () -> task.doBatch(entry)), "value", "null-value-expected");
 	}
 
 	@Test

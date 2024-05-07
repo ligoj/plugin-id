@@ -30,7 +30,7 @@ define({
 		'isolated-confirm': '{{this}} has been isolated. Password has been cleared',
 		'reset': 'Password Reset',
 		'reset-confirm': 'Are you sure to reset the password of {{this}}?<br>An email will be sent to this user and you.',
-		'reseted-confirm': '{{this}} password has been reset.',
+		'reset-ok': '{{this}} password has been reset.',
 		'show-password' : 'Show password',
 		'password' : 'Password',
 		'quiet': 'Silent',
