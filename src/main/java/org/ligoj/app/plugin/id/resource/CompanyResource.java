@@ -55,7 +55,7 @@ public class CompanyResource extends AbstractContainerResource<CompanyOrg, Conta
 
 	@Override
 	public ICompanyRepository getRepository() {
-		return getCompany();
+		return getCompanyRepository();
 	}
 
 	/**
@@ -64,7 +64,7 @@ public class CompanyResource extends AbstractContainerResource<CompanyOrg, Conta
 	 * @return The company name of current user or <code>null</code> if the current user is not in the repository.
 	 */
 	public CompanyOrg getUserCompany() {
-		final var user = getUser().findById(securityHelper.getLogin());
+		final var user = getUserRepository().findById(securityHelper.getLogin());
 		if (user == null) {
 			return null;
 		}
@@ -91,7 +91,7 @@ public class CompanyResource extends AbstractContainerResource<CompanyOrg, Conta
 	 */
 	public boolean isUserInternalCompany() {
 		return ObjectUtils.defaultIfNull(getUserCompanyDn(), "")
-				.endsWith(ObjectUtils.defaultIfNull(getUser().getPeopleInternalBaseDn(), ""));
+				.endsWith(ObjectUtils.defaultIfNull(getUserRepository().getPeopleInternalBaseDn(), ""));
 	}
 
 	/**
@@ -111,8 +111,8 @@ public class CompanyResource extends AbstractContainerResource<CompanyOrg, Conta
 				.collect(Collectors.toSet());
 		final var writeCompanies = getContainersIdForWrite();
 		final var adminCompanies = getContainersIdForAdmin();
-		final var users = getUser().findAll();
-		final var companies = getCompany().findAll();
+		final var users = getUserRepository().findAll();
+		final var companies = getCompanyRepository().findAll();
 
 		// Search the companies
 		final var findAll = getRepository().findAll(visibleCompanies,
@@ -142,7 +142,7 @@ public class CompanyResource extends AbstractContainerResource<CompanyOrg, Conta
 		super.checkForDeletion(container);
 
 		// Company deletion is only possible where there is no user inside this company, or inside any sub-company
-		final var users = getUser().findAll();
+		final var users = getUserRepository().findAll();
 		if (getRepository().findAll().values().stream()
 				.filter(c -> DnUtils.equalsOrParentOf(container.getDn(), c.getDn()))
 				.anyMatch(c -> users.values().stream().map(UserOrg::getCompany).anyMatch(c.getId()::equals))) {

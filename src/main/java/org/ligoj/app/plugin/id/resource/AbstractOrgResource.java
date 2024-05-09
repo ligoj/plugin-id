@@ -35,7 +35,7 @@ public abstract class AbstractOrgResource {
 	 *
 	 * @return User repository provider.
 	 */
-	protected IUserRepository getUser() {
+	public IUserRepository getUserRepository() {
 		return iamProvider[0].getConfiguration().getUserRepository();
 	}
 
@@ -44,7 +44,7 @@ public abstract class AbstractOrgResource {
 	 *
 	 * @return Company repository provider.
 	 */
-	protected ICompanyRepository getCompany() {
+	public ICompanyRepository getCompanyRepository() {
 		return iamProvider[0].getConfiguration().getCompanyRepository();
 	}
 
@@ -53,7 +53,7 @@ public abstract class AbstractOrgResource {
 	 *
 	 * @return Group repository provider.
 	 */
-	protected IGroupRepository getGroup() {
+	public IGroupRepository getGroupRepository() {
 		return iamProvider[0].getConfiguration().getGroupRepository();
 	}
 }

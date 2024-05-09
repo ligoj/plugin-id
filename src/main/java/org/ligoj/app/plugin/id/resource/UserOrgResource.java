@@ -132,7 +132,7 @@ public class UserOrgResource extends AbstractOrgResource implements ISessionSett
 	private Page<UserOrg> findAllNotSecure(final Set<GroupOrg> visibleGroups, final String company, final String group, final String criteria, @Context final UriInfo uriInfo) {
 		final var pageRequest = paginationJson.getPageRequest(uriInfo, ORDERED_COLUMNS);
 		final var visibleCompanies = companyResource.getContainers().stream().map(CompanyOrg::getId).collect(Collectors.toSet());
-		final var allGroups = getGroup().findAll();
+		final var allGroups = getGroupRepository().findAll();
 
 		// The companies to use
 		final var filteredCompanies = computeFilteredCompanies(Normalizer.normalize(company), visibleCompanies);
@@ -141,7 +141,7 @@ public class UserOrgResource extends AbstractOrgResource implements ISessionSett
 		final var filteredGroups = group == null ? null : computeFilteredGroups(group, visibleGroups, allGroups);
 
 		// Search the users
-		return getUser().findAll(filteredGroups, filteredCompanies, StringUtils.trimToNull(criteria), pageRequest);
+		return getUserRepository().findAll(filteredGroups, filteredCompanies, StringUtils.trimToNull(criteria), pageRequest);
 	}
 
 	/**
@@ -183,7 +183,7 @@ public class UserOrgResource extends AbstractOrgResource implements ISessionSett
 		});
 
 		// Forward custom attributes definition
-		result.setExtensions(Map.of("customAttributes", getUser().getCustomAttributes()));
+		result.setExtensions(Map.of("customAttributes", getUserRepository().getCustomAttributes()));
 
 		return result;
 	}
@@ -228,10 +228,10 @@ public class UserOrgResource extends AbstractOrgResource implements ISessionSett
 	@GET
 	@Path("{user:" + SimpleUser.USER_PATTERN + "}")
 	public UserOrg findById(@PathParam("user") final String user) {
-		final var rawUserOrg = getUser().findByIdExpected(securityHelper.getLogin(), Normalizer.normalize(user));
+		final var rawUserOrg = getUserRepository().findByIdExpected(securityHelper.getLogin(), Normalizer.normalize(user));
 
 		// Check if the user lock status without using cache
-		getUser().checkLockStatus(rawUserOrg);
+		getUserRepository().checkLockStatus(rawUserOrg);
 
 		// User has been found, secure the object regarding the visible groups
 		final var securedUserOrg = new UserOrg();
@@ -280,7 +280,7 @@ public class UserOrgResource extends AbstractOrgResource implements ISessionSett
 		final var delegates = delegateRepository.findAllByUser(securityHelper.getLogin());
 
 		// Get the implied user
-		final var userOrg = getUser().findByIdExpected(user);
+		final var userOrg = getUserRepository().findByIdExpected(user);
 
 		// Check the implied group
 		validateWriteGroup(group, delegates);
@@ -294,7 +294,7 @@ public class UserOrgResource extends AbstractOrgResource implements ISessionSett
 			final var mergedGroups = mergeGroups(delegates, userOrg, newGroups);
 
 			// Update membership
-			getUser().updateMembership(new ArrayList<>(mergedGroups), userOrg);
+			getUserRepository().updateMembership(new ArrayList<>(mergedGroups), userOrg);
 		}
 	}
 
@@ -311,7 +311,7 @@ public class UserOrgResource extends AbstractOrgResource implements ISessionSett
 		final var hasAttributeChange = validateChanges(securityHelper.getLogin(), user);
 
 		// Check the user exists
-		getUser().findByIdExpected(user.getId());
+		getUserRepository().findByIdExpected(user.getId());
 
 		return saveOrUpdate(user, hasAttributeChange);
 	}
@@ -328,7 +328,7 @@ public class UserOrgResource extends AbstractOrgResource implements ISessionSett
 		validateChanges(securityHelper.getLogin(), user);
 
 		// Check the user does not exist
-		if (getUser().findById(user.getId()) != null) {
+		if (getUserRepository().findById(user.getId()) != null) {
 			throw new ValidationJsonException(USER_KEY, "already-exist", "0", USER_KEY, "1", user.getId());
 		}
 
@@ -373,11 +373,11 @@ public class UserOrgResource extends AbstractOrgResource implements ISessionSett
 		final var delegates = delegateRepository.findAllByUser(principal);
 
 		// Get the stored data of the implied user
-		final var userOrg = getUser().findById(importEntry.getId());
+		final var userOrg = getUserRepository().findById(importEntry.getId());
 
 		// Check the implied company and request changes
 		final var cleanCompany = Normalizer.normalize(importEntry.getCompany());
-		final var companyDn = getCompany().findByIdExpected(principal, cleanCompany).getDn();
+		final var companyDn = getCompanyRepository().findByIdExpected(principal, cleanCompany).getDn();
 		final var hasAttributeChange = hasAttributeChange(importEntry, userOrg);
 		if (hasAttributeChange && !canWrite(delegates, companyDn, DelegateType.COMPANY)) {
 			// Visible but without write access
@@ -434,7 +434,8 @@ public class UserOrgResource extends AbstractOrgResource implements ISessionSett
 	 */
 	private void validateAndGroupsCN(final Collection<String> previousGroups, final Collection<String> desiredGroups, final List<DelegateOrg> delegates) {
 		// Check visibility of the desired groups
-		desiredGroups.forEach(g -> getGroup().findByIdExpected(securityHelper.getLogin(), g));
+		final var repository = getGroupRepository();
+		desiredGroups.forEach(g -> repository.findByIdExpected(securityHelper.getLogin(), g));
 
 		// Check the visible updated groups can be edited by the principal
 		CollectionUtils.disjunction(desiredGroups, previousGroups).forEach(g -> validateWriteGroup(g, delegates));
@@ -450,7 +451,7 @@ public class UserOrgResource extends AbstractOrgResource implements ISessionSett
 	private void validateWriteGroup(final String updatedGroup, final List<DelegateOrg> delegates) {
 
 		// Check the visible updated groups can be edited by the principal
-		Optional.ofNullable(getGroup().findById(securityHelper.getLogin(), updatedGroup)).filter(g -> !canWrite(delegates, g.getDn(), DelegateType.GROUP)).ifPresent(g -> {
+		Optional.ofNullable(getGroupRepository().findById(securityHelper.getLogin(), updatedGroup)).filter(g -> !canWrite(delegates, g.getDn(), DelegateType.GROUP)).ifPresent(g -> {
 			throw new ValidationJsonException(GROUP, READ_ONLY, "0", GROUP, "1", g.getId());
 		});
 	}
@@ -477,8 +478,9 @@ public class UserOrgResource extends AbstractOrgResource implements ISessionSett
 		// Compute the groups merged groups
 		final Collection<String> newGroups = new HashSet<>(userOrg.getGroups());
 		newGroups.addAll(groups);
+		final var repository = getGroupRepository();
 		for (final var oldGroup : userOrg.getGroups()) {
-			final var oldGroupDn = getGroup().findById(oldGroup).getDn();
+			final var oldGroupDn = repository.findById(oldGroup).getDn();
 			if (!groups.contains(oldGroup) && canWrite(delegates, oldGroupDn, DelegateType.GROUP)) {
 				// This group is writable, so it has been explicitly removed by the current user
 				newGroups.remove(oldGroup);
@@ -564,7 +566,7 @@ public class UserOrgResource extends AbstractOrgResource implements ISessionSett
 	private UserUpdateResult saveOrUpdate(final UserOrgEditionVo importEntry, final boolean quiet, final boolean hasAttributeChange) {
 
 		// Create as needed the user, groups will be proceeded after.
-		final var repository = getUser();
+		final var repository = getUserRepository();
 		var user = repository.findById(importEntry.getId());
 		final var newUser = toUserOrg(importEntry);
 		if (user == null) {
@@ -609,12 +611,12 @@ public class UserOrgResource extends AbstractOrgResource implements ISessionSett
 		log.info("{} already exists", newUser.getId());
 
 		// First update the DN
-		newUser.setDn(getUser().toDn(newUser));
+		newUser.setDn(getUserRepository().toDn(newUser));
 		updateCompanyAsNeeded(oldUser, newUser);
 
 		// Then, update the unsecured attributes : first name, etc.
 		final var hadNoMail = oldUser.getMails().isEmpty();
-		getUser().updateUser(newUser);
+		getUserRepository().updateUser(newUser);
 
 		// Then update the mail and/or password
 		if (newUser.getMails().isEmpty()) {
@@ -670,10 +672,10 @@ public class UserOrgResource extends AbstractOrgResource implements ISessionSett
 		// Hard deletion
 		// Check the group : You can't delete a user if he is the last member
 		// of a group
-		final var allGroups = getGroup().findAll();
+		final var allGroups = getGroupRepository().findAll();
 		checkLastMemberInGroups(userOrg, allGroups);
 
-		final var repository = getUser();
+		final var repository = getUserRepository();
 		// Revoke all memberships of this user
 		repository.updateMembership(new ArrayList<>(), userOrg);
 
@@ -697,7 +699,7 @@ public class UserOrgResource extends AbstractOrgResource implements ISessionSett
 	@DELETE
 	@Path("{user}/lock")
 	public void lock(@PathParam("user") final String user) {
-		getUser().lock(securityHelper.getLogin(), checkDeletionRight(user, "lock"));
+		getUserRepository().lock(securityHelper.getLogin(), checkDeletionRight(user, "lock"));
 	}
 
 	/**
@@ -719,7 +721,7 @@ public class UserOrgResource extends AbstractOrgResource implements ISessionSett
 	@DELETE
 	@Path("{user}/isolate")
 	public void isolate(@PathParam("user") final String user) {
-		getUser().isolate(securityHelper.getLogin(), checkDeletionRight(user, "isolate"));
+		getUserRepository().isolate(securityHelper.getLogin(), checkDeletionRight(user, "isolate"));
 	}
 
 	/**
@@ -738,7 +740,7 @@ public class UserOrgResource extends AbstractOrgResource implements ISessionSett
 	@PUT
 	@Path("{user}/unlock")
 	public void unlock(@PathParam("user") final String user) {
-		getUser().unlock(checkDeletionRight(user, "unlock"));
+		getUserRepository().unlock(checkDeletionRight(user, "unlock"));
 	}
 
 	/**
@@ -757,7 +759,7 @@ public class UserOrgResource extends AbstractOrgResource implements ISessionSett
 	@PUT
 	@Path("{user}/restore")
 	public void restore(@PathParam("user") final String user) {
-		getUser().restore(checkDeletionRight(user, "restore"));
+		getUserRepository().restore(checkDeletionRight(user, "restore"));
 	}
 
 	/**
@@ -782,7 +784,7 @@ public class UserOrgResource extends AbstractOrgResource implements ISessionSett
 	public String resetPassword(@PathParam("user") final String uid) {
 		if (uid.equals(securityHelper.getLogin())) {
 			// Self-service reset password
-			final var user = getUser().findByIdExpected(uid);
+			final var user = getUserRepository().findByIdExpected(uid);
 			return updatePassword(user, false);
 		}
 
@@ -792,7 +794,7 @@ public class UserOrgResource extends AbstractOrgResource implements ISessionSett
 		return Optional.ofNullable(updatePassword(user, false)).map(p -> {
 
 			// Unlock account if locked
-			getUser().unlock(user);
+			getUserRepository().unlock(user);
 
 			// Log the action
 			logAdminReset(user);
@@ -819,10 +821,10 @@ public class UserOrgResource extends AbstractOrgResource implements ISessionSett
 	 */
 	private UserOrg checkResetRight(final String user) {
 		// Check the user exists
-		final var userOrg = getUser().findByIdExpected(securityHelper.getLogin(), Normalizer.normalize(user));
+		final var userOrg = getUserRepository().findByIdExpected(securityHelper.getLogin(), Normalizer.normalize(user));
 
 		// Check the company
-		final var companyDn = getCompany().findById(userOrg.getCompany()).getDn();
+		final var companyDn = getCompanyRepository().findById(userOrg.getCompany()).getDn();
 		if (delegateRepository.findByMatchingDnForWrite(securityHelper.getLogin(), companyDn, DelegateType.TREE).isEmpty()) {
 			// Report this attempt to delete a non-writable user
 			log.warn("Attempt to reset the password of a user '{}' out of scope", user);
@@ -840,10 +842,10 @@ public class UserOrgResource extends AbstractOrgResource implements ISessionSett
 	 */
 	private UserOrg checkDeletionRight(final String user, final String mode) {
 		// Check the user exists
-		final var userOrg = getUser().findByIdExpected(securityHelper.getLogin(), Normalizer.normalize(user));
+		final var userOrg = getUserRepository().findByIdExpected(securityHelper.getLogin(), Normalizer.normalize(user));
 
 		// Check the company
-		final var companyDn = getCompany().findById(userOrg.getCompany()).getDn();
+		final var companyDn = getCompanyRepository().findById(userOrg.getCompany()).getDn();
 		if (delegateRepository.findByMatchingDnForWrite(securityHelper.getLogin(), companyDn, DelegateType.COMPANY).isEmpty()) {
 			// Report this attempt to delete a non-writable user
 			log.warn("Attempt to {} a user '{}' out of scope", mode, user);
@@ -895,7 +897,7 @@ public class UserOrgResource extends AbstractOrgResource implements ISessionSett
 	 * @return the found users. May be empty.
 	 */
 	public List<UserOrg> findAllBy(final String attribute, final String value) {
-		return getUser().findAllBy(attribute, value);
+		return getUserRepository().findAllBy(attribute, value);
 	}
 
 	/**
@@ -905,7 +907,7 @@ public class UserOrgResource extends AbstractOrgResource implements ISessionSett
 	 * @return the found user or <code>null</code> when not found. Groups are not fetched for this operation.
 	 */
 	public UserOrg findByIdNoCache(final String user) {
-		return getUser().findByIdNoCache(Normalizer.normalize(user));
+		return getUserRepository().findByIdNoCache(Normalizer.normalize(user));
 	}
 
 	/**
@@ -918,7 +920,7 @@ public class UserOrgResource extends AbstractOrgResource implements ISessionSett
 		// Check the company
 		if (ObjectUtils.notEqual(userOrg.getCompany(), newUser.getCompany())) {
 			// Move the user
-			getUser().move(userOrg, getCompany().findById(newUser.getCompany()));
+			getUserRepository().move(userOrg, getCompanyRepository().findById(newUser.getCompany()));
 		}
 	}
 
@@ -929,7 +931,7 @@ public class UserOrgResource extends AbstractOrgResource implements ISessionSett
 	 * @return The group corresponding to the given department or <code>null</code>.
 	 */
 	private GroupOrg toDepartmentGroup(final String department) {
-		return Optional.ofNullable(department).map(getGroup()::findByDepartment).orElse(null);
+		return Optional.ofNullable(department).map(getGroupRepository()::findByDepartment).orElse(null);
 	}
 
 	/**
@@ -945,10 +947,10 @@ public class UserOrgResource extends AbstractOrgResource implements ISessionSett
 		// Merge department
 		if (ObjectUtils.notEqual(userOrg.getDepartment(), newUser.getDepartment())) {
 			// Remove membership from the old department if exist
-			Optional.ofNullable(toDepartmentGroup(userOrg.getDepartment())).ifPresent(g -> getGroup().removeUser(userOrg, g.getId()));
+			Optional.ofNullable(toDepartmentGroup(userOrg.getDepartment())).ifPresent(g -> getGroupRepository().removeUser(userOrg, g.getId()));
 
 			// Add membership to the new department if exist
-			Optional.ofNullable(toDepartmentGroup(newUser.getDepartment())).ifPresent(g -> getGroup().addUser(userOrg, g.getId()));
+			Optional.ofNullable(toDepartmentGroup(newUser.getDepartment())).ifPresent(g -> getGroupRepository().addUser(userOrg, g.getId()));
 
 			userOrg.setDepartment(newUser.getDepartment());
 			needUpdate = true;
@@ -961,7 +963,7 @@ public class UserOrgResource extends AbstractOrgResource implements ISessionSett
 
 		// Updated as needed
 		if (needUpdate) {
-			getUser().updateUser(userOrg);
+			getUserRepository().updateUser(userOrg);
 		}
 	}
 

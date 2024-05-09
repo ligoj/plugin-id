@@ -59,7 +59,7 @@ public class GroupResource extends AbstractContainerResource<GroupOrg, GroupEdit
 
 	@Override
 	public IGroupRepository getRepository() {
-		return getGroup();
+		return getGroupRepository();
 	}
 
 	@Override
@@ -77,12 +77,12 @@ public class GroupResource extends AbstractContainerResource<GroupOrg, GroupEdit
 	@GET
 	public TableItem<ContainerCountVo> findAll(@Context final UriInfo uriInfo) {
 		final var types = containerScopeResource.findAllDescOrder(ContainerType.GROUP);
-		final var companies = getCompany().findAll();
+		final var companies = getCompanyRepository().findAll();
 		final var visibleCompanies = organizationResource.getContainers();
 		final var writeGroups = getContainersIdForWrite();
 		final var adminGroups = getContainersIdForAdmin();
-		final var users = getUser().findAll();
-		final var groups = getGroup().findAll();
+		final var users = getUserRepository().findAll();
+		final var groups = getGroupRepository().findAll();
 
 		// Search the groups
 		final var page = getContainers(DataTableAttributes.getSearch(uriInfo),
@@ -137,7 +137,7 @@ public class GroupResource extends AbstractContainerResource<GroupOrg, GroupEdit
 	 * @return The corresponding DN.
 	 */
 	private List<String> toDn(final List<String> uids) {
-		return CollectionUtils.emptyIfNull(uids).stream().map(getUser()::findByIdExpected).map(UserOrg::getDn).toList();
+		return CollectionUtils.emptyIfNull(uids).stream().map(getUserRepository()::findByIdExpected).map(UserOrg::getDn).toList();
 	}
 
 	/**
@@ -158,7 +158,7 @@ public class GroupResource extends AbstractContainerResource<GroupOrg, GroupEdit
 		}
 
 		// Perform the update
-		getRepository().empty(container, getUser().findAll());
+		getRepository().empty(container, getUserRepository().findAll());
 	}
 
 	@Override
