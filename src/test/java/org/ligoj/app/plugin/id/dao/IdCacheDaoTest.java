@@ -27,7 +27,7 @@ import java.util.*;
  * Test class of {@link IdCacheDao}
  */
 @ExtendWith(SpringExtension.class)
-@ContextConfiguration(locations = {"classpath:/META-INF/spring/application-context-test.xml"})
+@ContextConfiguration(locations = "classpath:/META-INF/spring/application-context-test.xml")
 @Rollback
 @Transactional
 class IdCacheDaoTest extends AbstractJpaTest {
@@ -390,6 +390,18 @@ class IdCacheDaoTest extends AbstractJpaTest {
 		membershipSubGroup.setSubGroup(cacheGroup2);
 		em.persist(membershipSubGroup);
 
+		// Duplicates -> will be purged
+		final var cacheMembership2Duplicate = new CacheMembership();
+		cacheMembership2Duplicate.setGroup(cacheGroup2);
+		cacheMembership2Duplicate.setUser(cacheUser2);
+		em.persist(cacheMembership2Duplicate);
+
+		// Duplicates -> will be purged
+		final var membershipSubGroupDuplicate = new CacheMembership();
+		membershipSubGroupDuplicate.setGroup(em.find(CacheGroup.class, "group"));
+		membershipSubGroupDuplicate.setSubGroup(cacheGroup2);
+		em.persist(membershipSubGroupDuplicate);
+
 		final var deletedCompany = new CacheCompany();
 		deletedCompany.setId("deleted-company");
 		deletedCompany.setDescription("deleted-company");
@@ -408,7 +420,6 @@ class IdCacheDaoTest extends AbstractJpaTest {
 		deletedMembershipFromDeletedUser.setGroup(deletedGroup);
 		deletedMembershipFromDeletedUser.setUser(deletedUser);
 		em.persist(deletedMembershipFromDeletedUser);
-
 
 		// Unlinked memberships
 		final var cacheGroup3 = new CacheGroup();
@@ -446,6 +457,13 @@ class IdCacheDaoTest extends AbstractJpaTest {
 		unlinkedProjectGroup.setGroup(cacheGroup2);
 		unlinkedProjectGroup.setProject(em.createQuery("FROM Project WHERE pkey = :pkey", Project.class).setParameter("pkey", "pj").getSingleResult());
 		em.persist(unlinkedProjectGroup);
+		em.flush();
+
+
+		final var unlinkedProjectGroupDuplicate = new CacheProjectGroup();
+		unlinkedProjectGroupDuplicate.setGroup(cacheGroup2);
+		unlinkedProjectGroupDuplicate.setProject(em.createQuery("FROM Project WHERE pkey = :pkey", Project.class).setParameter("pkey", "pj").getSingleResult());
+		em.persist(unlinkedProjectGroupDuplicate);
 		em.flush();
 
 		final var brokenProjectGroup2 = new CacheProjectGroup();
@@ -538,6 +556,10 @@ class IdCacheDaoTest extends AbstractJpaTest {
 		final var pGroups = em.createQuery("FROM CacheProjectGroup", CacheProjectGroup.class)
 				.getResultList();
 		Assertions.assertEquals(2, pGroups.size()); // Group & Group2
+
+		Assertions.assertNull(em.find(CacheMembership.class, cacheMembership2Duplicate.getId()));
+		Assertions.assertNull(em.find(CacheMembership.class, membershipSubGroupDuplicate.getId()));
+		Assertions.assertNull(em.find(CacheMembership.class, unlinkedProjectGroupDuplicate.getId()));
 
 		// Redundant reset
 		dao.reset(companies, groups, users);

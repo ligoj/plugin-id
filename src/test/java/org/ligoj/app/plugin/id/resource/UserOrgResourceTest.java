@@ -729,7 +729,7 @@ class UserOrgResourceTest extends AbstractAppTest {
 	}
 
 	private void update2(Consumer<UserOrgEditionVo> consumer) {
-		update2(consumer, c -> {
+		update2(consumer, _ -> {
 			// No change
 		});
 	}
@@ -807,7 +807,7 @@ class UserOrgResourceTest extends AbstractAppTest {
 
 	@Test
 	void updateUserNoChange() {
-		update2(userVo -> {
+		update2(_ -> {
 			// No change
 		});
 	}
@@ -987,6 +987,41 @@ class UserOrgResourceTest extends AbstractAppTest {
 	void addUserToGroup() {
 		mockAddUser(DEFAULT_USER);
 		resource.addUserToGroup("wild-user", "dig rha");
+	}
+
+	@Test
+	void addUserToGroupNotExists() {
+		mockAddUser(DEFAULT_USER);
+		MatcherUtil.assertThrows(Assertions.assertThrows(ValidationJsonException.class, () ->
+				resource.addUserToGroup("wild-user", "-unknown-")), "group", "not-exist");
+	}
+
+	@Test
+	void hasAttributeChange() {
+
+		// No change
+		var userImport = new UserOrgEditionVo();
+		var userOrg = new UserOrg();
+		userImport.setMail("@sample");
+		userOrg.setMails(List.of("@other"));
+		Assertions.assertTrue(resource.hasAttributeChange(userImport, userOrg));
+		userOrg.setMails(List.of("@other", "@sample"));
+		Assertions.assertFalse(resource.hasAttributeChange(userImport, userOrg));
+
+		// Firstname is different
+		userImport.setFirstName("first");
+		Assertions.assertTrue(resource.hasAttributeChange(userImport, userOrg));
+		userOrg.setFirstName("first");
+		Assertions.assertFalse(resource.hasAttributeChange(userImport, userOrg));
+
+		// Custom attributes are different
+		userImport.setCustomAttributes(Map.of("foo", "bar"));
+		Assertions.assertTrue(resource.hasAttributeChange(userImport, userOrg));
+		userOrg.setCustomAttributes(Map.of("foo", "bar"));
+		Assertions.assertFalse(resource.hasAttributeChange(userImport, userOrg));
+
+		Assertions.assertTrue(resource.hasAttributeChange(new UserOrgEditionVo(), null));
+
 	}
 
 	/**

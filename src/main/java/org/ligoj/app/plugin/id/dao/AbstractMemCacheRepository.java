@@ -263,10 +263,12 @@ public abstract class AbstractMemCacheRepository {
 	 */
 	public void removeGroupFromGroup(final GroupOrg subGroup, final GroupOrg group) {
 		// Remove from JPA cache
-		cache.removeGroupFromGroup(subGroup, group);
+		if (group != null) {
+			cache.removeGroupFromGroup(subGroup, group);
 
-		// Also update the membership cache
-		group.getSubGroups().remove(subGroup.getId());
+			// Also update the membership cache
+			group.getSubGroups().remove(subGroup.getId());
+		}
 		subGroup.setParent(null);
 	}
 

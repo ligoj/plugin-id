@@ -283,6 +283,9 @@ public class UserOrgResource extends AbstractOrgResource implements ISessionSett
 		final var userOrg = getUserRepository().findByIdExpected(user);
 
 		// Check the implied group
+		if (getGroupRepository().findById(securityHelper.getLogin(), group) == null) {
+			throw new ValidationJsonException(GROUP, "not-exist", "0", GROUP, "1", group);
+		}
 		validateWriteGroup(group, delegates);
 
 		// Compute the new groups
@@ -526,7 +529,7 @@ public class UserOrgResource extends AbstractOrgResource implements ISessionSett
 	/**
 	 * Indicates the two user details have attribute differences.
 	 */
-	private boolean hasAttributeChange(final UserOrgEditionVo importEntry, final UserOrg userOrg) {
+	boolean hasAttributeChange(final UserOrgEditionVo importEntry, final UserOrg userOrg) {
 		return hasAttributeChange(importEntry, userOrg == null, "new")
 				|| hasAttributeChange(importEntry, userOrg, SimpleUser::getFirstName, SimpleUser::getLastName, SimpleUser::getCompany, SimpleUser::getLocalId, SimpleUser::getDepartment)
 				|| hasAttributeChange(importEntry, !mapToString(importEntry.getCustomAttributes()).equals(mapToString(userOrg.getCustomAttributes())), "customAttributes")

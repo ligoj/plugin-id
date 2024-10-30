@@ -175,6 +175,18 @@ class TestAbstractMemCacheRepositoryTest extends AbstractDataGeneratorTest {
 	}
 
 	@Test
+	void removeGroupFromGroupNull() {
+		final var parent = groupLdap2;
+		final var child = groupLdap;
+		child.setParent(parent.getId());
+		Assertions.assertNotNull(child.getParent());
+		repository.removeGroupFromGroup(child, null);
+
+		// Check the new status
+		Assertions.assertNull(child.getParent());
+	}
+
+	@Test
 	void createGroup() {
 		final var newGroupLdap = new GroupOrg("dn3", "G3", new HashSet<>());
 

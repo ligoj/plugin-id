@@ -6,6 +6,7 @@ package org.ligoj.app.plugin.id.dao;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.PersistenceContextType;
+import jakarta.persistence.Query;
 import jakarta.transaction.Transactional;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
@@ -31,6 +32,7 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Cache synchronization from SQL cache to database.
@@ -85,9 +87,9 @@ public class IdCacheDaoImpl implements IdCacheDao {
 	/**
 	 * Associate a subgroup to a group using the cache groups to prevent duplicate entries.
 	 */
-	private void updateGroupToGroupInternal(final CacheGroup subGroup, final CacheGroup group, final Set<String> cacheGroups) {
-		if (!cacheGroups.contains(group.getId())) {
-			// New membership
+	private void updateGroupToGroupInternal(final CacheGroup subGroup, final CacheGroup group, final Set<String> cacheSubGroups) {
+		if (!cacheSubGroups.contains(subGroup.getId())) {
+			// New membership to put in cache
 			final var membership = new CacheMembership();
 			membership.setSubGroup(subGroup);
 			membership.setGroup(group);
@@ -117,7 +119,7 @@ public class IdCacheDaoImpl implements IdCacheDao {
 		// Set the company if defined
 		entity.setCompany(Optional.ofNullable(user.getCompany()).map(c -> {
 			final var company = new CacheCompany();
-			company.setId(user.getCompany());
+			company.setId(c);
 			return company;
 		}).orElse(null));
 		em.persist(entity);
@@ -176,37 +178,34 @@ public class IdCacheDaoImpl implements IdCacheDao {
 
 	@Override
 	public void delete(final CompanyOrg company) {
-		em.createQuery("DELETE FROM CacheCompany WHERE id=:id").setParameter("id", company.getId()).executeUpdate();
-		em.flush();
-		em.clear();
+		removeAll(em.createQuery("FROM CacheCompany WHERE id=:id").setParameter("id", company.getId()));
 	}
 
 	@Override
 	public void delete(final GroupOrg group) {
-		em.createQuery("DELETE FROM CacheProjectGroup WHERE group.id=:id").setParameter("id", group.getId())
-				.executeUpdate();
-		em.createQuery("DELETE FROM CacheMembership WHERE group.id=:id OR subGroup.id=:id")
-				.setParameter("id", group.getId()).executeUpdate();
-		em.createQuery("DELETE FROM CacheGroup WHERE id=:id").setParameter("id", group.getId()).executeUpdate();
+		removeAll(
+				em.createQuery("FROM CacheMembership WHERE group.id=:id OR subGroup.id=:id").setParameter("id", group.getId()),
+				em.createQuery("FROM CacheProjectGroup WHERE group.id=:id").setParameter("id", group.getId()),
+				em.createQuery("FROM CacheGroup WHERE id=:id").setParameter("id", group.getId())
+		);
+	}
+
+	private void removeAll(Query... queries) {
+		Stream.of(queries).map(Query::getResultList).forEach(l -> l.forEach(em::remove));
 		em.flush();
-		em.clear();
 	}
 
 	@Override
 	public void delete(final UserOrg user) {
-		em.createQuery("DELETE FROM CacheMembership WHERE user.id=:id").setParameter("id", user.getId())
-				.executeUpdate();
-		em.createQuery("DELETE FROM CacheUser WHERE id=:id").setParameter("id", user.getId()).executeUpdate();
-		em.flush();
-		em.clear();
+		removeAll(
+				em.createQuery("FROM CacheMembership WHERE user.id=:id").setParameter("id", user.getId()),
+				em.createQuery("FROM CacheUser WHERE id=:id").setParameter("id", user.getId())
+		);
 	}
 
 	@Override
 	public void empty(final GroupOrg group) {
-		em.createQuery("DELETE FROM CacheMembership WHERE group.id=:id").setParameter("id", group.getId())
-				.executeUpdate();
-		em.flush();
-		em.clear();
+		removeAll(em.createQuery("FROM CacheMembership WHERE group.id=:id").setParameter("id", group.getId()));
 	}
 
 	/**
@@ -229,16 +228,22 @@ public class IdCacheDaoImpl implements IdCacheDao {
 			final Map<String, CacheCompany> cacheCompanies) {
 		final var cacheUsers = em.createQuery("FROM CacheUser", CacheUser.class)
 				.getResultList().stream().collect(Collectors.toMap(CacheUser::getId, Function.identity()));
-		final var userMemberships = em.createQuery("FROM CacheMembership WHERE user is not null", CacheMembership.class)
-				.getResultList().stream().collect(
-						Collectors.groupingBy(c -> c.getUser().getId(),
-								Collectors.mapping(c -> c.getGroup().getId(),
-										Collectors.toSet())));
-		final var groupMemberships = em.createQuery("FROM CacheMembership WHERE subGroup is not null", CacheMembership.class)
-				.getResultList().stream().collect(
-						Collectors.groupingBy(c -> c.getGroup().getId(),
-								Collectors.mapping(c -> c.getSubGroup().getId(),
-										Collectors.toSet())));
+
+		final var userMemberships = em.createQuery("FROM CacheMembership WHERE user is not null", CacheMembership.class).getResultList();
+		final var groupMemberships = em.createQuery("FROM CacheMembership WHERE subGroup is not null", CacheMembership.class).getResultList();
+
+		// Remove duplicates
+		groupMemberships.stream().collect(Collectors.groupingBy(c -> c.getSubGroup().getId() + "-" + c.getGroup()))
+				.values().stream().filter(l -> l.size() > 1).forEach(l -> l.stream().skip(1).forEach(em::remove));
+		userMemberships.stream().collect(Collectors.groupingBy(c -> c.getUser().getId() + "-" + c.getGroup()))
+				.values().stream().filter(l -> l.size() > 1).forEach(l -> l.stream().skip(1).forEach(em::remove));
+
+
+		final var membershipsByUser = userMemberships.stream().collect(
+				Collectors.groupingBy(c -> c.getUser().getId(), Collectors.mapping(c -> c.getGroup().getId(), Collectors.toSet())));
+		final var membershipsByGroup = groupMemberships.stream().collect(
+				Collectors.groupingBy(c -> c.getGroup().getId(), Collectors.mapping(c -> c.getSubGroup().getId(), Collectors.toSet())));
+
 		var memberships = 0;
 
 		// Persist users and memberships
@@ -247,7 +252,7 @@ public class IdCacheDaoImpl implements IdCacheDao {
 			final var entity = createInternal(user, cacheUsers, cacheCompanies);
 
 			// Create/update membership
-			final var cacheUserGroups = userMemberships.getOrDefault(user.getId(), Collections.emptySet());
+			final var cacheUserGroups = membershipsByUser.getOrDefault(user.getId(), Collections.emptySet());
 			for (final var group : user.getGroups()) {
 				updateUserToGroupInternal(entity, cacheGroups.get(group), cacheUserGroups);
 			}
@@ -267,7 +272,7 @@ public class IdCacheDaoImpl implements IdCacheDao {
 		// Persist subgroups and memberships
 		for (final var group : groups.values()) {
 			final var cachedGroup = cacheGroups.get(group.getId());
-			final var cacheSubGroups = groupMemberships.getOrDefault(group.getId(), Collections.emptySet());
+			final var cacheSubGroups = membershipsByGroup.getOrDefault(group.getId(), Collections.emptySet());
 			for (final var subGroup : group.getSubGroups()) {
 				updateGroupToGroupInternal(cacheGroups.get(subGroup), cachedGroup, cacheSubGroups);
 			}
@@ -298,36 +303,42 @@ public class IdCacheDaoImpl implements IdCacheDao {
 	 * @return the amount of persisted relations.
 	 */
 	private int persistProjectGroups(final Map<String, CacheGroup> groups) {
-		final var entities = em.createQuery("FROM CacheProjectGroup WHERE group is not null", CacheProjectGroup.class)
-				.getResultList().stream().collect(
-						Collectors.groupingBy(c -> c.getProject().getId(),
-								Collectors.mapping(c -> c.getGroup().getId(),
-										Collectors.toSet())));
+		final var cachedProjectGroups = em.createQuery("FROM CacheProjectGroup WHERE group is not null", CacheProjectGroup.class)
+				.getResultList();
 
-		final var allProjectGroup = cacheProjectGroupRepository.findAllProjectGroup();
-		for (final var projectGroup : allProjectGroup) {
-			final var projectId = (int) projectGroup[0];
-			final var groupId = (String) projectGroup[1];
-			final var projectGroupIds = entities.get(projectId);
-			if ((projectGroupIds == null || !projectGroupIds.contains(groupId)) && groups.containsKey(groupId)) {
-				// New association
-				final var project = new Project();
-				project.setId(projectId);
-				final var entity = new CacheProjectGroup();
-				entity.setProject(project);
-				entity.setGroup(groups.get(groupId));
-				em.persist(entity);
-			}
+		// Remove duplicates
+		cachedProjectGroups.stream().collect(Collectors.groupingBy(c -> c.getProject().getId() + "-" + c.getGroup()))
+				.values().stream().filter(l -> l.size() > 1).forEach(l -> l.stream().skip(1).forEach(em::remove));
 
-			// Purge the old entries
-			if (projectGroupIds != null) {
-				projectGroupIds.remove(groupId);
+		// Create missing cached project groups as needed
+		final var cachedProjectGroupsByProject = cachedProjectGroups.stream().collect(
+				Collectors.groupingBy(c -> c.getProject().getId(),
+						Collectors.mapping(c -> c.getGroup().getId(), Collectors.toSet())));
+		final var allProjectGroups = cacheProjectGroupRepository.findAllProjectGroup().stream().collect(
+				Collectors.groupingBy(pg -> (Integer) pg[0],
+						Collectors.mapping(pg -> (String) pg[1], Collectors.toSet())));
+		for (final var projectGroups : allProjectGroups.entrySet()) {
+			final var projectId = projectGroups.getKey();
+			final var groupIds = projectGroups.getValue();
+			final var cachedProjectGroupIds = cachedProjectGroupsByProject.get(projectId);
+			for (final var groupId : groupIds) {
+				if ((cachedProjectGroupIds == null || !cachedProjectGroupIds.contains(groupId)) && groups.containsKey(groupId)) {
+					// New association
+					final var project = new Project();
+					project.setId(projectId);
+					final var entity = new CacheProjectGroup();
+					entity.setProject(project);
+					entity.setGroup(groups.get(groupId));
+					em.persist(entity);
+				} else if (cachedProjectGroupIds != null) {
+					cachedProjectGroupIds.remove(groupId);
+				}
 			}
 		}
 
 		// Remove old memberships
-		entities.keySet().forEach(project ->
-				entities.get(project).forEach(group -> {
+		cachedProjectGroupsByProject.keySet().forEach(project ->
+				cachedProjectGroupsByProject.get(project).forEach(group -> {
 					log.info("Deleting removed cache entry {}#{}-{}", CacheProjectGroup.class.getSimpleName(), project, group);
 					em.createQuery("DELETE FROM CacheProjectGroup WHERE project.id=:project and group.id=:group")
 							.setParameter("project", project)
@@ -337,19 +348,19 @@ public class IdCacheDaoImpl implements IdCacheDao {
 		);
 
 
-		return allProjectGroup.size();
+		return allProjectGroups.size();
 	}
 
 	@Override
 	public void removeGroupFromGroup(final GroupOrg subGroup, final GroupOrg group) {
-		em.createQuery("DELETE FROM CacheMembership WHERE subGroup.id=:subGroup AND group.id=:group")
-				.setParameter(GROUP_ATTRIBUTE, group.getId()).setParameter("subGroup", subGroup.getId()).executeUpdate();
+		removeAll(em.createQuery("FROM CacheMembership WHERE subGroup.id=:subGroup AND group.id=:group")
+				.setParameter(GROUP_ATTRIBUTE, group.getId()).setParameter("subGroup", subGroup.getId()));
 	}
 
 	@Override
 	public void removeUserFromGroup(final UserOrg user, final GroupOrg group) {
-		em.createQuery("DELETE FROM CacheMembership WHERE user.id=:user AND group.id=:group")
-				.setParameter(GROUP_ATTRIBUTE, group.getId()).setParameter(USER_ATTRIBUTE, user.getId()).executeUpdate();
+		removeAll(em.createQuery("FROM CacheMembership WHERE user.id=:user AND group.id=:group")
+				.setParameter(GROUP_ATTRIBUTE, group.getId()).setParameter(USER_ATTRIBUTE, user.getId()));
 	}
 
 	private void deleteBatch(Class<?> cls, List<String> ids, Consumer<List<String>> batchConsumer) {
