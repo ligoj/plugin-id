@@ -729,7 +729,7 @@ class UserOrgResourceTest extends AbstractAppTest {
 	}
 
 	private void update2(Consumer<UserOrgEditionVo> consumer) {
-		update2(consumer, _ -> {
+		update2(consumer, e -> {
 			// No change
 		});
 	}
@@ -807,7 +807,7 @@ class UserOrgResourceTest extends AbstractAppTest {
 
 	@Test
 	void updateUserNoChange() {
-		update2(_ -> {
+		update2(e -> {
 			// No change
 		});
 	}
