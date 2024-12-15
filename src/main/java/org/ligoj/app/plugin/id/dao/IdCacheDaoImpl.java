@@ -491,19 +491,23 @@ public class IdCacheDaoImpl implements IdCacheDao {
 			BiConsumer<DelegateOrg, String> setDn) {
 		final var updated = new AtomicInteger();
 		// Get all delegates of he related receiver type
-		delegateOrgRepository.findAllBy(typePath, type).stream().peek(d -> {
+		delegateOrgRepository.findAllBy(typePath, type).stream().filter(d -> {
 			// Consider only the existing ones
 			final var dn = Optional.ofNullable(containers.get(id.apply(d))).map(CacheContainer::getDescription)
 					.orElse(null);
 
 			// Consider only the dirty one
 			final var delegateDn = getDn.apply(d);
+			if (delegateDn == null) {
+				return false;
+			}
 			if (!delegateDn.equalsIgnoreCase(dn)) {
 				// The delegate DN needed this update
 				setDn.accept(d, dn);
 				updated.incrementAndGet();
 			}
-		}).filter(d -> getDn.apply(d) == null).forEach(delegateOrgRepository::delete);
+			return true;
+		}).forEach(delegateOrgRepository::delete);
 		return updated.get();
 	}
 
