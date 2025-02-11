@@ -364,7 +364,7 @@ public class IdCacheDaoImpl implements IdCacheDao {
 	}
 
 	private void deleteBatch(Class<?> cls, List<String> ids, Consumer<List<String>> batchConsumer) {
-		log.info("Deleting removed cache {} {} entries", cls.getSimpleName(), ids.size());
+		log.info("Deleting removed cache {} {} entries", cls.getSimpleName(), (Object) ids.size());
 		ListUtils.partition(ids, 1000).forEach(batchConsumer);
 	}
 
@@ -501,12 +501,16 @@ public class IdCacheDaoImpl implements IdCacheDao {
 			if (delegateDn == null) {
 				return false;
 			}
+			if (dn == null) {
+				// Not resolved DN for this entity's id
+				return true;
+			}
 			if (!delegateDn.equalsIgnoreCase(dn)) {
 				// The delegate DN needed this update
 				setDn.accept(d, dn);
 				updated.incrementAndGet();
 			}
-			return true;
+			return false;
 		}).forEach(delegateOrgRepository::delete);
 		return updated.get();
 	}

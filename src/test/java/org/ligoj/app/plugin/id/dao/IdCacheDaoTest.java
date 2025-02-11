@@ -472,7 +472,7 @@ class IdCacheDaoTest extends AbstractJpaTest {
 		em.persist(brokenProjectGroup2);
 		em.flush();
 
-		// Broken, non-existing related group
+		// Broken, non-existing delegated group
 		final var brokenDelegate = new DelegateOrg();
 		brokenDelegate.setName("broken");
 		brokenDelegate.setDn("dn=group1");
@@ -482,13 +482,23 @@ class IdCacheDaoTest extends AbstractJpaTest {
 		brokenDelegate.setReceiverType(ReceiverType.USER);
 		delegateOrgRepository.saveAndFlush(brokenDelegate);
 
-		// Valid but DN need update
+		// Broken, non-existing receiver group
+		final var brokenReceiver = new DelegateOrg();
+		brokenReceiver.setName("company");
+		brokenReceiver.setDn("dn=old-company");
+		brokenReceiver.setType(DelegateType.COMPANY);
+		brokenReceiver.setReceiver("broken");
+		brokenReceiver.setReceiverDn("dn=old-group");
+		brokenReceiver.setReceiverType(ReceiverType.GROUP);
+		delegateOrgRepository.saveAndFlush(brokenReceiver);
+
+		// Valid but DNs need update
 		final var updateDelegate = new DelegateOrg();
 		updateDelegate.setName("company");
-		updateDelegate.setDn("dn=old-company");
+		updateDelegate.setDn("dn=old-company-dn");
 		updateDelegate.setType(DelegateType.COMPANY);
 		updateDelegate.setReceiver("group");
-		updateDelegate.setReceiverDn("dn=old-group");
+		updateDelegate.setReceiverDn("dn=old-group-dn");
 		updateDelegate.setReceiverType(ReceiverType.GROUP);
 		delegateOrgRepository.saveAndFlush(updateDelegate);
 
@@ -507,7 +517,7 @@ class IdCacheDaoTest extends AbstractJpaTest {
 		Assertions.assertNotNull(em.find(CacheCompany.class, "another-company"));
 		Assertions.assertNotNull(em.find(CacheGroup.class, "group"));
 		Assertions.assertNotNull(em.find(CacheUser.class, "u0"));
-		Assertions.assertEquals(3, delegateOrgRepository.count());
+		Assertions.assertEquals(4, delegateOrgRepository.count());
 
 		dao.reset(companies, groups, users);
 
@@ -536,7 +546,7 @@ class IdCacheDaoTest extends AbstractJpaTest {
 		Assertions.assertNull(memberships.getFirst().getSubGroup());
 		Assertions.assertEquals("u", memberships.getFirst().getUser().getId());
 
-		// Check the state of the previous delegates
+		// Check the state of the new purged delegates
 		Assertions.assertEquals(2, delegateOrgRepository.count());
 
 		// Broken and deleted delegate
