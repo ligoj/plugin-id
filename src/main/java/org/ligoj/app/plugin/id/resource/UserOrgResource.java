@@ -34,6 +34,8 @@ import org.ligoj.bootstrap.resource.system.session.SessionSettings;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.data.domain.Page;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.ResponseBody;
 
@@ -981,5 +983,24 @@ public class UserOrgResource extends AbstractOrgResource implements ISessionSett
 		}
 		// Add user display
 		settings.getApplicationSettings().getData().computeIfAbsent("service:id:user-display", configuration::get);
+	}
+
+	@Override
+	public Collection<GrantedAuthority> getGrantedAuthorities(final String username) {
+		try {
+			// Check if the user lock status without using cache
+			final var rawUserOrg = getUserRepository().findById(Normalizer.normalize(username));
+			final var roles = new ArrayList<GrantedAuthority>();
+			for (String group : rawUserOrg.getGroups()) {
+				roles.add(new SimpleGrantedAuthority(group.toUpperCase()));
+				roles.add(new SimpleGrantedAuthority(group.toLowerCase()));
+				roles.add(new SimpleGrantedAuthority(group));
+			}
+			return roles;
+		} catch (ValidationJsonException ve) {
+			// Ignore this error
+			log.debug("User being authenticated is not defined in primary identity provider ");
+			return Collections.emptyList();
+		}
 	}
 }
