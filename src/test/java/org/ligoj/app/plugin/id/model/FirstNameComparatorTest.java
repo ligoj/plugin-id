@@ -16,7 +16,7 @@ class FirstNameComparatorTest {
 	private UserOrg newSimpleUser(final String firstName, final String login) {
 		final UserOrg simpleUser = new UserOrg();
 		simpleUser.setFirstName(firstName);
-		simpleUser.setName(ObjectUtils.defaultIfNull(login, "l"));
+		simpleUser.setName(ObjectUtils.getIfNull(login, "l"));
 		return simpleUser;
 	}
 

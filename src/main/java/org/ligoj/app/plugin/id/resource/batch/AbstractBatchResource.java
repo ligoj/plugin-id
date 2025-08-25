@@ -153,7 +153,7 @@ public abstract class AbstractBatchResource<B extends BatchElement> {
 				+ "\n";
 
 		// Build entries with prepended CSV header
-		final var encSafe = ObjectUtils.defaultIfNull(encoding, StandardCharsets.UTF_8.name());
+		final var encSafe = ObjectUtils.getIfNull(encoding, StandardCharsets.UTF_8.name());
 		final var input = new ByteArrayInputStream(csvHeaders.getBytes(encSafe));
 		final var entries = csvForBean.toBean(batchType,
 				new InputStreamReader(new SequenceInputStream(input, uploadedFile), encSafe));

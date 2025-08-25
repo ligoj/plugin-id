@@ -12,6 +12,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.commons.text.WordUtils;
 import org.apache.cxf.jaxrs.impl.UriInfoImpl;
 import org.apache.cxf.message.Message;
@@ -550,7 +551,7 @@ public class UserOrgResource extends AbstractOrgResource implements ISessionSett
 	 */
 	@SafeVarargs
 	private boolean hasAttributeChange(final SimpleUser user1, final SimpleUser user2, final Function<SimpleUser, String>... equals) {
-		final var predicateFalse = Arrays.stream(equals).filter(f -> !StringUtils.equalsIgnoreCase(StringUtils.trimToNull(f.apply(user2)), StringUtils.trimToNull(f.apply(user1)))).findFirst().orElse(null);
+		final var predicateFalse = Arrays.stream(equals).filter(f -> !Strings.CI.equals(StringUtils.trimToNull(f.apply(user2)), StringUtils.trimToNull(f.apply(user1)))).findFirst().orElse(null);
 		return predicateFalse != null && hasAttributeChange(user1, true, String.format("'%s' != '%s'", predicateFalse.apply(user1), predicateFalse.apply(user2)));
 	}
 
@@ -989,7 +990,7 @@ public class UserOrgResource extends AbstractOrgResource implements ISessionSett
 	public Collection<GrantedAuthority> getGrantedAuthorities(final String username) {
 		try {
 			// Check if the user lock status without using cache
-			final var rawUserOrg = getUserRepository().findById(Normalizer.normalize(username));
+			final var rawUserOrg = getUserRepository().toUser(Normalizer.normalize(username));
 			final var roles = new ArrayList<GrantedAuthority>();
 			for (String group : rawUserOrg.getGroups()) {
 				roles.add(new SimpleGrantedAuthority(group.toUpperCase()));

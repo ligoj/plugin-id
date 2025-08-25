@@ -68,7 +68,7 @@ public class CompanyResource extends AbstractContainerResource<CompanyOrg, Conta
 		if (user == null) {
 			return null;
 		}
-		return getRepository().findById(ObjectUtils.defaultIfNull(user.getCompany(), ""));
+		return getRepository().findById(ObjectUtils.getIfNull(user.getCompany(), ""));
 	}
 
 	/**
@@ -90,8 +90,8 @@ public class CompanyResource extends AbstractContainerResource<CompanyOrg, Conta
 	 * @return <code>true</code> when the current user is inside the internal scope of people.
 	 */
 	public boolean isUserInternalCompany() {
-		return ObjectUtils.defaultIfNull(getUserCompanyDn(), "")
-				.endsWith(ObjectUtils.defaultIfNull(getUserRepository().getPeopleInternalBaseDn(), ""));
+		return ObjectUtils.getIfNull(getUserCompanyDn(), "")
+				.endsWith(ObjectUtils.getIfNull(getUserRepository().getPeopleInternalBaseDn(), ""));
 	}
 
 	/**

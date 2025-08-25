@@ -41,6 +41,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.time.Instant;
 import java.util.*;
 import java.util.function.Consumer;
 
@@ -300,7 +301,7 @@ class UserOrgResourceTest extends AbstractAppTest {
 		user1.setDepartment("department1");
 		user1.setLocalId("local1");
 		user1.setMails(Collections.singletonList("first2.doe2@ing.fr"));
-		user1.setLocked(new Date());
+		user1.setLocked(Instant.now());
 		user1.setLockedBy("user2");
 		user1.setIsolated("old-company");
 		user1.setSecured(true);

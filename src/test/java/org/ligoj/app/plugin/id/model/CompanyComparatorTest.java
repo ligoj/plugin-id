@@ -16,7 +16,7 @@ class CompanyComparatorTest {
 	private UserOrg newSimpleUser(final String company, final String login) {
 		final UserOrg simpleUser = new UserOrg();
 		simpleUser.setCompany(company);
-		simpleUser.setName(ObjectUtils.defaultIfNull(login, "l"));
+		simpleUser.setName(ObjectUtils.getIfNull(login, "l"));
 		return simpleUser;
 	}
 

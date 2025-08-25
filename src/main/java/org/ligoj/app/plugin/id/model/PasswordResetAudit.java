@@ -3,24 +3,19 @@
  */
 package org.ligoj.app.plugin.id.model;
 
-import java.util.Date;
-
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonProperty.Access;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
-import jakarta.persistence.Temporal;
-import jakarta.persistence.TemporalType;
 import jakarta.validation.constraints.NotBlank;
-
+import lombok.Getter;
+import lombok.Setter;
 import org.ligoj.bootstrap.core.model.AbstractPersistable;
 import org.springframework.data.annotation.CreatedBy;
 import org.springframework.data.annotation.CreatedDate;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonProperty.Access;
-
-import lombok.Getter;
-import lombok.Setter;
+import java.time.Instant;
 
 /**
  * Password reset audit entity.
@@ -41,11 +36,10 @@ public class PasswordResetAudit extends AbstractPersistable<Integer> {
 	/**
 	 * Created date will never be updated.
 	 */
-	@Temporal(TemporalType.TIMESTAMP)
 	@Column(updatable = false)
 	@JsonProperty(access = Access.READ_ONLY)
 	@CreatedDate
-	private Date createdDate;
+	private Instant createdDate;
 
 	/**
 	 * Related username/login/UID.
