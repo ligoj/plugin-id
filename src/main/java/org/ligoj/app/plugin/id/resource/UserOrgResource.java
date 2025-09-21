@@ -992,7 +992,7 @@ public class UserOrgResource extends AbstractOrgResource implements ISessionSett
 			// Check if the user lock status without using cache
 			final var rawUserOrg = getUserRepository().toUser(Normalizer.normalize(username));
 			final var roles = new ArrayList<GrantedAuthority>();
-			for (String group : rawUserOrg.getGroups()) {
+			for (String group : CollectionUtils.emptyIfNull(rawUserOrg.getGroups())) {
 				roles.add(new SimpleGrantedAuthority(group.toUpperCase()));
 				roles.add(new SimpleGrantedAuthority(group.toLowerCase()));
 				roles.add(new SimpleGrantedAuthority(group));
@@ -1000,7 +1000,7 @@ public class UserOrgResource extends AbstractOrgResource implements ISessionSett
 			return roles;
 		} catch (ValidationJsonException ve) {
 			// Ignore this error
-			log.debug("User being authenticated is not defined in primary identity provider ");
+			log.debug("User being authenticated '{}' is not defined in primary identity provider ", username);
 			return Collections.emptyList();
 		}
 	}
