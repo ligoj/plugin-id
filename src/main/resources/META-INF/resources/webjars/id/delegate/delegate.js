@@ -153,7 +153,7 @@ define(function () {
                         }
 					}, {
 						data: 'managed',
-						width: '32px',
+						width: '48px',
 						orderable: false,
 						render: function (value) {
 							if (value) {

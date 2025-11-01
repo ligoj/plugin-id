@@ -205,7 +205,7 @@ define(function () {
 					}, {
 						data: null,
 						orderable: false,
-						width: current.containerType === 'group' ? '34px' : '16px',
+						width: current.containerType === 'group' ? '48px' : '16px',
 						render: function (_i, _j, data) {
 							let result = '';
 							if (data.locked !== true && data.canAdmin && (data.containerType === 'group' || data.count === 0)) {

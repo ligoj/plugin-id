@@ -279,7 +279,7 @@ define(function () {
 					render: value => value.map(d => `<span class="label label-default">${d.name}</span>`).join(' ')
 				}, {
 					data: null,
-					width: '36px',
+					width: '48px',
 					orderable: false,
 					render: function (_i, _j, data) {
 						let editLink = '<a class="update"><i class="fas fa-pencil-alt" data-toggle="tooltip" title="' + current.$messages.update + '"></i></a>';
