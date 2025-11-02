@@ -191,6 +191,7 @@ public class IdCacheDaoImpl implements IdCacheDao {
 	}
 
 	private void removeAll(Query... queries) {
+		//noinspection unchecked
 		Stream.of(queries).map(Query::getResultList).forEach(l -> l.forEach(em::remove));
 		em.flush();
 	}
@@ -364,7 +365,7 @@ public class IdCacheDaoImpl implements IdCacheDao {
 	}
 
 	private void deleteBatch(Class<?> cls, List<String> ids, Consumer<List<String>> batchConsumer) {
-		log.info("Deleting removed cache {} {} entries", cls.getSimpleName(), (Object) ids.size());
+		log.info("Deleting removed cache {} {} entries", cls.getSimpleName(), ids.size());
 		ListUtils.partition(ids, 1000).forEach(batchConsumer);
 	}
 
@@ -492,17 +493,12 @@ public class IdCacheDaoImpl implements IdCacheDao {
 		final var updated = new AtomicInteger();
 		// Get all delegates of he related receiver type
 		delegateOrgRepository.findAllBy(typePath, type).stream().filter(d -> {
-			// Consider only the existing ones
-			final var dn = Optional.ofNullable(containers.get(id.apply(d))).map(CacheContainer::getDescription)
-					.orElse(null);
-
-			// Consider only the dirty one
 			final var delegateDn = getDn.apply(d);
-			if (delegateDn == null) {
-				return false;
-			}
+			// Consider only the existing ones
+			final var container = containers.get(id.apply(d));
+			final var dn = Optional.ofNullable(container).map(CacheContainer::getDescription).orElse(null);
 			if (dn == null) {
-				// Not resolved DN for this entity's id
+				// Not resolved DN for this entity's id, can be deleted
 				return true;
 			}
 			if (!delegateDn.equalsIgnoreCase(dn)) {
@@ -510,6 +506,8 @@ public class IdCacheDaoImpl implements IdCacheDao {
 				setDn.accept(d, dn);
 				updated.incrementAndGet();
 			}
+
+			// Keep this delegate
 			return false;
 		}).forEach(delegateOrgRepository::delete);
 		return updated.get();

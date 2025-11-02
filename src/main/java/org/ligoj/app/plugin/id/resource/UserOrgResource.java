@@ -356,19 +356,19 @@ public class UserOrgResource extends AbstractOrgResource implements ISessionSett
 	/**
 	 * Validate the user changes regarding the current user's right, replace group names with the exact CN, and replace
 	 * the company with a normalized one.<br>
-	 * Rules, order is important :
+	 * Rules where order is important:
 	 * <ul>
 	 * <li>At least one valid delegate must exist (valid or not against the involved user). If not, act as if the
 	 * company does not exist.</li>
 	 * <li>Involved company must exist</li>
-	 * <li>Involved company must be visible by the principal user. If not at if it does not exist, one</li>
-	 * <li>Involved company must be writable by the principal user when there is one updated attribute. Otherwise
+	 * <li>Involved company must be visible by the principal user. If not, act if it does not exist, one</li>
+	 * <li>Involved company must be writable by the principal user when there is one updated attribute. Otherwise,
 	 * indicate the read-only state.</li>
 	 * <li>Involved groups must exist</li>
 	 * <li>Involved groups must be visible by the current user, if not, act as if it does not exist. So the user can
 	 * only involve visible groups he/she. These groups are completed with the other invisible groups the user may
 	 * already have.</li>
-	 * <li>Involved changed groups must writable by the principal user. Otherwise indicate the read-only state.</li>
+	 * <li>Involved changed groups must writable by the principal user. Otherwise, indicate the read-only state.</li>
 	 * </ul>
 	 */
 	private boolean validateChanges(final String principal, final UserOrgEditionVo importEntry) {
@@ -552,7 +552,11 @@ public class UserOrgResource extends AbstractOrgResource implements ISessionSett
 	@SafeVarargs
 	private boolean hasAttributeChange(final SimpleUser user1, final SimpleUser user2, final Function<SimpleUser, String>... equals) {
 		final var predicateFalse = Arrays.stream(equals).filter(f -> !Strings.CI.equals(StringUtils.trimToNull(f.apply(user2)), StringUtils.trimToNull(f.apply(user1)))).findFirst().orElse(null);
-		return predicateFalse != null && hasAttributeChange(user1, true, String.format("'%s' != '%s'", predicateFalse.apply(user1), predicateFalse.apply(user2)));
+		if (predicateFalse == null) {
+			return false;
+		}
+		hasAttributeChange(user1, true, String.format("'%s' != '%s'", predicateFalse.apply(user1), predicateFalse.apply(user2)));
+		return true;
 	}
 
 	/**
@@ -714,7 +718,7 @@ public class UserOrgResource extends AbstractOrgResource implements ISessionSett
 	 * tools are watching.<br>
 	 * All memberships are updated, the user's DN is changed, all groups must be updated. Rules, order is important :
 	 * <ul>
-	 * <li>Only users managing the company of this user can perform the disable, if not, act as if the user did not
+	 * <li>Only users managing the company of this user can perform the disablement, if not, act as if the user did not
 	 * exist</li>
 	 * <li>User must exist</li>
 	 * </ul>
@@ -734,7 +738,7 @@ public class UserOrgResource extends AbstractOrgResource implements ISessionSett
 	 * Unlock a user.<br>
 	 * Rules, order is important :
 	 * <ul>
-	 * <li>Only users managing the company of this user can perform the enable, if not, act as if the user did not
+	 * <li>Only users managing the company of this user can perform the enablement, if not, act as if the user did not
 	 * exist</li>
 	 * <li>User must exist</li>
 	 * </ul>
@@ -753,7 +757,7 @@ public class UserOrgResource extends AbstractOrgResource implements ISessionSett
 	 * Restore a user from the isolate zone to the old company.<br>
 	 * Rules, order is important :
 	 * <ul>
-	 * <li>Only users managing the company of this user can perform the enable, if not, act as if the user did not
+	 * <li>Only users managing the company of this user can perform the enablement, if not, act as if the user did not
 	 * exist</li>
 	 * <li>User must exist</li>
 	 * </ul>
@@ -988,20 +992,14 @@ public class UserOrgResource extends AbstractOrgResource implements ISessionSett
 
 	@Override
 	public Collection<GrantedAuthority> getGrantedAuthorities(final String username) {
-		try {
-			// Check if the user lock status without using cache
-			final var rawUserOrg = getUserRepository().toUser(Normalizer.normalize(username));
-			final var roles = new ArrayList<GrantedAuthority>();
-			for (String group : CollectionUtils.emptyIfNull(rawUserOrg.getGroups())) {
-				roles.add(new SimpleGrantedAuthority(group.toUpperCase()));
-				roles.add(new SimpleGrantedAuthority(group.toLowerCase()));
-				roles.add(new SimpleGrantedAuthority(group));
-			}
-			return roles;
-		} catch (ValidationJsonException ve) {
-			// Ignore this error
-			log.debug("User being authenticated '{}' is not defined in primary identity provider ", username);
-			return Collections.emptyList();
+		// Check if the user lock status without using cache
+		final var rawUserOrg = getUserRepository().toUser(Normalizer.normalize(username));
+		final var roles = new HashSet<GrantedAuthority>();
+		for (String group : CollectionUtils.emptyIfNull(rawUserOrg.getGroups())) {
+			roles.add(new SimpleGrantedAuthority(group.toUpperCase()));
+			roles.add(new SimpleGrantedAuthority(group.toLowerCase()));
+			roles.add(new SimpleGrantedAuthority(group));
 		}
+		return roles;
 	}
 }

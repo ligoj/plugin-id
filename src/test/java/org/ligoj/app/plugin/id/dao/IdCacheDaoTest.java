@@ -511,6 +511,7 @@ class IdCacheDaoTest extends AbstractJpaTest {
 		up2dateDelegate.setReceiverDn("dn=group1");
 		up2dateDelegate.setReceiverType(ReceiverType.GROUP);
 		delegateOrgRepository.saveAndFlush(up2dateDelegate);
+
 		em.flush();
 
 		// Pre state
@@ -603,5 +604,10 @@ class IdCacheDaoTest extends AbstractJpaTest {
 		Assertions.assertEquals("group", memberships.getFirst().getGroup().getId());
 		Assertions.assertNull(memberships.getFirst().getSubGroup());
 		Assertions.assertEquals("u0", memberships.getFirst().getUser().getId());
+	}
+
+	@Test
+	void test() {
+		Assertions.assertEquals(0, new IdCacheDaoImpl().getCacheRefreshTime());
 	}
 }

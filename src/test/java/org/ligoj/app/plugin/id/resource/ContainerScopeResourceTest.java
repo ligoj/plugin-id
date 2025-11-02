@@ -3,13 +3,9 @@
  */
 package org.ligoj.app.plugin.id.resource;
 
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.util.List;
-
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.core.UriInfo;
-
 import org.apache.cxf.jaxrs.impl.MetadataMap;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -29,6 +25,10 @@ import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.util.List;
+
 /**
  * Test class of {@link ContainerScopeResource}
  */
@@ -46,7 +46,7 @@ class ContainerScopeResourceTest extends AbstractJpaTest {
 
 	@BeforeEach
 	void setUpEntities() throws IOException {
-		persistEntities("csv", new Class<?>[] { ContainerScope.class }, StandardCharsets.UTF_8);
+		persistEntities("csv", new Class<?>[]{ContainerScope.class}, StandardCharsets.UTF_8);
 	}
 
 	@Test
@@ -132,6 +132,11 @@ class ContainerScopeResourceTest extends AbstractJpaTest {
 	@Test
 	void findByName() {
 		checkType(resource.findByName("Project"));
+	}
+
+	@Test
+	void findByNameNotExist() {
+		Assertions.assertThrows(EntityNotFoundException.class, () -> resource.findByName(ContainerType.GROUP, "Other"));
 	}
 
 	private void checkType(final ContainerScope type) {

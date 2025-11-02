@@ -35,6 +35,7 @@ import org.mockito.internal.verification.VerificationModeFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.data.domain.PageImpl;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
@@ -1233,6 +1234,18 @@ class UserOrgResourceTest extends AbstractAppTest {
 				throw new ValidationJsonException();
 			}
 		});
+	}
+
+
+	@Test
+	void getGrantedAuthorities() {
+		final UserOrg userOrg = new UserOrg();
+		userOrg.setGroups(List.of("Group1", "Group2"));
+		Mockito.when(userRepository.toUser("junit")).thenReturn(userOrg);
+		var authorities = resource.getGrantedAuthorities("junit");
+		Assertions.assertTrue( authorities.contains(new SimpleGrantedAuthority("Group1")));
+		Assertions.assertTrue( authorities.contains(new SimpleGrantedAuthority("group1")));
+		Assertions.assertTrue( authorities.contains(new SimpleGrantedAuthority("GROUP1")));
 	}
 
 }
