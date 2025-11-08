@@ -1,4 +1,4 @@
-## :link: Ligoj Identity plugin [![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.ligoj.plugin/plugin-id/badge.svg)](https://maven-badges.herokuapp.com/maven-central/org.ligoj.plugin/plugin-id)
+## :link: Ligoj Identity plugin ![Maven Central](https://img.shields.io/maven-central/v/org.ligoj.plugin/plugin-id)
 
 API plugin used for compatibility check
 
