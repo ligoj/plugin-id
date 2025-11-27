@@ -365,8 +365,10 @@ public class IdCacheDaoImpl implements IdCacheDao {
 	}
 
 	private void deleteBatch(Class<?> cls, List<String> ids, Consumer<List<String>> batchConsumer) {
-		log.info("Deleting removed cache {} {} entries", cls.getSimpleName(), ids.size());
-		ListUtils.partition(ids, 1000).forEach(batchConsumer);
+		if (!ids.isEmpty()) {
+			log.info("Deleting removed cache {} {} entries", cls.getSimpleName(), ids.size());
+			ListUtils.partition(ids, 1000).forEach(batchConsumer);
+		}
 	}
 
 	@Override
