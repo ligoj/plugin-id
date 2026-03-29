@@ -247,7 +247,7 @@ public abstract class AbstractContainerResource<T extends ContainerOrg, V extend
 	 * @return Container (CN) with its type.
 	 */
 	@GET
-	@Path("{container:" + ContainerOrg.NAME_PATTERN + "}")
+	@Path("{container:" + "[a-zA-Z0-9](([\\-: ]|%20)?[a-zA-Z0-9])+" + "}")
 	@OnNullReturn404
 	public ContainerWithScopeVo findByName(@PathParam("container") final String name) {
 		return Optional.ofNullable(findById(name)).map(this::toVo).orElse(null);
