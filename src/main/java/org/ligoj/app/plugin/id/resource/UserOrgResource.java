@@ -33,6 +33,7 @@ import org.ligoj.bootstrap.resource.system.configuration.ConfigurationResource;
 import org.ligoj.bootstrap.resource.system.session.ISessionSettingsProvider;
 import org.ligoj.bootstrap.resource.system.session.SessionSettings;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.CacheManager;
 import org.springframework.context.ApplicationContext;
 import org.springframework.data.domain.Page;
 import org.springframework.security.core.GrantedAuthority;
@@ -89,6 +90,9 @@ public class UserOrgResource extends AbstractOrgResource implements ISessionSett
 
 	@Autowired
 	protected ApplicationContext applicationContext;
+
+	@Autowired
+	protected CacheManager cacheManager;
 
 	/**
 	 * Ordered columns.
@@ -301,6 +305,11 @@ public class UserOrgResource extends AbstractOrgResource implements ISessionSett
 
 			// Update membership
 			getUserRepository().updateMembership(new ArrayList<>(mergedGroups), userOrg);
+
+			// Invalidate user details
+			log.debug("Invalidate user-details cache  for user {}", userOrg.getId());
+			cacheManager.getCache("user-details").evict(userOrg.getId());
+
 		}
 	}
 
@@ -995,10 +1004,13 @@ public class UserOrgResource extends AbstractOrgResource implements ISessionSett
 		// Check if the user lock status without using cache
 		final var rawUserOrg = getUserRepository().toUser(Normalizer.normalize(username));
 		final var roles = new HashSet<GrantedAuthority>();
-		for (String group : CollectionUtils.emptyIfNull(rawUserOrg.getGroups())) {
-			roles.add(new SimpleGrantedAuthority(group.toUpperCase()));
-			roles.add(new SimpleGrantedAuthority(group.toLowerCase()));
-			roles.add(new SimpleGrantedAuthority(group));
+		if (rawUserOrg != null) {
+			for (var group : CollectionUtils.emptyIfNull(rawUserOrg.getGroups())) {
+				roles.add(new SimpleGrantedAuthority(group.toUpperCase()));
+				roles.add(new SimpleGrantedAuthority(group.toLowerCase()));
+				roles.add(new SimpleGrantedAuthority(group));
+			}
+			log.debug("Granted roles for user {} ({}): {}. ", username, rawUserOrg.getLocalId(), roles.toString());
 		}
 		return roles;
 	}

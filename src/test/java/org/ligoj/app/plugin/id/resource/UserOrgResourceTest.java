@@ -1248,4 +1248,10 @@ class UserOrgResourceTest extends AbstractAppTest {
 		Assertions.assertTrue( authorities.contains(new SimpleGrantedAuthority("GROUP1")));
 	}
 
+	@Test
+	void getGrantedAuthoritiesUserNotFound() {
+		var authorities = resource.getGrantedAuthorities("junit");
+		Assertions.assertTrue( authorities.isEmpty());
+	}
+
 }
