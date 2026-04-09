@@ -160,7 +160,7 @@ define(function () {
 		 */
 		initializeDataTable: function () {
 			current.table = _('members-table').dataTable({
-				dom: 'rt<"row"<"col-xs-6"i><"col-xs-6"p>>',
+				dom: 'rt<"row"<"col-xs-3"i><"col-xs-3"l><"col-xs-6"p>>',
 				serverSide: true,
 				destroy: true,
 				searching: true,
