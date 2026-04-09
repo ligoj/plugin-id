@@ -3,16 +3,12 @@
  */
 package org.ligoj.app.plugin.id.resource;
 
-import java.util.function.Function;
-
-import javax.cache.expiry.Duration;
-import javax.cache.expiry.ModifiedExpiryPolicy;
-
+import com.hazelcast.cache.HazelcastCacheManager;
+import org.ligoj.bootstrap.resource.system.cache.CacheConfigurer;
 import org.ligoj.bootstrap.resource.system.cache.CacheManagerAware;
 import org.springframework.stereotype.Component;
 
-import com.hazelcast.cache.HazelcastCacheManager;
-import com.hazelcast.config.CacheConfig;
+import javax.cache.expiry.Duration;
 
 /**
  * Cache configuration for IAM.
@@ -21,12 +17,11 @@ import com.hazelcast.config.CacheConfig;
 public class IdCache implements CacheManagerAware {
 
 	@Override
-	public void onCreate(final HazelcastCacheManager cacheManager, final Function<String, CacheConfig<?, ?>> provider) {
-		cacheManager.createCache("container-scopes", provider.apply("container-scopes"));
-		final var isAdmin = provider.apply("user-is-admin");
-		isAdmin.setExpiryPolicyFactory(ModifiedExpiryPolicy.factoryOf(Duration.ONE_MINUTE));
+	public void onCreate(final HazelcastCacheManager cacheManager, final CacheConfigurer configurer) {
+		cacheManager.createCache("container-scopes", configurer.newCacheConfig("container-scopes"));
+		final var isAdmin = configurer.newCacheConfig("user-is-admin",Duration.ONE_MINUTE);
 		cacheManager.createCache("user-is-admin", isAdmin);
-		cacheManager.createCache("id-configuration", provider.apply("id-configuration"));
+		cacheManager.createCache("id-configuration", configurer.newCacheConfig("id-configuration"));
 	}
 
 }
