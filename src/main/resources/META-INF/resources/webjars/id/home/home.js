@@ -11,6 +11,29 @@ define(function () {
 		}
 	}
 
+	function newSelect2Search(url) {
+		return {
+			url,
+			dataType: 'json',
+			data: function (term, page) {
+				return {
+					q: term,
+					rows: 15,
+					page,
+					filters: '{}',
+					sidx: 'name',
+					sord: 'asc'
+				};
+			},
+			results: function (data, page) {
+				return {
+					more: data.recordsFiltered > page * 10,
+					results: data.data.map(d => ({ id: d, text: d }))
+				};
+			}
+		}
+	}
+
 	const current = {
 
 		/**
@@ -82,7 +105,6 @@ define(function () {
 				if (current.currentId) {
 				    _('groups').select2('focus');
 				} else {
-					debugger;
 				    _('id').focus();
 				}
 			}).on('show.bs.modal', function (event) {
@@ -99,28 +121,6 @@ define(function () {
 				return false;
 			});
 
-			function newSelect2Search(url) {
-				return {
-					url,
-					dataType: 'json',
-					data: function (term, page) {
-						return {
-							q: term,
-							rows: 15,
-							page,
-							filters: '{}',
-							sidx: 'name',
-							sord: 'asc'
-						};
-					},
-					results: function (data, page) {
-						return {
-							more: data.recordsFiltered > page * 10,
-							results: data.data.map(d => ({ id: d, text: d }))
-						};
-					}
-				}
-			}
 			_('company').select2({
 				minimumInputLength: 0,
 				initSelection: function (element, callback) {

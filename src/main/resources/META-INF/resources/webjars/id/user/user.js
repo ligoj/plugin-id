@@ -34,7 +34,7 @@ define(function () {
 			}
 
 			// (?=.*[A-Z])(?=.*\\W)(?=.*[0-9])(?=.*[a-z]).{8}.*
-			if (!newPassword.match('((?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])[a-zA-Z0-9@#$%_\\-/:!§*£=+|{}\\[\\]\\?<>;\'&]{8,50})')) {
+			if (!newPassword.match(String.raw`((?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])[a-zA-Z0-9@#$%_\-/:!§*£=+|{}[\]?<>;'&]{8,50})`)) {
 				valid = false;
 				validationManager.addError(_('new-password'), {
 					rule: 'password-complexity-validation'
