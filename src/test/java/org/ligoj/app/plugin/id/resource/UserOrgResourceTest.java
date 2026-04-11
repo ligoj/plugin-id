@@ -1184,6 +1184,7 @@ class UserOrgResourceTest extends AbstractAppTest {
 	@Test
 	void decorate() throws IllegalAccessException {
 		decorate(new UserOrgResource() {
+			@Override
 			public UserOrg findById(@PathParam("user") final String user) {
 				return new UserOrg();
 			}
@@ -1205,6 +1206,7 @@ class UserOrgResourceTest extends AbstractAppTest {
 	@Test
 	void decorateError() throws IllegalAccessException {
 		decorate(new UserOrgResource() {
+			@Override
 			public UserOrg findById(@PathParam("user") final String user) {
 				throw new ValidationJsonException();
 			}
