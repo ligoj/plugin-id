@@ -82,6 +82,7 @@ define(function () {
 				if (current.currentId) {
 				    _('groups').select2('focus');
 				} else {
+					debugger;
 				    _('id').focus();
 				}
 			}).on('show.bs.modal', function (event) {
@@ -97,6 +98,29 @@ define(function () {
 				current.save();
 				return false;
 			});
+
+			function newSelect2Search(url) {
+				return {
+					url,
+					dataType: 'json',
+					data: function (term, page) {
+						return {
+							q: term,
+							rows: 15,
+							page,
+							filters: '{}',
+							sidx: 'name',
+							sord: 'asc'
+						};
+					},
+					results: function (data, page) {
+						return {
+							more: data.recordsFiltered > page * 10,
+							results: data.data.map(d => ({ id: d, text: d }))
+						};
+					}
+				}
+			}
 			_('company').select2({
 				minimumInputLength: 0,
 				initSelection: function (element, callback) {
@@ -108,26 +132,7 @@ define(function () {
 				formatSearching: function () {
 					return current.$messages.loading;
 				},
-				ajax: {
-					url: REST_PATH + 'service/id/company/filter/write',
-					dataType: 'json',
-					data: function (term, page) {
-						return {
-							q: term,
-							rows: 15,
-							page: page,
-							filters: '{}',
-							sidx: 'name',
-							sord: 'asc'
-						};
-					},
-					results: function (data, page) {
-						return {
-							more: data.recordsFiltered > page * 10,
-							results: data.data.map(d => ({ id: d, text: d }))
-						};
-					}
-				}
+				ajax: newSelect2Search(REST_PATH + 'service/id/company/filter/write')
 			});
 			_('groups').select2({
 				multiple: true,
@@ -138,26 +143,7 @@ define(function () {
 				formatSearching: function () {
 					return current.$messages.loading;
 				},
-				ajax: {
-					url: REST_PATH + 'service/id/group/filter/write',
-					dataType: 'json',
-					data: function (term, page) {
-						return {
-							q: term, // search term
-							rows: 15,
-							page: page,
-							filters: '{}',
-							sidx: 'name',
-							sord: 'asc'
-						};
-					},
-					results: function (data, page) {
-						return {
-							more: data.recordsFiltered > page * 10,
-							results: data.data.map(d => ({ id: d, text: d }))
-						};
-					}
-				}
+				ajax: newSelect2Search(REST_PATH + 'service/id/group/filter/write')
 			});
 			$('#search-group,#search-company').on('change', function () {
 				current.refreshDataTable();
