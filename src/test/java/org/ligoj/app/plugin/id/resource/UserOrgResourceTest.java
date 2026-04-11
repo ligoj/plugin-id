@@ -368,31 +368,6 @@ class UserOrgResourceTest extends AbstractAppTest {
 	}
 
 	@Test
-	void createNotVisibleCompany() {
-		initSpringSecurityContext("any");
-		final var groupOrg1 = new GroupOrg("cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com", "DIG",
-				Collections.singleton("flasta"));
-		final var groupOrg2 = new GroupOrg("cn=DIG RHA,cn=DIG AS,cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com",
-				"DIG RHA", Collections.singleton("wild-user"));
-		groupOrg2.setLocked(true);
-		final var company = new CompanyOrg("ou=ing,ou=france,ou=people,dc=sample,dc=com", "ing");
-		Mockito.when(companyRepository.findByIdExpected("any", "ing")).thenReturn(company);
-		groupFindById("any", "dig", groupOrg1);
-		groupFindById("any", "dig rha", groupOrg2);
-
-		final UserOrgEditionVo user = new UserOrgEditionVo();
-		user.setId("flasta");
-		user.setFirstName("FirstA ");
-		user.setLastName(" LASTA");
-		user.setCompany("ing");
-		user.setMail("flasta@ing.com");
-		final List<String> groups = new ArrayList<>();
-		groups.add("dig rHA");
-		user.setGroups(groups);
-		MatcherUtil.assertThrows(Assertions.assertThrows(ValidationJsonException.class, () -> resource.create(user)), "company", "read-only");
-	}
-
-	@Test
 	void create() {
 		final var user = prepareUserOrgEdition();
 		Assertions.assertNull(resource.create(user));

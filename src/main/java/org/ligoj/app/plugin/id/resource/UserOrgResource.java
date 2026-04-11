@@ -1010,7 +1010,7 @@ public class UserOrgResource extends AbstractOrgResource implements ISessionSett
 				roles.add(new SimpleGrantedAuthority(group.toLowerCase()));
 				roles.add(new SimpleGrantedAuthority(group));
 			}
-			log.debug("Granted roles for user {} ({}): {}. ", username, rawUserOrg.getLocalId(), roles.toString());
+			log.debug("Granted roles for user {} ({}): {}. ", username, rawUserOrg.getLocalId(), roles);
 		}
 		return roles;
 	}
