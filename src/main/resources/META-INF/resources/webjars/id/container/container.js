@@ -38,6 +38,7 @@ define(function () {
 				current.initializeDataTable();
 			}
 			$(function() {
+				debugger;
 				_('table_filter').find('input').trigger('focus');
 			});
 		},
@@ -114,15 +115,9 @@ define(function () {
 						};
 					},
 					results: function (data, page) {
-						const result = [];
-						$(data.data).each(function () {
-							if (!this.locked) {
-								result.push({id: this.id, text: this.name});
-							}
-						});
 						return {
 							more: data.recordsFiltered > page * 10,
-							results: result
+							results: data.data.filter(d=>!d.locked).map(d=>({id: d.id, text: d.name}))
 						};
 					}
 				}
@@ -146,10 +141,9 @@ define(function () {
 						};
 					},
 					results: function (data, page) {
-						const result = data.data.map(d=>({id: d, text: d}));
 						return {
 							more: data.recordsFiltered > page * 10,
-							results: result
+							results: data.data.map(d=>({id: d, text: d}))
 						};
 					}
 				}
@@ -263,23 +257,8 @@ define(function () {
 		 * Delete the selected container after popup confirmation, or directly from its identifier.
 		 */
 		deleteContainer: function (id) {
-			if ((typeof id) === 'string') {
-				// Delete without confirmation
-				$.ajax({
-					type: 'DELETE',
-					url: REST_PATH + 'service/id/' + current.containerType + '/' + id,
-					success: function () {
-						notifyManager.notify(Handlebars.compile(current.$messages.deleted)(id));
-						current.table?.api().ajax.reload();
-					}
-				});
-			} else {
-				// Requires a confirmation
-				const entity = current.table.fnGetData($(this).closest('tr')[0]);
-				bootbox.confirmDelete(function (confirmed) {
-					confirmed && current.deleteContainer(entity.name);
-				}, entity.name + '(' + entity.containerType + '-' + entity.type + ')');
-			}
+			current.$main.confirmDeleteTableEntry($(this), current.table, `service/id/${current.containerType}/${id}`, id,
+				entity => `${entity.name} (${current.$messages[entity.containerType] || entity.containerType} / ${entity.scope})`);
 		},
 
 		/**

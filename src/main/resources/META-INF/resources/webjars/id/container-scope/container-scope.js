@@ -136,25 +136,8 @@ define(function () {
 		/**
 		 * Delete the selected entry after popup confirmation, or directly from its identifier.
 		 */
-		deleteEntry: function (id, text) {
-			if ((typeof id) === 'number') {
-				// Delete without confirmation
-				$.ajax({
-					type: 'DELETE',
-					url: REST_PATH + 'service/id/container-scope/' + id,
-					success: function () {
-						notifyManager.notify(Handlebars.compile(current.$messages.deleted)(text + '(' + id + ')'));
-						current.table?.api().ajax.reload();
-					}
-				});
-			} else {
-				// Requires a confirmation
-				const entity = current.table.fnGetData($(this).closest('tr')[0]);
-				const display = entity.name + '/' + entity.type;
-				bootbox.confirmDelete(function (confirmed) {
-					confirmed && current.deleteEntry(entity.id, display);
-				}, text);
-			}
+		deleteEntry: function (id) {
+			current.$main.confirmDeleteTableEntry($(this), current.table, 'service/id/container-scope/' + id, id)
 		}
 	};
 	return current;

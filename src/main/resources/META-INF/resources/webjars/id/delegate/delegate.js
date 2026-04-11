@@ -87,11 +87,11 @@ define(function () {
 			const $input = _(inputId);
 			const $group = $input.closest('.form-group');
 
-			// Update the selected drop down item
+			// Update the selected dropdown item
 			$group.find('.dropdown-menu [data-type].active').removeClass('active');
 			$group.find('.dropdown-menu [data-type="'+type+'"]').addClass('active');
 
-			// Update the drop down icon
+			// Update the dropdown icon
 			$group.find('.dropdown-toggle i').attr('class', current.$main.targetTypeClass[type] + ' fa-fw');
 
 			// Invalidate the previous select2
@@ -213,25 +213,9 @@ define(function () {
 		/**
 		 * Delete the selected delegate after popup confirmation, or directly from its identifier.
 		 */
-		deleteDelegate: function (id, text) {
-			if ((typeof id) === 'number') {
-				// Delete without confirmation
-				$.ajax({
-					type: 'DELETE',
-					url: REST_PATH + 'security/delegate/' + id,
-					success: function () {
-						notifyManager.notify(Handlebars.compile(current.$messages.deleted)(text + '(' + id + ')'));
-						current.table?.api().ajax.reload();
-					}
-				});
-			} else {
-				// Requires a confirmation
-				const entity = current.table.fnGetData($(this).closest('tr')[0]);
-				const display = current.$main.getResourceLink(entity.receiver, entity.receiverType) + ' <i class="fas fa-arrow-right"></i> ' + current.$main.getResourceLink(entity.name, entity.type);
-				bootbox.confirmDelete(function (confirmed) {
-					confirmed && current.deleteDelegate(entity.id, display);
-				}, display);
-			}
+		deleteDelegate: function (id) {
+			current.$main.confirmDeleteTableEntry($(this), current.table, 'security/delegate/' + id, id,
+				entity => current.$main.getResourceLink(entity.receiver, entity.receiverType) + ' <i class="fas fa-arrow-right"></i> ' + current.$main.getResourceLink(entity.name, entity.type))
 		}
 	};
 	return current;
