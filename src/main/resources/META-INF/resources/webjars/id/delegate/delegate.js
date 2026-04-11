@@ -213,8 +213,8 @@ define(function () {
 		/**
 		 * Delete the selected delegate after popup confirmation, or directly from its identifier.
 		 */
-		deleteDelegate: function (id) {
-			current.$main.confirmDeleteTableEntry($(this), current.table, 'security/delegate/' + id, id,
+		deleteDelegate: function () {
+			current.$main.confirmDeleteTableEntry($(this), current.table, 'security/delegate',
 				entity => current.$main.getResourceLink(entity.receiver, entity.receiverType) + ' <i class="fas fa-arrow-right"></i> ' + current.$main.getResourceLink(entity.name, entity.type))
 		}
 	};

@@ -38,7 +38,6 @@ define(function () {
 				current.initializeDataTable();
 			}
 			$(function() {
-				debugger;
 				_('table_filter').find('input').trigger('focus');
 			});
 		},
@@ -256,8 +255,8 @@ define(function () {
 		/**
 		 * Delete the selected container after popup confirmation, or directly from its identifier.
 		 */
-		deleteContainer: function (id) {
-			current.$main.confirmDeleteTableEntry($(this), current.table, `service/id/${current.containerType}/${id}`, id,
+		deleteContainer: function () {
+			current.$main.confirmDeleteTableEntry($(this), current.table, `service/id/${current.containerType}`,
 				entity => `${entity.name} (${current.$messages[entity.containerType] || entity.containerType} / ${entity.scope})`);
 		},
 

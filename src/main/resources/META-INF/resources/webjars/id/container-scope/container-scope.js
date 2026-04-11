@@ -136,8 +136,8 @@ define(function () {
 		/**
 		 * Delete the selected entry after popup confirmation, or directly from its identifier.
 		 */
-		deleteEntry: function (id) {
-			current.$main.confirmDeleteTableEntry($(this), current.table, 'service/id/container-scope/' + id, id)
+		deleteEntry: function () {
+			current.$main.confirmDeleteTableEntry($(this), current.table, 'service/id/container-scope')
 		}
 	};
 	return current;
