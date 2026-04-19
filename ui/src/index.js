@@ -18,6 +18,14 @@
  * kept external at build so plugin and host share the same instances.
  */
 import IdPlugin from './IdPlugin.vue'
+import UserListView from './views/UserListView.vue'
+import UserEditView from './views/UserEditView.vue'
+import GroupListView from './views/GroupListView.vue'
+import GroupEditView from './views/GroupEditView.vue'
+import CompanyListView from './views/CompanyListView.vue'
+import CompanyEditView from './views/CompanyEditView.vue'
+import DelegateListView from './views/DelegateListView.vue'
+import DelegateEditView from './views/DelegateEditView.vue'
 import ContainerScopeView from './views/ContainerScopeView.vue'
 import service from './service.js'
 
@@ -28,6 +36,18 @@ const features = {
 }
 
 const routes = [
+  { path: '/id/user', name: 'id-user', component: UserListView },
+  { path: '/id/user/new', name: 'id-user-new', component: UserEditView },
+  { path: '/id/user/:id', name: 'id-user-edit', component: UserEditView },
+  { path: '/id/group', name: 'id-group', component: GroupListView },
+  { path: '/id/group/new', name: 'id-group-new', component: GroupEditView },
+  { path: '/id/group/:id', name: 'id-group-edit', component: GroupEditView },
+  { path: '/id/company', name: 'id-company', component: CompanyListView },
+  { path: '/id/company/new', name: 'id-company-new', component: CompanyEditView },
+  { path: '/id/company/:id', name: 'id-company-edit', component: CompanyEditView },
+  { path: '/id/delegate', name: 'id-delegate', component: DelegateListView },
+  { path: '/id/delegate/new', name: 'id-delegate-new', component: DelegateEditView },
+  { path: '/id/delegate/:id', name: 'id-delegate-edit', component: DelegateEditView },
   { path: '/id/container-scope', name: 'id-container-scope', component: ContainerScopeView },
 ]
 
