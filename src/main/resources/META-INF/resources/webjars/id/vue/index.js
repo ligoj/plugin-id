@@ -1,98 +1,74 @@
-/*
- * Plugin "id" — Identity management (users, groups, companies, delegates, container-scopes).
- *
- * Contract consumed by the main app's plugin loader:
- *   - id         : stable plugin identifier
- *   - label      : display name
- *   - install    : called once at registration; receives shared context
- *   - feature    : single entry point callable from the app and other plugins
- *                  (action-dispatcher over the plugin's service functions)
- *   - service    : raw service functions (direct ES access)
- *   - meta       : presentation hints (icon, color)
- *
- * This entry is plain ES — no build step required. SFC-based views for this
- * plugin will ship once the per-plugin Vite pipeline is in place.
- */
-
-const REST = '/rest/'
-
-const service = {
-  /** Resolves whether the usage agreement dialog must be shown. */
-  requireAgreement(userSettings) {
-    return !userSettings || !userSettings['security-agreement']
+import { openBlock as u, createElementBlock as l, createElementVNode as d } from "vue";
+const p = (e, r) => {
+  const t = e.__vccOpts || e;
+  for (const [s, n] of r)
+    t[s] = n;
+  return t;
+}, m = { class: "plugin-id" }, f = {
+  __name: "IdPlugin",
+  setup(e) {
+    return (r, t) => (u(), l("div", m, [...t[0] || (t[0] = [
+      d("h2", null, "Identity", -1),
+      d("p", null, "Plugin shell — views (users, groups, companies, delegates, container-scopes) move here in slice 3b.", -1)
+    ])]));
+  }
+}, g = /* @__PURE__ */ p(f, [["__scopeId", "data-v-6edf097d"]]), a = "/rest/", o = {
+  requireAgreement(e) {
+    return !e || !e["security-agreement"];
   },
-
-  /** Marks the usage agreement as accepted for the current user. */
-  async acceptAgreement(userSettings) {
-    const resp = await fetch(REST + 'system/setting/security-agreement/1', {
-      method: 'POST',
-      credentials: 'include',
-    })
-    if (!resp.ok) throw new Error('Failed to accept agreement')
-    if (userSettings) userSettings['security-agreement'] = true
-    return true
+  async acceptAgreement(e) {
+    if (!(await fetch(a + "system/setting/security-agreement/1", {
+      method: "POST",
+      credentials: "include"
+    })).ok) throw new Error("Failed to accept agreement");
+    return e && (e["security-agreement"] = !0), !0;
   },
-
-  /** Starts polling an import/upload endpoint; returns a handle for cancellation. */
-  scheduleUpload(url, id, onDone, onPartial) {
-    const handle = setInterval(
-      () => service._syncUpload(url, id, onDone, onPartial, handle),
-      1000,
-    )
-    return handle
+  scheduleUpload(e, r, t, s) {
+    const n = setInterval(
+      () => o._syncUpload(e, r, t, s, n),
+      1e3
+    );
+    return n;
   },
-
-  async _syncUpload(url, id, onDone, onPartial, handle) {
+  async _syncUpload(e, r, t, s, n) {
     try {
-      const resp = await fetch(REST + url + '/' + id + '/status', { credentials: 'include' })
-      if (!resp.ok) return
-      const data = await resp.json()
-      onPartial?.(data)
-      if (data.end) {
-        clearInterval(handle)
-        await service._finishUpload(url, id, onDone, onPartial)
-      }
-    } catch (err) {
-      console.error('[plugin:id] upload sync error', err)
+      const c = await fetch(a + e + "/" + r + "/status", { credentials: "include" });
+      if (!c.ok) return;
+      const i = await c.json();
+      s == null || s(i), i.end && (clearInterval(n), await o._finishUpload(e, r, t, s));
+    } catch (c) {
+      console.error("[plugin:id] upload sync error", c);
     }
   },
-
-  async _finishUpload(url, id, onDone, onPartial) {
+  async _finishUpload(e, r, t, s) {
     try {
-      const resp = await fetch(REST + url + '/' + id, { credentials: 'include' })
-      if (!resp.ok) return
-      const data = await resp.json()
-      onPartial?.({ ...data.status, finished: true, errors: data.entries })
-      onDone?.(data)
-    } catch (err) {
-      console.error('[plugin:id] upload result error', err)
+      const n = await fetch(a + e + "/" + r, { credentials: "include" });
+      if (!n.ok) return;
+      const c = await n.json();
+      s == null || s({ ...c.status, finished: !0, errors: c.entries }), t == null || t(c);
+    } catch (n) {
+      console.error("[plugin:id] upload result error", n);
     }
+  }
+}, h = {
+  requireAgreement: o.requireAgreement,
+  acceptAgreement: o.acceptAgreement,
+  scheduleUpload: o.scheduleUpload
+}, y = {
+  id: "id",
+  label: "Identity",
+  component: g,
+  install() {
   },
-}
-
-// Feature dispatcher: the spec requires each plugin to expose a single `feature`
-// function callable from the app and other plugins. Actions map to service calls.
-const features = {
-  requireAgreement: service.requireAgreement,
-  acceptAgreement: service.acceptAgreement,
-  scheduleUpload: service.scheduleUpload,
-}
-
-export default {
-  id: 'id',
-  label: 'Identity',
-  install(/* ctx */) {
-    // No-op for now. Routes for /id/* are hardcoded in the main app's router.
-    // When 3b lands, this will register dynamic routes via ctx.router.
+  feature(e, ...r) {
+    const t = h[e];
+    if (!t) throw new Error(`Plugin "id" has no feature "${e}"`);
+    return t(...r);
   },
-  feature(action, ...args) {
-    const fn = features[action]
-    if (!fn) throw new Error(`Plugin "id" has no feature "${action}"`)
-    return fn(...args)
-  },
-  service,
-  meta: { icon: 'mdi-account-group', color: 'blue-darken-3' },
-}
-
-// Named export for direct ES imports (tests, cross-plugin calls).
-export { service }
+  service: o,
+  meta: { icon: "mdi-account-group", color: "blue-darken-3" }
+};
+export {
+  y as default,
+  o as service
+};
