@@ -9,7 +9,7 @@ if (typeof document !== 'undefined') {
     const link = document.createElement('link')
     link.id = id
     link.rel = 'stylesheet'
-    link.href = new URL('./index.css', import.meta.url).href
+    link.href = new URL(/* @vite-ignore */ './index.css', import.meta.url).href
     document.head.appendChild(link)
   }
 }

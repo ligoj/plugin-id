@@ -3078,7 +3078,11 @@ if (typeof document < "u") {
   const z = "ligoj-plugin-id-css";
   if (!document.getElementById(z)) {
     const b = document.createElement("link");
-    b.id = z, b.rel = "stylesheet", b.href = new URL("./index.css", import.meta.url).href, document.head.appendChild(b);
+    b.id = z, b.rel = "stylesheet", b.href = new URL(
+      /* @vite-ignore */
+      "./index.css",
+      import.meta.url
+    ).href, document.head.appendChild(b);
   }
 }
 const gt = {
