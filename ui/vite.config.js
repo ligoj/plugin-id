@@ -29,7 +29,7 @@ export default defineConfig({
     ),
     emptyOutDir: true,
     rollupOptions: {
-      external: ['vue', 'vue-router', 'pinia', 'vuetify'],
+      external: ['vue', 'vue-router', 'pinia', 'vuetify', '@ligoj/host'],
       output: {
         assetFileNames: 'index.[ext]',
       },

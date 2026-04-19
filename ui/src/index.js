@@ -5,16 +5,20 @@
  * Contract consumed by the Ligoj Vue host:
  *   - id         : stable plugin identifier
  *   - label      : display name
- *   - component  : root Vue component (optional; set once views are moved in)
- *   - install    : called once at registration; receives shared context
+ *   - component  : root Vue component (plugin shell)
+ *   - install    : called once at registration; receives ctx.router so the
+ *                  plugin can register its own routes dynamically
  *   - feature    : single entry point callable from the app and other plugins
  *                  (action dispatcher over the plugin's service functions)
  *   - service    : raw service functions (direct ES access)
  *   - meta       : presentation hints (icon, color)
  *
  * Authored as source — compiled to `/webjars/id/vue/index.js` by Vite.
+ * Shared host surface (stores, composables) is imported from `@ligoj/host`,
+ * kept external at build so plugin and host share the same instances.
  */
 import IdPlugin from './IdPlugin.vue'
+import ContainerScopeView from './views/ContainerScopeView.vue'
 import service from './service.js'
 
 const features = {
@@ -23,13 +27,19 @@ const features = {
   scheduleUpload: service.scheduleUpload,
 }
 
+const routes = [
+  { path: '/id/container-scope', name: 'id-container-scope', component: ContainerScopeView },
+]
+
 export default {
   id: 'id',
   label: 'Identity',
   component: IdPlugin,
-  install(/* ctx */) {
-    // No-op. When slice 3b moves routes into the plugin, this will use
-    // ctx.router to register dynamic routes for the plugin's views.
+  routes,
+  install({ router }) {
+    for (const route of routes) {
+      router.addRoute(route)
+    }
   },
   feature(action, ...args) {
     const fn = features[action]
