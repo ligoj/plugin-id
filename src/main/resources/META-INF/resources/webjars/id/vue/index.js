@@ -1,26 +1,26 @@
-import { openBlock as k, createElementBlock as ne, createElementVNode as te, ref as g, computed as ie, onMounted as se, resolveComponent as i, toDisplayString as n, unref as l, createVNode as e, withCtx as t, createTextVNode as a, createBlock as D, createCommentVNode as U, withDirectives as ye, withModifiers as oe, Fragment as Ne, renderList as Ee, vShow as ke, isRef as be, watch as Me } from "vue";
+import { openBlock as k, createElementBlock as ne, createElementVNode as te, ref as g, computed as ie, onMounted as se, resolveComponent as i, toDisplayString as n, unref as l, createVNode as e, withCtx as t, createTextVNode as a, createBlock as h, createCommentVNode as U, withDirectives as ye, withModifiers as oe, Fragment as Ne, renderList as Ee, vShow as ke, isRef as be, watch as Me } from "vue";
 import { useRouter as ve, useRoute as we } from "vue-router";
 import { useAppStore as re, useApi as ue, useErrorStore as _e, useI18nStore as de, useDataTable as Ve, ImportExportBar as Pe, useFormGuard as xe } from "@ligoj/host";
-const ce = (j, w) => {
-  const E = j.__vccOpts || j;
-  for (const [b, A] of w)
-    E[b] = A;
+const ce = (z, b) => {
+  const E = z.__vccOpts || z;
+  for (const [w, A] of b)
+    E[w] = A;
   return E;
 }, Ae = { class: "plugin-id" }, Oe = {
   __name: "IdPlugin",
-  setup(j) {
-    return (w, E) => (k(), ne("div", Ae, [...E[0] || (E[0] = [
+  setup(z) {
+    return (b, E) => (k(), ne("div", Ae, [...E[0] || (E[0] = [
       te("h2", null, "Identity", -1),
       te("p", null, "Plugin shell — views (users, groups, companies, delegates, container-scopes) move here in slice 3b.", -1)
     ])]));
   }
-}, Re = /* @__PURE__ */ ce(Oe, [["__scopeId", "data-v-6edf097d"]]), Ge = { class: "d-flex flex-wrap align-center mb-4 ga-2" }, ze = { class: "text-h4" }, Le = {
+}, Re = /* @__PURE__ */ ce(Oe, [["__scopeId", "data-v-6edf097d"]]), Ge = { class: "d-flex flex-wrap align-center mb-4 ga-2" }, Le = { class: "text-h4" }, ze = {
   key: 0,
   class: "text-caption text-medium-emphasis"
 }, Be = {
   __name: "UserListView",
-  setup(j) {
-    const w = ve(), E = re(), b = ue(), A = _e(), o = de().t, c = Ve("service/id/user", { defaultSort: "id", demoData: [
+  setup(z) {
+    const b = ve(), E = re(), w = ue(), A = _e(), o = de().t, c = Ve("service/id/user", { defaultSort: "id", demoData: [
       { id: "admin", firstName: "Admin", lastName: "User", company: "Ligoj", mails: ["admin@ligoj.org"], groups: [{ name: "Engineering" }, { name: "Management" }], locked: !1 },
       { id: "jdupont", firstName: "Jean", lastName: "Dupont", company: "Ligoj", mails: ["jean.dupont@ligoj.org"], groups: [{ name: "Engineering" }, { name: "DevOps" }], locked: !1 },
       { id: "mmartin", firstName: "Marie", lastName: "Martin", company: "AcmeCorp", mails: ["marie.martin@acme.com"], groups: [{ name: "Marketing" }], locked: !1 },
@@ -29,8 +29,8 @@ const ce = (j, w) => {
       { id: "tmoreau", firstName: "Thomas", lastName: "Moreau", company: "TechSolutions", mails: ["thomas.moreau@techsol.com"], groups: [{ name: "Sales" }], locked: !1 },
       { id: "crichard", firstName: "Claire", lastName: "Richard", company: "Ligoj", mails: ["claire.richard@ligoj.org"], groups: [{ name: "Management" }], locked: !1 },
       { id: "agarcia", firstName: "Antoine", lastName: "Garcia", company: "Ligoj", mails: ["antoine.garcia@ligoj.org"], groups: [{ name: "Engineering" }], locked: !1 }
-    ] }), $ = g(25);
-    let z = null;
+    ] }), D = g(25);
+    let L = null;
     const x = g([]), V = g(!1), S = g(null), P = g(!1), m = g(!1), M = ie(() => [
       { title: o("user.login"), key: "id", sortable: !0 },
       { title: o("user.firstName"), key: "firstName", sortable: !0 },
@@ -45,30 +45,30 @@ const ce = (j, w) => {
       c.load(q);
     }
     function I() {
-      clearTimeout(z), z = setTimeout(() => c.load({ page: 1, itemsPerPage: $.value }), 300);
+      clearTimeout(L), L = setTimeout(() => c.load({ page: 1, itemsPerPage: D.value }), 300);
     }
     function ee(q) {
       S.value = q, V.value = !0;
     }
-    async function L() {
+    async function B() {
       if (c.demoMode.value) {
         A.push({ message: o("user.demoDelete"), status: 0 }), V.value = !1;
         return;
       }
-      P.value = !0, await b.del(`rest/service/id/user/${S.value.id}`), P.value = !1, V.value = !1, S.value = null, c.load({ page: 1, itemsPerPage: $.value });
+      P.value = !0, await w.del(`rest/service/id/user/${S.value.id}`), P.value = !1, V.value = !1, S.value = null, c.load({ page: 1, itemsPerPage: D.value });
     }
     function le() {
       m.value = !0;
     }
-    async function h() {
+    async function $() {
       if (c.demoMode.value) {
         A.push({ message: o("user.demoDelete"), status: 0 }), m.value = !1;
         return;
       }
       P.value = !0;
       for (const q of x.value)
-        await b.del(`rest/service/id/user/${q}`);
-      P.value = !1, m.value = !1, x.value = [], c.load({ page: 1, itemsPerPage: $.value });
+        await w.del(`rest/service/id/user/${q}`);
+      P.value = !1, m.value = !1, x.value = [], c.load({ page: 1, itemsPerPage: D.value });
     }
     return se(() => {
       E.setTitle(o("user.title")), E.setBreadcrumbs([
@@ -80,7 +80,7 @@ const ce = (j, w) => {
       const f = i("v-spacer"), _ = i("v-text-field"), y = i("v-btn"), p = i("v-alert-title"), Q = i("v-alert"), G = i("v-toolbar-title"), O = i("v-toolbar"), J = i("v-slide-y-transition"), X = i("v-skeleton-loader"), R = i("v-chip"), Y = i("v-icon"), T = i("v-data-table-server"), u = i("v-card-title"), W = i("v-card-text"), K = i("v-card-actions"), C = i("v-card"), N = i("v-dialog");
       return k(), ne("div", null, [
         te("div", Ge, [
-          te("h1", ze, n(l(o)("user.title")), 1),
+          te("h1", Le, n(l(o)("user.title")), 1),
           e(f),
           e(_, {
             modelValue: l(c).search.value,
@@ -98,7 +98,7 @@ const ce = (j, w) => {
           e(y, {
             color: "primary",
             "prepend-icon": "mdi-plus",
-            onClick: d[1] || (d[1] = (r) => l(w).push("/id/user/new"))
+            onClick: d[1] || (d[1] = (r) => l(b).push("/id/user/new"))
           }, {
             default: t(() => [
               a(n(l(o)("user.new")), 1)
@@ -109,10 +109,10 @@ const ce = (j, w) => {
             "export-endpoint": "service/id/user",
             "import-endpoint": "service/id/user/import/csv/full",
             "export-filename": "users.csv",
-            onImported: d[2] || (d[2] = (r) => l(c).load({ page: 1, itemsPerPage: $.value.value }))
+            onImported: d[2] || (d[2] = (r) => l(c).load({ page: 1, itemsPerPage: D.value.value }))
           })
         ]),
-        l(c).error.value ? (k(), D(Q, {
+        l(c).error.value ? (k(), h(Q, {
           key: 0,
           type: "warning",
           variant: "tonal",
@@ -129,7 +129,7 @@ const ce = (j, w) => {
           ]),
           _: 1
         })) : U("", !0),
-        l(c).demoMode.value ? (k(), D(Q, {
+        l(c).demoMode.value ? (k(), h(Q, {
           key: 1,
           type: "info",
           variant: "tonal",
@@ -143,7 +143,7 @@ const ce = (j, w) => {
         })) : U("", !0),
         e(J, null, {
           default: t(() => [
-            x.value.length ? (k(), D(O, {
+            x.value.length ? (k(), h(O, {
               key: 0,
               density: "compact",
               color: "primary",
@@ -175,17 +175,17 @@ const ce = (j, w) => {
           ]),
           _: 1
         }),
-        l(c).loading.value && l(c).items.value.length === 0 ? (k(), D(X, {
+        l(c).loading.value && l(c).items.value.length === 0 ? (k(), h(X, {
           key: 2,
           type: "table-heading, table-row@5",
           class: "mb-4"
         })) : U("", !0),
-        l(c).error.value ? U("", !0) : ye((k(), D(T, {
+        l(c).error.value ? U("", !0) : ye((k(), h(T, {
           key: 3,
           modelValue: x.value,
           "onUpdate:modelValue": d[3] || (d[3] = (r) => x.value = r),
-          "items-per-page": $.value,
-          "onUpdate:itemsPerPage": d[4] || (d[4] = (r) => $.value = r),
+          "items-per-page": D.value,
+          "onUpdate:itemsPerPage": d[4] || (d[4] = (r) => D.value = r),
           headers: M.value,
           items: l(c).items.value,
           "items-length": l(c).totalItems.value,
@@ -194,29 +194,29 @@ const ce = (j, w) => {
           "show-select": "",
           hover: "",
           "onUpdate:options": F,
-          "onClick:row": d[5] || (d[5] = (r, { item: B }) => l(w).push("/id/user/" + B.id))
+          "onClick:row": d[5] || (d[5] = (r, { item: j }) => l(b).push("/id/user/" + j.id))
         }, {
           "item.mails": t(({ item: r }) => {
-            var B;
+            var j;
             return [
-              a(n(((B = r.mails) == null ? void 0 : B[0]) || ""), 1)
+              a(n(((j = r.mails) == null ? void 0 : j[0]) || ""), 1)
             ];
           }),
           "item.groups": t(({ item: r }) => [
-            (k(!0), ne(Ne, null, Ee((r.groups || []).slice(0, 3), (B) => (k(), D(R, {
-              key: B.name || B,
+            (k(!0), ne(Ne, null, Ee((r.groups || []).slice(0, 3), (j) => (k(), h(R, {
+              key: j.name || j,
               size: "small",
               class: "mr-1"
             }, {
               default: t(() => [
-                a(n(B.name || B), 1)
+                a(n(j.name || j), 1)
               ]),
               _: 2
             }, 1024))), 128)),
-            (r.groups || []).length > 3 ? (k(), ne("span", Le, " +" + n(r.groups.length - 3), 1)) : U("", !0)
+            (r.groups || []).length > 3 ? (k(), ne("span", ze, " +" + n(r.groups.length - 3), 1)) : U("", !0)
           ]),
           "item.locked": t(({ item: r }) => [
-            r.locked ? (k(), D(Y, {
+            r.locked ? (k(), h(Y, {
               key: 0,
               color: "error",
               size: "small"
@@ -225,7 +225,7 @@ const ce = (j, w) => {
                 a("mdi-lock", -1)
               ])]),
               _: 1
-            })) : (k(), D(Y, {
+            })) : (k(), h(Y, {
               key: 1,
               color: "success",
               size: "small"
@@ -241,7 +241,7 @@ const ce = (j, w) => {
               icon: "",
               size: "small",
               variant: "text",
-              onClick: oe((B) => l(w).push("/id/user/" + r.id), ["stop"])
+              onClick: oe((j) => l(b).push("/id/user/" + r.id), ["stop"])
             }, {
               default: t(() => [
                 e(Y, { size: "small" }, {
@@ -258,7 +258,7 @@ const ce = (j, w) => {
               size: "small",
               variant: "text",
               color: "error",
-              onClick: oe((B) => ee(r), ["stop"])
+              onClick: oe((j) => ee(r), ["stop"])
             }, {
               default: t(() => [
                 e(Y, { size: "small" }, {
@@ -314,7 +314,7 @@ const ce = (j, w) => {
                       color: "error",
                       variant: "elevated",
                       loading: P.value,
-                      onClick: L
+                      onClick: B
                     }, {
                       default: t(() => [
                         a(n(l(o)("common.delete")), 1)
@@ -366,7 +366,7 @@ const ce = (j, w) => {
                       color: "error",
                       variant: "elevated",
                       loading: P.value,
-                      onClick: h
+                      onClick: $
                     }, {
                       default: t(() => [
                         a(n(l(o)("common.delete")), 1)
@@ -387,14 +387,14 @@ const ce = (j, w) => {
   }
 }, je = /* @__PURE__ */ ce(Be, [["__scopeId", "data-v-215250fd"]]), Ie = { class: "d-flex align-center mb-4" }, qe = { class: "text-h4" }, We = { class: "d-flex flex-wrap ga-2" }, Fe = {
   __name: "UserEditView",
-  setup(j) {
-    const w = we(), E = ve(), b = ue(), A = re(), v = _e(), s = de().t, c = g(null), $ = g(!1), z = g(!1), x = g(!1), V = g(!1), S = g(!1), P = g([]), m = g(!1), M = g(!1), F = g(!1), I = g(""), ee = g(!1), L = ie(() => !!w.params.id), le = ie(() => P.value.map((T) => T.name || T).join(", ") || "-"), h = g({
+  setup(z) {
+    const b = we(), E = ve(), w = ue(), A = re(), v = _e(), s = de().t, c = g(null), D = g(!1), L = g(!1), x = g(!1), V = g(!1), S = g(!1), P = g([]), m = g(!1), M = g(!1), F = g(!1), I = g(""), ee = g(!1), B = ie(() => !!b.params.id), le = ie(() => P.value.map((T) => T.name || T).join(", ") || "-"), $ = g({
       id: "",
       firstName: "",
       lastName: "",
       company: "",
       mail: ""
-    }), { isDirty: q, showGuardDialog: d, confirmLeave: f, cancelLeave: _, markClean: y, init: p } = xe(h), Q = {
+    }), { isDirty: q, showGuardDialog: d, confirmLeave: f, cancelLeave: _, markClean: y, init: p } = xe($), Q = {
       required: (T) => !!T || s("common.required")
     }, G = [
       { id: "admin", firstName: "Admin", lastName: "User", company: "Ligoj", mails: ["admin@ligoj.org"], groups: [{ name: "Engineering" }, { name: "Management" }] },
@@ -409,18 +409,18 @@ const ce = (j, w) => {
     function O(T) {
       var W;
       const u = G.find((K) => K.id === T);
-      u && (h.value.id = u.id, h.value.firstName = u.firstName, h.value.lastName = u.lastName, h.value.company = u.company, h.value.mail = ((W = u.mails) == null ? void 0 : W[0]) || "", P.value = u.groups || [], m.value = !!u.locked, M.value = !!u.isolated);
+      u && ($.value.id = u.id, $.value.firstName = u.firstName, $.value.lastName = u.lastName, $.value.company = u.company, $.value.mail = ((W = u.mails) == null ? void 0 : W[0]) || "", P.value = u.groups || [], m.value = !!u.locked, M.value = !!u.isolated);
     }
     se(async () => {
       var T;
-      if (L.value) {
-        $.value = !0;
-        const u = await b.get(`rest/service/id/user/${w.params.id}`);
-        u && !u.code ? (h.value.id = u.id || "", h.value.firstName = u.firstName || "", h.value.lastName = u.lastName || "", h.value.company = u.company || "", h.value.mail = ((T = u.mails) == null ? void 0 : T[0]) || "", P.value = u.groups || [], m.value = !!u.locked, M.value = !!u.isolated) : (S.value = !0, v.clear(), O(w.params.id)), $.value = !1, A.setTitle(s("user.edit")), A.setBreadcrumbs([
+      if (B.value) {
+        D.value = !0;
+        const u = await w.get(`rest/service/id/user/${b.params.id}`);
+        u && !u.code ? ($.value.id = u.id || "", $.value.firstName = u.firstName || "", $.value.lastName = u.lastName || "", $.value.company = u.company || "", $.value.mail = ((T = u.mails) == null ? void 0 : T[0]) || "", P.value = u.groups || [], m.value = !!u.locked, M.value = !!u.isolated) : (S.value = !0, v.clear(), O(b.params.id)), D.value = !1, A.setTitle(s("user.edit")), A.setBreadcrumbs([
           { title: s("nav.home"), to: "/" },
           { title: s("nav.identity") },
           { title: s("user.title"), to: "/id/user" },
-          { title: h.value.id || s("user.edit") }
+          { title: $.value.id || s("user.edit") }
         ]);
       } else {
         A.setTitle(s("user.new")), A.setBreadcrumbs([
@@ -429,7 +429,7 @@ const ce = (j, w) => {
           { title: s("user.title"), to: "/id/user" },
           { title: s("user.new") }
         ]);
-        const u = await b.get("rest/service/id/user/admin");
+        const u = await w.get("rest/service/id/user/admin");
         (!u || u.code) && (S.value = !0, v.clear());
       }
       p();
@@ -441,22 +441,22 @@ const ce = (j, w) => {
         v.push({ message: s("user.demoSave"), status: 0 });
         return;
       }
-      z.value = !0;
+      L.value = !0;
       const u = {
-        id: h.value.id,
-        firstName: h.value.firstName,
-        lastName: h.value.lastName,
-        company: h.value.company,
-        mail: h.value.mail
+        id: $.value.id,
+        firstName: $.value.firstName,
+        lastName: $.value.lastName,
+        company: $.value.company,
+        mail: $.value.mail
       };
-      L.value ? await b.put("rest/service/id/user", u) : await b.post("rest/service/id/user", u), z.value = !1, y(), E.push("/id/user");
+      B.value ? await w.put("rest/service/id/user", u) : await w.post("rest/service/id/user", u), L.value = !1, y(), E.push("/id/user");
     }
     async function X() {
       if (S.value) {
         v.push({ message: s("user.demoDelete"), status: 0 }), V.value = !1;
         return;
       }
-      x.value = !0, await b.del(`rest/service/id/user/${w.params.id}`), x.value = !1, V.value = !1, y(), E.push("/id/user");
+      x.value = !0, await w.del(`rest/service/id/user/${b.params.id}`), x.value = !1, V.value = !1, y(), E.push("/id/user");
     }
     function R(T) {
       I.value = T, F.value = !0;
@@ -467,22 +467,22 @@ const ce = (j, w) => {
         return;
       }
       ee.value = !0;
-      const T = h.value.id;
+      const T = $.value.id;
       await {
-        lock: () => b.del(`rest/service/id/user/${T}/lock`),
-        unlock: () => b.put(`rest/service/id/user/${T}/unlock`),
-        isolate: () => b.del(`rest/service/id/user/${T}/isolate`),
-        restore: () => b.put(`rest/service/id/user/${T}/restore`),
-        resetPassword: () => b.put(`rest/service/id/user/${T}/reset`)
+        lock: () => w.del(`rest/service/id/user/${T}/lock`),
+        unlock: () => w.put(`rest/service/id/user/${T}/unlock`),
+        isolate: () => w.del(`rest/service/id/user/${T}/isolate`),
+        restore: () => w.put(`rest/service/id/user/${T}/restore`),
+        resetPassword: () => w.put(`rest/service/id/user/${T}/reset`)
       }[I.value](), ee.value = !1, F.value = !1, I.value === "lock" && (m.value = !0), I.value === "unlock" && (m.value = !1), I.value === "isolate" && (M.value = !0), I.value === "restore" && (M.value = !1);
     }
     return (T, u) => {
-      const W = i("v-alert"), K = i("v-skeleton-loader"), C = i("v-text-field"), N = i("v-form"), r = i("v-card-text"), B = i("v-icon"), ae = i("v-btn"), pe = i("v-spacer"), fe = i("v-card-actions"), H = i("v-card"), me = i("v-card-title"), Ce = i("v-dialog");
+      const W = i("v-alert"), K = i("v-skeleton-loader"), C = i("v-text-field"), N = i("v-form"), r = i("v-card-text"), j = i("v-icon"), ae = i("v-btn"), pe = i("v-spacer"), fe = i("v-card-actions"), H = i("v-card"), me = i("v-card-title"), Ce = i("v-dialog");
       return k(), ne("div", null, [
         te("div", Ie, [
-          te("h1", qe, n(L.value ? l(s)("user.edit") : l(s)("user.new")), 1)
+          te("h1", qe, n(B.value ? l(s)("user.edit") : l(s)("user.new")), 1)
         ]),
-        S.value ? (k(), D(W, {
+        S.value ? (k(), h(W, {
           key: 0,
           type: "info",
           variant: "tonal",
@@ -494,13 +494,13 @@ const ce = (j, w) => {
           ]),
           _: 1
         })) : U("", !0),
-        $.value ? (k(), D(K, {
+        D.value ? (k(), h(K, {
           key: 1,
           type: "card, actions",
           "max-width": "700",
           class: "mb-4"
         })) : U("", !0),
-        $.value ? U("", !0) : (k(), D(H, {
+        D.value ? U("", !0) : (k(), h(H, {
           key: 2,
           class: "edit-card"
         }, {
@@ -514,48 +514,48 @@ const ce = (j, w) => {
                 }, {
                   default: t(() => [
                     e(C, {
-                      modelValue: h.value.id,
-                      "onUpdate:modelValue": u[0] || (u[0] = (Z) => h.value.id = Z),
+                      modelValue: $.value.id,
+                      "onUpdate:modelValue": u[0] || (u[0] = (Z) => $.value.id = Z),
                       label: l(s)("user.login"),
                       rules: [Q.required],
-                      disabled: L.value,
-                      hint: L.value ? "" : l(s)("user.loginHint"),
+                      disabled: B.value,
+                      hint: B.value ? "" : l(s)("user.loginHint"),
                       "persistent-hint": "",
                       variant: "outlined",
                       class: "mb-2"
                     }, null, 8, ["modelValue", "label", "rules", "disabled", "hint"]),
                     e(C, {
-                      modelValue: h.value.firstName,
-                      "onUpdate:modelValue": u[1] || (u[1] = (Z) => h.value.firstName = Z),
+                      modelValue: $.value.firstName,
+                      "onUpdate:modelValue": u[1] || (u[1] = (Z) => $.value.firstName = Z),
                       label: l(s)("user.firstName"),
                       rules: [Q.required],
                       variant: "outlined",
                       class: "mb-2"
                     }, null, 8, ["modelValue", "label", "rules"]),
                     e(C, {
-                      modelValue: h.value.lastName,
-                      "onUpdate:modelValue": u[2] || (u[2] = (Z) => h.value.lastName = Z),
+                      modelValue: $.value.lastName,
+                      "onUpdate:modelValue": u[2] || (u[2] = (Z) => $.value.lastName = Z),
                       label: l(s)("user.lastName"),
                       rules: [Q.required],
                       variant: "outlined",
                       class: "mb-2"
                     }, null, 8, ["modelValue", "label", "rules"]),
                     e(C, {
-                      modelValue: h.value.company,
-                      "onUpdate:modelValue": u[3] || (u[3] = (Z) => h.value.company = Z),
+                      modelValue: $.value.company,
+                      "onUpdate:modelValue": u[3] || (u[3] = (Z) => $.value.company = Z),
                       label: l(s)("user.company"),
                       variant: "outlined",
                       class: "mb-2"
                     }, null, 8, ["modelValue", "label"]),
                     e(C, {
-                      modelValue: h.value.mail,
-                      "onUpdate:modelValue": u[4] || (u[4] = (Z) => h.value.mail = Z),
+                      modelValue: $.value.mail,
+                      "onUpdate:modelValue": u[4] || (u[4] = (Z) => $.value.mail = Z),
                       label: l(s)("user.email"),
                       type: "email",
                       variant: "outlined",
                       class: "mb-2"
                     }, null, 8, ["modelValue", "label"]),
-                    L.value ? (k(), D(C, {
+                    B.value ? (k(), h(C, {
                       key: 0,
                       "model-value": le.value,
                       label: l(s)("user.groups"),
@@ -571,14 +571,14 @@ const ce = (j, w) => {
             }),
             e(fe, null, {
               default: t(() => [
-                L.value ? (k(), D(ae, {
+                B.value ? (k(), h(ae, {
                   key: 0,
                   color: "error",
                   variant: "tonal",
                   onClick: u[5] || (u[5] = (Z) => V.value = !0)
                 }, {
                   default: t(() => [
-                    e(B, { start: "" }, {
+                    e(j, { start: "" }, {
                       default: t(() => [...u[17] || (u[17] = [
                         a("mdi-delete", -1)
                       ])]),
@@ -601,11 +601,11 @@ const ce = (j, w) => {
                 e(ae, {
                   color: "primary",
                   variant: "elevated",
-                  loading: z.value,
+                  loading: L.value,
                   onClick: J
                 }, {
                   default: t(() => [
-                    e(B, { start: "" }, {
+                    e(j, { start: "" }, {
                       default: t(() => [...u[18] || (u[18] = [
                         a("mdi-content-save", -1)
                       ])]),
@@ -621,7 +621,7 @@ const ce = (j, w) => {
           ]),
           _: 1
         })),
-        L.value && !$.value ? (k(), D(H, {
+        B.value && !D.value ? (k(), h(H, {
           key: 3,
           class: "edit-card mt-4"
         }, {
@@ -635,7 +635,7 @@ const ce = (j, w) => {
             e(r, null, {
               default: t(() => [
                 te("div", We, [
-                  m.value ? U("", !0) : (k(), D(ae, {
+                  m.value ? U("", !0) : (k(), h(ae, {
                     key: 0,
                     color: "warning",
                     variant: "tonal",
@@ -647,7 +647,7 @@ const ce = (j, w) => {
                     ]),
                     _: 1
                   })),
-                  m.value ? (k(), D(ae, {
+                  m.value ? (k(), h(ae, {
                     key: 1,
                     color: "success",
                     variant: "tonal",
@@ -659,7 +659,7 @@ const ce = (j, w) => {
                     ]),
                     _: 1
                   })) : U("", !0),
-                  M.value ? U("", !0) : (k(), D(ae, {
+                  M.value ? U("", !0) : (k(), h(ae, {
                     key: 2,
                     color: "error",
                     variant: "tonal",
@@ -671,7 +671,7 @@ const ce = (j, w) => {
                     ]),
                     _: 1
                   })),
-                  M.value ? (k(), D(ae, {
+                  M.value ? (k(), h(ae, {
                     key: 3,
                     color: "success",
                     variant: "tonal",
@@ -717,7 +717,7 @@ const ce = (j, w) => {
                 }),
                 e(r, null, {
                   default: t(() => [
-                    a(n(l(s)("user.deleteConfirm", { id: h.value.id })), 1)
+                    a(n(l(s)("user.deleteConfirm", { id: $.value.id })), 1)
                   ]),
                   _: 1
                 }),
@@ -820,7 +820,7 @@ const ce = (j, w) => {
                 }),
                 e(r, null, {
                   default: t(() => [
-                    a(n(l(s)("user." + I.value + "Confirm", { id: h.value.id })), 1)
+                    a(n(l(s)("user." + I.value + "Confirm", { id: $.value.id })), 1)
                   ]),
                   _: 1
                 }),
@@ -859,17 +859,17 @@ const ce = (j, w) => {
       ]);
     };
   }
-}, $e = /* @__PURE__ */ ce(Fe, [["__scopeId", "data-v-0a7e5f18"]]), Ye = { class: "d-flex flex-wrap align-center mb-4 ga-2" }, He = { class: "text-h4" }, Je = {
+}, De = /* @__PURE__ */ ce(Fe, [["__scopeId", "data-v-0a7e5f18"]]), Ye = { class: "d-flex flex-wrap align-center mb-4 ga-2" }, He = { class: "text-h4" }, Je = {
   __name: "GroupListView",
-  setup(j) {
-    const w = ve(), E = re(), b = ue(), A = _e(), o = de().t, c = Ve("service/id/group", { defaultSort: "name", demoData: [
+  setup(z) {
+    const b = ve(), E = re(), w = ue(), A = _e(), o = de().t, c = Ve("service/id/group", { defaultSort: "name", demoData: [
       { name: "Engineering", scope: "Group", count: 4, locked: !1 },
       { name: "Marketing", scope: "Group", count: 1, locked: !1 },
       { name: "DevOps", scope: "Group", count: 2, locked: !1 },
       { name: "Management", scope: "Group", count: 2, locked: !1 },
       { name: "Sales", scope: "Group", count: 1, locked: !1 }
-    ] }), $ = g(25);
-    let z = null;
+    ] }), D = g(25);
+    let L = null;
     const x = g([]), V = g(!1), S = g(null), P = g(!1), m = g(!1);
     let M = {};
     const F = ie(() => [
@@ -883,9 +883,9 @@ const ce = (j, w) => {
       M = d, c.load(d);
     }
     function ee() {
-      clearTimeout(z), z = setTimeout(() => c.load({ page: 1, itemsPerPage: $.value }), 300);
+      clearTimeout(L), L = setTimeout(() => c.load({ page: 1, itemsPerPage: D.value }), 300);
     }
-    function L(d) {
+    function B(d) {
       S.value = d, V.value = !0;
     }
     async function le() {
@@ -893,9 +893,9 @@ const ce = (j, w) => {
         A.push({ message: o("group.demoDelete"), status: 0 }), V.value = !1;
         return;
       }
-      P.value = !0, await b.del(`rest/service/id/group/${S.value.name}`), P.value = !1, V.value = !1, S.value = null, c.load(M);
+      P.value = !0, await w.del(`rest/service/id/group/${S.value.name}`), P.value = !1, V.value = !1, S.value = null, c.load(M);
     }
-    function h() {
+    function $() {
       m.value = !0;
     }
     async function q() {
@@ -905,7 +905,7 @@ const ce = (j, w) => {
       }
       P.value = !0;
       for (const d of x.value)
-        await b.del(`rest/service/id/group/${d}`);
+        await w.del(`rest/service/id/group/${d}`);
       P.value = !1, m.value = !1, x.value = [], c.load(M);
     }
     return se(() => {
@@ -936,7 +936,7 @@ const ce = (j, w) => {
           e(p, {
             color: "primary",
             "prepend-icon": "mdi-plus",
-            onClick: f[1] || (f[1] = (r) => l(w).push("/id/group/new"))
+            onClick: f[1] || (f[1] = (r) => l(b).push("/id/group/new"))
           }, {
             default: t(() => [
               a(n(l(o)("group.new")), 1)
@@ -944,7 +944,7 @@ const ce = (j, w) => {
             _: 1
           })
         ]),
-        l(c).error.value ? (k(), D(G, {
+        l(c).error.value ? (k(), h(G, {
           key: 0,
           type: "warning",
           variant: "tonal",
@@ -961,7 +961,7 @@ const ce = (j, w) => {
           ]),
           _: 1
         })) : U("", !0),
-        l(c).demoMode.value ? (k(), D(G, {
+        l(c).demoMode.value ? (k(), h(G, {
           key: 1,
           type: "info",
           variant: "tonal",
@@ -975,7 +975,7 @@ const ce = (j, w) => {
         })) : U("", !0),
         e(X, null, {
           default: t(() => [
-            x.value.length ? (k(), D(J, {
+            x.value.length ? (k(), h(J, {
               key: 0,
               density: "compact",
               color: "primary",
@@ -994,7 +994,7 @@ const ce = (j, w) => {
                   variant: "elevated",
                   color: "error",
                   "prepend-icon": "mdi-delete",
-                  onClick: h
+                  onClick: $
                 }, {
                   default: t(() => [
                     a(n(l(o)("common.delete")), 1)
@@ -1007,17 +1007,17 @@ const ce = (j, w) => {
           ]),
           _: 1
         }),
-        l(c).loading.value && l(c).items.value.length === 0 ? (k(), D(R, {
+        l(c).loading.value && l(c).items.value.length === 0 ? (k(), h(R, {
           key: 2,
           type: "table-heading, table-row@5",
           class: "mb-4"
         })) : U("", !0),
-        l(c).error.value ? U("", !0) : ye((k(), D(T, {
+        l(c).error.value ? U("", !0) : ye((k(), h(T, {
           key: 3,
           modelValue: x.value,
           "onUpdate:modelValue": f[2] || (f[2] = (r) => x.value = r),
-          "items-per-page": $.value,
-          "onUpdate:itemsPerPage": f[3] || (f[3] = (r) => $.value = r),
+          "items-per-page": D.value,
+          "onUpdate:itemsPerPage": f[3] || (f[3] = (r) => D.value = r),
           headers: F.value,
           items: l(c).items.value,
           "items-length": l(c).totalItems.value,
@@ -1026,10 +1026,10 @@ const ce = (j, w) => {
           "show-select": "",
           hover: "",
           "onUpdate:options": I,
-          "onClick:row": f[4] || (f[4] = (r, { item: B }) => l(w).push("/id/group/" + B.name))
+          "onClick:row": f[4] || (f[4] = (r, { item: j }) => l(b).push("/id/group/" + j.name))
         }, {
           "item.locked": t(({ item: r }) => [
-            r.locked ? (k(), D(Y, {
+            r.locked ? (k(), h(Y, {
               key: 0,
               color: "error",
               size: "small"
@@ -1045,7 +1045,7 @@ const ce = (j, w) => {
               icon: "",
               size: "small",
               variant: "text",
-              onClick: oe((B) => l(w).push("/id/group/" + r.name), ["stop"])
+              onClick: oe((j) => l(b).push("/id/group/" + r.name), ["stop"])
             }, {
               default: t(() => [
                 e(Y, { size: "small" }, {
@@ -1062,7 +1062,7 @@ const ce = (j, w) => {
               size: "small",
               variant: "text",
               color: "error",
-              onClick: oe((B) => L(r), ["stop"])
+              onClick: oe((j) => B(r), ["stop"])
             }, {
               default: t(() => [
                 e(Y, { size: "small" }, {
@@ -1191,12 +1191,12 @@ const ce = (j, w) => {
   }
 }, Ke = /* @__PURE__ */ ce(Je, [["__scopeId", "data-v-5420611e"]]), Qe = { class: "d-flex align-center mb-4" }, Xe = { class: "text-h4" }, Ze = {
   __name: "GroupEditView",
-  setup(j) {
-    const w = we(), E = ve(), b = ue(), A = re(), v = _e(), s = de().t, c = g(null), $ = g(!1), z = g(!1), x = g(!1), V = g(!1), S = g(!1), P = g([]), m = ie(() => w.params.id && w.params.id !== "new"), M = g({
+  setup(z) {
+    const b = we(), E = ve(), w = ue(), A = re(), v = _e(), s = de().t, c = g(null), D = g(!1), L = g(!1), x = g(!1), V = g(!1), S = g(!1), P = g([]), m = ie(() => b.params.id && b.params.id !== "new"), M = g({
       name: "",
       scope: "",
       parent: ""
-    }), { isDirty: F, showGuardDialog: I, confirmLeave: ee, cancelLeave: L, markClean: le, init: h } = xe(M), q = {
+    }), { isDirty: F, showGuardDialog: I, confirmLeave: ee, cancelLeave: B, markClean: le, init: $ } = xe(M), q = {
       required: (y) => !!y || s("common.required")
     }, d = [
       { name: "Engineering", scope: "Group" },
@@ -1206,18 +1206,18 @@ const ce = (j, w) => {
       { name: "Sales", scope: "Group" }
     ];
     se(async () => {
-      const y = await b.get("rest/service/id/group");
+      const y = await w.get("rest/service/id/group");
       if (y && Array.isArray(y) ? P.value = y.map((p) => p.name || p.id || p).filter(Boolean) : y != null && y.data && Array.isArray(y.data) ? P.value = y.data.map((p) => p.name || p.id || p).filter(Boolean) : P.value = d.map((p) => p.name), m.value) {
-        $.value = !0;
-        const p = await b.get(`rest/service/id/group/${w.params.id}`);
+        D.value = !0;
+        const p = await w.get(`rest/service/id/group/${b.params.id}`);
         if (p && !p.code)
           M.value.name = p.name || "", M.value.scope = p.scope || "", M.value.parent = p.parent || "";
         else {
           S.value = !0, v.clear();
-          const Q = d.find((G) => G.name === w.params.id);
+          const Q = d.find((G) => G.name === b.params.id);
           Q && (M.value.name = Q.name, M.value.scope = Q.scope, M.value.parent = "");
         }
-        $.value = !1, A.setTitle(s("group.edit")), A.setBreadcrumbs([
+        D.value = !1, A.setTitle(s("group.edit")), A.setBreadcrumbs([
           { title: s("nav.home"), to: "/" },
           { title: s("nav.identity") },
           { title: s("group.title"), to: "/id/group" },
@@ -1230,10 +1230,10 @@ const ce = (j, w) => {
           { title: s("group.title"), to: "/id/group" },
           { title: s("group.new") }
         ]);
-        const p = await b.get("rest/service/id/group/Engineering");
+        const p = await w.get("rest/service/id/group/Engineering");
         (!p || p.code) && (S.value = !0, v.clear());
       }
-      h();
+      $();
     });
     async function f() {
       const { valid: y } = await c.value.validate();
@@ -1242,16 +1242,16 @@ const ce = (j, w) => {
         v.push({ message: s("group.demoSave"), status: 0 });
         return;
       }
-      z.value = !0;
+      L.value = !0;
       const p = { name: M.value.name, scope: M.value.scope, parent: M.value.parent || null };
-      m.value ? await b.put("rest/service/id/group", p) : await b.post("rest/service/id/group", p), z.value = !1, le(), E.push("/id/group");
+      m.value ? await w.put("rest/service/id/group", p) : await w.post("rest/service/id/group", p), L.value = !1, le(), E.push("/id/group");
     }
     async function _() {
       if (S.value) {
         v.push({ message: s("group.demoDelete"), status: 0 }), V.value = !1;
         return;
       }
-      x.value = !0, await b.del(`rest/service/id/group/${w.params.id}`), x.value = !1, V.value = !1, le(), E.push("/id/group");
+      x.value = !0, await w.del(`rest/service/id/group/${b.params.id}`), x.value = !1, V.value = !1, le(), E.push("/id/group");
     }
     return (y, p) => {
       const Q = i("v-alert"), G = i("v-skeleton-loader"), O = i("v-text-field"), J = i("v-autocomplete"), X = i("v-form"), R = i("v-card-text"), Y = i("v-icon"), T = i("v-btn"), u = i("v-spacer"), W = i("v-card-actions"), K = i("v-card"), C = i("v-card-title"), N = i("v-dialog");
@@ -1259,7 +1259,7 @@ const ce = (j, w) => {
         te("div", Qe, [
           te("h1", Xe, n(m.value ? l(s)("group.edit") : l(s)("group.new")), 1)
         ]),
-        S.value ? (k(), D(Q, {
+        S.value ? (k(), h(Q, {
           key: 0,
           type: "info",
           variant: "tonal",
@@ -1271,13 +1271,13 @@ const ce = (j, w) => {
           ]),
           _: 1
         })) : U("", !0),
-        $.value ? (k(), D(G, {
+        D.value ? (k(), h(G, {
           key: 1,
           type: "card, actions",
           "max-width": "700",
           class: "mb-4"
         })) : U("", !0),
-        $.value ? U("", !0) : (k(), D(K, {
+        D.value ? U("", !0) : (k(), h(K, {
           key: 2,
           class: "edit-card"
         }, {
@@ -1325,7 +1325,7 @@ const ce = (j, w) => {
             }),
             e(W, null, {
               default: t(() => [
-                m.value ? (k(), D(T, {
+                m.value ? (k(), h(T, {
                   key: 0,
                   color: "error",
                   variant: "tonal",
@@ -1355,7 +1355,7 @@ const ce = (j, w) => {
                 e(T, {
                   color: "primary",
                   variant: "elevated",
-                  loading: z.value,
+                  loading: L.value,
                   onClick: f
                 }, {
                   default: t(() => [
@@ -1452,7 +1452,7 @@ const ce = (j, w) => {
                     e(u),
                     e(T, {
                       variant: "text",
-                      onClick: l(L)
+                      onClick: l(B)
                     }, {
                       default: t(() => [
                         a(n(l(s)("common.cancel")), 1)
@@ -1481,15 +1481,15 @@ const ce = (j, w) => {
       ]);
     };
   }
-}, he = /* @__PURE__ */ ce(Ze, [["__scopeId", "data-v-5c142fd4"]]), et = { class: "d-flex flex-wrap align-center mb-4 ga-2" }, tt = { class: "text-h4" }, lt = {
+}, $e = /* @__PURE__ */ ce(Ze, [["__scopeId", "data-v-5c142fd4"]]), et = { class: "d-flex flex-wrap align-center mb-4 ga-2" }, tt = { class: "text-h4" }, lt = {
   __name: "CompanyListView",
-  setup(j) {
-    const w = ve(), E = re(), b = ue(), A = _e(), o = de().t, c = Ve("service/id/company", { defaultSort: "name", demoData: [
+  setup(z) {
+    const b = ve(), E = re(), w = ue(), A = _e(), o = de().t, c = Ve("service/id/company", { defaultSort: "name", demoData: [
       { name: "Ligoj", scope: "Company", count: 4, locked: !1 },
       { name: "AcmeCorp", scope: "Company", count: 2, locked: !1 },
       { name: "TechSolutions", scope: "Company", count: 2, locked: !1 }
-    ] }), $ = g(25);
-    let z = null;
+    ] }), D = g(25);
+    let L = null;
     const x = g([]), V = g(!1), S = g(null), P = g(!1), m = g(!1);
     let M = {};
     const F = ie(() => [
@@ -1503,9 +1503,9 @@ const ce = (j, w) => {
       M = d, c.load(d);
     }
     function ee() {
-      clearTimeout(z), z = setTimeout(() => c.load({ page: 1, itemsPerPage: $.value }), 300);
+      clearTimeout(L), L = setTimeout(() => c.load({ page: 1, itemsPerPage: D.value }), 300);
     }
-    function L(d) {
+    function B(d) {
       S.value = d, V.value = !0;
     }
     async function le() {
@@ -1513,9 +1513,9 @@ const ce = (j, w) => {
         A.push({ message: o("company.demoDelete"), status: 0 }), V.value = !1;
         return;
       }
-      P.value = !0, await b.del(`rest/service/id/company/${S.value.name}`), P.value = !1, V.value = !1, S.value = null, c.load(M);
+      P.value = !0, await w.del(`rest/service/id/company/${S.value.name}`), P.value = !1, V.value = !1, S.value = null, c.load(M);
     }
-    function h() {
+    function $() {
       m.value = !0;
     }
     async function q() {
@@ -1525,7 +1525,7 @@ const ce = (j, w) => {
       }
       P.value = !0;
       for (const d of x.value)
-        await b.del(`rest/service/id/company/${d}`);
+        await w.del(`rest/service/id/company/${d}`);
       P.value = !1, m.value = !1, x.value = [], c.load(M);
     }
     return se(() => {
@@ -1556,7 +1556,7 @@ const ce = (j, w) => {
           e(p, {
             color: "primary",
             "prepend-icon": "mdi-plus",
-            onClick: f[1] || (f[1] = (r) => l(w).push("/id/company/new"))
+            onClick: f[1] || (f[1] = (r) => l(b).push("/id/company/new"))
           }, {
             default: t(() => [
               a(n(l(o)("company.new")), 1)
@@ -1564,7 +1564,7 @@ const ce = (j, w) => {
             _: 1
           })
         ]),
-        l(c).error.value ? (k(), D(G, {
+        l(c).error.value ? (k(), h(G, {
           key: 0,
           type: "warning",
           variant: "tonal",
@@ -1581,7 +1581,7 @@ const ce = (j, w) => {
           ]),
           _: 1
         })) : U("", !0),
-        l(c).demoMode.value ? (k(), D(G, {
+        l(c).demoMode.value ? (k(), h(G, {
           key: 1,
           type: "info",
           variant: "tonal",
@@ -1595,7 +1595,7 @@ const ce = (j, w) => {
         })) : U("", !0),
         e(X, null, {
           default: t(() => [
-            x.value.length ? (k(), D(J, {
+            x.value.length ? (k(), h(J, {
               key: 0,
               density: "compact",
               color: "primary",
@@ -1614,7 +1614,7 @@ const ce = (j, w) => {
                   variant: "elevated",
                   color: "error",
                   "prepend-icon": "mdi-delete",
-                  onClick: h
+                  onClick: $
                 }, {
                   default: t(() => [
                     a(n(l(o)("common.delete")), 1)
@@ -1627,17 +1627,17 @@ const ce = (j, w) => {
           ]),
           _: 1
         }),
-        l(c).loading.value && l(c).items.value.length === 0 ? (k(), D(R, {
+        l(c).loading.value && l(c).items.value.length === 0 ? (k(), h(R, {
           key: 2,
           type: "table-heading, table-row@5",
           class: "mb-4"
         })) : U("", !0),
-        l(c).error.value ? U("", !0) : ye((k(), D(T, {
+        l(c).error.value ? U("", !0) : ye((k(), h(T, {
           key: 3,
           modelValue: x.value,
           "onUpdate:modelValue": f[2] || (f[2] = (r) => x.value = r),
-          "items-per-page": $.value,
-          "onUpdate:itemsPerPage": f[3] || (f[3] = (r) => $.value = r),
+          "items-per-page": D.value,
+          "onUpdate:itemsPerPage": f[3] || (f[3] = (r) => D.value = r),
           headers: F.value,
           items: l(c).items.value,
           "items-length": l(c).totalItems.value,
@@ -1646,10 +1646,10 @@ const ce = (j, w) => {
           "show-select": "",
           hover: "",
           "onUpdate:options": I,
-          "onClick:row": f[4] || (f[4] = (r, { item: B }) => l(w).push("/id/company/" + B.name))
+          "onClick:row": f[4] || (f[4] = (r, { item: j }) => l(b).push("/id/company/" + j.name))
         }, {
           "item.locked": t(({ item: r }) => [
-            r.locked ? (k(), D(Y, {
+            r.locked ? (k(), h(Y, {
               key: 0,
               color: "error",
               size: "small"
@@ -1665,7 +1665,7 @@ const ce = (j, w) => {
               icon: "",
               size: "small",
               variant: "text",
-              onClick: oe((B) => l(w).push("/id/company/" + r.name), ["stop"])
+              onClick: oe((j) => l(b).push("/id/company/" + r.name), ["stop"])
             }, {
               default: t(() => [
                 e(Y, { size: "small" }, {
@@ -1682,7 +1682,7 @@ const ce = (j, w) => {
               size: "small",
               variant: "text",
               color: "error",
-              onClick: oe((B) => L(r), ["stop"])
+              onClick: oe((j) => B(r), ["stop"])
             }, {
               default: t(() => [
                 e(Y, { size: "small" }, {
@@ -1811,11 +1811,11 @@ const ce = (j, w) => {
   }
 }, at = /* @__PURE__ */ ce(lt, [["__scopeId", "data-v-ed5a1b7e"]]), ot = { class: "d-flex align-center mb-4" }, nt = { class: "text-h4" }, it = {
   __name: "CompanyEditView",
-  setup(j) {
-    const w = we(), E = ve(), b = ue(), A = re(), v = _e(), s = de().t, c = g(null), $ = g(!1), z = g(!1), x = g(!1), V = g(!1), S = g(!1), P = ie(() => w.params.id && w.params.id !== "new"), m = g({
+  setup(z) {
+    const b = we(), E = ve(), w = ue(), A = re(), v = _e(), s = de().t, c = g(null), D = g(!1), L = g(!1), x = g(!1), V = g(!1), S = g(!1), P = ie(() => b.params.id && b.params.id !== "new"), m = g({
       name: "",
       scope: ""
-    }), { isDirty: M, showGuardDialog: F, confirmLeave: I, cancelLeave: ee, markClean: L, init: le } = xe(m), h = {
+    }), { isDirty: M, showGuardDialog: F, confirmLeave: I, cancelLeave: ee, markClean: B, init: le } = xe(m), $ = {
       required: (_) => !!_ || s("common.required")
     }, q = [
       { name: "Ligoj", scope: "Company" },
@@ -1824,16 +1824,16 @@ const ce = (j, w) => {
     ];
     se(async () => {
       if (P.value) {
-        $.value = !0;
-        const _ = await b.get(`rest/service/id/company/${w.params.id}`);
+        D.value = !0;
+        const _ = await w.get(`rest/service/id/company/${b.params.id}`);
         if (_ && !_.code)
           m.value.name = _.name || "", m.value.scope = _.scope || "";
         else {
           S.value = !0, v.clear();
-          const y = q.find((p) => p.name === w.params.id);
+          const y = q.find((p) => p.name === b.params.id);
           y && (m.value.name = y.name, m.value.scope = y.scope);
         }
-        $.value = !1, A.setTitle(s("company.edit")), A.setBreadcrumbs([
+        D.value = !1, A.setTitle(s("company.edit")), A.setBreadcrumbs([
           { title: s("nav.home"), to: "/" },
           { title: s("nav.identity") },
           { title: s("company.title"), to: "/id/company" },
@@ -1846,7 +1846,7 @@ const ce = (j, w) => {
           { title: s("company.title"), to: "/id/company" },
           { title: s("company.new") }
         ]);
-        const _ = await b.get("rest/service/id/company/Ligoj");
+        const _ = await w.get("rest/service/id/company/Ligoj");
         (!_ || _.code) && (S.value = !0, v.clear());
       }
       le();
@@ -1858,16 +1858,16 @@ const ce = (j, w) => {
         v.push({ message: s("company.demoSave"), status: 0 });
         return;
       }
-      z.value = !0;
+      L.value = !0;
       const y = { name: m.value.name, scope: m.value.scope };
-      P.value ? await b.put("rest/service/id/company", y) : await b.post("rest/service/id/company", y), z.value = !1, L(), E.push("/id/company");
+      P.value ? await w.put("rest/service/id/company", y) : await w.post("rest/service/id/company", y), L.value = !1, B(), E.push("/id/company");
     }
     async function f() {
       if (S.value) {
         v.push({ message: s("company.demoDelete"), status: 0 }), V.value = !1;
         return;
       }
-      x.value = !0, await b.del(`rest/service/id/company/${w.params.id}`), x.value = !1, V.value = !1, L(), E.push("/id/company");
+      x.value = !0, await w.del(`rest/service/id/company/${b.params.id}`), x.value = !1, V.value = !1, B(), E.push("/id/company");
     }
     return (_, y) => {
       const p = i("v-alert"), Q = i("v-skeleton-loader"), G = i("v-text-field"), O = i("v-form"), J = i("v-card-text"), X = i("v-icon"), R = i("v-btn"), Y = i("v-spacer"), T = i("v-card-actions"), u = i("v-card"), W = i("v-card-title"), K = i("v-dialog");
@@ -1875,7 +1875,7 @@ const ce = (j, w) => {
         te("div", ot, [
           te("h1", nt, n(P.value ? l(s)("company.edit") : l(s)("company.new")), 1)
         ]),
-        S.value ? (k(), D(p, {
+        S.value ? (k(), h(p, {
           key: 0,
           type: "info",
           variant: "tonal",
@@ -1887,13 +1887,13 @@ const ce = (j, w) => {
           ]),
           _: 1
         })) : U("", !0),
-        $.value ? (k(), D(Q, {
+        D.value ? (k(), h(Q, {
           key: 1,
           type: "card, actions",
           "max-width": "700",
           class: "mb-4"
         })) : U("", !0),
-        $.value ? U("", !0) : (k(), D(u, {
+        D.value ? U("", !0) : (k(), h(u, {
           key: 2,
           class: "edit-card"
         }, {
@@ -1910,7 +1910,7 @@ const ce = (j, w) => {
                       modelValue: m.value.name,
                       "onUpdate:modelValue": y[0] || (y[0] = (C) => m.value.name = C),
                       label: l(s)("common.name"),
-                      rules: [h.required],
+                      rules: [$.required],
                       disabled: P.value,
                       variant: "outlined",
                       class: "mb-2"
@@ -1930,7 +1930,7 @@ const ce = (j, w) => {
             }),
             e(T, null, {
               default: t(() => [
-                P.value ? (k(), D(R, {
+                P.value ? (k(), h(R, {
                   key: 0,
                   color: "error",
                   variant: "tonal",
@@ -1960,7 +1960,7 @@ const ce = (j, w) => {
                 e(R, {
                   color: "primary",
                   variant: "elevated",
-                  loading: z.value,
+                  loading: L.value,
                   onClick: d
                 }, {
                   default: t(() => [
@@ -2088,10 +2088,10 @@ const ce = (j, w) => {
   }
 }, Ue = /* @__PURE__ */ ce(it, [["__scopeId", "data-v-9f2567ab"]]), st = { class: "d-flex flex-wrap align-center mb-4 ga-2" }, rt = { class: "text-h4" }, ut = {
   __name: "DelegateListView",
-  setup(j) {
-    const w = ve(), E = re(), b = ue(), v = de().t, o = Ve("security/delegate", { defaultSort: "receiver" }), s = g(25);
+  setup(z) {
+    const b = ve(), E = re(), w = ue(), v = de().t, o = Ve("security/delegate", { defaultSort: "receiver" }), s = g(25);
     let c = null;
-    const $ = g([]), z = g(!1), x = g(null), V = g(!1), S = g(!1);
+    const D = g([]), L = g(!1), x = g(null), V = g(!1), S = g(!1);
     let P = {};
     const m = ie(() => [
       { title: v("delegate.receiver"), key: "receiver", sortable: !0 },
@@ -2111,19 +2111,19 @@ const ce = (j, w) => {
       clearTimeout(c), c = setTimeout(() => o.load({ page: 1, itemsPerPage: s.value }), 300);
     }
     function ee(q) {
-      x.value = q, z.value = !0;
+      x.value = q, L.value = !0;
     }
-    async function L() {
-      V.value = !0, await b.del(`rest/security/delegate/${x.value.id}`), V.value = !1, z.value = !1, x.value = null, o.load(P);
+    async function B() {
+      V.value = !0, await w.del(`rest/security/delegate/${x.value.id}`), V.value = !1, L.value = !1, x.value = null, o.load(P);
     }
     function le() {
       S.value = !0;
     }
-    async function h() {
+    async function $() {
       V.value = !0;
-      for (const q of $.value)
-        await b.del(`rest/security/delegate/${q}`);
-      V.value = !1, S.value = !1, $.value = [], o.load(P);
+      for (const q of D.value)
+        await w.del(`rest/security/delegate/${q}`);
+      V.value = !1, S.value = !1, D.value = [], o.load(P);
     }
     return se(() => {
       E.setTitle(v("delegate.title")), E.setBreadcrumbs([
@@ -2153,7 +2153,7 @@ const ce = (j, w) => {
           e(y, {
             color: "primary",
             "prepend-icon": "mdi-plus",
-            onClick: d[1] || (d[1] = (N) => l(w).push("/id/delegate/new"))
+            onClick: d[1] || (d[1] = (N) => l(b).push("/id/delegate/new"))
           }, {
             default: t(() => [
               a(n(l(v)("delegate.new")), 1)
@@ -2161,7 +2161,7 @@ const ce = (j, w) => {
             _: 1
           })
         ]),
-        l(o).error.value ? (k(), D(p, {
+        l(o).error.value ? (k(), h(p, {
           key: 0,
           type: "warning",
           variant: "tonal",
@@ -2174,7 +2174,7 @@ const ce = (j, w) => {
         })) : U("", !0),
         e(O, null, {
           default: t(() => [
-            $.value.length ? (k(), D(G, {
+            D.value.length ? (k(), h(G, {
               key: 0,
               density: "compact",
               color: "primary",
@@ -2184,7 +2184,7 @@ const ce = (j, w) => {
               default: t(() => [
                 e(Q, null, {
                   default: t(() => [
-                    a(n($.value.length) + " " + n(l(v)("common.selected")), 1)
+                    a(n(D.value.length) + " " + n(l(v)("common.selected")), 1)
                   ]),
                   _: 1
                 }),
@@ -2206,15 +2206,15 @@ const ce = (j, w) => {
           ]),
           _: 1
         }),
-        l(o).loading.value && l(o).items.value.length === 0 ? (k(), D(J, {
+        l(o).loading.value && l(o).items.value.length === 0 ? (k(), h(J, {
           key: 1,
           type: "table-heading, table-row@5",
           class: "mb-4"
         })) : U("", !0),
-        l(o).error.value ? U("", !0) : ye((k(), D(Y, {
+        l(o).error.value ? U("", !0) : ye((k(), h(Y, {
           key: 2,
-          modelValue: $.value,
-          "onUpdate:modelValue": d[2] || (d[2] = (N) => $.value = N),
+          modelValue: D.value,
+          "onUpdate:modelValue": d[2] || (d[2] = (N) => D.value = N),
           "items-per-page": s.value,
           "onUpdate:itemsPerPage": d[3] || (d[3] = (N) => s.value = N),
           headers: m.value,
@@ -2225,12 +2225,12 @@ const ce = (j, w) => {
           "show-select": "",
           hover: "",
           "onUpdate:options": F,
-          "onClick:row": d[4] || (d[4] = (N, { item: r }) => l(w).push("/id/delegate/" + r.id))
+          "onClick:row": d[4] || (d[4] = (N, { item: r }) => l(b).push("/id/delegate/" + r.id))
         }, {
           "item.receiver": t(({ item: N }) => {
-            var r, B;
+            var r, j;
             return [
-              a(n(((r = N.receiver) == null ? void 0 : r.name) || ((B = N.receiver) == null ? void 0 : B.id) || N.name || "-"), 1)
+              a(n(((r = N.receiver) == null ? void 0 : r.name) || ((j = N.receiver) == null ? void 0 : j.id) || N.name || "-"), 1)
             ];
           }),
           "item.type": t(({ item: N }) => [
@@ -2245,7 +2245,7 @@ const ce = (j, w) => {
             }, 1032, ["color"])
           ]),
           "item.canAdmin": t(({ item: N }) => [
-            N.canAdmin ? (k(), D(R, {
+            N.canAdmin ? (k(), h(R, {
               key: 0,
               color: "success",
               size: "small"
@@ -2257,7 +2257,7 @@ const ce = (j, w) => {
             })) : U("", !0)
           ]),
           "item.canWrite": t(({ item: N }) => [
-            N.canWrite ? (k(), D(R, {
+            N.canWrite ? (k(), h(R, {
               key: 0,
               color: "success",
               size: "small"
@@ -2273,7 +2273,7 @@ const ce = (j, w) => {
               icon: "",
               size: "small",
               variant: "text",
-              onClick: oe((r) => l(w).push("/id/delegate/" + N.id), ["stop"])
+              onClick: oe((r) => l(b).push("/id/delegate/" + N.id), ["stop"])
             }, {
               default: t(() => [
                 e(R, { size: "small" }, {
@@ -2307,7 +2307,7 @@ const ce = (j, w) => {
         }, 8, ["modelValue", "items-per-page", "headers", "items", "items-length", "loading"])), [
           [ke, l(o).items.value.length > 0 || !l(o).loading.value]
         ]),
-        !l(o).loading.value && !l(o).error.value && l(o).totalItems.value === 0 ? (k(), D(p, {
+        !l(o).loading.value && !l(o).error.value && l(o).totalItems.value === 0 ? (k(), h(p, {
           key: 3,
           type: "info",
           variant: "tonal",
@@ -2319,8 +2319,8 @@ const ce = (j, w) => {
           _: 1
         })) : U("", !0),
         e(C, {
-          modelValue: z.value,
-          "onUpdate:modelValue": d[6] || (d[6] = (N) => z.value = N),
+          modelValue: L.value,
+          "onUpdate:modelValue": d[6] || (d[6] = (N) => L.value = N),
           "max-width": "400"
         }, {
           default: t(() => [
@@ -2334,9 +2334,9 @@ const ce = (j, w) => {
                 }),
                 e(u, null, {
                   default: t(() => {
-                    var N, r, B, ae;
+                    var N, r, j, ae;
                     return [
-                      a(n(l(v)("delegate.deleteConfirm", { name: ((r = (N = x.value) == null ? void 0 : N.receiver) == null ? void 0 : r.name) || ((B = x.value) == null ? void 0 : B.name) || ((ae = x.value) == null ? void 0 : ae.id) })), 1)
+                      a(n(l(v)("delegate.deleteConfirm", { name: ((r = (N = x.value) == null ? void 0 : N.receiver) == null ? void 0 : r.name) || ((j = x.value) == null ? void 0 : j.name) || ((ae = x.value) == null ? void 0 : ae.id) })), 1)
                     ];
                   }),
                   _: 1
@@ -2346,7 +2346,7 @@ const ce = (j, w) => {
                     e(f),
                     e(y, {
                       variant: "text",
-                      onClick: d[5] || (d[5] = (N) => z.value = !1)
+                      onClick: d[5] || (d[5] = (N) => L.value = !1)
                     }, {
                       default: t(() => [
                         a(n(l(v)("common.cancel")), 1)
@@ -2357,7 +2357,7 @@ const ce = (j, w) => {
                       color: "error",
                       variant: "elevated",
                       loading: V.value,
-                      onClick: L
+                      onClick: B
                     }, {
                       default: t(() => [
                         a(n(l(v)("common.delete")), 1)
@@ -2389,7 +2389,7 @@ const ce = (j, w) => {
                 }),
                 e(u, null, {
                   default: t(() => [
-                    a(n(l(v)("common.bulkDeleteConfirm", { count: $.value.length })), 1)
+                    a(n(l(v)("common.bulkDeleteConfirm", { count: D.value.length })), 1)
                   ]),
                   _: 1
                 }),
@@ -2409,7 +2409,7 @@ const ce = (j, w) => {
                       color: "error",
                       variant: "elevated",
                       loading: V.value,
-                      onClick: h
+                      onClick: $
                     }, {
                       default: t(() => [
                         a(n(l(v)("common.delete")), 1)
@@ -2430,22 +2430,22 @@ const ce = (j, w) => {
   }
 }, dt = /* @__PURE__ */ ce(ut, [["__scopeId", "data-v-e3d41033"]]), ct = { class: "d-flex align-center mb-4" }, mt = { class: "text-h4" }, vt = {
   __name: "DelegateEditView",
-  setup(j) {
-    const w = we(), E = ve(), b = ue(), A = re(), o = de().t, s = g(null), c = g(!1), $ = g(!1), z = g(!1), x = g(!1), V = ie(() => !!w.params.id), S = ["USER", "GROUP", "COMPANY"], P = ["USER", "GROUP", "COMPANY", "TREE"], m = g({
+  setup(z) {
+    const b = we(), E = ve(), w = ue(), A = re(), o = de().t, s = g(null), c = g(!1), D = g(!1), L = g(!1), x = g(!1), V = ie(() => !!b.params.id), S = ["USER", "GROUP", "COMPANY"], P = ["USER", "GROUP", "COMPANY", "TREE"], m = g({
       receiver: "",
       receiverType: "USER",
       name: "",
       type: "GROUP",
       canAdmin: !1,
       canWrite: !1
-    }), { isDirty: M, showGuardDialog: F, confirmLeave: I, cancelLeave: ee, markClean: L, init: le } = xe(m), h = {
+    }), { isDirty: M, showGuardDialog: F, confirmLeave: I, cancelLeave: ee, markClean: B, init: le } = xe(m), $ = {
       required: (f) => !!f || o("common.required")
     };
     se(async () => {
       var f;
       if (V.value) {
         c.value = !0;
-        const _ = await b.get(`rest/security/delegate/${w.params.id}`);
+        const _ = await w.get(`rest/security/delegate/${b.params.id}`);
         _ && (m.value.receiver = ((f = _.receiver) == null ? void 0 : f.id) || _.receiver || "", m.value.receiverType = _.receiverType || "USER", m.value.name = _.name || "", m.value.type = _.type || "GROUP", m.value.canAdmin = !!_.canAdmin, m.value.canWrite = !!_.canWrite), c.value = !1, A.setTitle(o("delegate.edit")), A.setBreadcrumbs([
           { title: o("nav.home"), to: "/" },
           { title: o("nav.identity") },
@@ -2464,7 +2464,7 @@ const ce = (j, w) => {
     async function q() {
       const { valid: f } = await s.value.validate();
       if (!f) return;
-      $.value = !0;
+      D.value = !0;
       const _ = {
         receiver: m.value.receiver,
         receiverType: m.value.receiverType,
@@ -2473,10 +2473,10 @@ const ce = (j, w) => {
         canAdmin: m.value.canAdmin,
         canWrite: m.value.canWrite
       };
-      V.value ? await b.put("rest/security/delegate", { id: Number(w.params.id), ..._ }) : await b.post("rest/security/delegate", _), $.value = !1, L(), E.push("/id/delegate");
+      V.value ? await w.put("rest/security/delegate", { id: Number(b.params.id), ..._ }) : await w.post("rest/security/delegate", _), D.value = !1, B(), E.push("/id/delegate");
     }
     async function d() {
-      z.value = !0, await b.del(`rest/security/delegate/${w.params.id}`), z.value = !1, x.value = !1, L(), E.push("/id/delegate");
+      L.value = !0, await w.del(`rest/security/delegate/${b.params.id}`), L.value = !1, x.value = !1, B(), E.push("/id/delegate");
     }
     return (f, _) => {
       const y = i("v-skeleton-loader"), p = i("v-text-field"), Q = i("v-select"), G = i("v-checkbox"), O = i("v-form"), J = i("v-card-text"), X = i("v-icon"), R = i("v-btn"), Y = i("v-spacer"), T = i("v-card-actions"), u = i("v-card"), W = i("v-card-title"), K = i("v-dialog");
@@ -2484,13 +2484,13 @@ const ce = (j, w) => {
         te("div", ct, [
           te("h1", mt, n(V.value ? l(o)("delegate.edit") : l(o)("delegate.new")), 1)
         ]),
-        c.value ? (k(), D(y, {
+        c.value ? (k(), h(y, {
           key: 0,
           type: "card, actions",
           "max-width": "700",
           class: "mb-4"
         })) : U("", !0),
-        c.value ? U("", !0) : (k(), D(u, {
+        c.value ? U("", !0) : (k(), h(u, {
           key: 1,
           class: "edit-card"
         }, {
@@ -2507,7 +2507,7 @@ const ce = (j, w) => {
                       modelValue: m.value.receiver,
                       "onUpdate:modelValue": _[0] || (_[0] = (C) => m.value.receiver = C),
                       label: l(o)("delegate.receiver"),
-                      rules: [h.required],
+                      rules: [$.required],
                       variant: "outlined",
                       class: "mb-2"
                     }, null, 8, ["modelValue", "label", "rules"]),
@@ -2516,7 +2516,7 @@ const ce = (j, w) => {
                       "onUpdate:modelValue": _[1] || (_[1] = (C) => m.value.receiverType = C),
                       label: l(o)("delegate.receiverType"),
                       items: S,
-                      rules: [h.required],
+                      rules: [$.required],
                       variant: "outlined",
                       class: "mb-2"
                     }, null, 8, ["modelValue", "label", "rules"]),
@@ -2524,7 +2524,7 @@ const ce = (j, w) => {
                       modelValue: m.value.name,
                       "onUpdate:modelValue": _[2] || (_[2] = (C) => m.value.name = C),
                       label: l(o)("delegate.resource"),
-                      rules: [h.required],
+                      rules: [$.required],
                       hint: l(o)("delegate.resourceHint"),
                       "persistent-hint": "",
                       variant: "outlined",
@@ -2535,7 +2535,7 @@ const ce = (j, w) => {
                       "onUpdate:modelValue": _[3] || (_[3] = (C) => m.value.type = C),
                       label: l(o)("delegate.type"),
                       items: P,
-                      rules: [h.required],
+                      rules: [$.required],
                       variant: "outlined",
                       class: "mb-2"
                     }, null, 8, ["modelValue", "label", "rules"]),
@@ -2561,7 +2561,7 @@ const ce = (j, w) => {
             }),
             e(T, null, {
               default: t(() => [
-                V.value ? (k(), D(R, {
+                V.value ? (k(), h(R, {
                   key: 0,
                   color: "error",
                   variant: "tonal",
@@ -2591,7 +2591,7 @@ const ce = (j, w) => {
                 e(R, {
                   color: "primary",
                   variant: "elevated",
-                  loading: $.value,
+                  loading: D.value,
                   onClick: q
                 }, {
                   default: t(() => [
@@ -2646,7 +2646,7 @@ const ce = (j, w) => {
                     e(R, {
                       color: "error",
                       variant: "elevated",
-                      loading: z.value,
+                      loading: L.value,
                       onClick: d
                     }, {
                       default: t(() => [
@@ -2719,26 +2719,26 @@ const ce = (j, w) => {
   }
 }, Se = /* @__PURE__ */ ce(vt, [["__scopeId", "data-v-7867a090"]]), pt = { class: "d-flex flex-wrap align-center mb-4 ga-2" }, ft = { class: "text-h4" }, _t = {
   __name: "ContainerScopeView",
-  setup(j) {
-    const w = ue(), E = re(), b = _e(), v = de().t, o = g("group"), s = [
+  setup(z) {
+    const b = ue(), E = re(), w = _e(), v = de().t, o = g("group"), s = [
       { id: 1, name: "Department", locked: !1 },
       { id: 2, name: "Team", locked: !1 },
       { id: 3, name: "Project", locked: !0 }
     ], c = [
       { id: 1, name: "Organization", locked: !1 },
       { id: 2, name: "Business Unit", locked: !0 }
-    ], $ = g([]), z = g(0), x = g(!1), V = g(null), S = g(!1), P = ie(() => [
+    ], D = g([]), L = g(0), x = g(!1), V = g(null), S = g(!1), P = ie(() => [
       { title: v("common.name"), key: "name", sortable: !0 },
       { title: v("common.status"), key: "locked", sortable: !1, width: "80px" },
       { title: "", key: "actions", sortable: !1, width: "100px", align: "end" }
-    ]), m = g(null), M = g(!1), F = g(null), I = g({ name: "" }), ee = g(!1), L = g(!1), le = g(null), h = g(!1), q = { required: (G) => !!G || v("common.required") };
+    ]), m = g(null), M = g(!1), F = g(null), I = g({ name: "" }), ee = g(!1), B = g(!1), le = g(null), $ = g(!1), q = { required: (G) => !!G || v("common.required") };
     async function d() {
       x.value = !0, V.value = null;
       try {
-        const G = await w.get(`rest/service/id/container-scope/${o.value}`);
-        G && !G.code ? ($.value = Array.isArray(G) ? G : G.data || [], z.value = $.value.length, S.value = !1) : (S.value = !0, b.clear(), $.value = o.value === "group" ? s : c, z.value = $.value.length);
+        const G = await b.get(`rest/service/id/container-scope/${o.value}`);
+        G && !G.code ? (D.value = Array.isArray(G) ? G : G.data || [], L.value = D.value.length, S.value = !1) : (S.value = !0, w.clear(), D.value = o.value === "group" ? s : c, L.value = D.value.length);
       } catch {
-        S.value = !0, b.clear(), $.value = o.value === "group" ? s : c, z.value = $.value.length;
+        S.value = !0, w.clear(), D.value = o.value === "group" ? s : c, L.value = D.value.length;
       }
       x.value = !1;
     }
@@ -2752,26 +2752,26 @@ const ce = (j, w) => {
       F.value = G, I.value = { name: G.name }, M.value = !0;
     }
     function y(G) {
-      le.value = G, L.value = !0;
+      le.value = G, B.value = !0;
     }
     async function p() {
       var J;
       const { valid: G } = await m.value.validate();
       if (!G) return;
       if (S.value) {
-        b.push({ message: v("containerScope.demoSave"), status: 0 }), M.value = !1;
+        w.push({ message: v("containerScope.demoSave"), status: 0 }), M.value = !1;
         return;
       }
       ee.value = !0;
       const O = { name: I.value.name };
-      (J = F.value) != null && J.id ? await w.put(`rest/service/id/container-scope/${o.value}`, { id: F.value.id, ...O }) : await w.post(`rest/service/id/container-scope/${o.value}`, O), ee.value = !1, M.value = !1, d();
+      (J = F.value) != null && J.id ? await b.put(`rest/service/id/container-scope/${o.value}`, { id: F.value.id, ...O }) : await b.post(`rest/service/id/container-scope/${o.value}`, O), ee.value = !1, M.value = !1, d();
     }
     async function Q() {
       if (S.value) {
-        b.push({ message: v("containerScope.demoDelete"), status: 0 }), L.value = !1;
+        w.push({ message: v("containerScope.demoDelete"), status: 0 }), B.value = !1;
         return;
       }
-      h.value = !0, await w.del(`rest/service/id/container-scope/${o.value}/${le.value.id}`), h.value = !1, L.value = !1, d();
+      $.value = !0, await b.del(`rest/service/id/container-scope/${o.value}/${le.value.id}`), $.value = !1, B.value = !1, d();
     }
     return se(() => {
       E.setTitle(v("containerScope.title")), E.setBreadcrumbs([
@@ -2780,7 +2780,7 @@ const ce = (j, w) => {
         { title: v("containerScope.title") }
       ]), d();
     }), (G, O) => {
-      const J = i("v-spacer"), X = i("v-btn"), R = i("v-tab"), Y = i("v-tabs"), T = i("v-alert"), u = i("v-skeleton-loader"), W = i("v-icon"), K = i("v-data-table"), C = i("v-card-title"), N = i("v-text-field"), r = i("v-form"), B = i("v-card-text"), ae = i("v-card-actions"), pe = i("v-card"), fe = i("v-dialog");
+      const J = i("v-spacer"), X = i("v-btn"), R = i("v-tab"), Y = i("v-tabs"), T = i("v-alert"), u = i("v-skeleton-loader"), W = i("v-icon"), K = i("v-data-table"), C = i("v-card-title"), N = i("v-text-field"), r = i("v-form"), j = i("v-card-text"), ae = i("v-card-actions"), pe = i("v-card"), fe = i("v-dialog");
       return k(), ne("div", null, [
         te("div", pt, [
           te("h1", ft, n(l(v)("containerScope.title")), 1),
@@ -2817,7 +2817,7 @@ const ce = (j, w) => {
           ]),
           _: 1
         }, 8, ["modelValue"]),
-        V.value ? (k(), D(T, {
+        V.value ? (k(), h(T, {
           key: 0,
           type: "warning",
           variant: "tonal",
@@ -2828,7 +2828,7 @@ const ce = (j, w) => {
           ]),
           _: 1
         })) : U("", !0),
-        S.value ? (k(), D(T, {
+        S.value ? (k(), h(T, {
           key: 1,
           type: "info",
           variant: "tonal",
@@ -2840,22 +2840,22 @@ const ce = (j, w) => {
           ]),
           _: 1
         })) : U("", !0),
-        x.value && $.value.length === 0 ? (k(), D(u, {
+        x.value && D.value.length === 0 ? (k(), h(u, {
           key: 2,
           type: "table-heading, table-row@5",
           class: "mb-4"
         })) : U("", !0),
-        V.value ? U("", !0) : ye((k(), D(K, {
+        V.value ? U("", !0) : ye((k(), h(K, {
           key: 3,
           headers: P.value,
-          items: $.value,
+          items: D.value,
           loading: x.value,
           "item-value": "id",
           hover: "",
           "onClick:row": O[1] || (O[1] = (H, { item: me }) => _(me))
         }, {
           "item.locked": t(({ item: H }) => [
-            H.locked ? (k(), D(W, {
+            H.locked ? (k(), h(W, {
               key: 0,
               color: "warning",
               size: "small"
@@ -2904,7 +2904,7 @@ const ce = (j, w) => {
           ]),
           _: 1
         }, 8, ["headers", "items", "loading"])), [
-          [ke, $.value.length > 0 || !x.value]
+          [ke, D.value.length > 0 || !x.value]
         ]),
         e(fe, {
           modelValue: M.value,
@@ -2923,7 +2923,7 @@ const ce = (j, w) => {
                   }),
                   _: 1
                 }),
-                e(B, null, {
+                e(j, null, {
                   default: t(() => [
                     e(r, {
                       ref_key: "formRef",
@@ -2978,8 +2978,8 @@ const ce = (j, w) => {
           _: 1
         }, 8, ["modelValue"]),
         e(fe, {
-          modelValue: L.value,
-          "onUpdate:modelValue": O[6] || (O[6] = (H) => L.value = H),
+          modelValue: B.value,
+          "onUpdate:modelValue": O[6] || (O[6] = (H) => B.value = H),
           "max-width": "400"
         }, {
           default: t(() => [
@@ -2991,7 +2991,7 @@ const ce = (j, w) => {
                   ]),
                   _: 1
                 }),
-                e(B, null, {
+                e(j, null, {
                   default: t(() => {
                     var H;
                     return [
@@ -3005,7 +3005,7 @@ const ce = (j, w) => {
                     e(J),
                     e(X, {
                       variant: "text",
-                      onClick: O[5] || (O[5] = (H) => L.value = !1)
+                      onClick: O[5] || (O[5] = (H) => B.value = !1)
                     }, {
                       default: t(() => [
                         a(n(l(v)("common.cancel")), 1)
@@ -3015,7 +3015,7 @@ const ce = (j, w) => {
                     e(X, {
                       color: "error",
                       variant: "elevated",
-                      loading: h.value,
+                      loading: $.value,
                       onClick: Q
                     }, {
                       default: t(() => [
@@ -3035,55 +3035,63 @@ const ce = (j, w) => {
       ]);
     };
   }
-}, De = "/rest/", ge = {
-  requireAgreement(j) {
-    return !j || !j["security-agreement"];
+}, he = "/rest/", ge = {
+  requireAgreement(z) {
+    return !z || !z["security-agreement"];
   },
-  async acceptAgreement(j) {
-    if (!(await fetch(De + "system/setting/security-agreement/1", {
+  async acceptAgreement(z) {
+    if (!(await fetch(he + "system/setting/security-agreement/1", {
       method: "POST",
       credentials: "include"
     })).ok) throw new Error("Failed to accept agreement");
-    return j && (j["security-agreement"] = !0), !0;
+    return z && (z["security-agreement"] = !0), !0;
   },
-  scheduleUpload(j, w, E, b) {
+  scheduleUpload(z, b, E, w) {
     const A = setInterval(
-      () => ge._syncUpload(j, w, E, b, A),
+      () => ge._syncUpload(z, b, E, w, A),
       1e3
     );
     return A;
   },
-  async _syncUpload(j, w, E, b, A) {
+  async _syncUpload(z, b, E, w, A) {
     try {
-      const v = await fetch(De + j + "/" + w + "/status", { credentials: "include" });
+      const v = await fetch(he + z + "/" + b + "/status", { credentials: "include" });
       if (!v.ok) return;
       const o = await v.json();
-      b == null || b(o), o.end && (clearInterval(A), await ge._finishUpload(j, w, E, b));
+      w == null || w(o), o.end && (clearInterval(A), await ge._finishUpload(z, b, E, w));
     } catch (v) {
       console.error("[plugin:id] upload sync error", v);
     }
   },
-  async _finishUpload(j, w, E, b) {
+  async _finishUpload(z, b, E, w) {
     try {
-      const A = await fetch(De + j + "/" + w, { credentials: "include" });
+      const A = await fetch(he + z + "/" + b, { credentials: "include" });
       if (!A.ok) return;
       const v = await A.json();
-      b == null || b({ ...v.status, finished: !0, errors: v.entries }), E == null || E(v);
+      w == null || w({ ...v.status, finished: !0, errors: v.entries }), E == null || E(v);
     } catch (A) {
       console.error("[plugin:id] upload result error", A);
     }
   }
-}, gt = {
+};
+if (typeof document < "u") {
+  const z = "ligoj-plugin-id-css";
+  if (!document.getElementById(z)) {
+    const b = document.createElement("link");
+    b.id = z, b.rel = "stylesheet", b.href = new URL("./index.css", import.meta.url).href, document.head.appendChild(b);
+  }
+}
+const gt = {
   requireAgreement: ge.requireAgreement,
   acceptAgreement: ge.acceptAgreement,
   scheduleUpload: ge.scheduleUpload
 }, Te = [
   { path: "/id/user", name: "id-user", component: je },
-  { path: "/id/user/new", name: "id-user-new", component: $e },
-  { path: "/id/user/:id", name: "id-user-edit", component: $e },
+  { path: "/id/user/new", name: "id-user-new", component: De },
+  { path: "/id/user/:id", name: "id-user-edit", component: De },
   { path: "/id/group", name: "id-group", component: Ke },
-  { path: "/id/group/new", name: "id-group-new", component: he },
-  { path: "/id/group/:id", name: "id-group-edit", component: he },
+  { path: "/id/group/new", name: "id-group-new", component: $e },
+  { path: "/id/group/:id", name: "id-group-edit", component: $e },
   { path: "/id/company", name: "id-company", component: at },
   { path: "/id/company/new", name: "id-company-new", component: Ue },
   { path: "/id/company/:id", name: "id-company-edit", component: Ue },
@@ -3096,14 +3104,14 @@ const ce = (j, w) => {
   label: "Identity",
   component: Re,
   routes: Te,
-  install({ router: j }) {
-    for (const w of Te)
-      j.addRoute(w);
+  install({ router: z }) {
+    for (const b of Te)
+      z.addRoute(b);
   },
-  feature(j, ...w) {
-    const E = gt[j];
-    if (!E) throw new Error(`Plugin "id" has no feature "${j}"`);
-    return E(...w);
+  feature(z, ...b) {
+    const E = gt[z];
+    if (!E) throw new Error(`Plugin "id" has no feature "${z}"`);
+    return E(...b);
   },
   service: ge,
   meta: { icon: "mdi-account-group", color: "blue-darken-3" }

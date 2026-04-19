@@ -1,3 +1,19 @@
+// Load the sibling index.css at runtime. Vite's library build emits it as
+// a separate file but does NOT add `import './index.css'` to the JS entry
+// — so when the host dynamic-imports this bundle the stylesheet never
+// loads. Injecting a <link rel="stylesheet"> resolved against
+// import.meta.url keeps the approach path-agnostic.
+if (typeof document !== 'undefined') {
+  const id = 'ligoj-plugin-id-css'
+  if (!document.getElementById(id)) {
+    const link = document.createElement('link')
+    link.id = id
+    link.rel = 'stylesheet'
+    link.href = new URL('./index.css', import.meta.url).href
+    document.head.appendChild(link)
+  }
+}
+
 /*
  * Plugin "id" — Identity management (users, groups, companies, delegates,
  * container-scopes).
