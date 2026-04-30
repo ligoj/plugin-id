@@ -26,9 +26,12 @@
             variant="outlined"
             class="mb-2"
           />
-          <v-text-field
+          <v-autocomplete
             v-model="form.scope"
             :label="t('group.scope')"
+            :items="availableScopes"
+            :loading="scopesLoading"
+            clearable
             variant="outlined"
             class="mb-2"
           />
@@ -104,6 +107,8 @@ const deleting = ref(false)
 const confirmDelete = ref(false)
 const demoMode = ref(false)
 const availableGroups = ref([])
+const availableScopes = ref([])
+const scopesLoading = ref(false)
 
 const isEdit = computed(() => route.params.id && route.params.id !== 'new')
 
@@ -127,7 +132,33 @@ const DEMO_GROUPS = [
   { name: 'Sales', scope: 'Group' },
 ]
 
+/**
+ * Pull the list of group container scopes (matches what
+ * /id/container-scope shows under its "Groups" tab) so the Scope field
+ * surfaces an autocomplete instead of a free-text input. The endpoint
+ * may return either a bare array or a paginated `{data: [...]}` envelope
+ * depending on the identity provider — handle both shapes, fall back to
+ * a static list when the IDP isn't reachable.
+ */
+async function loadGroupScopes() {
+  scopesLoading.value = true
+  try {
+    const data = await api.get('rest/service/id/container-scope/group')
+    const rows = Array.isArray(data) ? data : (Array.isArray(data?.data) ? data.data : null)
+    if (rows) {
+      availableScopes.value = rows.map((s) => s.name).filter(Boolean)
+    } else {
+      availableScopes.value = ['Group', 'Department', 'Team', 'Project']
+    }
+  } catch {
+    availableScopes.value = ['Group', 'Department', 'Team', 'Project']
+  } finally {
+    scopesLoading.value = false
+  }
+}
+
 onMounted(async () => {
+  loadGroupScopes()
   // Load available groups for parent selector
   const groupList = await api.get('rest/service/id/group')
   if (groupList && Array.isArray(groupList)) {
