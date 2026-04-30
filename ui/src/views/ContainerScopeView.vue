@@ -21,7 +21,7 @@
 
     <v-skeleton-loader v-if="loading && items.length === 0" type="table-heading, table-row@5" class="mb-4" />
 
-    <v-data-table
+    <LigojDataTable filename="container-scopes.csv"
       v-if="!error"
       v-show="items.length > 0 || !loading"
       :headers="headers"
@@ -42,7 +42,7 @@
           <v-icon size="small">mdi-delete</v-icon>
         </v-btn>
       </template>
-    </v-data-table>
+    </LigojDataTable>
 
     <v-dialog v-model="editDialog" max-width="500">
       <v-card>
@@ -76,7 +76,7 @@
 
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue'
-import { useApi, useAppStore, useErrorStore, useI18nStore } from '@ligoj/host'
+import { useApi, useAppStore, useErrorStore, useI18nStore, LigojDataTable } from '@ligoj/host'
 
 const api = useApi()
 const appStore = useAppStore()

@@ -38,7 +38,7 @@
       class="mb-4"
     />
 
-    <v-data-table-server
+    <LigojDataTableServer filename="delegates.csv" :fetch-all="dt.loadAll"
       v-if="!dt.error.value"
       v-show="dt.items.value.length > 0 || !dt.loading.value"
       v-model="selected"
@@ -75,7 +75,7 @@
           <v-icon size="small">mdi-delete</v-icon>
         </v-btn>
       </template>
-    </v-data-table-server>
+    </LigojDataTableServer>
 
     <v-alert v-if="!dt.loading.value && !dt.error.value && dt.totalItems.value === 0" type="info" variant="tonal" class="mt-4">
       {{ t('delegate.empty') }}
@@ -112,7 +112,7 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { useDataTable, useApi, useAppStore, useI18nStore } from '@ligoj/host'
+import { useDataTable, useApi, useAppStore, useI18nStore, LigojDataTableServer } from '@ligoj/host'
 
 const router = useRouter()
 const appStore = useAppStore()

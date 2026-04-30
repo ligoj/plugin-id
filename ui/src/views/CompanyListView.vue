@@ -43,7 +43,7 @@
       class="mb-4"
     />
 
-    <v-data-table-server
+    <LigojDataTableServer filename="companies.csv" :fetch-all="dt.loadAll"
       v-if="!dt.error.value"
       v-show="dt.items.value.length > 0 || !dt.loading.value"
       v-model="selected"
@@ -69,7 +69,7 @@
           <v-icon size="small">mdi-delete</v-icon>
         </v-btn>
       </template>
-    </v-data-table-server>
+    </LigojDataTableServer>
 
     <v-dialog v-model="deleteDialog" max-width="400">
       <v-card>
@@ -102,7 +102,7 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { useDataTable, useApi, useAppStore, useErrorStore, useI18nStore } from '@ligoj/host'
+import { useDataTable, useApi, useAppStore, useErrorStore, useI18nStore, LigojDataTableServer } from '@ligoj/host'
 
 const router = useRouter()
 const appStore = useAppStore()
