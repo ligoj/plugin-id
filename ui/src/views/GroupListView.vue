@@ -3,16 +3,8 @@
     <div class="d-flex flex-wrap align-center mb-4 ga-2">
       <h1 class="text-h4">{{ t('group.title') }}</h1>
       <v-spacer />
-      <v-text-field
-        v-model="dt.search.value"
-        prepend-inner-icon="mdi-magnify"
-        :label="t('common.search')"
-        variant="outlined"
-        density="compact"
-        hide-details
-        class="search-field"
-        @update:model-value="onSearch"
-      />
+      <v-text-field v-model="dt.search.value" prepend-inner-icon="mdi-magnify" :label="t('common.search')" variant="outlined" density="compact" hide-details class="search-field"
+        @update:model-value="onSearch" />
       <v-btn color="primary" prepend-icon="mdi-plus" @click="router.push('/id/group/new')">
         {{ t('group.new') }}
       </v-btn>
@@ -37,27 +29,11 @@
       </v-toolbar>
     </v-slide-y-transition>
 
-    <v-skeleton-loader
-      v-if="dt.loading.value && dt.items.value.length === 0"
-      type="table-heading, table-row@5"
-      class="mb-4"
-    />
+    <v-skeleton-loader v-if="dt.loading.value && dt.items.value.length === 0" type="table-heading, table-row@5" class="mb-4" />
 
-    <v-data-table-server
-      v-if="!dt.error.value"
-      v-show="dt.items.value.length > 0 || !dt.loading.value"
-      v-model="selected"
-      v-model:items-per-page="itemsPerPage"
-      :headers="headers"
-      :items="dt.items.value"
-      :items-length="dt.totalItems.value"
-      :loading="dt.loading.value"
-      item-value="name"
-      show-select
-      hover
-      @update:options="loadData"
-      @click:row="(_, { item }) => router.push('/id/group/' + item.name)"
-    >
+    <v-data-table-server v-if="!dt.error.value" v-show="dt.items.value.length > 0 || !dt.loading.value" v-model="selected" v-model:items-per-page="itemsPerPage" :headers="headers"
+      :items="dt.items.value" :items-length="dt.totalItems.value" :loading="dt.loading.value" item-value="name" show-select hover @update:options="loadData"
+      @click:row="(_, { item }) => router.push('/id/group/' + item.name)">
       <template #item.locked="{ item }">
         <v-icon v-if="item.locked" color="error" size="small">mdi-lock</v-icon>
       </template>
@@ -134,7 +110,7 @@ const headers = computed(() => [
   { title: t('group.scope'), key: 'scope', sortable: false },
   { title: t('group.members'), key: 'count', sortable: false, width: '100px' },
   { title: t('group.locked'), key: 'locked', sortable: false, width: '80px' },
-  { title: '', key: 'actions', sortable: false, width: '100px', align: 'end' },
+  { title: '', key: 'actions', sortable: false, width: '120px', align: 'end' },
 ])
 
 function loadData(options) {
