@@ -8,30 +8,13 @@
       {{ t('company.demoEdit') }}
     </v-alert>
 
-    <v-skeleton-loader
-      v-if="loading"
-      type="card, actions"
-      max-width="700"
-      class="mb-4"
-    />
+    <v-skeleton-loader v-if="loading" type="card, actions" max-width="700" class="mb-4" />
 
     <v-card v-if="!loading" class="edit-card">
       <v-card-text>
         <v-form ref="formRef" @submit.prevent="save">
-          <v-text-field
-            v-model="form.name"
-            :label="t('common.name')"
-            :rules="[rules.required]"
-            :disabled="isEdit"
-            variant="outlined"
-            class="mb-2"
-          />
-          <v-text-field
-            v-model="form.scope"
-            :label="t('group.scope')"
-            variant="outlined"
-            class="mb-2"
-          />
+          <v-text-field v-model="form.name" :label="t('common.name')" :rules="[rules.required]" :disabled="isEdit" variant="outlined" class="mb-2" />
+          <v-text-field v-model="form.scope" :label="t('group.scope')" variant="outlined" class="mb-2" />
         </v-form>
       </v-card-text>
       <v-card-actions>
@@ -130,7 +113,6 @@ onMounted(async () => {
       }
     }
     loading.value = false
-    appStore.setTitle(t('company.edit'))
     appStore.setBreadcrumbs([
       { title: t('nav.home'), to: '/' },
       { title: t('nav.identity') },
@@ -138,7 +120,6 @@ onMounted(async () => {
       { title: form.value.name || t('company.edit') },
     ])
   } else {
-    appStore.setTitle(t('company.new'))
     appStore.setBreadcrumbs([
       { title: t('nav.home'), to: '/' },
       { title: t('nav.identity') },
@@ -195,6 +176,7 @@ async function remove() {
 .edit-card {
   max-width: 700px;
 }
+
 @media (max-width: 600px) {
   .edit-card {
     max-width: 100%;

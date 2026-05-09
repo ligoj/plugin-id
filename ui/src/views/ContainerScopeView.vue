@@ -21,16 +21,8 @@
 
     <v-skeleton-loader v-if="loading && items.length === 0" type="table-heading, table-row@5" class="mb-4" />
 
-    <LigojDataTable filename="container-scopes.csv"
-      v-if="!error"
-      v-show="items.length > 0 || !loading"
-      :headers="headers"
-      :items="items"
-      :loading="loading"
-      item-value="id"
-      hover
-      @click:row="(_, { item }) => openEdit(item)"
-    >
+    <LigojDataTable filename="container-scopes.csv" v-if="!error" v-show="items.length > 0 || !loading" :headers="headers" :items="items" :loading="loading" item-value="id" hover
+      @click:row="(_, { item }) => openEdit(item)">
       <template #item.locked="{ item }">
         <v-icon v-if="item.locked" color="warning" size="small">mdi-lock</v-icon>
       </template>
@@ -198,7 +190,6 @@ async function confirmDelete() {
 }
 
 onMounted(() => {
-  appStore.setTitle(t('containerScope.title'))
   appStore.setBreadcrumbs([
     { title: t('nav.home'), to: '/' },
     { title: t('nav.identity') },

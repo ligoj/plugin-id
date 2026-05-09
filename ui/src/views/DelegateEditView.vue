@@ -4,60 +4,17 @@
       <h1 class="text-h4">{{ isEdit ? t('delegate.edit') : t('delegate.new') }}</h1>
     </div>
 
-    <v-skeleton-loader
-      v-if="loading"
-      type="card, actions"
-      max-width="700"
-      class="mb-4"
-    />
+    <v-skeleton-loader v-if="loading" type="card, actions" max-width="700" class="mb-4" />
 
     <v-card v-if="!loading" class="edit-card">
       <v-card-text>
         <v-form ref="formRef" @submit.prevent="save">
-          <v-text-field
-            v-model="form.receiver"
-            :label="t('delegate.receiver')"
-            :rules="[rules.required]"
-            variant="outlined"
-            class="mb-2"
-          />
-          <v-select
-            v-model="form.receiverType"
-            :label="t('delegate.receiverType')"
-            :items="receiverTypes"
-            :rules="[rules.required]"
-            variant="outlined"
-            class="mb-2"
-          />
-          <v-text-field
-            v-model="form.name"
-            :label="t('delegate.resource')"
-            :rules="[rules.required]"
-            :hint="t('delegate.resourceHint')"
-            persistent-hint
-            variant="outlined"
-            class="mb-2"
-          />
-          <v-select
-            v-model="form.type"
-            :label="t('delegate.type')"
-            :items="resourceTypes"
-            :rules="[rules.required]"
-            variant="outlined"
-            class="mb-2"
-          />
-          <v-checkbox
-            v-model="form.canAdmin"
-            :label="t('delegate.admin')"
-            hide-details
-            class="mb-2"
-          />
-          <v-checkbox
-            v-model="form.canWrite"
-            :label="t('delegate.write')"
-            hide-details
-            class="mb-2"
-          />
+          <v-text-field v-model="form.receiver" :label="t('delegate.receiver')" :rules="[rules.required]" variant="outlined" class="mb-2" />
+          <v-select v-model="form.receiverType" :label="t('delegate.receiverType')" :items="receiverTypes" :rules="[rules.required]" variant="outlined" class="mb-2" />
+          <v-text-field v-model="form.name" :label="t('delegate.resource')" :rules="[rules.required]" :hint="t('delegate.resourceHint')" persistent-hint variant="outlined" class="mb-2" />
+          <v-select v-model="form.type" :label="t('delegate.type')" :items="resourceTypes" :rules="[rules.required]" variant="outlined" class="mb-2" />
+          <v-checkbox v-model="form.canAdmin" :label="t('delegate.admin')" hide-details class="mb-2" />
+          <v-checkbox v-model="form.canWrite" :label="t('delegate.write')" hide-details class="mb-2" />
         </v-form>
       </v-card-text>
       <v-card-actions>
@@ -151,7 +108,6 @@ onMounted(async () => {
       form.value.canWrite = !!data.canWrite
     }
     loading.value = false
-    appStore.setTitle(t('delegate.edit'))
     appStore.setBreadcrumbs([
       { title: t('nav.home'), to: '/' },
       { title: t('nav.identity') },
@@ -159,7 +115,6 @@ onMounted(async () => {
       { title: form.value.receiver || t('delegate.edit') },
     ])
   } else {
-    appStore.setTitle(t('delegate.new'))
     appStore.setBreadcrumbs([
       { title: t('nav.home'), to: '/' },
       { title: t('nav.identity') },
@@ -208,6 +163,7 @@ async function remove() {
 .edit-card {
   max-width: 700px;
 }
+
 @media (max-width: 600px) {
   .edit-card {
     max-width: 100%;

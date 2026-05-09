@@ -3,25 +3,13 @@
     <div class="d-flex flex-wrap align-center mb-4 ga-2">
       <h1 class="text-h4">{{ t('user.title') }}</h1>
       <v-spacer />
-      <v-text-field
-        v-model="dt.search.value"
-        prepend-inner-icon="mdi-magnify"
-        :label="t('common.search')"
-        variant="outlined"
-        density="compact"
-        hide-details
-        class="search-field"
-        @update:model-value="onSearch"
-      />
+      <v-text-field v-model="dt.search.value" prepend-inner-icon="mdi-magnify" :label="t('common.search')" variant="outlined" density="compact" hide-details class="search-field"
+        @update:model-value="onSearch" />
       <v-btn color="primary" prepend-icon="mdi-plus" @click="router.push('/id/user/new')">
         {{ t('user.new') }}
       </v-btn>
-      <ImportExportBar
-        export-endpoint="service/id/user"
-        import-endpoint="service/id/user/import/csv/full"
-        export-filename="users.csv"
-        @imported="dt.load({ page: 1, itemsPerPage: itemsPerPage.value })"
-      />
+      <ImportExportBar export-endpoint="service/id/user" import-endpoint="service/id/user/import/csv/full" export-filename="users.csv"
+        @imported="dt.load({ page: 1, itemsPerPage: itemsPerPage.value })" />
     </div>
 
     <v-alert v-if="dt.error.value" type="warning" variant="tonal" class="mb-4">
@@ -43,37 +31,16 @@
       </v-toolbar>
     </v-slide-y-transition>
 
-    <v-skeleton-loader
-      v-if="dt.loading.value && dt.items.value.length === 0"
-      type="table-heading, table-row@5"
-      class="mb-4"
-    />
+    <v-skeleton-loader v-if="dt.loading.value && dt.items.value.length === 0" type="table-heading, table-row@5" class="mb-4" />
 
-    <LigojDataTableServer filename="users.csv" :fetch-all="dt.loadAll"
-      v-if="!dt.error.value"
-      v-show="dt.items.value.length > 0 || !dt.loading.value"
-      v-model="selected"
-      v-model:items-per-page="itemsPerPage"
-      :headers="headers"
-      :items="dt.items.value"
-      :items-length="dt.totalItems.value"
-      :loading="dt.loading.value"
-      item-value="id"
-      show-select
-      hover
-      @update:options="loadData"
-      @click:row="(_, { item }) => router.push('/id/user/' + item.id)"
-    >
+    <LigojDataTableServer filename="users.csv" :fetch-all="dt.loadAll" v-if="!dt.error.value" v-show="dt.items.value.length > 0 || !dt.loading.value" v-model="selected"
+      v-model:items-per-page="itemsPerPage" :headers="headers" :items="dt.items.value" :items-length="dt.totalItems.value" :loading="dt.loading.value" item-value="id" show-select hover
+      @update:options="loadData" @click:row="(_, { item }) => router.push('/id/user/' + item.id)">
       <template #item.mails="{ item }">
         {{ item.mails?.[0] || '' }}
       </template>
       <template #item.groups="{ item }">
-        <v-chip
-          v-for="g in (item.groups || []).slice(0, 3)"
-          :key="g.name || g"
-          size="small"
-          class="mr-1"
-        >{{ g.name || g }}</v-chip>
+        <v-chip v-for="g in (item.groups || []).slice(0, 3)" :key="g.name || g" size="small" class="mr-1">{{ g.name || g }}</v-chip>
         <span v-if="(item.groups || []).length > 3" class="text-caption text-medium-emphasis">
           +{{ item.groups.length - 3 }}
         </span>
@@ -211,7 +178,6 @@ async function confirmBulkDelete() {
 }
 
 onMounted(() => {
-  appStore.setTitle(t('user.title'))
   appStore.setBreadcrumbs([
     { title: t('nav.home'), to: '/' },
     { title: t('nav.identity') },

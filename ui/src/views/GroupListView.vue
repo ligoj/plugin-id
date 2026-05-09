@@ -31,9 +31,9 @@
 
     <v-skeleton-loader v-if="dt.loading.value && dt.items.value.length === 0" type="table-heading, table-row@5" class="mb-4" />
 
-    <LigojDataTableServer filename="groups.csv" :fetch-all="dt.loadAll" v-if="!dt.error.value" v-show="dt.items.value.length > 0 || !dt.loading.value" v-model="selected" v-model:items-per-page="itemsPerPage" :headers="headers"
-      :items="dt.items.value" :items-length="dt.totalItems.value" :loading="dt.loading.value" item-value="name" show-select hover @update:options="loadData"
-      @click:row="(_, { item }) => router.push('/id/group/' + item.name)">
+    <LigojDataTableServer filename="groups.csv" :fetch-all="dt.loadAll" v-if="!dt.error.value" v-show="dt.items.value.length > 0 || !dt.loading.value" v-model="selected"
+      v-model:items-per-page="itemsPerPage" :headers="headers" :items="dt.items.value" :items-length="dt.totalItems.value" :loading="dt.loading.value" item-value="name" show-select hover
+      @update:options="loadData" @click:row="(_, { item }) => router.push('/id/group/' + item.name)">
       <template #item.locked="{ item }">
         <v-icon v-if="item.locked" color="error" size="small">mdi-lock</v-icon>
       </template>
@@ -163,7 +163,6 @@ async function confirmBulkDelete() {
 }
 
 onMounted(() => {
-  appStore.setTitle(t('group.title'))
   appStore.setBreadcrumbs([
     { title: t('nav.home'), to: '/' },
     { title: t('nav.identity') },

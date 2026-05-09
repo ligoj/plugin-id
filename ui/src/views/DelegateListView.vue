@@ -3,16 +3,8 @@
     <div class="d-flex flex-wrap align-center mb-4 ga-2">
       <h1 class="text-h4">{{ t('delegate.title') }}</h1>
       <v-spacer />
-      <v-text-field
-        v-model="dt.search.value"
-        prepend-inner-icon="mdi-magnify"
-        :label="t('common.search')"
-        variant="outlined"
-        density="compact"
-        hide-details
-        class="search-field"
-        @update:model-value="onSearch"
-      />
+      <v-text-field v-model="dt.search.value" prepend-inner-icon="mdi-magnify" :label="t('common.search')" variant="outlined" density="compact" hide-details class="search-field"
+        @update:model-value="onSearch" />
       <v-btn color="primary" prepend-icon="mdi-plus" @click="router.push('/id/delegate/new')">
         {{ t('delegate.new') }}
       </v-btn>
@@ -32,27 +24,11 @@
       </v-toolbar>
     </v-slide-y-transition>
 
-    <v-skeleton-loader
-      v-if="dt.loading.value && dt.items.value.length === 0"
-      type="table-heading, table-row@5"
-      class="mb-4"
-    />
+    <v-skeleton-loader v-if="dt.loading.value && dt.items.value.length === 0" type="table-heading, table-row@5" class="mb-4" />
 
-    <LigojDataTableServer filename="delegates.csv" :fetch-all="dt.loadAll"
-      v-if="!dt.error.value"
-      v-show="dt.items.value.length > 0 || !dt.loading.value"
-      v-model="selected"
-      v-model:items-per-page="itemsPerPage"
-      :headers="headers"
-      :items="dt.items.value"
-      :items-length="dt.totalItems.value"
-      :loading="dt.loading.value"
-      item-value="id"
-      show-select
-      hover
-      @update:options="loadData"
-      @click:row="(_, { item }) => router.push('/id/delegate/' + item.id)"
-    >
+    <LigojDataTableServer filename="delegates.csv" :fetch-all="dt.loadAll" v-if="!dt.error.value" v-show="dt.items.value.length > 0 || !dt.loading.value" v-model="selected"
+      v-model:items-per-page="itemsPerPage" :headers="headers" :items="dt.items.value" :items-length="dt.totalItems.value" :loading="dt.loading.value" item-value="id" show-select hover
+      @update:options="loadData" @click:row="(_, { item }) => router.push('/id/delegate/' + item.id)">
       <template #item.receiver="{ item }">
         {{ item.receiver?.name || item.receiver?.id || item.name || '-' }}
       </template>
@@ -185,7 +161,6 @@ async function confirmBulkDelete() {
 }
 
 onMounted(() => {
-  appStore.setTitle(t('delegate.title'))
   appStore.setBreadcrumbs([
     { title: t('nav.home'), to: '/' },
     { title: t('nav.identity') },

@@ -8,61 +8,18 @@
       {{ t('user.demoEdit') }}
     </v-alert>
 
-    <v-skeleton-loader
-      v-if="loading"
-      type="card, actions"
-      max-width="700"
-      class="mb-4"
-    />
+    <v-skeleton-loader v-if="loading" type="card, actions" max-width="700" class="mb-4" />
 
     <v-card v-if="!loading" class="edit-card">
       <v-card-text>
         <v-form ref="formRef" @submit.prevent="save">
-          <v-text-field
-            v-model="form.id"
-            :label="t('user.login')"
-            :rules="[rules.required]"
-            :disabled="isEdit"
-            :hint="isEdit ? '' : t('user.loginHint')"
-            persistent-hint
-            variant="outlined"
-            class="mb-2"
-          />
-          <v-text-field
-            v-model="form.firstName"
-            :label="t('user.firstName')"
-            :rules="[rules.required]"
-            variant="outlined"
-            class="mb-2"
-          />
-          <v-text-field
-            v-model="form.lastName"
-            :label="t('user.lastName')"
-            :rules="[rules.required]"
-            variant="outlined"
-            class="mb-2"
-          />
-          <v-text-field
-            v-model="form.company"
-            :label="t('user.company')"
-            variant="outlined"
-            class="mb-2"
-          />
-          <v-text-field
-            v-model="form.mail"
-            :label="t('user.email')"
-            type="email"
-            variant="outlined"
-            class="mb-2"
-          />
-          <v-text-field
-            v-if="isEdit"
-            :model-value="groupsDisplay"
-            :label="t('user.groups')"
-            variant="outlined"
-            readonly
-            class="mb-2"
-          />
+          <v-text-field v-model="form.id" :label="t('user.login')" :rules="[rules.required]" :disabled="isEdit" :hint="isEdit ? '' : t('user.loginHint')" persistent-hint variant="outlined"
+            class="mb-2" />
+          <v-text-field v-model="form.firstName" :label="t('user.firstName')" :rules="[rules.required]" variant="outlined" class="mb-2" />
+          <v-text-field v-model="form.lastName" :label="t('user.lastName')" :rules="[rules.required]" variant="outlined" class="mb-2" />
+          <v-text-field v-model="form.company" :label="t('user.company')" variant="outlined" class="mb-2" />
+          <v-text-field v-model="form.mail" :label="t('user.email')" type="email" variant="outlined" class="mb-2" />
+          <v-text-field v-if="isEdit" :model-value="groupsDisplay" :label="t('user.groups')" variant="outlined" readonly class="mb-2" />
         </v-form>
       </v-card-text>
       <v-card-actions>
@@ -81,40 +38,11 @@
       <v-card-title class="text-h6">{{ t('user.actions') }}</v-card-title>
       <v-card-text>
         <div class="d-flex flex-wrap ga-2">
-          <v-btn
-            v-if="!locked"
-            color="warning"
-            variant="tonal"
-            prepend-icon="mdi-lock"
-            @click="startAction('lock')"
-          >{{ t('user.lock') }}</v-btn>
-          <v-btn
-            v-if="locked"
-            color="success"
-            variant="tonal"
-            prepend-icon="mdi-lock-open-variant"
-            @click="startAction('unlock')"
-          >{{ t('user.unlock') }}</v-btn>
-          <v-btn
-            v-if="!isolated"
-            color="error"
-            variant="tonal"
-            prepend-icon="mdi-account-off"
-            @click="startAction('isolate')"
-          >{{ t('user.isolate') }}</v-btn>
-          <v-btn
-            v-if="isolated"
-            color="success"
-            variant="tonal"
-            prepend-icon="mdi-account-check"
-            @click="startAction('restore')"
-          >{{ t('user.restore') }}</v-btn>
-          <v-btn
-            color="info"
-            variant="tonal"
-            prepend-icon="mdi-lock-reset"
-            @click="startAction('resetPassword')"
-          >{{ t('user.resetPassword') }}</v-btn>
+          <v-btn v-if="!locked" color="warning" variant="tonal" prepend-icon="mdi-lock" @click="startAction('lock')">{{ t('user.lock') }}</v-btn>
+          <v-btn v-if="locked" color="success" variant="tonal" prepend-icon="mdi-lock-open-variant" @click="startAction('unlock')">{{ t('user.unlock') }}</v-btn>
+          <v-btn v-if="!isolated" color="error" variant="tonal" prepend-icon="mdi-account-off" @click="startAction('isolate')">{{ t('user.isolate') }}</v-btn>
+          <v-btn v-if="isolated" color="success" variant="tonal" prepend-icon="mdi-account-check" @click="startAction('restore')">{{ t('user.restore') }}</v-btn>
+          <v-btn color="info" variant="tonal" prepend-icon="mdi-lock-reset" @click="startAction('resetPassword')">{{ t('user.resetPassword') }}</v-btn>
         </div>
       </v-card-text>
     </v-card>
@@ -248,7 +176,6 @@ onMounted(async () => {
       loadDemoUser(route.params.id)
     }
     loading.value = false
-    appStore.setTitle(t('user.edit'))
     appStore.setBreadcrumbs([
       { title: t('nav.home'), to: '/' },
       { title: t('nav.identity') },
@@ -256,7 +183,6 @@ onMounted(async () => {
       { title: form.value.id || t('user.edit') },
     ])
   } else {
-    appStore.setTitle(t('user.new'))
     appStore.setBreadcrumbs([
       { title: t('nav.home'), to: '/' },
       { title: t('nav.identity') },
@@ -351,6 +277,7 @@ async function confirmAction() {
 .edit-card {
   max-width: 700px;
 }
+
 @media (max-width: 600px) {
   .edit-card {
     max-width: 100%;
