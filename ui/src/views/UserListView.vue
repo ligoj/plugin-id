@@ -1,7 +1,6 @@
 <template>
   <div>
     <div class="d-flex flex-wrap align-center mb-4 ga-2">
-      <h1 class="text-h4">{{ t('user.title') }}</h1>
       <v-spacer />
       <v-text-field v-model="dt.search.value" prepend-inner-icon="mdi-magnify" :label="t('common.search')" variant="outlined" density="compact" hide-details class="search-field"
         @update:model-value="onSearch" />
@@ -111,6 +110,7 @@ const DEMO_USERS = [
 const dt = useDataTable('service/id/user', { defaultSort: 'id', demoData: DEMO_USERS })
 const itemsPerPage = ref(25)
 let searchTimeout = null
+let lastOptions = { page: 1, itemsPerPage: 25, sortBy: [] }
 
 const selected = ref([])
 const deleteDialog = ref(false)
@@ -130,6 +130,7 @@ const headers = computed(() => [
 ])
 
 function loadData(options) {
+  lastOptions = options
   dt.load(options)
 }
 
@@ -178,11 +179,14 @@ async function confirmBulkDelete() {
 }
 
 onMounted(() => {
-  appStore.setBreadcrumbs([
-    { title: t('nav.home'), to: '/' },
-    { title: t('nav.identity') },
-    { title: t('user.title') },
-  ])
+  appStore.setBreadcrumbs(
+    [
+      { title: t('nav.home'), to: '/' },
+      { title: t('nav.identity') },
+      { title: t('user.title') },
+    ],
+    { refresh: () => dt.load(lastOptions) },
+  )
 })
 </script>
 

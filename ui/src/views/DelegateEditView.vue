@@ -1,9 +1,5 @@
 <template>
   <div>
-    <div class="d-flex align-center mb-4">
-      <h1 class="text-h4">{{ isEdit ? t('delegate.edit') : t('delegate.new') }}</h1>
-    </div>
-
     <v-skeleton-loader v-if="loading" type="card, actions" max-width="700" class="mb-4" />
 
     <v-card v-if="!loading" class="edit-card">

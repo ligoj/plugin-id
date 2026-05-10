@@ -1,7 +1,6 @@
 <template>
   <div>
     <div class="d-flex flex-wrap align-center mb-4 ga-2">
-      <h1 class="text-h4">{{ t('containerScope.title') }}</h1>
       <v-spacer />
       <v-btn color="primary" prepend-icon="mdi-plus" @click="openNew">{{ t('containerScope.new') }}</v-btn>
     </div>
@@ -190,11 +189,14 @@ async function confirmDelete() {
 }
 
 onMounted(() => {
-  appStore.setBreadcrumbs([
-    { title: t('nav.home'), to: '/' },
-    { title: t('nav.identity') },
-    { title: t('containerScope.title') },
-  ])
+  appStore.setBreadcrumbs(
+    [
+      { title: t('nav.home'), to: '/' },
+      { title: t('nav.identity') },
+      { title: t('containerScope.title') },
+    ],
+    { refresh: loadData },
+  )
   loadData()
 })
 </script>

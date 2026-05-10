@@ -1,7 +1,6 @@
 <template>
   <div>
     <div class="d-flex flex-wrap align-center mb-4 ga-2">
-      <h1 class="text-h4">{{ t('group.title') }}</h1>
       <v-spacer />
       <v-text-field v-model="dt.search.value" prepend-inner-icon="mdi-magnify" :label="t('common.search')" variant="outlined" density="compact" hide-details class="search-field"
         @update:model-value="onSearch" />
@@ -163,11 +162,14 @@ async function confirmBulkDelete() {
 }
 
 onMounted(() => {
-  appStore.setBreadcrumbs([
-    { title: t('nav.home'), to: '/' },
-    { title: t('nav.identity') },
-    { title: t('group.title') },
-  ])
+  appStore.setBreadcrumbs(
+    [
+      { title: t('nav.home'), to: '/' },
+      { title: t('nav.identity') },
+      { title: t('group.title') },
+    ],
+    { refresh: () => dt.load(lastOptions) },
+  )
 })
 </script>
 

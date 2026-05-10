@@ -1,9 +1,5 @@
 <template>
   <div>
-    <div class="d-flex align-center mb-4">
-      <h1 class="text-h4">{{ isEdit ? t('user.edit') : t('user.new') }}</h1>
-    </div>
-
     <v-alert v-if="demoMode" type="info" variant="tonal" density="compact" class="mb-4">
       {{ t('user.demoEdit') }}
     </v-alert>
