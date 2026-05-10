@@ -120,7 +120,7 @@ const form = ref({
   mail: '',
 })
 
-const { isDirty, showGuardDialog, confirmLeave, cancelLeave, markClean, init: initGuard } = useFormGuard(form)
+const { showGuardDialog, confirmLeave, cancelLeave, markClean, init: initGuard } = useFormGuard(form)
 
 const rules = {
   required: v => !!v || t('common.required'),
