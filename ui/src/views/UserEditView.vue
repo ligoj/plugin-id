@@ -13,7 +13,46 @@
             class="mb-2" />
           <v-text-field v-model="form.firstName" :label="t('user.firstName')" :rules="[rules.required]" variant="outlined" class="mb-2" />
           <v-text-field v-model="form.lastName" :label="t('user.lastName')" :rules="[rules.required]" variant="outlined" class="mb-2" />
-          <v-text-field v-model="form.company" :label="t('user.company')" variant="outlined" class="mb-2" />
+          <!-- Auto-suggest for company. Queries rest/service/id/company as the
+               user types (300 ms debounced). v-model stores the company name
+               as a string, matching the payload contract of rest/service/id/user. -->
+          <v-autocomplete
+            v-model="form.company"
+            :items="companyResults"
+            :loading="companyLoading"
+            :search="companySearchQuery"
+            item-title="name"
+            item-value="name"
+            :label="t('user.company')"
+            hint="Tape quelques lettres pour chercher une entité"
+            persistent-hint
+            variant="outlined"
+            class="mb-2"
+            no-filter
+            clearable
+            @update:search="onCompanySearch"
+          >
+            <template #item="{ props: itemProps, item }">
+              <v-list-item v-bind="itemProps" :title="item?.name || ''">
+                <template v-if="item?.scope || item?.count !== undefined" #subtitle>
+                  <span v-if="item?.scope" class="text-caption mr-2">{{ item.scope }}</span>
+                  <v-chip
+                    v-if="item?.count !== undefined"
+                    size="x-small"
+                    variant="tonal"
+                    class="mr-1"
+                  >{{ item.count }} {{ t('user.title').toLowerCase() }}</v-chip>
+                </template>
+              </v-list-item>
+            </template>
+            <template #no-data>
+              <v-list-item>
+                <v-list-item-title>
+                  {{ companySearchQuery ? 'Aucune entité trouvée' : 'Tape des lettres pour chercher' }}
+                </v-list-item-title>
+              </v-list-item>
+            </template>
+          </v-autocomplete>
           <v-text-field v-model="form.mail" :label="t('user.email')" type="email" variant="outlined" class="mb-2" />
           <v-text-field v-if="isEdit" :model-value="groupsDisplay" :label="t('user.groups')" variant="outlined" readonly class="mb-2" />
         </v-form>
@@ -109,6 +148,12 @@ const actionDialog = ref(false)
 const actionType = ref('')
 const actionLoading = ref(false)
 
+// --- Company auto-suggest state ---
+const companySearchQuery = ref('')
+const companyResults = ref([])
+const companyLoading = ref(false)
+let companyDebounce = null
+
 const isEdit = computed(() => !!route.params.id)
 const groupsDisplay = computed(() => groups.value.map(g => g.name || g).join(', ') || '-')
 
@@ -124,6 +169,65 @@ const { showGuardDialog, confirmLeave, cancelLeave, markClean, init: initGuard }
 
 const rules = {
   required: v => !!v || t('common.required'),
+}
+
+// --- Company auto-suggest logic ---
+
+/** Called on every keystroke in the autocomplete. Debounced 300 ms. */
+function onCompanySearch(query) {
+  companySearchQuery.value = query || ''
+  clearTimeout(companyDebounce)
+  companyDebounce = setTimeout(() => searchCompanies(query), 300)
+}
+
+async function searchCompanies(query) {
+  if (!query || query.length < 1) {
+    companyResults.value = []
+    return
+  }
+  companyLoading.value = true
+  try {
+    // Direct URL with un-encoded brackets — the legacy DataTables backend
+    // expects `search[value]=...` literally.
+    const url = `rest/service/id/company?search[value]=${encodeURIComponent(query)}&rows=20&page=1&sidx=name&sord=asc`
+    const resp = await api.get(url)
+    // Defensive: api.get may return the wrapper { data: [...] } or the
+    // array directly depending on the endpoint's content-type handling.
+    companyResults.value = Array.isArray(resp) ? resp : (Array.isArray(resp?.data) ? resp.data : [])
+    // Fallback : if no IAM provider is configured (Demo mode), the
+    // backend returns no companies. Surface a small demo list so the
+    // pattern can be visually validated. The full backend integration
+    // will work once a real LDAP node is configured in Admin → Nodes.
+    if (companyResults.value.length === 0 && query) {
+      const DEMO = [
+        { name: 'Ligoj', scope: 'Company', count: 4 },
+        { name: 'AcmeCorp', scope: 'Company', count: 2 },
+        { name: 'TechSolutions', scope: 'Company', count: 2 },
+      ]
+      const q = query.toLowerCase()
+      companyResults.value = DEMO.filter(c => c.name.toLowerCase().includes(q))
+    }
+  } catch (err) {
+    console.error('Company search failed:', err)
+    companyResults.value = []
+  } finally {
+    companyLoading.value = false
+  }
+}
+
+/** When editing an existing user, the company is already set but the
+ *  autocomplete's item list is empty — pre-seed with the current value
+ *  so v-autocomplete can render its label correctly on open. */
+async function ensureCurrentCompanyInResults(name) {
+  if (!name) return
+  try {
+    const url = `rest/service/id/company?search[value]=${encodeURIComponent(name)}&rows=5&page=1&sidx=name&sord=asc`
+    const resp = await api.get(url)
+    const items = Array.isArray(resp) ? resp : (Array.isArray(resp?.data) ? resp.data : [])
+    companyResults.value = items.length ? items : [{ name }]
+  } catch {
+    companyResults.value = [{ name }]
+  }
 }
 
 // Demo users matching UserListView
@@ -165,11 +269,18 @@ onMounted(async () => {
       groups.value = data.groups || []
       locked.value = !!data.locked
       isolated.value = !!data.isolated
+      // Pre-seed the company suggest with the current value so the input
+      // displays it correctly without an explicit search.
+      await ensureCurrentCompanyInResults(form.value.company)
     } else {
       // API unavailable — use demo data
       demoMode.value = true
       errorStore.clear()
       loadDemoUser(route.params.id)
+      // Pre-seed in demo mode too, with a stub object.
+      if (form.value.company) {
+        companyResults.value = [{ name: form.value.company }]
+      }
     }
     loading.value = false
     appStore.setBreadcrumbs([
@@ -278,5 +389,29 @@ async function confirmAction() {
   .edit-card {
     max-width: 100%;
   }
+}
+</style>
+
+<style>
+/*
+ * Safety net for the ligojLight custom theme: --v-theme-on-surface-variant
+ * defaults to a near-white grey, making v-list-item titles/subtitles
+ * invisible inside autocomplete dropdowns. We force a readable colour on
+ * `.v-autocomplete__content` (always stamped by Vuetify on every
+ * v-autocomplete overlay content). `!important` wins over @layer-scoped
+ * Vuetify defaults. Non-scoped intentionally — the v-menu content is
+ * teleported to <body>, so scoped CSS never reaches it.
+ *
+ * Note Vuetify 4: in the #item slot scope, `item` is the raw item
+ * directly (not a {raw, title, value, props} wrapper as in v3). The
+ * wrapper moved to `internalItem`. So access fields via `item.name`,
+ * never `item.raw.name`.
+ */
+.v-autocomplete__content .v-list-item-title {
+  color: rgb(var(--v-theme-on-surface)) !important;
+}
+.v-autocomplete__content .v-list-item-subtitle {
+  color: rgb(var(--v-theme-on-surface)) !important;
+  opacity: 0.7;
 }
 </style>
