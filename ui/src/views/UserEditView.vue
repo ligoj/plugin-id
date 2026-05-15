@@ -24,8 +24,7 @@
             item-title="name"
             item-value="name"
             :label="t('user.company')"
-            hint="Tape quelques lettres pour chercher une entité"
-            persistent-hint
+            placeholder="Rechercher une entité…"
             variant="outlined"
             class="mb-2"
             no-filter
@@ -48,13 +47,47 @@
             <template #no-data>
               <v-list-item>
                 <v-list-item-title>
-                  {{ companySearchQuery ? 'Aucune entité trouvée' : 'Tape des lettres pour chercher' }}
+                  {{ companySearchQuery ? 'Aucune entité trouvée' : 'Saisissez des caractères pour rechercher' }}
                 </v-list-item-title>
               </v-list-item>
             </template>
           </v-autocomplete>
           <v-text-field v-model="form.mail" :label="t('user.email')" type="email" variant="outlined" class="mb-2" />
-          <v-text-field v-if="isEdit" :model-value="groupsDisplay" :label="t('user.groups')" variant="outlined" readonly class="mb-2" />
+          <!-- Auto-suggest for groups (multi-select). Queries
+               rest/service/id/group as the user types (300 ms debounced).
+               v-model holds an array of group **names** (strings),
+               matching the payload contract of rest/service/id/user. -->
+          <v-autocomplete
+            v-if="isEdit"
+            v-model="groups"
+            :items="groupResults"
+            :loading="groupLoading"
+            :search="groupSearchQuery"
+            item-title="name"
+            item-value="name"
+            :label="t('user.groups')"
+            placeholder="Ajouter un groupe…"
+            variant="outlined"
+            class="mb-2"
+            multiple
+            chips
+            closable-chips
+            no-filter
+            clearable
+            @update:search="onGroupSearch"
+            @update:model-value="onGroupModelUpdate"
+          >
+            <template #item="{ props: itemProps, item }">
+              <v-list-item v-bind="itemProps" :title="item?.name || ''" />
+            </template>
+            <template #no-data>
+              <v-list-item>
+                <v-list-item-title>
+                  {{ groupSearchQuery ? 'Aucun groupe trouvé' : 'Saisissez des caractères pour rechercher' }}
+                </v-list-item-title>
+              </v-list-item>
+            </template>
+          </v-autocomplete>
         </v-form>
       </v-card-text>
       <v-card-actions>
@@ -154,8 +187,13 @@ const companyResults = ref([])
 const companyLoading = ref(false)
 let companyDebounce = null
 
+// --- Group auto-suggest state (multi-select) ---
+const groupSearchQuery = ref('')
+const groupResults = ref([])
+const groupLoading = ref(false)
+let groupDebounce = null
+
 const isEdit = computed(() => !!route.params.id)
-const groupsDisplay = computed(() => groups.value.map(g => g.name || g).join(', ') || '-')
 
 const form = ref({
   id: '',
@@ -230,6 +268,64 @@ async function ensureCurrentCompanyInResults(name) {
   }
 }
 
+// --- Group auto-suggest logic (multi-select) ---
+
+/** Called on every keystroke in the group autocomplete. Debounced 300 ms. */
+function onGroupSearch(query) {
+  groupSearchQuery.value = query || ''
+  clearTimeout(groupDebounce)
+  groupDebounce = setTimeout(() => searchGroups(query), 300)
+}
+
+/** After picking or removing a chip, reset the search field so the user
+ *  can immediately type the next group name. Vuetify v4 doesn't clear
+ *  the inline query automatically in multi-select mode. */
+function onGroupModelUpdate() {
+  groupSearchQuery.value = ''
+  groupResults.value = []
+}
+
+async function searchGroups(query) {
+  if (!query || query.length < 1) {
+    groupResults.value = []
+    return
+  }
+  groupLoading.value = true
+  try {
+    const url = `rest/service/id/group?search[value]=${encodeURIComponent(query)}&rows=20&page=1&sidx=name&sord=asc`
+    const resp = await api.get(url)
+    groupResults.value = Array.isArray(resp) ? resp : (Array.isArray(resp?.data) ? resp.data : [])
+    // Fallback (same pattern as company) — Demo mode often returns
+    // an empty array; surface a small demo list so multi-select can
+    // be exercised visually. Replaced by real backend data once an
+    // LDAP node is configured.
+    if (groupResults.value.length === 0 && query) {
+      const DEMO = [
+        { name: 'Engineering' },
+        { name: 'Management' },
+        { name: 'DevOps' },
+        { name: 'Marketing' },
+        { name: 'Sales' },
+      ]
+      const q = query.toLowerCase()
+      groupResults.value = DEMO.filter(g => g.name.toLowerCase().includes(q))
+    }
+  } catch (err) {
+    console.error('Group search failed:', err)
+    groupResults.value = []
+  } finally {
+    groupLoading.value = false
+  }
+}
+
+/** Pre-seed groupResults with the user's existing groups so Vuetify can
+ *  render their chips on edit without an explicit search. Takes an array
+ *  of group **names** (strings). */
+function ensureCurrentGroupsInResults(names) {
+  if (!Array.isArray(names) || !names.length) return
+  groupResults.value = names.map(n => ({ name: n }))
+}
+
 // Demo users matching UserListView
 const DEMO_USERS = [
   { id: 'admin', firstName: 'Admin', lastName: 'User', company: 'Ligoj', mails: ['admin@ligoj.org'], groups: [{ name: 'Engineering' }, { name: 'Management' }] },
@@ -250,7 +346,10 @@ function loadDemoUser(id) {
     form.value.lastName = user.lastName
     form.value.company = user.company
     form.value.mail = user.mails?.[0] || ''
-    groups.value = user.groups || []
+    // Normalize groups to an array of names (strings) so v-autocomplete
+    // with item-value="name" can roundtrip them through v-model.
+    groups.value = (user.groups || []).map(g => g.name || g)
+    ensureCurrentGroupsInResults(groups.value)
     locked.value = !!user.locked
     isolated.value = !!user.isolated
   }
@@ -266,12 +365,17 @@ onMounted(async () => {
       form.value.lastName = data.lastName || ''
       form.value.company = data.company || ''
       form.value.mail = data.mails?.[0] || ''
-      groups.value = data.groups || []
+      // Normalize groups to an array of names (strings) so v-autocomplete
+      // with item-value="name" can roundtrip them through v-model.
+      groups.value = (data.groups || []).map(g => g.name || g)
       locked.value = !!data.locked
       isolated.value = !!data.isolated
       // Pre-seed the company suggest with the current value so the input
       // displays it correctly without an explicit search.
       await ensureCurrentCompanyInResults(form.value.company)
+      // Pre-seed groupResults with stubs so v-autocomplete renders the
+      // existing chips immediately (no API roundtrip needed).
+      ensureCurrentGroupsInResults(groups.value)
     } else {
       // API unavailable — use demo data
       demoMode.value = true
@@ -322,6 +426,10 @@ async function save() {
     lastName: form.value.lastName,
     company: form.value.company,
     mail: form.value.mail,
+    // groups is an array of names (strings). Defensive `.map(g => g.name || g)`
+    // in case any legacy object slipped through. Only sent on edit since the
+    // groups field is hidden on New User for this PR.
+    ...(isEdit.value ? { groups: groups.value.map(g => g.name || g) } : {}),
   }
 
   if (isEdit.value) {
