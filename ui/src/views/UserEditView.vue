@@ -232,11 +232,12 @@ async function searchCompanies(query) {
     // Defensive: api.get may return the wrapper { data: [...] } or the
     // array directly depending on the endpoint's content-type handling.
     companyResults.value = Array.isArray(resp) ? resp : (Array.isArray(resp?.data) ? resp.data : [])
-    // Fallback : if no IAM provider is configured (Demo mode), the
-    // backend returns no companies. Surface a small demo list so the
-    // pattern can be visually validated. The full backend integration
-    // will work once a real LDAP node is configured in Admin → Nodes.
-    if (companyResults.value.length === 0 && query) {
+    // Dev-only fallback: gated behind import.meta.env.DEV so demo
+    // data NEVER leaks to production. When LDAP isn't configured in
+    // dev, surface a small demo list so the autosuggest can be
+    // visually validated. In prod, an empty backend response stays
+    // empty — the real LDAP integration will populate it.
+    if (import.meta.env.DEV && companyResults.value.length === 0 && query) {
       const DEMO = [
         { name: 'Ligoj', scope: 'Company', count: 4 },
         { name: 'AcmeCorp', scope: 'Company', count: 2 },
@@ -295,11 +296,10 @@ async function searchGroups(query) {
     const url = `rest/service/id/group?search[value]=${encodeURIComponent(query)}&rows=20&page=1&sidx=name&sord=asc`
     const resp = await api.get(url)
     groupResults.value = Array.isArray(resp) ? resp : (Array.isArray(resp?.data) ? resp.data : [])
-    // Fallback (same pattern as company) — Demo mode often returns
-    // an empty array; surface a small demo list so multi-select can
-    // be exercised visually. Replaced by real backend data once an
-    // LDAP node is configured.
-    if (groupResults.value.length === 0 && query) {
+    // Dev-only fallback (same gating as company) — never leaks to
+    // production. import.meta.env.DEV is true in `vite dev`, false
+    // in `vite build`.
+    if (import.meta.env.DEV && groupResults.value.length === 0 && query) {
       const DEMO = [
         { name: 'Engineering' },
         { name: 'Management' },
