@@ -113,6 +113,24 @@ public class GroupResource extends AbstractContainerResource<GroupOrg, GroupEdit
 		return findById(group) != null;
 	}
 
+	/**
+	 * Create the given group. Concrete re-declaration of the inherited
+	 * {@code @POST create(V)} from {@link AbstractContainerResource} so JAX-RS
+	 * registers the route on the concrete bean — the parent annotation isn't
+	 * picked up because of type erasure on the generic parameter V.
+	 *
+	 * <p>Produces {@code text/plain} (not the class-level JSON default): the
+	 * returned identifier is a raw string, not a JSON document, so clients can
+	 * read it via {@code response.text()} instead of failing to parse an
+	 * unquoted scalar as JSON.
+	 */
+	@POST
+	@Produces(MediaType.TEXT_PLAIN)
+	@Override
+	public String create(final GroupEditionVo container) {
+		return super.create(container);
+	}
+
 	@Override
 	protected String toDn(final GroupEditionVo container, final ContainerScope scope) {
 		var parentDn = scope.getDn();

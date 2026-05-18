@@ -5,6 +5,7 @@ package org.ligoj.app.plugin.id.resource;
 
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.GET;
+import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.Context;
@@ -135,6 +136,24 @@ public class CompanyResource extends AbstractContainerResource<CompanyOrg, Conta
 							.filter(user -> visibleCompaniesAsString.contains(user.getCompany())).count());
 			return securedCompany;
 		});
+	}
+
+	/**
+	 * Create the given company. Concrete re-declaration of the inherited
+	 * {@code @POST create(V)} from {@link AbstractContainerResource} so JAX-RS
+	 * registers the route on the concrete bean — the parent annotation isn't
+	 * picked up because of type erasure on the generic parameter V.
+	 *
+	 * <p>Produces {@code text/plain} (not the class-level JSON default): the
+	 * returned identifier is a raw string, not a JSON document, so clients can
+	 * read it via {@code response.text()} instead of failing to parse an
+	 * unquoted scalar as JSON.
+	 */
+	@POST
+	@Produces(MediaType.TEXT_PLAIN)
+	@Override
+	public String create(final ContainerEditionVo container) {
+		return super.create(container);
 	}
 
 	@Override
