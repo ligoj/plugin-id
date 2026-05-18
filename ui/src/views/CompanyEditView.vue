@@ -10,7 +10,38 @@
       <v-card-text>
         <v-form ref="formRef" @submit.prevent="save">
           <v-text-field v-model="form.name" :label="t('common.name')" :rules="[rules.required]" :disabled="isEdit" variant="outlined" class="mb-2" />
-          <v-text-field v-model="form.scope" :label="t('group.scope')" variant="outlined" class="mb-2" />
+          <!-- Auto-suggest for scope. The full list of valid scopes for
+               companies is fetched once on mount from container-scope/COMPANY
+               (small dataset, ~5-10 entries). Filtering is local on every
+               keystroke, debounced 300 ms for consistency with the other
+               autosuggests in plugin-id. v-model holds the scope **name**
+               as a string, matching the existing payload contract. -->
+          <v-autocomplete
+            v-model="form.scope"
+            :items="scopeResults"
+            :loading="scopeLoading"
+            :search="scopeSearchQuery"
+            item-title="name"
+            item-value="name"
+            :label="t('group.scope')"
+            placeholder="Sélectionner un scope…"
+            variant="outlined"
+            class="mb-2"
+            no-filter
+            clearable
+            @update:search="onScopeSearch"
+          >
+            <template #item="{ props: itemProps, item }">
+              <v-list-item v-bind="itemProps" :title="item?.name || ''" />
+            </template>
+            <template #no-data>
+              <v-list-item>
+                <v-list-item-title>
+                  {{ scopeSearchQuery ? 'Aucun scope trouvé' : 'Saisissez des caractères pour rechercher' }}
+                </v-list-item-title>
+              </v-list-item>
+            </template>
+          </v-autocomplete>
         </v-form>
       </v-card-text>
       <v-card-actions>
@@ -54,7 +85,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useApi, useFormGuard, useAppStore, useErrorStore, useI18nStore } from '@ligoj/host'
 
@@ -72,6 +103,13 @@ const saving = ref(false)
 const deleting = ref(false)
 const confirmDelete = ref(false)
 const demoMode = ref(false)
+
+// --- Scope auto-suggest state ---
+const scopeSearchQuery = ref('')
+const scopeResults = ref([])
+const scopeAll = ref([])
+const scopeLoading = ref(false)
+let scopeDebounce = null
 
 const isEdit = computed(() => route.params.id && route.params.id !== 'new')
 
@@ -92,6 +130,66 @@ const DEMO_COMPANIES = [
   { name: 'TechSolutions', scope: 'Company' },
 ]
 
+// --- Scope auto-suggest logic ---
+
+/** Preload all available scopes once. The container-scope endpoint
+ *  doesn't accept a query param — we fetch the full list (small dataset)
+ *  and filter locally on every keystroke. Called from onMounted. */
+async function loadAllScopes() {
+  scopeLoading.value = true
+  try {
+    const resp = await api.get('rest/service/id/container-scope/COMPANY')
+    scopeAll.value = Array.isArray(resp) ? resp : (Array.isArray(resp?.data) ? resp.data : [])
+    scopeResults.value = scopeAll.value
+  } catch (err) {
+    console.error('Scope preload failed:', err)
+    // Pre-seed with the current value (if any) so the input still
+    // renders its label correctly when editing offline. The DEV
+    // fallback below kicks in on the next user keystroke.
+    if (form.value.scope) {
+      scopeAll.value = [{ name: form.value.scope }]
+      scopeResults.value = scopeAll.value
+    } else {
+      scopeAll.value = []
+      scopeResults.value = []
+    }
+  } finally {
+    scopeLoading.value = false
+  }
+}
+
+/** Called on every keystroke. Debounced 300 ms — matches the
+ *  Company/Group autosuggest pattern even though the filter is local. */
+function onScopeSearch(query) {
+  scopeSearchQuery.value = query || ''
+  clearTimeout(scopeDebounce)
+  scopeDebounce = setTimeout(() => filterScopes(query), 300)
+}
+
+function filterScopes(query) {
+  if (!query) {
+    scopeResults.value = scopeAll.value
+    return
+  }
+  const q = query.toLowerCase()
+  scopeResults.value = scopeAll.value.filter(s => (s.name || '').toLowerCase().includes(q))
+  // Dev-only fallback: gated behind import.meta.env.DEV so demo
+  // data NEVER leaks to production (per Fabrice's review pattern on
+  // PR #20). When the container-scope endpoint isn't available in
+  // dev, surface a small demo list so the autosuggest can be
+  // visually validated.
+  if (import.meta.env.DEV && scopeResults.value.length === 0 && query) {
+    const DEMO = [
+      { name: 'Functional' },
+      { name: 'Project' },
+      { name: 'Enterprise' },
+    ]
+    scopeResults.value = DEMO.filter(s => s.name.toLowerCase().includes(q))
+  }
+}
+
+onBeforeUnmount(() => clearTimeout(scopeDebounce))
+
 onMounted(async () => {
   if (isEdit.value) {
     loading.value = true
@@ -108,6 +206,9 @@ onMounted(async () => {
         form.value.scope = demo.scope
       }
     }
+    // Preload the scope list so the dropdown is ready on first open
+    // and renders the existing scope as a proper label (not raw text).
+    await loadAllScopes()
     loading.value = false
     appStore.setBreadcrumbs([
       { title: t('nav.home'), to: '/' },
@@ -127,6 +228,7 @@ onMounted(async () => {
       demoMode.value = true
       errorStore.clear()
     }
+    await loadAllScopes()
   }
   initGuard()
 })
@@ -177,5 +279,29 @@ async function remove() {
   .edit-card {
     max-width: 100%;
   }
+}
+</style>
+
+<style>
+/*
+ * Safety net for the ligojLight custom theme: --v-theme-on-surface-variant
+ * defaults to a near-white grey, making v-list-item titles/subtitles
+ * invisible inside autocomplete dropdowns. We force a readable colour on
+ * `.v-autocomplete__content` (always stamped by Vuetify on every
+ * v-autocomplete overlay content). `!important` wins over @layer-scoped
+ * Vuetify defaults. Non-scoped intentionally — the v-menu content is
+ * teleported to <body>, so scoped CSS never reaches it.
+ *
+ * Note Vuetify 4: in the #item slot scope, `item` is the raw item
+ * directly (not a {raw, title, value, props} wrapper as in v3). The
+ * wrapper moved to `internalItem`. So access fields via `item.name`,
+ * never `item.raw.name`.
+ */
+.v-autocomplete__content .v-list-item-title {
+  color: rgb(var(--v-theme-on-surface)) !important;
+}
+.v-autocomplete__content .v-list-item-subtitle {
+  color: rgb(var(--v-theme-on-surface)) !important;
+  opacity: 0.7;
 }
 </style>
