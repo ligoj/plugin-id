@@ -168,7 +168,11 @@ onMounted(async () => {
       { title: t('group.title'), to: '/id/group' },
       { title: t('group.new') },
     ])
-    const check = await api.get('rest/service/id/group/Engineering')
+    // Check if API is available. Use a list probe (rows=1) so the check doesn't
+    // depend on a specific hardcoded entity that may or may not exist in the
+    // real LDAP backend. The list endpoint returns 200 with an empty array when
+    // nothing matches, and `code` is only set on real API errors.
+    const check = await api.get('rest/service/id/group?rows=1&page=1')
     if (!check || check.code) {
       demoMode.value = true
       errorStore.clear()
