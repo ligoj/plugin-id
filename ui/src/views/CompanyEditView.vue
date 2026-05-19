@@ -250,8 +250,17 @@ async function save() {
     return
   }
 
+  // Resolve the scope ID from its name. The backend expects an Integer
+  // ID (container scope), not the string name. scopeAll is preloaded at
+  // mount() from rest/service/id/container-scope/COMPANY.
+  const scopeEntry = scopeAll.value.find(s => s.name === form.value.scope)
+  if (!scopeEntry) {
+    errorStore.push({ message: `Unknown scope: ${form.value.scope}`, status: 0 })
+    return
+  }
+
   saving.value = true
-  const payload = { name: form.value.name, scope: form.value.scope }
+  const payload = { name: form.value.name, scope: scopeEntry.id }
 
   if (isEdit.value) {
     await api.put('rest/service/id/company', payload)
