@@ -33,6 +33,7 @@ if (typeof document !== 'undefined') {
  * Shared host surface (stores, composables) is imported from `@ligoj/host`,
  * kept external at build so plugin and host share the same instances.
  */
+import { useI18nStore } from '@ligoj/host'
 import IdPlugin from './IdPlugin.vue'
 import UserListView from './views/UserListView.vue'
 import UserEditView from './views/UserEditView.vue'
@@ -43,6 +44,8 @@ import CompanyEditView from './views/CompanyEditView.vue'
 import DelegateListView from './views/DelegateListView.vue'
 import DelegateEditView from './views/DelegateEditView.vue'
 import ContainerScopeView from './views/ContainerScopeView.vue'
+import enMessages from './i18n/en.js'
+import frMessages from './i18n/fr.js'
 import service from './service.js'
 
 const features = {
@@ -76,6 +79,10 @@ export default {
     for (const route of routes) {
       router.addRoute(route)
     }
+    // Register plugin-local translations into the host i18n store
+    const i18n = useI18nStore()
+    i18n.merge(enMessages, 'en')
+    i18n.merge(frMessages, 'fr')
   },
   feature(action, ...args) {
     const fn = features[action]

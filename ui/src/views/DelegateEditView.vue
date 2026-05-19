@@ -6,9 +6,25 @@
       <v-card-text>
         <v-form ref="formRef" @submit.prevent="save">
           <v-text-field v-model="form.receiver" :label="t('delegate.receiver')" :rules="[rules.required]" variant="outlined" class="mb-2" />
-          <v-select v-model="form.receiverType" :label="t('delegate.receiverType')" :items="receiverTypes" :rules="[rules.required]" variant="outlined" class="mb-2" />
+          <v-select v-model="form.receiverType" :label="t('delegate.receiverType')" :items="receiverTypes" :item-title="typeTitle" item-value="value" :prepend-inner-icon="receiverIcon" :rules="[rules.required]" variant="outlined" class="mb-2">
+            <template #item="{ props: itemProps, item }">
+              <v-list-item v-bind="itemProps">
+                <template #prepend>
+                  <v-icon :icon="TYPE_ICONS[item?.value] || ''" />
+                </template>
+              </v-list-item>
+            </template>
+          </v-select>
           <v-text-field v-model="form.name" :label="t('delegate.resource')" :rules="[rules.required]" :hint="t('delegate.resourceHint')" persistent-hint variant="outlined" class="mb-2" />
-          <v-select v-model="form.type" :label="t('delegate.type')" :items="resourceTypes" :rules="[rules.required]" variant="outlined" class="mb-2" />
+          <v-select v-model="form.type" :label="t('delegate.type')" :items="resourceTypes" :item-title="typeTitle" item-value="value" :prepend-inner-icon="typeIcon" :rules="[rules.required]" variant="outlined" class="mb-2">
+            <template #item="{ props: itemProps, item }">
+              <v-list-item v-bind="itemProps">
+                <template #prepend>
+                  <v-icon :icon="TYPE_ICONS[item?.value] || ''" />
+                </template>
+              </v-list-item>
+            </template>
+          </v-select>
           <v-checkbox v-model="form.canAdmin" :label="t('delegate.admin')" hide-details class="mb-2" />
           <v-checkbox v-model="form.canWrite" :label="t('delegate.write')" hide-details class="mb-2" />
         </v-form>
@@ -73,8 +89,39 @@ const confirmDelete = ref(false)
 
 const isEdit = computed(() => !!route.params.id)
 
-const receiverTypes = ['USER', 'GROUP', 'COMPANY']
-const resourceTypes = ['USER', 'GROUP', 'COMPANY', 'TREE']
+// Static icon map keyed by the raw enum value. Const at module scope so
+// it is never re-created reactively — referenced from both the
+// prepend-inner-icon computed (selected value) and the #item slot
+// (dropdown rows).
+const TYPE_ICONS = {
+  USER: 'mdi-account',
+  GROUP: 'mdi-account-group',
+  COMPANY: 'mdi-domain',
+  TREE: 'mdi-file-tree',
+}
+
+// Items as plain objects with the raw enum value + an i18n key. v-model
+// still holds the value, item-value="value" wires it back. The earlier
+// attempt at adding icons via the #selection slot (with item.raw.icon)
+// triggered "Maximum recursive updates exceeded" inside v-select — this
+// version keeps only the #item slot and renders the selected icon via
+// prepend-inner-icon, which sidesteps that loop.
+const receiverTypes = [
+  { value: 'USER', titleKey: 'delegate.type.user' },
+  { value: 'GROUP', titleKey: 'delegate.type.group' },
+  { value: 'COMPANY', titleKey: 'delegate.type.company' },
+]
+const resourceTypes = [
+  { value: 'USER', titleKey: 'delegate.type.user' },
+  { value: 'GROUP', titleKey: 'delegate.type.group' },
+  { value: 'COMPANY', titleKey: 'delegate.type.company' },
+  { value: 'TREE', titleKey: 'delegate.type.tree' },
+]
+
+/** v-select item-title callback: resolves the i18n key from the item object. */
+function typeTitle(item) {
+  return t(item.titleKey)
+}
 
 const form = ref({
   receiver: '',
@@ -84,6 +131,10 @@ const form = ref({
   canAdmin: false,
   canWrite: false,
 })
+
+// Icon shown inside the field, driven by the currently selected value.
+const receiverIcon = computed(() => TYPE_ICONS[form.value.receiverType] || '')
+const typeIcon = computed(() => TYPE_ICONS[form.value.type] || '')
 
 const { showGuardDialog, confirmLeave, cancelLeave, markClean, init: initGuard } = useFormGuard(form)
 
@@ -97,9 +148,13 @@ onMounted(async () => {
     const data = await api.get(`rest/security/delegate/${route.params.id}`)
     if (data) {
       form.value.receiver = data.receiver?.id || data.receiver || ''
-      form.value.receiverType = data.receiverType || 'USER'
+      // Normalize to the uppercase enum form used by the v-select items.
+      // The backend stores some delegates with lowercase values ("company",
+      // "tree", …) and v-model would otherwise mismatch every item, locking
+      // the select in a "Maximum recursive updates exceeded" loop.
+      form.value.receiverType = (data.receiverType || 'USER').toUpperCase()
       form.value.name = data.name || ''
-      form.value.type = data.type || 'GROUP'
+      form.value.type = (data.type || 'GROUP').toUpperCase()
       form.value.canAdmin = !!data.canAdmin
       form.value.canWrite = !!data.canWrite
     }
