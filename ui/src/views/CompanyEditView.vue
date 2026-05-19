@@ -60,7 +60,7 @@
       <v-card>
         <v-card-title>{{ t('company.deleteTitle') }}</v-card-title>
         <v-card-text>
-          {{ t('company.deleteConfirm', { name: form.name }) }}
+          {{ t('company.deleteConfirmBefore') }}<strong class="text-error">{{ form.name }}</strong>{{ t('company.deleteConfirmAfter') }}
         </v-card-text>
         <v-card-actions>
           <v-spacer />
