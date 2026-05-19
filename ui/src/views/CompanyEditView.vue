@@ -167,7 +167,11 @@ function onScopeSearch(query) {
 }
 
 function filterScopes(query) {
-  if (!query) {
+  // After picking a scope, Vuetify echoes the selected name back through
+  // @update:search — if we treat that as a filter query we narrow the list
+  // to just the picked item and the user can't switch to another scope on
+  // re-open. Treat it as "show everything" instead.
+  if (!query || query === form.value.scope) {
     scopeResults.value = scopeAll.value
     return
   }
