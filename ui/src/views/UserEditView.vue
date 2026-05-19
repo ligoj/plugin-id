@@ -119,7 +119,7 @@
       <v-card>
         <v-card-title>{{ t('user.deleteTitle') }}</v-card-title>
         <v-card-text>
-          {{ t('user.deleteConfirm', { id: form.id }) }}
+          {{ t('user.deleteConfirmBefore') }}<strong class="text-error">{{ form.id }}</strong>{{ t('user.deleteConfirmAfter') }}
         </v-card-text>
         <v-card-actions>
           <v-spacer />
