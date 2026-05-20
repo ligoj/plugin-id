@@ -6,4 +6,10 @@ export default {
   'delegate.type.group': 'Group',
   'delegate.type.company': 'Company',
   'delegate.type.tree': 'Tree',
+  'user.deleteConfirmBefore': 'Are you sure you want to delete ',
+  'user.deleteConfirmAfter': '?',
+  'group.deleteConfirmBefore': 'Are you sure you want to delete ',
+  'group.deleteConfirmAfter': '?',
+  'company.deleteConfirmBefore': 'Are you sure you want to delete ',
+  'company.deleteConfirmAfter': '?',
 }

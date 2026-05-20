@@ -30,7 +30,7 @@
       <v-card>
         <v-card-title>{{ t('group.deleteTitle') }}</v-card-title>
         <v-card-text>
-          {{ t('group.deleteConfirm', { name: form.name }) }}
+          {{ t('group.deleteConfirmBefore') }}<strong class="text-error">{{ form.name }}</strong>{{ t('group.deleteConfirmAfter') }}
         </v-card-text>
         <v-card-actions>
           <v-spacer />
@@ -75,6 +75,9 @@ const confirmDelete = ref(false)
 const demoMode = ref(false)
 const availableGroups = ref([])
 const availableScopes = ref([])
+// Full scope objects ({id, name, ...}) — used at save() to resolve the
+// Integer ID expected by the backend from the name held in form.value.scope.
+const scopeAll = ref([])
 const scopesLoading = ref(false)
 
 const isEdit = computed(() => route.params.id && route.params.id !== 'new')
@@ -113,11 +116,14 @@ async function loadGroupScopes() {
     const data = await api.get('rest/service/id/container-scope/group')
     const rows = Array.isArray(data) ? data : (Array.isArray(data?.data) ? data.data : null)
     if (rows) {
+      scopeAll.value = rows
       availableScopes.value = rows.map((s) => s.name).filter(Boolean)
     } else {
+      scopeAll.value = []
       availableScopes.value = ['Group', 'Department', 'Team', 'Project']
     }
   } catch {
+    scopeAll.value = []
     availableScopes.value = ['Group', 'Department', 'Team', 'Project']
   } finally {
     scopesLoading.value = false
@@ -168,7 +174,11 @@ onMounted(async () => {
       { title: t('group.title'), to: '/id/group' },
       { title: t('group.new') },
     ])
-    const check = await api.get('rest/service/id/group/Engineering')
+    // Check if API is available. Use a list probe (rows=1) so the check doesn't
+    // depend on a specific hardcoded entity that may or may not exist in the
+    // real LDAP backend. The list endpoint returns 200 with an empty array when
+    // nothing matches, and `code` is only set on real API errors.
+    const check = await api.get('rest/service/id/group?rows=1&page=1')
     if (!check || check.code) {
       demoMode.value = true
       errorStore.clear()
@@ -186,8 +196,17 @@ async function save() {
     return
   }
 
+  // Resolve the scope ID from its name. The backend expects an Integer
+  // ID (container scope), not the string name. scopeAll is preloaded at
+  // mount() from rest/service/id/container-scope/group.
+  const scopeEntry = scopeAll.value.find(s => s.name === form.value.scope)
+  if (!scopeEntry) {
+    errorStore.push({ message: `Unknown scope: ${form.value.scope}`, status: 0 })
+    return
+  }
+
   saving.value = true
-  const payload = { name: form.value.name, scope: form.value.scope, parent: form.value.parent || null }
+  const payload = { name: form.value.name, scope: scopeEntry.id, parent: form.value.parent || null }
 
   if (isEdit.value) {
     await api.put('rest/service/id/group', payload)

@@ -58,8 +58,8 @@
                v-model holds an array of group **names** (strings),
                matching the payload contract of rest/service/id/user. -->
           <v-autocomplete
-            v-if="isEdit"
             v-model="groups"
+            v-model:menu="groupMenu"
             :items="groupResults"
             :loading="groupLoading"
             :search="groupSearchQuery"
@@ -119,7 +119,7 @@
       <v-card>
         <v-card-title>{{ t('user.deleteTitle') }}</v-card-title>
         <v-card-text>
-          {{ t('user.deleteConfirm', { id: form.id }) }}
+          {{ t('user.deleteConfirmBefore') }}<strong class="text-error">{{ form.id }}</strong>{{ t('user.deleteConfirmAfter') }}
         </v-card-text>
         <v-card-actions>
           <v-spacer />
@@ -191,6 +191,7 @@ let companyDebounce = null
 const groupSearchQuery = ref('')
 const groupResults = ref([])
 const groupLoading = ref(false)
+const groupMenu = ref(false)
 let groupDebounce = null
 
 const isEdit = computed(() => !!route.params.id)
@@ -284,6 +285,24 @@ function onGroupSearch(query) {
 function onGroupModelUpdate() {
   groupSearchQuery.value = ''
   groupResults.value = []
+}
+
+/** Preload the first page of groups so the dropdown can be opened
+ *  with content already visible on mount (used on /new where the user
+ *  has no pre-selected groups). The list endpoint returns 200 with an
+ *  empty array when no IAM is configured, so this is safe to call. */
+async function preloadGroups() {
+  groupLoading.value = true
+  try {
+    const url = 'rest/service/id/group?rows=20&page=1&sidx=name&sord=asc'
+    const resp = await api.get(url)
+    groupResults.value = Array.isArray(resp) ? resp : (Array.isArray(resp?.data) ? resp.data : [])
+  } catch (err) {
+    console.error('Group preload failed:', err)
+    groupResults.value = []
+  } finally {
+    groupLoading.value = false
+  }
 }
 
 async function searchGroups(query) {
@@ -400,12 +419,20 @@ onMounted(async () => {
       { title: t('user.title'), to: '/id/user' },
       { title: t('user.new') },
     ])
-    // Check if API is available
-    const check = await api.get('rest/service/id/user/admin')
+    // Check if API is available. Use a list probe (rows=1) so the check doesn't
+    // depend on a specific hardcoded entity that may or may not exist in the
+    // real LDAP backend. The list endpoint returns 200 with an empty array when
+    // nothing matches, and `code` is only set on real API errors.
+    const check = await api.get('rest/service/id/user?rows=1&page=1')
     if (!check || check.code) {
       demoMode.value = true
       errorStore.clear()
     }
+    // Preload group list and open the dropdown so the available groups
+    // are visible on mount (per Fabrice's UX feedback). Only on /new
+    // since /edit already shows the user's existing groups as chips.
+    await preloadGroups()
+    groupMenu.value = true
   }
   initGuard()
 })
@@ -427,9 +454,8 @@ async function save() {
     company: form.value.company,
     mail: form.value.mail,
     // groups is an array of names (strings). Defensive `.map(g => g.name || g)`
-    // in case any legacy object slipped through. Only sent on edit since the
-    // groups field is hidden on New User for this PR.
-    ...(isEdit.value ? { groups: groups.value.map(g => g.name || g) } : {}),
+    // in case any legacy object slipped through.
+    groups: groups.value.map(g => g.name || g),
   }
 
   if (isEdit.value) {

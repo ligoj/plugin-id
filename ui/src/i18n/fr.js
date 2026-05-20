@@ -6,4 +6,10 @@ export default {
   'delegate.type.group': 'Groupe',
   'delegate.type.company': 'Entité',
   'delegate.type.tree': 'Arborescence',
+  'user.deleteConfirmBefore': 'Êtes-vous certain de supprimer ',
+  'user.deleteConfirmAfter': ' ?',
+  'group.deleteConfirmBefore': 'Êtes-vous certain de supprimer ',
+  'group.deleteConfirmAfter': ' ?',
+  'company.deleteConfirmBefore': 'Êtes-vous certain de supprimer ',
+  'company.deleteConfirmAfter': ' ?',
 }

@@ -39,10 +39,12 @@
         {{ item.mails?.[0] || '' }}
       </template>
       <template #item.groups="{ item }">
-        <v-chip v-for="g in (item.groups || []).slice(0, 3)" :key="g.name || g" size="small" class="mr-1">{{ g.name || g }}</v-chip>
-        <span v-if="(item.groups || []).length > 3" class="text-caption text-medium-emphasis">
-          +{{ item.groups.length - 3 }}
-        </span>
+        <div class="groups-cell">
+          <v-chip v-for="g in (item.groups || []).slice(0, 3)" :key="g.name || g" size="small" class="mr-1">{{ g.name || g }}</v-chip>
+          <span v-if="(item.groups || []).length > 3" class="text-caption text-medium-emphasis">
+            +{{ item.groups.length - 3 }}
+          </span>
+        </div>
       </template>
       <template #item.locked="{ item }">
         <v-icon v-if="item.locked" color="error" size="small">mdi-lock</v-icon>
@@ -62,7 +64,7 @@
       <v-card>
         <v-card-title>{{ t('user.deleteTitle') }}</v-card-title>
         <v-card-text>
-          {{ t('user.deleteConfirm', { id: deleteTarget?.id }) }}
+          {{ t('user.deleteConfirmBefore') }}<strong class="text-error">{{ deleteTarget?.id }}</strong>{{ t('user.deleteConfirmAfter') }}
         </v-card-text>
         <v-card-actions>
           <v-spacer />
@@ -195,5 +197,16 @@ onMounted(() => {
   min-width: 200px;
   max-width: 300px;
   flex: 1 1 200px;
+}
+
+/* Keep the groups column on a single line so rows stay vertically
+   aligned when a user has many groups. Chips overflow horizontally
+   instead of wrapping. */
+.groups-cell {
+  display: flex;
+  align-items: center;
+  flex-wrap: nowrap;
+  overflow: hidden;
+  white-space: nowrap;
 }
 </style>

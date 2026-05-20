@@ -60,7 +60,7 @@
       <v-card>
         <v-card-title>{{ t('company.deleteTitle') }}</v-card-title>
         <v-card-text>
-          {{ t('company.deleteConfirm', { name: form.name }) }}
+          {{ t('company.deleteConfirmBefore') }}<strong class="text-error">{{ form.name }}</strong>{{ t('company.deleteConfirmAfter') }}
         </v-card-text>
         <v-card-actions>
           <v-spacer />
@@ -167,7 +167,11 @@ function onScopeSearch(query) {
 }
 
 function filterScopes(query) {
-  if (!query) {
+  // After picking a scope, Vuetify echoes the selected name back through
+  // @update:search — if we treat that as a filter query we narrow the list
+  // to just the picked item and the user can't switch to another scope on
+  // re-open. Treat it as "show everything" instead.
+  if (!query || query === form.value.scope) {
     scopeResults.value = scopeAll.value
     return
   }
@@ -223,7 +227,11 @@ onMounted(async () => {
       { title: t('company.title'), to: '/id/company' },
       { title: t('company.new') },
     ])
-    const check = await api.get('rest/service/id/company/Ligoj')
+    // Check if API is available. Use a list probe (rows=1) so the check doesn't
+    // depend on a specific hardcoded entity that may or may not exist in the
+    // real LDAP backend. The list endpoint returns 200 with an empty array when
+    // nothing matches, and `code` is only set on real API errors.
+    const check = await api.get('rest/service/id/company?rows=1&page=1')
     if (!check || check.code) {
       demoMode.value = true
       errorStore.clear()
@@ -242,8 +250,17 @@ async function save() {
     return
   }
 
+  // Resolve the scope ID from its name. The backend expects an Integer
+  // ID (container scope), not the string name. scopeAll is preloaded at
+  // mount() from rest/service/id/container-scope/COMPANY.
+  const scopeEntry = scopeAll.value.find(s => s.name === form.value.scope)
+  if (!scopeEntry) {
+    errorStore.push({ message: `Unknown scope: ${form.value.scope}`, status: 0 })
+    return
+  }
+
   saving.value = true
-  const payload = { name: form.value.name, scope: form.value.scope }
+  const payload = { name: form.value.name, scope: scopeEntry.id }
 
   if (isEdit.value) {
     await api.put('rest/service/id/company', payload)
