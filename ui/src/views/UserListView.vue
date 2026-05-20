@@ -128,7 +128,7 @@ const headers = computed(() => [
   { title: t('user.email'), key: 'mails', sortable: false },
   { title: t('user.groups'), key: 'groups', sortable: false },
   { title: t('common.status'), key: 'locked', sortable: false, width: '80px' },
-  { title: '', key: 'actions', sortable: false, width: '100px', align: 'end' },
+  { title: '', key: 'actions', sortable: false, width: '120px', align: 'center' },
 ])
 
 function loadData(options) {

@@ -107,7 +107,7 @@ const headers = computed(() => [
   { title: t('group.scope'), key: 'scope', sortable: false },
   { title: t('group.members'), key: 'count', sortable: false, width: '100px' },
   { title: t('group.locked'), key: 'locked', sortable: false, width: '80px' },
-  { title: '', key: 'actions', sortable: false, width: '100px', align: 'end' },
+  { title: '', key: 'actions', sortable: false, width: '120px', align: 'center' },
 ])
 
 function loadData(options) {
