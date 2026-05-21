@@ -11,7 +11,30 @@
         <v-form ref="formRef" @submit.prevent="save">
           <v-text-field v-model="form.name" :label="t('common.name')" :rules="[rules.required]" :disabled="isEdit" variant="outlined" class="mb-2" />
           <v-autocomplete v-model="form.scope" :label="t('group.scope')" :items="availableScopes" :loading="scopesLoading" clearable variant="outlined" class="mb-2" />
-          <v-autocomplete v-model="form.parent" :label="t('group.parent')" :items="availableGroups" :hint="t('group.parentHint')" persistent-hint clearable variant="outlined" class="mb-2" />
+          <!-- Parent group: lazy server-backed autosuggest. No groups are
+               loaded until the dropdown opens (chantier H, Fabrice review) —
+               the former mount-time bulk GET doesn't scale to 100k+ groups. -->
+          <v-autocomplete
+            v-model="form.parent"
+            :items="parentResults"
+            :loading="parentLoading"
+            :search="parentSearchQuery"
+            item-title="name"
+            item-value="name"
+            :label="t('group.parent')"
+            :hint="t('group.parentHint')"
+            persistent-hint
+            variant="outlined"
+            class="mb-2"
+            no-filter
+            clearable
+            @update:menu="onParentMenu"
+            @update:search="onParentSearch"
+          >
+            <template #item="{ props: itemProps, item }">
+              <v-list-item v-bind="itemProps" :title="item?.name || ''" />
+            </template>
+          </v-autocomplete>
         </v-form>
       </v-card-text>
       <v-card-actions>
@@ -73,8 +96,13 @@ const saving = ref(false)
 const deleting = ref(false)
 const confirmDelete = ref(false)
 const demoMode = ref(false)
-const availableGroups = ref([])
 const availableScopes = ref([])
+// Parent group autosuggest — server-backed, loaded lazily on dropdown open.
+const parentResults = ref([])
+const parentLoading = ref(false)
+const parentSearchQuery = ref('')
+const parentLoaded = ref(false)
+let parentDebounce = null
 // Full scope objects ({id, name, ...}) — used at save() to resolve the
 // Integer ID expected by the backend from the name held in form.value.scope.
 const scopeAll = ref([])
@@ -130,18 +158,55 @@ async function loadGroupScopes() {
   }
 }
 
+// --- Parent group autosuggest (lazy, server-backed) ---
+
+/** First-batch load when the Parent dropdown opens. Nothing is fetched
+ *  before this — the former mount-time bulk GET of every group does not
+ *  scale (100k+ groups at DGFIP). */
+function onParentMenu(open) {
+  if (open && !parentLoaded.value) loadParentGroups('')
+}
+
+/** Debounced (300 ms) search as the user types in the Parent field. */
+function onParentSearch(query) {
+  parentSearchQuery.value = query || ''
+  clearTimeout(parentDebounce)
+  parentDebounce = setTimeout(() => loadParentGroups(query), 300)
+}
+
+/** Fetch one page of groups (20) matching `query`; an empty query returns
+ *  the first page. Mirrors the Company/Group autosuggests of UserEditView. */
+async function loadParentGroups(query) {
+  parentLoaded.value = true
+  parentLoading.value = true
+  try {
+    // Direct URL with un-encoded brackets — the legacy DataTables backend
+    // expects `search[value]=...` literally.
+    const url = `rest/service/id/group?search[value]=${encodeURIComponent(query || '')}&rows=20&page=1&sidx=name&sord=asc`
+    const resp = await api.get(url)
+    let rows = Array.isArray(resp) ? resp : (Array.isArray(resp?.data) ? resp.data : [])
+    // Dev-only fallback, gated behind import.meta.env.DEV so demo data
+    // never leaks to production.
+    if (import.meta.env.DEV && rows.length === 0) {
+      const q = (query || '').toLowerCase()
+      rows = DEMO_GROUPS.filter(g => g.name.toLowerCase().includes(q))
+    }
+    // Always keep the currently selected parent in the list so the
+    // autocomplete can render its label, even when it is off this page.
+    if (form.value.parent && !rows.some(g => (g.name || g) === form.value.parent)) {
+      rows = [{ name: form.value.parent }, ...rows]
+    }
+    parentResults.value = rows
+  } catch (err) {
+    console.error('Parent group search failed:', err)
+    parentResults.value = form.value.parent ? [{ name: form.value.parent }] : []
+  } finally {
+    parentLoading.value = false
+  }
+}
+
 onMounted(async () => {
   loadGroupScopes()
-  // Load available groups for parent selector
-  const groupList = await api.get('rest/service/id/group')
-  if (groupList && Array.isArray(groupList)) {
-    availableGroups.value = groupList.map(g => g.name || g.id || g).filter(Boolean)
-  } else if (groupList?.data && Array.isArray(groupList.data)) {
-    availableGroups.value = groupList.data.map(g => g.name || g.id || g).filter(Boolean)
-  } else {
-    // Demo fallback
-    availableGroups.value = DEMO_GROUPS.map(g => g.name)
-  }
 
   if (isEdit.value) {
     loading.value = true
@@ -150,6 +215,9 @@ onMounted(async () => {
       form.value.name = data.name || ''
       form.value.scope = data.scope || ''
       form.value.parent = data.parent || ''
+      // Pre-seed only the current parent so the field renders its label
+      // without loading the whole group list (chantier H).
+      if (form.value.parent) parentResults.value = [{ name: form.value.parent }]
     } else {
       demoMode.value = true
       errorStore.clear()
