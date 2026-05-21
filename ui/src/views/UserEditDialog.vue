@@ -1,119 +1,134 @@
 <template>
   <div>
-    <v-alert v-if="demoMode" type="info" variant="tonal" density="compact" class="mb-4">
-      {{ t('user.demoEdit') }}
-    </v-alert>
+    <!-- User create/edit popup (chantier I.2). Replaces the former routed
+         UserEditView page; hosted by UserListView, opened from the "New
+         user" button and the row gear menu. model-value is bound one-way
+         so a close request (Cancel / Esc / scrim) can be vetoed by the
+         unsaved-changes guard before it actually closes. -->
+    <v-dialog :model-value="modelValue" @update:model-value="onDialogModel" max-width="700" scrollable>
+      <v-card>
+        <v-card-title>{{ isEdit ? t('user.edit') : t('user.new') }}</v-card-title>
 
-    <v-skeleton-loader v-if="loading" type="card, actions" max-width="700" class="mb-4" />
+        <v-card-text>
+          <v-alert v-if="demoMode" type="info" variant="tonal" density="compact" class="mb-4">
+            {{ t('user.demoEdit') }}
+          </v-alert>
 
-    <v-card v-if="!loading" class="edit-card">
-      <v-card-text>
-        <v-form ref="formRef" @submit.prevent="save">
-          <v-text-field v-model="form.id" :label="t('user.login')" :rules="[rules.required]" :disabled="isEdit" :hint="isEdit ? '' : t('user.loginHint')" persistent-hint variant="outlined"
-            class="mb-2" />
-          <v-text-field v-model="form.firstName" :label="t('user.firstName')" :rules="[rules.required]" variant="outlined" class="mb-2" />
-          <v-text-field v-model="form.lastName" :label="t('user.lastName')" :rules="[rules.required]" variant="outlined" class="mb-2" />
-          <!-- Auto-suggest for company. Queries rest/service/id/company as the
-               user types (300 ms debounced). v-model stores the company name
-               as a string, matching the payload contract of rest/service/id/user. -->
-          <v-autocomplete
-            v-model="form.company"
-            :items="companyResults"
-            :loading="companyLoading"
-            :search="companySearchQuery"
-            item-title="name"
-            item-value="name"
-            :label="t('user.company')"
-            placeholder="Rechercher une entité…"
-            variant="outlined"
-            class="mb-2"
-            no-filter
-            clearable
-            @update:search="onCompanySearch"
-          >
-            <template #item="{ props: itemProps, item }">
-              <v-list-item v-bind="itemProps" :title="item?.name || ''">
-                <template v-if="item?.scope || item?.count !== undefined" #subtitle>
-                  <span v-if="item?.scope" class="text-caption mr-2">{{ item.scope }}</span>
-                  <v-chip
-                    v-if="item?.count !== undefined"
-                    size="x-small"
-                    variant="tonal"
-                    class="mr-1"
-                  >{{ item.count }} {{ t('user.title').toLowerCase() }}</v-chip>
+          <v-skeleton-loader v-if="loading" type="article" />
+
+          <template v-else>
+            <v-form ref="formRef" @submit.prevent="save">
+              <v-text-field v-model="form.id" :label="t('user.login')" :rules="[rules.required]" :disabled="isEdit" :hint="isEdit ? '' : t('user.loginHint')" persistent-hint
+                variant="outlined" class="mb-2" autofocus />
+              <v-text-field v-model="form.firstName" :label="t('user.firstName')" :rules="[rules.required]" variant="outlined" class="mb-2" />
+              <v-text-field v-model="form.lastName" :label="t('user.lastName')" :rules="[rules.required]" variant="outlined" class="mb-2" />
+              <!-- Auto-suggest for company. Queries rest/service/id/company as the
+                   user types (300 ms debounced). v-model stores the company name
+                   as a string, matching the payload contract of rest/service/id/user. -->
+              <v-autocomplete
+                v-model="form.company"
+                :items="companyResults"
+                :loading="companyLoading"
+                :search="companySearchQuery"
+                item-title="name"
+                item-value="name"
+                :label="t('user.company')"
+                placeholder="Rechercher une entité…"
+                variant="outlined"
+                class="mb-2"
+                no-filter
+                clearable
+                @update:search="onCompanySearch"
+              >
+                <template #item="{ props: itemProps, item }">
+                  <v-list-item v-bind="itemProps" :title="item?.name || ''">
+                    <template v-if="item?.scope || item?.count !== undefined" #subtitle>
+                      <span v-if="item?.scope" class="text-caption mr-2">{{ item.scope }}</span>
+                      <v-chip
+                        v-if="item?.count !== undefined"
+                        size="x-small"
+                        variant="tonal"
+                        class="mr-1"
+                      >{{ item.count }} {{ t('user.title').toLowerCase() }}</v-chip>
+                    </template>
+                  </v-list-item>
                 </template>
-              </v-list-item>
-            </template>
-            <template #no-data>
-              <v-list-item>
-                <v-list-item-title>
-                  {{ companySearchQuery ? 'Aucune entité trouvée' : 'Saisissez des caractères pour rechercher' }}
-                </v-list-item-title>
-              </v-list-item>
-            </template>
-          </v-autocomplete>
-          <v-text-field v-model="form.mail" :label="t('user.email')" type="email" variant="outlined" class="mb-2" />
-          <!-- Auto-suggest for groups (multi-select). Queries
-               rest/service/id/group as the user types (300 ms debounced).
-               v-model holds an array of group **names** (strings),
-               matching the payload contract of rest/service/id/user. -->
-          <v-autocomplete
-            v-model="groups"
-            v-model:menu="groupMenu"
-            :items="groupResults"
-            :loading="groupLoading"
-            :search="groupSearchQuery"
-            item-title="name"
-            item-value="name"
-            :label="t('user.groups')"
-            placeholder="Ajouter un groupe…"
-            variant="outlined"
-            class="mb-2"
-            multiple
-            chips
-            closable-chips
-            no-filter
-            clearable
-            @update:search="onGroupSearch"
-            @update:model-value="onGroupModelUpdate"
-          >
-            <template #item="{ props: itemProps, item }">
-              <v-list-item v-bind="itemProps" :title="item?.name || ''" />
-            </template>
-            <template #no-data>
-              <v-list-item>
-                <v-list-item-title>
-                  {{ groupSearchQuery ? 'Aucun groupe trouvé' : 'Saisissez des caractères pour rechercher' }}
-                </v-list-item-title>
-              </v-list-item>
-            </template>
-          </v-autocomplete>
-        </v-form>
-      </v-card-text>
-      <v-card-actions>
-        <v-btn v-if="isEdit" color="error" variant="tonal" @click="confirmDelete = true">
-          <v-icon start>mdi-delete</v-icon> {{ t('common.delete') }}
-        </v-btn>
-        <v-spacer />
-        <v-btn variant="text" @click="router.push('/id/user')">{{ t('common.cancel') }}</v-btn>
-        <v-btn color="primary" variant="elevated" :loading="saving" @click="save">
-          <v-icon start>mdi-content-save</v-icon> {{ t('common.save') }}
-        </v-btn>
-      </v-card-actions>
-    </v-card>
+                <template #no-data>
+                  <v-list-item>
+                    <v-list-item-title>
+                      {{ companySearchQuery ? 'Aucune entité trouvée' : 'Saisissez des caractères pour rechercher' }}
+                    </v-list-item-title>
+                  </v-list-item>
+                </template>
+              </v-autocomplete>
+              <v-text-field v-model="form.mail" :label="t('user.email')" type="email" variant="outlined" class="mb-2" />
+              <!-- Auto-suggest for groups (multi-select). Queries
+                   rest/service/id/group as the user types (300 ms debounced).
+                   v-model holds an array of group **names** (strings),
+                   matching the payload contract of rest/service/id/user. -->
+              <v-autocomplete
+                v-model="groups"
+                v-model:menu="groupMenu"
+                :items="groupResults"
+                :loading="groupLoading"
+                :search="groupSearchQuery"
+                item-title="name"
+                item-value="name"
+                :label="t('user.groups')"
+                placeholder="Ajouter un groupe…"
+                variant="outlined"
+                class="mb-2"
+                multiple
+                chips
+                closable-chips
+                no-filter
+                clearable
+                @update:search="onGroupSearch"
+                @update:model-value="onGroupModelUpdate"
+              >
+                <template #item="{ props: itemProps, item }">
+                  <v-list-item v-bind="itemProps" :title="item?.name || ''" />
+                </template>
+                <template #no-data>
+                  <v-list-item>
+                    <v-list-item-title>
+                      {{ groupSearchQuery ? 'Aucun groupe trouvé' : 'Saisissez des caractères pour rechercher' }}
+                    </v-list-item-title>
+                  </v-list-item>
+                </template>
+              </v-autocomplete>
+            </v-form>
 
-    <v-card v-if="isEdit && !loading" class="edit-card mt-4">
-      <v-card-title class="text-h6">{{ t('user.actions') }}</v-card-title>
-      <v-card-text>
-        <div class="d-flex flex-wrap ga-2">
-          <v-btn v-if="!locked" color="warning" variant="tonal" prepend-icon="mdi-lock" @click="startAction('lock')">{{ t('user.lock') }}</v-btn>
-          <v-btn v-if="locked" color="success" variant="tonal" prepend-icon="mdi-lock-open-variant" @click="startAction('unlock')">{{ t('user.unlock') }}</v-btn>
-          <v-btn v-if="!isolated" color="error" variant="tonal" prepend-icon="mdi-account-off" @click="startAction('isolate')">{{ t('user.isolate') }}</v-btn>
-          <v-btn v-if="isolated" color="success" variant="tonal" prepend-icon="mdi-account-check" @click="startAction('restore')">{{ t('user.restore') }}</v-btn>
-          <v-btn color="info" variant="tonal" prepend-icon="mdi-lock-reset" @click="startAction('resetPassword')">{{ t('user.resetPassword') }}</v-btn>
-        </div>
-      </v-card-text>
-    </v-card>
+            <!-- Account actions (edit mode only). Rearranged per Fabrice's
+                 review: the former separate "Actions" card with a row of
+                 tonal buttons is now an inline bordered list inside the
+                 dialog, consistent with the row gear menu of the list. -->
+            <template v-if="isEdit">
+              <v-divider class="my-4" />
+              <div class="text-subtitle-2 text-medium-emphasis mb-2">{{ t('user.actions') }}</div>
+              <v-list border rounded density="compact" bg-color="transparent">
+                <v-list-item :prepend-icon="locked ? 'mdi-lock-open-variant' : 'mdi-lock'" :title="locked ? t('user.unlock') : t('user.lock')"
+                  @click="startAction(locked ? 'unlock' : 'lock')" />
+                <v-list-item :prepend-icon="isolated ? 'mdi-account-check' : 'mdi-account-off'" :title="isolated ? t('user.restore') : t('user.isolate')"
+                  @click="startAction(isolated ? 'restore' : 'isolate')" />
+                <v-list-item prepend-icon="mdi-lock-reset" :title="t('user.resetPassword')" @click="startAction('resetPassword')" />
+              </v-list>
+            </template>
+          </template>
+        </v-card-text>
+
+        <v-card-actions>
+          <v-btn v-if="isEdit" color="error" variant="tonal" :disabled="loading" @click="confirmDelete = true">
+            <v-icon start>mdi-delete</v-icon> {{ t('common.delete') }}
+          </v-btn>
+          <v-spacer />
+          <v-btn variant="text" @click="requestClose">{{ t('common.cancel') }}</v-btn>
+          <v-btn color="primary" variant="elevated" :loading="saving" :disabled="loading" @click="save">
+            <v-icon start>mdi-content-save</v-icon> {{ t('common.save') }}
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
 
     <v-dialog v-model="confirmDelete" max-width="400">
       <v-card>
@@ -129,14 +144,19 @@
       </v-card>
     </v-dialog>
 
-    <v-dialog v-model="showGuardDialog" max-width="400">
+    <!-- Unsaved-changes guard. Triggered either by a dialog close request
+         (Cancel / Esc / scrim) or by useFormGuard's onBeforeRouteLeave when
+         navigating away from the list with the dialog still open.
+         persistent: only the explicit buttons dismiss it, so pendingClose
+         is always reset through onGuardConfirm/onGuardCancel. -->
+    <v-dialog v-model="showGuardDialog" max-width="400" persistent>
       <v-card>
         <v-card-title>{{ t('common.unsavedTitle') }}</v-card-title>
         <v-card-text>{{ t('common.unsavedMsg') }}</v-card-text>
         <v-card-actions>
           <v-spacer />
-          <v-btn variant="text" @click="cancelLeave">{{ t('common.cancel') }}</v-btn>
-          <v-btn color="warning" variant="elevated" @click="confirmLeave">{{ t('common.discard') }}</v-btn>
+          <v-btn variant="text" @click="onGuardCancel">{{ t('common.cancel') }}</v-btn>
+          <v-btn color="warning" variant="elevated" @click="onGuardConfirm">{{ t('common.discard') }}</v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -156,14 +176,18 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
-import { useApi, useFormGuard, useAppStore, useErrorStore, useI18nStore } from '@ligoj/host'
+import { ref, computed, watch } from 'vue'
+import { useApi, useFormGuard, useErrorStore, useI18nStore } from '@ligoj/host'
 
-const route = useRoute()
-const router = useRouter()
+const props = defineProps({
+  // Dialog visibility (v-model).
+  modelValue: { type: Boolean, default: false },
+  // User login to edit; null/absent means create mode.
+  userId: { type: String, default: null },
+})
+const emit = defineEmits(['update:modelValue', 'saved'])
+
 const api = useApi()
-const appStore = useAppStore()
 const errorStore = useErrorStore()
 const i18n = useI18nStore()
 const t = i18n.t
@@ -192,9 +216,11 @@ const groupSearchQuery = ref('')
 const groupResults = ref([])
 const groupLoading = ref(false)
 const groupMenu = ref(false)
+const groupsPreloaded = ref(false)
 let groupDebounce = null
+let groupMenuTimer = null
 
-const isEdit = computed(() => !!route.params.id)
+const isEdit = computed(() => !!props.userId)
 
 const form = ref({
   id: '',
@@ -204,7 +230,17 @@ const form = ref({
   mail: '',
 })
 
-const { showGuardDialog, confirmLeave, cancelLeave, markClean, init: initGuard } = useFormGuard(form)
+// useFormGuard still drives the dirty tracking (snapshot + deep watch) and
+// keeps its onBeforeRouteLeave guard for the "navigate away with the dialog
+// open" case. The dialog's own close (Cancel / Esc / scrim) is intercepted
+// separately below — onBeforeRouteLeave never fires without a route change.
+// The tracked value merges `form` with the `groups` multi-select (a separate
+// ref) so editing only the groups still flags the form as dirty.
+const { isDirty, showGuardDialog, markClean, confirmLeave, cancelLeave, init: initGuard } =
+  useFormGuard(computed(() => ({ ...form.value, groups: groups.value })))
+// True while the guard dialog was raised by a dialog-close request (vs a
+// route-leave), so the confirm/cancel handlers know which path to resume.
+const pendingClose = ref(false)
 
 const rules = {
   required: v => !!v || t('common.required'),
@@ -287,19 +323,26 @@ function onGroupModelUpdate() {
   groupResults.value = []
 }
 
-/** Preload the first page of groups so the dropdown can be opened
- *  with content already visible on mount (used on /new where the user
- *  has no pre-selected groups). The list endpoint returns 200 with an
- *  empty array when no IAM is configured, so this is safe to call. */
+/** Load the first page of available groups (20) for the dropdown. Called
+ *  lazily when the dropdown opens, for both create and edit modes, so the
+ *  user always sees a list without having to type. The user's already-
+ *  assigned groups are merged in so their chips keep rendering. */
 async function preloadGroups() {
+  groupsPreloaded.value = true
   groupLoading.value = true
   try {
     const url = 'rest/service/id/group?rows=20&page=1&sidx=name&sord=asc'
     const resp = await api.get(url)
-    groupResults.value = Array.isArray(resp) ? resp : (Array.isArray(resp?.data) ? resp.data : [])
+    let rows = Array.isArray(resp) ? resp : (Array.isArray(resp?.data) ? resp.data : [])
+    // Keep the user's already-assigned groups present so their chips keep
+    // rendering even when those groups fall outside this first page.
+    for (const name of groups.value) {
+      if (!rows.some(g => (g.name || g) === name)) rows.unshift({ name })
+    }
+    groupResults.value = rows
   } catch (err) {
     console.error('Group preload failed:', err)
-    groupResults.value = []
+    groupResults.value = groups.value.map(n => ({ name: n }))
   } finally {
     groupLoading.value = false
   }
@@ -374,10 +417,32 @@ function loadDemoUser(id) {
   }
 }
 
-onMounted(async () => {
+/** Reset all form state to a clean create-mode baseline. Called every time
+ *  the dialog opens so a previous edit never bleeds into the next one. */
+function resetForm() {
+  form.value = { id: '', firstName: '', lastName: '', company: '', mail: '' }
+  groups.value = []
+  locked.value = false
+  isolated.value = false
+  demoMode.value = false
+  companyResults.value = []
+  companySearchQuery.value = ''
+  groupResults.value = []
+  groupSearchQuery.value = ''
+  groupMenu.value = false
+  groupsPreloaded.value = false
+  clearTimeout(groupMenuTimer)
+  formRef.value?.resetValidation()
+}
+
+/** Load (or reset) the form when the dialog opens. Replaces the routed
+ *  page's onMounted: the component stays mounted across opens, so the work
+ *  is keyed on the modelValue transition instead. */
+async function loadOnOpen() {
+  resetForm()
   if (isEdit.value) {
     loading.value = true
-    const data = await api.get(`rest/service/id/user/${route.params.id}`)
+    const data = await api.get(`rest/service/id/user/${props.userId}`)
     if (data && !data.code) {
       form.value.id = data.id || ''
       form.value.firstName = data.firstName || ''
@@ -399,43 +464,87 @@ onMounted(async () => {
       // API unavailable — use demo data
       demoMode.value = true
       errorStore.clear()
-      loadDemoUser(route.params.id)
+      loadDemoUser(props.userId)
       // Pre-seed in demo mode too, with a stub object.
       if (form.value.company) {
         companyResults.value = [{ name: form.value.company }]
       }
     }
     loading.value = false
-    appStore.setBreadcrumbs([
-      { title: t('nav.home'), to: '/' },
-      { title: t('nav.identity') },
-      { title: t('user.title'), to: '/id/user' },
-      { title: form.value.id || t('user.edit') },
-    ])
   } else {
-    appStore.setBreadcrumbs([
-      { title: t('nav.home'), to: '/' },
-      { title: t('nav.identity') },
-      { title: t('user.title'), to: '/id/user' },
-      { title: t('user.new') },
-    ])
-    // Check if API is available. Use a list probe (rows=1) so the check doesn't
-    // depend on a specific hardcoded entity that may or may not exist in the
-    // real LDAP backend. The list endpoint returns 200 with an empty array when
-    // nothing matches, and `code` is only set on real API errors.
+    // Check if API is available. Use a list probe (rows=1) so the check
+    // doesn't depend on a specific hardcoded entity that may or may not
+    // exist in the real LDAP backend.
     const check = await api.get('rest/service/id/user?rows=1&page=1')
     if (!check || check.code) {
       demoMode.value = true
       errorStore.clear()
     }
-    // Preload group list and open the dropdown so the available groups
-    // are visible on mount (per Fabrice's UX feedback). Only on /new
-    // since /edit already shows the user's existing groups as chips.
+    // Preload the group list and auto-open the dropdown so the available
+    // groups are visible (per Fabrice's UX feedback, chantier B). Deferred
+    // so the dropdown opens once the dialog transition has settled.
     await preloadGroups()
-    groupMenu.value = true
+    groupMenuTimer = setTimeout(() => { groupMenu.value = true }, 350)
   }
+  // Snapshot the loaded state so the guard only flags real edits.
   initGuard()
+}
+
+watch(() => props.modelValue, val => {
+  if (val) loadOnOpen()
 })
+
+// Lazily preload the available groups when the dropdown opens — for edit
+// mode as well as create, so opening the Groups field always shows a list
+// without typing. groupsPreloaded prevents a duplicate fetch on create
+// mode, where loadOnOpen already preloaded before auto-opening the menu.
+watch(groupMenu, open => {
+  if (open && !groupsPreloaded.value && !groupSearchQuery.value) {
+    preloadGroups()
+  }
+})
+
+// --- Close handling with the unsaved-changes guard ---
+
+/** v-dialog requests a visibility change. Opening is parent-driven, so only
+ *  close requests (Esc / scrim click) reach here. */
+function onDialogModel(val) {
+  if (!val) requestClose()
+}
+
+/** Close request from Cancel / Esc / scrim. Vetoed (guard dialog shown)
+ *  when the form has unsaved changes. */
+function requestClose() {
+  if (isDirty.value) {
+    pendingClose.value = true
+    showGuardDialog.value = true
+  } else {
+    emit('update:modelValue', false)
+  }
+}
+
+/** Guard dialog — "Discard changes". */
+function onGuardConfirm() {
+  if (pendingClose.value) {
+    pendingClose.value = false
+    showGuardDialog.value = false
+    markClean()
+    emit('update:modelValue', false)
+  } else {
+    // Raised by onBeforeRouteLeave — let useFormGuard resume navigation.
+    confirmLeave()
+  }
+}
+
+/** Guard dialog — "Cancel", keep editing. */
+function onGuardCancel() {
+  if (pendingClose.value) {
+    pendingClose.value = false
+    showGuardDialog.value = false
+  } else {
+    cancelLeave()
+  }
+}
 
 async function save() {
   const { valid } = await formRef.value.validate()
@@ -465,7 +574,8 @@ async function save() {
   }
   saving.value = false
   markClean()
-  router.push('/id/user')
+  emit('saved')
+  emit('update:modelValue', false)
 }
 
 async function remove() {
@@ -476,11 +586,12 @@ async function remove() {
   }
 
   deleting.value = true
-  await api.del(`rest/service/id/user/${route.params.id}`)
+  await api.del(`rest/service/id/user/${props.userId}`)
   deleting.value = false
   confirmDelete.value = false
   markClean()
-  router.push('/id/user')
+  emit('saved')
+  emit('update:modelValue', false)
 }
 
 function startAction(type) {
@@ -506,25 +617,15 @@ async function confirmAction() {
   await actions[actionType.value]()
   actionLoading.value = false
   actionDialog.value = false
-  // Update local state
+  // Update local state so the action list relabels immediately.
   if (actionType.value === 'lock') locked.value = true
   if (actionType.value === 'unlock') locked.value = false
   if (actionType.value === 'isolate') isolated.value = true
   if (actionType.value === 'restore') isolated.value = false
+  // Keep the list behind the dialog in sync (status icon, gear labels).
+  emit('saved')
 }
 </script>
-
-<style scoped>
-.edit-card {
-  max-width: 700px;
-}
-
-@media (max-width: 600px) {
-  .edit-card {
-    max-width: 100%;
-  }
-}
-</style>
 
 <style>
 /*

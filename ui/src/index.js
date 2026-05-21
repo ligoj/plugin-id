@@ -36,7 +36,6 @@ if (typeof document !== 'undefined') {
 import { useI18nStore } from '@ligoj/host'
 import IdPlugin from './IdPlugin.vue'
 import UserListView from './views/UserListView.vue'
-import UserEditView from './views/UserEditView.vue'
 import GroupListView from './views/GroupListView.vue'
 import GroupEditView from './views/GroupEditView.vue'
 import CompanyListView from './views/CompanyListView.vue'
@@ -55,9 +54,9 @@ const features = {
 }
 
 const routes = [
+  // User create/edit is a dialog hosted by UserListView (chantier I.2),
+  // so there is no per-entity user route — mirrors the Roles screen.
   { path: '/id/user', name: 'id-user', component: UserListView },
-  { path: '/id/user/new', name: 'id-user-new', component: UserEditView },
-  { path: '/id/user/:id', name: 'id-user-edit', component: UserEditView },
   { path: '/id/group', name: 'id-group', component: GroupListView },
   { path: '/id/group/new', name: 'id-group-new', component: GroupEditView },
   { path: '/id/group/:id', name: 'id-group-edit', component: GroupEditView },
