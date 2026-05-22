@@ -5,26 +5,81 @@
     <v-card v-if="!loading" class="edit-card">
       <v-card-text>
         <v-form ref="formRef" @submit.prevent="save">
-          <v-text-field v-model="form.receiver" :label="t('delegate.receiver')" :rules="[rules.required]" variant="outlined" class="mb-2" />
-          <v-select v-model="form.receiverType" :label="t('delegate.receiverType')" :items="receiverTypes" :item-title="typeTitle" item-value="value" :prepend-inner-icon="receiverIcon" :rules="[rules.required]" variant="outlined" class="mb-2">
-            <template #item="{ props: itemProps, item }">
-              <v-list-item v-bind="itemProps">
-                <template #prepend>
-                  <v-icon :icon="TYPE_ICONS[item?.value] || ''" />
+          <!-- Receiver: pick the kind first (drives the autocomplete
+               endpoint for the identifier), then the identifier itself.
+               Rendered side-by-side on >= sm to keep the dependency
+               visible. -->
+          <v-row dense>
+            <v-col cols="12" sm="5">
+              <v-select v-model="form.receiverType" :label="t('delegate.receiverType')" :items="receiverTypes" :item-title="typeTitle" item-value="value" :prepend-inner-icon="receiverIcon" :rules="[rules.required]" variant="outlined" class="mb-2">
+                <template #item="{ props: itemProps, item }">
+                  <v-list-item v-bind="itemProps">
+                    <template #prepend>
+                      <v-icon :icon="TYPE_ICONS[item?.value] || ''" />
+                    </template>
+                  </v-list-item>
                 </template>
-              </v-list-item>
-            </template>
-          </v-select>
-          <v-text-field v-model="form.name" :label="t('delegate.resource')" :rules="[rules.required]" :hint="t('delegate.resourceHint')" persistent-hint variant="outlined" class="mb-2" />
-          <v-select v-model="form.type" :label="t('delegate.type')" :items="resourceTypes" :item-title="typeTitle" item-value="value" :prepend-inner-icon="typeIcon" :rules="[rules.required]" variant="outlined" class="mb-2">
-            <template #item="{ props: itemProps, item }">
-              <v-list-item v-bind="itemProps">
-                <template #prepend>
-                  <v-icon :icon="TYPE_ICONS[item?.value] || ''" />
+              </v-select>
+            </v-col>
+            <v-col cols="12" sm="7">
+              <v-autocomplete
+                v-model="form.receiver"
+                v-model:search="receiverSearch"
+                :label="t('delegate.receiver')"
+                :items="receiverDisplayItems"
+                item-title="label"
+                item-value="id"
+                :loading="receiverLoading"
+                :rules="[rules.required]"
+                no-filter
+                clearable
+                auto-select-first
+                variant="outlined"
+                class="mb-2"
+                @update:search="onReceiverSearch"
+                @update:menu="onReceiverMenu"
+              />
+            </v-col>
+          </v-row>
+
+          <!-- Resource: same pattern — the type drives the
+               autocomplete endpoint (USER id, GROUP / TREE / COMPANY
+               name). -->
+          <v-row dense>
+            <v-col cols="12" sm="5">
+              <v-select v-model="form.type" :label="t('delegate.type')" :items="resourceTypes" :item-title="typeTitle" item-value="value" :prepend-inner-icon="typeIcon" :rules="[rules.required]" variant="outlined" class="mb-2">
+                <template #item="{ props: itemProps, item }">
+                  <v-list-item v-bind="itemProps">
+                    <template #prepend>
+                      <v-icon :icon="TYPE_ICONS[item?.value] || ''" />
+                    </template>
+                  </v-list-item>
                 </template>
-              </v-list-item>
-            </template>
-          </v-select>
+              </v-select>
+            </v-col>
+            <v-col cols="12" sm="7">
+              <v-autocomplete
+                v-model="form.name"
+                v-model:search="resourceSearch"
+                :label="t('delegate.resource')"
+                :items="resourceDisplayItems"
+                item-title="label"
+                item-value="id"
+                :loading="resourceLoading"
+                :rules="[rules.required]"
+                :hint="t('delegate.resourceHint')"
+                persistent-hint
+                no-filter
+                clearable
+                auto-select-first
+                variant="outlined"
+                class="mb-2"
+                @update:search="onResourceSearch"
+                @update:menu="onResourceMenu"
+              />
+            </v-col>
+          </v-row>
+
           <v-checkbox v-model="form.canAdmin" :label="t('delegate.admin')" hide-details class="mb-2" />
           <v-checkbox v-model="form.canWrite" :label="t('delegate.write')" hide-details class="mb-2" />
         </v-form>
@@ -64,7 +119,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, watch, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useApi, useFormGuard, useAppStore, useI18nStore, LigojConfirmDialog } from '@ligoj/host'
 
@@ -129,6 +184,137 @@ const form = ref({
 // Icon shown inside the field, driven by the currently selected value.
 const receiverIcon = computed(() => TYPE_ICONS[form.value.receiverType] || '')
 const typeIcon = computed(() => TYPE_ICONS[form.value.type] || '')
+
+/* -------------------------------------------------------------------------
+ *  Autocomplete: receiver / resource
+ *
+ *  The two text inputs in section "receiver" and "resource" are dynamic
+ *  v-autocompletes that hit the matching identity endpoint:
+ *    receiverType=USER     → rest/service/id/user
+ *    receiverType=GROUP    → rest/service/id/group
+ *    receiverType=COMPANY  → rest/service/id/company
+ *    type=USER/GROUP/COMPANY → same as above
+ *    type=TREE             → groups (TREE delegates scope on a group)
+ *
+ *  Server-side filtering only (the autocomplete passes `?q=`), so we
+ *  set `no-filter` on the components to disable Vuetify's local filter.
+ *  ------------------------------------------------------------------- */
+
+const TYPE_TO_ENDPOINT = {
+  USER:    'service/id/user',
+  GROUP:   'service/id/group',
+  COMPANY: 'service/id/company',
+  TREE:    'service/id/group',
+}
+
+/** Normalize a backend row to `{ id, label }` regardless of the entity
+ *  kind. Users get `id — First Last` so the dropdown is scannable;
+ *  groups/companies are identified by name only. */
+function normalizeEntity(row, kind) {
+  if (!row) return null
+  if (kind === 'USER') {
+    const full = [row.firstName, row.lastName].filter(Boolean).join(' ')
+    return { id: row.id, label: full ? `${row.id} — ${full}` : row.id }
+  }
+  return { id: row.name, label: row.name }
+}
+
+/** Fetch the first page (rows=20) for the kind. An empty query is
+ *  allowed so the dropdown can be populated before the user types —
+ *  see `loadReceiverItems` / `loadResourceItems`. */
+async function fetchEntities(kind, query) {
+  const endpoint = TYPE_TO_ENDPOINT[kind]
+  if (!endpoint) return []
+  const q = (query || '').trim()
+  const qp = q ? `q=${encodeURIComponent(q)}&` : ''
+  const data = await api.get(`rest/${endpoint}?${qp}rows=20`)
+  const rows = Array.isArray(data) ? data : (data?.data || [])
+  return rows.map((r) => normalizeEntity(r, kind)).filter(Boolean)
+}
+
+const receiverItems = ref([])
+const receiverSearch = ref('')
+const receiverLoading = ref(false)
+let receiverTimer = null
+
+const resourceItems = ref([])
+const resourceSearch = ref('')
+const resourceLoading = ref(false)
+let resourceTimer = null
+
+/** Keep the currently-selected value visible in the dropdown even
+ *  before the user has typed anything (e.g. on edit-mode initial
+ *  load): pre-pend a synthetic item with `id = current value`. */
+const receiverDisplayItems = computed(() => {
+  const cur = form.value.receiver
+  const items = receiverItems.value
+  if (cur && !items.find((i) => i.id === cur)) {
+    return [{ id: cur, label: cur }, ...items]
+  }
+  return items
+})
+const resourceDisplayItems = computed(() => {
+  const cur = form.value.name
+  const items = resourceItems.value
+  if (cur && !items.find((i) => i.id === cur)) {
+    return [{ id: cur, label: cur }, ...items]
+  }
+  return items
+})
+
+async function loadReceiverItems() {
+  receiverLoading.value = true
+  try { receiverItems.value = await fetchEntities(form.value.receiverType, receiverSearch.value) }
+  finally { receiverLoading.value = false }
+}
+async function loadResourceItems() {
+  resourceLoading.value = true
+  try { resourceItems.value = await fetchEntities(form.value.type, resourceSearch.value) }
+  finally { resourceLoading.value = false }
+}
+
+function onReceiverSearch(q) {
+  // Vuetify mirrors the picked item's title into the search input;
+  // that fires `update:search` with a label that matches an existing
+  // item. Skip the round-trip in that case — otherwise we'd refetch
+  // with the label and lose the row the user just picked from.
+  if (receiverDisplayItems.value.some((i) => i.label === q)) return
+  clearTimeout(receiverTimer)
+  receiverTimer = setTimeout(loadReceiverItems, 250)
+}
+
+function onResourceSearch(q) {
+  if (resourceDisplayItems.value.some((i) => i.label === q)) return
+  clearTimeout(resourceTimer)
+  resourceTimer = setTimeout(loadResourceItems, 250)
+}
+
+// Selecting a new type invalidates the corresponding identifier and
+// drops the cached items. We deliberately don't refetch here — the
+// next dropdown-open (or first keystroke) will lazy-load the first
+// page for the new kind. This keeps the form quiet when the user
+// doesn't actually interact with these selects.
+watch(() => form.value.receiverType, () => {
+  form.value.receiver = ''
+  receiverSearch.value = ''
+  receiverItems.value = []
+})
+watch(() => form.value.type, () => {
+  form.value.name = ''
+  resourceSearch.value = ''
+  resourceItems.value = []
+})
+
+/** Fires when v-autocomplete opens/closes its dropdown. We fetch the
+ *  first page only when the menu opens AND no items have been
+ *  fetched for the current kind yet — so a user who never opens the
+ *  dropdown (or types) doesn't trigger any network call. */
+function onReceiverMenu(open) {
+  if (open && receiverItems.value.length === 0) loadReceiverItems()
+}
+function onResourceMenu(open) {
+  if (open && resourceItems.value.length === 0) loadResourceItems()
+}
 
 const { showGuardDialog, confirmLeave, cancelLeave, markClean, init: initGuard } = useFormGuard(form)
 
