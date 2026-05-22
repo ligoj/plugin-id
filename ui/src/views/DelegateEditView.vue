@@ -41,38 +41,32 @@
       </v-card-actions>
     </v-card>
 
-    <v-dialog v-model="confirmDelete" max-width="400">
-      <v-card>
-        <v-card-title>{{ t('delegate.deleteTitle') }}</v-card-title>
-        <v-card-text>
-          {{ t('delegate.deleteConfirm', { name: form.receiver }) }}
-        </v-card-text>
-        <v-card-actions>
-          <v-spacer />
-          <v-btn variant="text" @click="confirmDelete = false">{{ t('common.cancel') }}</v-btn>
-          <v-btn color="error" variant="elevated" :loading="deleting" @click="remove">{{ t('common.delete') }}</v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
+    <LigojConfirmDialog
+      v-model="confirmDelete"
+      :title="t('delegate.deleteTitle')"
+      :message="t('delegate.deleteConfirm', { name: form.receiver })"
+      :confirm-label="t('common.delete')"
+      confirm-color="error"
+      :loading="deleting"
+      @confirm="remove"
+    />
 
-    <v-dialog v-model="showGuardDialog" max-width="400">
-      <v-card>
-        <v-card-title>{{ t('common.unsavedTitle') }}</v-card-title>
-        <v-card-text>{{ t('common.unsavedMsg') }}</v-card-text>
-        <v-card-actions>
-          <v-spacer />
-          <v-btn variant="text" @click="cancelLeave">{{ t('common.cancel') }}</v-btn>
-          <v-btn color="warning" variant="elevated" @click="confirmLeave">{{ t('common.discard') }}</v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
+    <LigojConfirmDialog
+      v-model="showGuardDialog"
+      :title="t('common.unsavedTitle')"
+      :message="t('common.unsavedMsg')"
+      :confirm-label="t('common.discard')"
+      confirm-color="warning"
+      @confirm="confirmLeave"
+      @cancel="cancelLeave"
+    />
   </div>
 </template>
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { useApi, useFormGuard, useAppStore, useI18nStore } from '@ligoj/host'
+import { useApi, useFormGuard, useAppStore, useI18nStore, LigojConfirmDialog } from '@ligoj/host'
 
 const route = useRoute()
 const router = useRouter()

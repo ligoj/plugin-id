@@ -130,54 +130,46 @@
       </v-card>
     </v-dialog>
 
-    <v-dialog v-model="confirmDelete" max-width="400">
-      <v-card>
-        <v-card-title>{{ t('user.deleteTitle') }}</v-card-title>
-        <v-card-text>
-          {{ t('user.deleteConfirmBefore') }}<strong class="text-error">{{ form.id }}</strong>{{ t('user.deleteConfirmAfter') }}
-        </v-card-text>
-        <v-card-actions>
-          <v-spacer />
-          <v-btn variant="text" @click="confirmDelete = false">{{ t('common.cancel') }}</v-btn>
-          <v-btn color="error" variant="elevated" :loading="deleting" @click="remove">{{ t('common.delete') }}</v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
+    <LigojConfirmDialog
+      v-model="confirmDelete"
+      :title="t('user.deleteTitle')"
+      :confirm-label="t('common.delete')"
+      confirm-color="error"
+      :loading="deleting"
+      @confirm="remove"
+    >
+      {{ t('user.deleteConfirmBefore') }}<strong class="text-error">{{ form.id }}</strong>{{ t('user.deleteConfirmAfter') }}
+    </LigojConfirmDialog>
 
     <!-- Unsaved-changes guard. Triggered either by a dialog close request
          (Cancel / Esc / scrim) or by useFormGuard's onBeforeRouteLeave when
          navigating away from the list with the dialog still open.
          persistent: only the explicit buttons dismiss it, so pendingClose
          is always reset through onGuardConfirm/onGuardCancel. -->
-    <v-dialog v-model="showGuardDialog" max-width="400" persistent>
-      <v-card>
-        <v-card-title>{{ t('common.unsavedTitle') }}</v-card-title>
-        <v-card-text>{{ t('common.unsavedMsg') }}</v-card-text>
-        <v-card-actions>
-          <v-spacer />
-          <v-btn variant="text" @click="onGuardCancel">{{ t('common.cancel') }}</v-btn>
-          <v-btn color="warning" variant="elevated" @click="onGuardConfirm">{{ t('common.discard') }}</v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
+    <LigojConfirmDialog
+      v-model="showGuardDialog"
+      :title="t('common.unsavedTitle')"
+      :message="t('common.unsavedMsg')"
+      :confirm-label="t('common.discard')"
+      confirm-color="warning"
+      persistent
+      @confirm="onGuardConfirm"
+      @cancel="onGuardCancel"
+    />
 
-    <v-dialog v-model="actionDialog" max-width="400">
-      <v-card>
-        <v-card-title>{{ t('user.' + actionType) }}</v-card-title>
-        <v-card-text>{{ t('user.' + actionType + 'Confirm', { id: form.id }) }}</v-card-text>
-        <v-card-actions>
-          <v-spacer />
-          <v-btn variant="text" @click="actionDialog = false">{{ t('common.cancel') }}</v-btn>
-          <v-btn color="primary" variant="elevated" :loading="actionLoading" @click="confirmAction">{{ t('common.confirm') }}</v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
+    <LigojConfirmDialog
+      v-model="actionDialog"
+      :title="t('user.' + actionType)"
+      :message="t('user.' + actionType + 'Confirm', { id: form.id })"
+      :loading="actionLoading"
+      @confirm="confirmAction"
+    />
   </div>
 </template>
 
 <script setup>
 import { ref, computed, watch } from 'vue'
-import { useApi, useFormGuard, useErrorStore, useI18nStore } from '@ligoj/host'
+import { useApi, useFormGuard, useErrorStore, useI18nStore, LigojConfirmDialog } from '@ligoj/host'
 
 const props = defineProps({
   // Dialog visibility (v-model).

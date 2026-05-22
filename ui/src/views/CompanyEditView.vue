@@ -56,38 +56,33 @@
       </v-card-actions>
     </v-card>
 
-    <v-dialog v-model="confirmDelete" max-width="400">
-      <v-card>
-        <v-card-title>{{ t('company.deleteTitle') }}</v-card-title>
-        <v-card-text>
-          {{ t('company.deleteConfirmBefore') }}<strong class="text-error">{{ form.name }}</strong>{{ t('company.deleteConfirmAfter') }}
-        </v-card-text>
-        <v-card-actions>
-          <v-spacer />
-          <v-btn variant="text" @click="confirmDelete = false">{{ t('common.cancel') }}</v-btn>
-          <v-btn color="error" variant="elevated" :loading="deleting" @click="remove">{{ t('common.delete') }}</v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
+    <LigojConfirmDialog
+      v-model="confirmDelete"
+      :title="t('company.deleteTitle')"
+      :confirm-label="t('common.delete')"
+      confirm-color="error"
+      :loading="deleting"
+      @confirm="remove"
+    >
+      {{ t('company.deleteConfirmBefore') }}<strong class="text-error">{{ form.name }}</strong>{{ t('company.deleteConfirmAfter') }}
+    </LigojConfirmDialog>
 
-    <v-dialog v-model="showGuardDialog" max-width="400">
-      <v-card>
-        <v-card-title>{{ t('common.unsavedTitle') }}</v-card-title>
-        <v-card-text>{{ t('common.unsavedMsg') }}</v-card-text>
-        <v-card-actions>
-          <v-spacer />
-          <v-btn variant="text" @click="cancelLeave">{{ t('common.cancel') }}</v-btn>
-          <v-btn color="warning" variant="elevated" @click="confirmLeave">{{ t('common.discard') }}</v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
+    <LigojConfirmDialog
+      v-model="showGuardDialog"
+      :title="t('common.unsavedTitle')"
+      :message="t('common.unsavedMsg')"
+      :confirm-label="t('common.discard')"
+      confirm-color="warning"
+      @confirm="confirmLeave"
+      @cancel="cancelLeave"
+    />
   </div>
 </template>
 
 <script setup>
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { useApi, useFormGuard, useAppStore, useErrorStore, useI18nStore } from '@ligoj/host'
+import { useApi, useFormGuard, useAppStore, useErrorStore, useI18nStore, LigojConfirmDialog } from '@ligoj/host'
 
 const route = useRoute()
 const router = useRouter()
