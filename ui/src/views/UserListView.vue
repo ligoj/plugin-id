@@ -4,7 +4,7 @@
       <v-spacer />
       <v-text-field v-model="dt.search.value" prepend-inner-icon="mdi-magnify" :label="t('common.search')" variant="outlined" density="compact" hide-details class="search-field"
         @update:model-value="onSearch" />
-      <v-btn color="primary" prepend-icon="mdi-plus" @click="router.push('/id/user/new')">
+      <v-btn color="primary" prepend-icon="mdi-plus" @click="openCreate">
         {{ t('user.new') }}
       </v-btn>
       <ImportExportBar export-endpoint="service/id/user" import-endpoint="service/id/user/import/csv/full" export-filename="users.csv"
@@ -34,7 +34,7 @@
 
     <LigojDataTableServer filename="users.csv" :fetch-all="dt.loadAll" v-if="!dt.error.value" v-show="dt.items.value.length > 0 || !dt.loading.value" v-model="selected"
       v-model:items-per-page="itemsPerPage" :headers="headers" :items="dt.items.value" :items-length="dt.totalItems.value" :loading="dt.loading.value" item-value="id" show-select hover
-      @update:options="loadData" @click:row="(_, { item }) => router.push('/id/user/' + item.id)">
+      @update:options="loadData" @click:row="(_, { item }) => openEdit(item.id)">
       <template #item.mails="{ item }">
         {{ item.mails?.[0] || '' }}
       </template>
@@ -53,8 +53,8 @@
       <template #item.actions="{ item }">
         <!-- Single gear button opening a menu of row actions (Fabrice
              review, chantier I.1). @click.stop on the gear activator
-             keeps the click off the row, whose @click:row navigates to
-             the edit page. The menu items deliberately carry NO .stop:
+             keeps the click off the row, whose @click:row opens the edit
+             dialog. The menu items deliberately carry NO .stop:
              VMenu teleports its content outside the <tr>, so item clicks
              can never reach @click:row anyway — and a .stop there would
              swallow the bubbling click that VMenu's close-on-content-click
@@ -69,7 +69,7 @@
             </v-btn>
           </template>
           <v-list density="compact" min-width="220">
-            <v-list-item prepend-icon="mdi-pencil" :title="t('user.edit')" @click="router.push('/id/user/' + item.id)" />
+            <v-list-item prepend-icon="mdi-pencil" :title="t('user.edit')" @click="openEdit(item.id)" />
             <v-list-item prepend-icon="mdi-delete" base-color="error" :title="t('common.delete')" @click="startDelete(item)" />
             <v-divider class="my-1" />
             <v-list-item :prepend-icon="item.locked ? 'mdi-lock-open-variant' : 'mdi-lock'" :title="item.locked ? t('user.unlock') : t('user.lock')"
@@ -122,15 +122,17 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
+
+    <!-- User create/edit popup (chantier I.2). userId null = create mode. -->
+    <UserEditDialog v-model="editDialog" :user-id="editUserId" @saved="onUserSaved" />
   </div>
 </template>
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
 import { useDataTable, useApi, useAppStore, useErrorStore, useI18nStore, ImportExportBar, LigojDataTableServer } from '@ligoj/host'
+import UserEditDialog from './UserEditDialog.vue'
 
-const router = useRouter()
 const appStore = useAppStore()
 const api = useApi()
 const errorStore = useErrorStore()
@@ -162,6 +164,10 @@ const actionDialog = ref(false)
 const actionType = ref('')
 const actionTarget = ref(null)
 const actionLoading = ref(false)
+
+// User create/edit dialog state. editUserId null = create mode.
+const editDialog = ref(false)
+const editUserId = ref(null)
 
 const headers = computed(() => [
   { title: t('user.login'), key: 'id', sortable: true },
@@ -250,6 +256,22 @@ async function confirmUserAction() {
   actionTarget.value = null
   // Reload the current page so the status icon and the contextual
   // lock/isolate menu labels reflect the new state.
+  dt.load(lastOptions)
+}
+
+function openCreate() {
+  editUserId.value = null
+  editDialog.value = true
+}
+
+function openEdit(id) {
+  editUserId.value = id
+  editDialog.value = true
+}
+
+function onUserSaved() {
+  // Reload the current page after a create/edit/delete or an account
+  // action performed from the dialog.
   dt.load(lastOptions)
 }
 
