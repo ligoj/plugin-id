@@ -9,7 +9,7 @@
                endpoint for the identifier), then the identifier itself.
                Rendered side-by-side on >= sm to keep the dependency
                visible. -->
-          <v-row dense>
+          <v-row density="comfortable">
             <v-col cols="12" sm="5">
               <v-select v-model="form.receiverType" :label="t('delegate.receiverType')" :items="receiverTypes" :item-title="typeTitle" item-value="value" :prepend-inner-icon="receiverIcon" :rules="[rules.required]" variant="outlined" class="mb-2">
                 <template #item="{ props: itemProps, item }">
@@ -45,7 +45,7 @@
           <!-- Resource: same pattern — the type drives the
                autocomplete endpoint (USER id, GROUP / TREE / COMPANY
                name). -->
-          <v-row dense>
+          <v-row density="comfortable">
             <v-col cols="12" sm="5">
               <v-select v-model="form.type" :label="t('delegate.type')" :items="resourceTypes" :item-title="typeTitle" item-value="value" :prepend-inner-icon="typeIcon" :rules="[rules.required]" variant="outlined" class="mb-2">
                 <template #item="{ props: itemProps, item }">
