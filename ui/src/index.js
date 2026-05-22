@@ -51,6 +51,10 @@ const features = {
   requireAgreement: service.requireAgreement,
   acceptAgreement: service.acceptAgreement,
   scheduleUpload: service.scheduleUpload,
+  // Host's PluginFeatures slot calls this for each subscription row.
+  renderFeatures: service.renderFeatures,
+  // Plugin-rendered details column on subscription rows.
+  renderDetailsKey: service.renderDetailsKey,
 }
 
 const routes = [

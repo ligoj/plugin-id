@@ -1,6 +1,57 @@
+import { h } from 'vue'
+import { VBtn, VChip, VIcon, useI18nStore } from '@ligoj/host'
+
 const REST = '/rest/'
 
 const service = {
+  /**
+   * Plugin-contributed buttons rendered next to the host's unsubscribe
+   * icon on the ProjectDetailView subscription rows. Returns an array of
+   * VNodes — the host mounts them as-is without any HTML interpretation,
+   * mirroring the legacy `renderFeatures` convention.
+   *
+   * For an identity subscription the action exposed today is "Manage
+   * group members" — opens the plugin's group list with the subscription
+   * pre-selected.
+   */
+  renderFeatures(subscription) {
+    const { t } = useI18nStore()
+    return [
+      h(
+        VBtn,
+        {
+          icon: true,
+          size: 'small',
+          variant: 'text',
+          title: t('id.renderFeatures.manage'),
+          to: `/id/group?subscription=${subscription?.id ?? ''}`,
+        },
+        () => h(VIcon, { size: 'small' }, () => 'mdi-account-multiple'),
+      ),
+    ]
+  },
+
+  /**
+   * Plugin-rendered subscription details for the "Details" column. For an
+   * identity subscription we surface the member count when the backend
+   * populates `subscription.data.members`. Returns null when there is
+   * nothing to show — the column degrades cleanly.
+   */
+  renderDetailsKey(subscription) {
+    const { t } = useI18nStore()
+    const count = subscription?.data?.members
+    if (count == null) return null
+    return h(
+      VChip,
+      { size: 'small', variant: 'tonal', title: t('id.renderDetailsKey.members') },
+      () => [
+        h(VIcon, { start: true, size: 'small' }, () => 'mdi-account-multiple'),
+        ' ',
+        String(count),
+      ],
+    )
+  },
+
   requireAgreement(userSettings) {
     return !userSettings || !userSettings['security-agreement']
   },

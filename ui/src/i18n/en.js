@@ -13,4 +13,8 @@ export default {
   'group.deleteConfirmAfter': '?',
   'company.deleteConfirmBefore': 'Are you sure you want to delete ',
   'company.deleteConfirmAfter': '?',
+  // Subscription row action contributed via renderFeatures.
+  'id.renderFeatures.manage': 'Manage members',
+  // Subscription row details contributed via renderDetailsKey.
+  'id.renderDetailsKey.members': 'Members',
 }

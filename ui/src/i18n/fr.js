@@ -13,4 +13,8 @@ export default {
   'group.deleteConfirmAfter': ' ?',
   'company.deleteConfirmBefore': 'Êtes-vous certain de supprimer ',
   'company.deleteConfirmAfter': ' ?',
+  // Action de ligne d'abonnement, contribué via renderFeatures.
+  'id.renderFeatures.manage': 'Gérer les membres',
+  // Détail de ligne d'abonnement, contribué via renderDetailsKey.
+  'id.renderDetailsKey.members': 'Membres',
 }
