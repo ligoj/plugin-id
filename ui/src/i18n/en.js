@@ -6,6 +6,7 @@ export default {
   'delegate.type.group': 'Group',
   'delegate.type.company': 'Company',
   'delegate.type.tree': 'Tree',
+  'delegate.resourceDnHint': 'LDAP DN of the subtree (e.g. ou=projects,dc=acme,dc=com)',
   'user.deleteConfirmBefore': 'Are you sure you want to delete ',
   'user.deleteConfirmAfter': '?',
   'group.deleteConfirmBefore': 'Are you sure you want to delete ',

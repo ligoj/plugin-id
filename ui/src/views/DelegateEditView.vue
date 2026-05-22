@@ -58,7 +58,22 @@
               </v-select>
             </v-col>
             <v-col cols="12" sm="7">
+              <!-- TREE-typed delegates point at an arbitrary LDAP DN
+                   (e.g. ou=projects,dc=acme,dc=com) — there's no entity
+                   list to pick from, so swap the autocomplete out for a
+                   free-form text field. -->
+              <v-text-field
+                v-if="form.type === 'TREE'"
+                v-model="form.name"
+                :label="t('delegate.resource')"
+                :rules="[rules.required]"
+                :hint="t('delegate.resourceDnHint')"
+                persistent-hint
+                variant="outlined"
+                class="mb-2"
+              />
               <v-autocomplete
+                v-else
                 v-model="form.name"
                 v-model:search="resourceSearch"
                 :label="t('delegate.resource')"
@@ -119,7 +134,7 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, onMounted } from 'vue'
+import { ref, computed, watch, nextTick, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useApi, useFormGuard, useAppStore, useI18nStore, LigojConfirmDialog } from '@ligoj/host'
 
@@ -200,11 +215,12 @@ const typeIcon = computed(() => TYPE_ICONS[form.value.type] || '')
  *  set `no-filter` on the components to disable Vuetify's local filter.
  *  ------------------------------------------------------------------- */
 
+// TREE is intentionally absent — TREE-typed delegates use a free-form
+// DN (rendered via v-text-field), so no list endpoint applies.
 const TYPE_TO_ENDPOINT = {
   USER:    'service/id/user',
   GROUP:   'service/id/group',
   COMPANY: 'service/id/company',
-  TREE:    'service/id/group',
 }
 
 /** Normalize a backend row to `{ id, label }` regardless of the entity
@@ -327,14 +343,23 @@ onMounted(async () => {
     loading.value = true
     const data = await api.get(`rest/security/delegate/${route.params.id}`)
     if (data) {
-      form.value.receiver = data.receiver?.id || data.receiver || ''
-      // Normalize to the uppercase enum form used by the v-select items.
-      // The backend stores some delegates with lowercase values ("company",
-      // "tree", …) and v-model would otherwise mismatch every item, locking
-      // the select in a "Maximum recursive updates exceeded" loop.
+      // Set the discriminator selects FIRST. Their watchers run on
+      // the next microtask and reset the matching identifier
+      // (receiver / name) to '' — which is fine while we're still in
+      // the empty default. The `await nextTick()` below lets that
+      // pass run before we write the actual values, so the loaded
+      // identifier sticks instead of being wiped.
+      //
+      // Normalize to the uppercase enum form used by the v-select
+      // items. The backend stores some delegates with lowercase
+      // values ("company", "tree", …) and v-model would otherwise
+      // mismatch every item, locking the select in a "Maximum
+      // recursive updates exceeded" loop.
       form.value.receiverType = (data.receiverType || 'USER').toUpperCase()
-      form.value.name = data.name || ''
       form.value.type = (data.type || 'GROUP').toUpperCase()
+      await nextTick()
+      form.value.receiver = data.receiver?.id || data.receiver || ''
+      form.value.name = data.name || ''
       form.value.canAdmin = !!data.canAdmin
       form.value.canWrite = !!data.canWrite
     }
