@@ -359,7 +359,12 @@ onMounted(async () => {
       form.value.type = (data.type || 'GROUP').toUpperCase()
       await nextTick()
       form.value.receiver = data.receiver?.id || data.receiver || ''
-      form.value.name = data.name || ''
+      // TREE delegates store the DN separately — `name` is a "-"
+      // placeholder server-side. Show the DN in the resource input so
+      // the user can read/edit the actual subtree path.
+      form.value.name = form.value.type === 'TREE'
+        ? (data.dn || data.name || '')
+        : (data.name || '')
       form.value.canAdmin = !!data.canAdmin
       form.value.canWrite = !!data.canWrite
     }
