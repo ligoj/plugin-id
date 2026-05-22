@@ -51,12 +51,34 @@
         <v-icon v-else color="success" size="small">mdi-lock-open-variant</v-icon>
       </template>
       <template #item.actions="{ item }">
-        <v-btn icon size="small" variant="text" @click.stop="router.push('/id/user/' + item.id)">
-          <v-icon size="small">mdi-pencil</v-icon>
-        </v-btn>
-        <v-btn icon size="small" variant="text" color="error" @click.stop="startDelete(item)">
-          <v-icon size="small">mdi-delete</v-icon>
-        </v-btn>
+        <!-- Single gear button opening a menu of row actions (Fabrice
+             review, chantier I.1). @click.stop on the gear activator
+             keeps the click off the row, whose @click:row navigates to
+             the edit page. The menu items deliberately carry NO .stop:
+             VMenu teleports its content outside the <tr>, so item clicks
+             can never reach @click:row anyway — and a .stop there would
+             swallow the bubbling click that VMenu's close-on-content-click
+             relies on, leaving the menu open behind the dialogs.
+             Lock/Isolate labels and icons are contextual: the API omits
+             `locked`/`isolated` when null, so a truthy value means the
+             user is locked/isolated. -->
+        <v-menu>
+          <template #activator="{ props }">
+            <v-btn icon size="small" variant="text" :aria-label="t('user.actions')" v-bind="props" @click.stop>
+              <v-icon size="small">mdi-cog</v-icon>
+            </v-btn>
+          </template>
+          <v-list density="compact" min-width="220">
+            <v-list-item prepend-icon="mdi-pencil" :title="t('user.edit')" @click="router.push('/id/user/' + item.id)" />
+            <v-list-item prepend-icon="mdi-delete" base-color="error" :title="t('common.delete')" @click="startDelete(item)" />
+            <v-divider class="my-1" />
+            <v-list-item :prepend-icon="item.locked ? 'mdi-lock-open-variant' : 'mdi-lock'" :title="item.locked ? t('user.unlock') : t('user.lock')"
+              @click="startUserAction(item, item.locked ? 'unlock' : 'lock')" />
+            <v-list-item :prepend-icon="item.isolated ? 'mdi-account-check' : 'mdi-account-off'" :title="item.isolated ? t('user.restore') : t('user.isolate')"
+              @click="startUserAction(item, item.isolated ? 'restore' : 'isolate')" />
+            <v-list-item prepend-icon="mdi-lock-reset" :title="t('user.resetPassword')" @click="startUserAction(item, 'resetPassword')" />
+          </v-list>
+        </v-menu>
       </template>
     </LigojDataTableServer>
 
@@ -82,6 +104,21 @@
           <v-spacer />
           <v-btn variant="text" @click="bulkDeleteDialog = false">{{ t('common.cancel') }}</v-btn>
           <v-btn color="error" variant="elevated" :loading="deleting" @click="confirmBulkDelete">{{ t('common.delete') }}</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+
+    <!-- Confirmation for the sensitive lock/isolate/reset actions
+         triggered from the row gear menu. Mirrors the actionDialog
+         pattern of UserEditView so the two screens stay consistent. -->
+    <v-dialog v-model="actionDialog" max-width="400">
+      <v-card>
+        <v-card-title>{{ t('user.' + actionType) }}</v-card-title>
+        <v-card-text>{{ t('user.' + actionType + 'Confirm', { id: actionTarget?.id }) }}</v-card-text>
+        <v-card-actions>
+          <v-spacer />
+          <v-btn variant="text" @click="actionDialog = false">{{ t('common.cancel') }}</v-btn>
+          <v-btn color="primary" variant="elevated" :loading="actionLoading" @click="confirmUserAction">{{ t('common.confirm') }}</v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -119,6 +156,12 @@ const deleteDialog = ref(false)
 const deleteTarget = ref(null)
 const deleting = ref(false)
 const bulkDeleteDialog = ref(false)
+
+// Row gear-menu action state (lock/unlock, isolate/restore, reset).
+const actionDialog = ref(false)
+const actionType = ref('')
+const actionTarget = ref(null)
+const actionLoading = ref(false)
 
 const headers = computed(() => [
   { title: t('user.login'), key: 'id', sortable: true },
@@ -178,6 +221,36 @@ async function confirmBulkDelete() {
   bulkDeleteDialog.value = false
   selected.value = []
   dt.load({ page: 1, itemsPerPage: itemsPerPage.value })
+}
+
+function startUserAction(item, type) {
+  actionTarget.value = item
+  actionType.value = type
+  actionDialog.value = true
+}
+
+async function confirmUserAction() {
+  if (dt.demoMode.value) {
+    errorStore.push({ message: t('user.demoAction'), status: 0 })
+    actionDialog.value = false
+    return
+  }
+  actionLoading.value = true
+  const id = actionTarget.value.id
+  const actions = {
+    lock: () => api.del(`rest/service/id/user/${id}/lock`),
+    unlock: () => api.put(`rest/service/id/user/${id}/unlock`),
+    isolate: () => api.del(`rest/service/id/user/${id}/isolate`),
+    restore: () => api.put(`rest/service/id/user/${id}/restore`),
+    resetPassword: () => api.put(`rest/service/id/user/${id}/reset`),
+  }
+  await actions[actionType.value]()
+  actionLoading.value = false
+  actionDialog.value = false
+  actionTarget.value = null
+  // Reload the current page so the status icon and the contextual
+  // lock/isolate menu labels reflect the new state.
+  dt.load(lastOptions)
 }
 
 onMounted(() => {
