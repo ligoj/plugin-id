@@ -3,20 +3,27 @@ import { VBtn, VChip, VIcon, useI18nStore } from '@ligoj/host'
 
 const REST = '/rest/'
 
+/** Pull the group identifier out of a subscription. Mirrors the legacy
+ *  `subscription.parameters['service:id:group']` lookup. */
+function groupOf(subscription) {
+  return subscription?.parameters?.['service:id:group'] ?? null
+}
+
 const service = {
   /**
-   * Plugin-contributed buttons rendered next to the host's unsubscribe
-   * icon on the ProjectDetailView subscription rows. Returns an array of
-   * VNodes — the host mounts them as-is without any HTML interpretation,
-   * mirroring the legacy `renderFeatures` convention.
+   * Plugin-contributed buttons next to the host's unsubscribe icon on
+   * ProjectDetailView's subscription rows. Returns VNodes directly —
+   * the host mounts them as-is without HTML interpretation, mirroring
+   * the legacy `renderFeatures` convention.
    *
-   * For an identity subscription the action exposed today is "Manage
-   * group members" — opens the plugin's group list with the subscription
-   * pre-selected.
+   * For an identity subscription we expose two actions:
+   *   - "Manage group members" → subscription-scoped `GroupMembersView`
+   *   - "Help" → external link from the subscription parameters
    */
   renderFeatures(subscription) {
     const { t } = useI18nStore()
-    return [
+    const help = subscription?.parameters?.['service:id:help']
+    const buttons = [
       h(
         VBtn,
         {
@@ -24,26 +31,75 @@ const service = {
           size: 'small',
           variant: 'text',
           title: t('id.renderFeatures.manage'),
-          to: `/id/group?subscription=${subscription?.id ?? ''}`,
+          to: `/id/subscription/${subscription?.id ?? ''}`,
         },
         () => h(VIcon, { size: 'small' }, () => 'mdi-account-multiple'),
       ),
     ]
+    if (help) {
+      buttons.push(
+        h(
+          VBtn,
+          {
+            icon: true,
+            size: 'small',
+            variant: 'text',
+            title: t('id.renderFeatures.help'),
+            href: help,
+            target: '_blank',
+            rel: 'noopener noreferrer',
+          },
+          () => h(VIcon, { size: 'small' }, () => 'mdi-help-circle-outline'),
+        ),
+      )
+    }
+    return buttons
   },
 
   /**
-   * Plugin-rendered subscription details for the "Details" column. For an
-   * identity subscription we surface the member count when the backend
-   * populates `subscription.data.members`. Returns null when there is
-   * nothing to show — the column degrades cleanly.
+   * Plugin-rendered subscription "key" — the resource identifier, in
+   * this case the LDAP group name pulled from the subscription
+   * parameters. Mirrors the legacy `renderDetailsKey` /
+   * `renderKey('service:id:group')` chain.
    */
   renderDetailsKey(subscription) {
+    const { t } = useI18nStore()
+    const group = groupOf(subscription)
+    if (!group) return null
+    return h(
+      VChip,
+      {
+        size: 'small',
+        variant: 'tonal',
+        title: t('id.renderDetailsKey.group'),
+        class: 'mr-1',
+      },
+      () => [
+        h(VIcon, { start: true, size: 'small' }, () => 'mdi-account-group'),
+        ' ',
+        group,
+      ],
+    )
+  },
+
+  /**
+   * Plugin-rendered supplementary detail — the member count chip the
+   * legacy UI showed under "renderDetailsFeatures". Backend populates
+   * `subscription.data.members` for identity subscriptions.
+   */
+  renderDetailsFeatures(subscription) {
     const { t } = useI18nStore()
     const count = subscription?.data?.members
     if (count == null) return null
     return h(
       VChip,
-      { size: 'small', variant: 'tonal', title: t('id.renderDetailsKey.members') },
+      {
+        size: 'small',
+        variant: 'tonal',
+        color: 'primary',
+        title: t('id.renderDetailsFeatures.members'),
+        class: 'mr-1',
+      },
       () => [
         h(VIcon, { start: true, size: 'small' }, () => 'mdi-account-multiple'),
         ' ',

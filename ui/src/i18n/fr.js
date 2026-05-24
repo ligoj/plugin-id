@@ -13,8 +13,21 @@ export default {
   'group.deleteConfirmAfter': ' ?',
   'company.deleteConfirmBefore': 'Êtes-vous certain de supprimer ',
   'company.deleteConfirmAfter': ' ?',
-  // Action de ligne d'abonnement, contribué via renderFeatures.
+  // Actions de ligne d'abonnement, contribuées via renderFeatures.
   'id.renderFeatures.manage': 'Gérer les membres',
-  // Détail de ligne d'abonnement, contribué via renderDetailsKey.
-  'id.renderDetailsKey.members': 'Membres',
+  'id.renderFeatures.help': 'Documentation',
+  // Détails de ligne d'abonnement : « clé » stable (nom du groupe) +
+  // « features » live (nombre de membres).
+  'id.renderDetailsKey.group': 'Groupe',
+  'id.renderDetailsFeatures.members': 'Membres',
+  // Vue de gestion des membres d'un groupe (portage de id.html legacy).
+  'id.group.unknown': '(groupe inconnu)',
+  'id.group.subtitle': 'Les membres de ce groupe héritent des permissions de la souscription.',
+  'id.group.addPlaceholder': 'Rechercher un utilisateur à ajouter',
+  'id.group.add': 'Ajouter',
+  'id.group.addedToast': '{user} ajouté à {group}',
+  'id.group.removeTitle': 'Retirer un membre',
+  'id.group.removeConfirm': 'Retirer {user} du groupe {group} ?',
+  'id.group.removedToast': '{user} retiré de {group}',
+  'id.group.transitive': 'Membre indirect via un sous-groupe — à gérer depuis le groupe parent.',
 }

@@ -43,6 +43,7 @@ import CompanyEditView from './views/CompanyEditView.vue'
 import DelegateListView from './views/DelegateListView.vue'
 import DelegateEditView from './views/DelegateEditView.vue'
 import ContainerScopeView from './views/ContainerScopeView.vue'
+import GroupMembersView from './views/GroupMembersView.vue'
 import enMessages from './i18n/en.js'
 import frMessages from './i18n/fr.js'
 import service from './service.js'
@@ -53,8 +54,12 @@ const features = {
   scheduleUpload: service.scheduleUpload,
   // Host's PluginFeatures slot calls this for each subscription row.
   renderFeatures: service.renderFeatures,
-  // Plugin-rendered details column on subscription rows.
+  // Plugin-rendered details column on subscription rows: the "key"
+  // is the group identifier; the "features" chip carries the live
+  // member count (mirrors the legacy `renderDetailsKey` /
+  // `renderDetailsFeatures` split from service/id/id.js).
   renderDetailsKey: service.renderDetailsKey,
+  renderDetailsFeatures: service.renderDetailsFeatures,
 }
 
 const routes = [
@@ -71,6 +76,10 @@ const routes = [
   { path: '/id/delegate/new', name: 'id-delegate-new', component: DelegateEditView },
   { path: '/id/delegate/:id', name: 'id-delegate-edit', component: DelegateEditView },
   { path: '/id/container-scope', name: 'id-container-scope', component: ContainerScopeView },
+  // Per-subscription configuration view (ported from the legacy
+  // `service/id/id.html`): lists group members, lets the user add
+  // and remove them.
+  { path: '/id/subscription/:id', name: 'id-subscription', component: GroupMembersView },
 ]
 
 export default {
