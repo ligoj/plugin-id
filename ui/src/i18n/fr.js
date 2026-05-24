@@ -1,7 +1,25 @@
 // Plugin-local translations merged into the host i18n store at install
 // time. Keep keys flat (dot-separated) to match the host's existing
 // convention.
+//
+// Voir en.js pour la rationale : les clés `service:id:*` sont des
+// libellés de paramètres possédés par plugin-id et hérités par tous
+// ses sous-plugins (plugin-id-ldap, plugin-id-sql, …) ; l'assistant
+// d'abonnement les résout via paramLabel()/paramHint().
 export default {
+  // Libellés de paramètres hérités (possédés par plugin-id).
+  'service:id': 'Identité',
+  'service:id:group': 'Groupe',
+  'service:id:parent-group': 'Groupe parent',
+  'service:id:parent-group-description': 'Groupe parent optionnel qui contiendra le nouveau groupe créé',
+  'service:id:ou': 'Organisation',
+  'service:id:ou-description': 'Unité d\'organisation, ou client, utilisée comme préfixe au nom complet du groupe. Sera créée si elle n\'existe pas.',
+  'service:id:ou-not-exists': 'L\'organisation saisie n\'existe pas encore et sera créée. Êtes-vous certain de la syntaxe ?',
+  'service:id:uid-pattern': 'Motif d\'utilisateur',
+  'service:id:uid-pattern-description': 'Motif de validation de l\'identifiant utilisateur pour accepter une authentification',
+  'service:id:group-simple-name': 'Nom simple',
+  'service:id:group-simple-name-description': 'Nom simple du groupe, sans le préfixe d\'organisation',
+
   'delegate.type.user': 'Utilisateur',
   'delegate.type.group': 'Groupe',
   'delegate.type.company': 'Entité',

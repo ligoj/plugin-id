@@ -1,5 +1,5 @@
 import { h } from 'vue'
-import { VBtn, VChip, VIcon, useI18nStore } from '@ligoj/host'
+import { VBtn, VChip, VIcon, pluginRegistry, useI18nStore } from '@ligoj/host'
 
 const REST = '/rest/'
 
@@ -7,6 +7,48 @@ const REST = '/rest/'
  *  `subscription.parameters['service:id:group']` lookup. */
 function groupOf(subscription) {
   return subscription?.parameters?.['service:id:group'] ?? null
+}
+
+/**
+ * Extract the tool segment from a node id (`service:id:<tool>[:<instance>]`)
+ * and return the sub-plugin name the host expects to find in the registry
+ * for that tool — e.g. `service:id:ldap:local` → `id-ldap`. Mirrors the
+ * legacy `current.$super(...)` inheritance: identity-tool plugins extended
+ * `plugin-id` and contributed their own subscription row actions.
+ */
+function subPluginIdFor(subscription) {
+  const id = subscription?.node?.id || ''
+  const parts = id.split(':').filter(Boolean)
+  // Expect at least `service:id:<tool>` to delegate; pure `service:id:<x>`
+  // with two segments means we have no tool, nothing to delegate to.
+  if (parts.length < 3) return null
+  return `id-${parts[2]}`
+}
+
+/**
+ * Calls `feature(action, ...args)` on the loaded sub-plugin for the
+ * subscription's tool, returning its VNodes (or an empty array). Falls
+ * back to `[]` when nothing is registered, when the plugin doesn't
+ * implement the action, or when the call itself throws — sub-plugin
+ * failures must never break the parent's rendering.
+ */
+function delegateToToolPlugin(subscription, action) {
+  const subId = subPluginIdFor(subscription)
+  if (!subId) return []
+  const plugin = pluginRegistry.get(subId)
+  if (typeof plugin?.feature !== 'function') return []
+  try {
+    const result = plugin.feature(action, subscription)
+    if (result == null) return []
+    return Array.isArray(result) ? result : [result]
+  } catch (err) {
+    // Unknown actions are expected (plugin chose not to implement). Real
+    // errors get surfaced so they don't disappear into the console-void.
+    if (!new RegExp(`no feature ["']${action}["']`).test(err?.message || '')) {
+      console.warn(`[plugin:id] delegate to ${subId}.${action} threw`, err)
+    }
+    return []
+  }
 }
 
 const service = {
@@ -53,6 +95,9 @@ const service = {
         ),
       )
     }
+    // Append tool-specific actions contributed by an id-<tool> sub-plugin
+    // (e.g. `plugin-id-ldap` injects activity-export buttons here).
+    buttons.push(...delegateToToolPlugin(subscription, 'renderFeatures'))
     return buttons
   },
 
