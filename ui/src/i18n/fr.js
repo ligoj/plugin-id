@@ -24,7 +24,7 @@ export default {
   'delegate.type.group': 'Groupe',
   'delegate.type.company': 'Entité',
   'delegate.type.tree': 'Arborescence',
-  'delegate.resourceDnHint': 'DN LDAP du sous-arbre (ex. ou=projects,dc=acme,dc=com)',
+  'delegate.resourceDnHint': 'DN LDAP du sous-arbre (ex. ou=project,dc=acme,dc=com)',
   'user.deleteConfirmBefore': 'Êtes-vous certain de supprimer ',
   'user.deleteConfirmAfter': ' ?',
   'group.deleteConfirmBefore': 'Êtes-vous certain de supprimer ',

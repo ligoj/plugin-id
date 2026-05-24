@@ -11,7 +11,8 @@
                visible. -->
           <v-row density="comfortable">
             <v-col cols="12" sm="5">
-              <v-select v-model="form.receiverType" :label="t('delegate.receiverType')" :items="receiverTypes" :item-title="typeTitle" item-value="value" :prepend-inner-icon="receiverIcon" :rules="[rules.required]" variant="outlined" class="mb-2">
+              <v-select v-model="form.receiverType" :label="t('delegate.receiverType')" :items="receiverTypes" :item-title="typeTitle" item-value="value" :prepend-inner-icon="receiverIcon"
+                :rules="[rules.required]" variant="outlined" class="mb-2">
                 <template #item="{ props: itemProps, item }">
                   <v-list-item v-bind="itemProps">
                     <template #prepend>
@@ -22,23 +23,9 @@
               </v-select>
             </v-col>
             <v-col cols="12" sm="7">
-              <v-autocomplete
-                v-model="form.receiver"
-                v-model:search="receiverSearch"
-                :label="t('delegate.receiver')"
-                :items="receiverDisplayItems"
-                item-title="label"
-                item-value="id"
-                :loading="receiverLoading"
-                :rules="[rules.required]"
-                no-filter
-                clearable
-                auto-select-first
-                variant="outlined"
-                class="mb-2"
-                @update:search="onReceiverSearch"
-                @update:menu="onReceiverMenu"
-              />
+              <v-autocomplete v-model="form.receiver" v-model:search="receiverSearch" :label="t('delegate.receiver')" :items="receiverDisplayItems" item-title="label" item-value="id"
+                :loading="receiverLoading" :rules="[rules.required]" no-filter clearable auto-select-first variant="outlined" class="mb-2" @update:search="onReceiverSearch"
+                @update:menu="onReceiverMenu" />
             </v-col>
           </v-row>
 
@@ -47,7 +34,8 @@
                name). -->
           <v-row density="comfortable">
             <v-col cols="12" sm="5">
-              <v-select v-model="form.type" :label="t('delegate.type')" :items="resourceTypes" :item-title="typeTitle" item-value="value" :prepend-inner-icon="typeIcon" :rules="[rules.required]" variant="outlined" class="mb-2">
+              <v-select v-model="form.type" :label="t('delegate.type')" :items="resourceTypes" :item-title="typeTitle" item-value="value" :prepend-inner-icon="typeIcon" :rules="[rules.required]"
+                variant="outlined" class="mb-2">
                 <template #item="{ props: itemProps, item }">
                   <v-list-item v-bind="itemProps">
                     <template #prepend>
@@ -59,39 +47,14 @@
             </v-col>
             <v-col cols="12" sm="7">
               <!-- TREE-typed delegates point at an arbitrary LDAP DN
-                   (e.g. ou=projects,dc=acme,dc=com) — there's no entity
+                   (e.g. ou=project,dc=acme,dc=com) — there's no entity
                    list to pick from, so swap the autocomplete out for a
                    free-form text field. -->
-              <v-text-field
-                v-if="form.type === 'TREE'"
-                v-model="form.name"
-                :label="t('delegate.resource')"
-                :rules="[rules.required]"
-                :hint="t('delegate.resourceDnHint')"
-                persistent-hint
-                variant="outlined"
-                class="mb-2"
-              />
-              <v-autocomplete
-                v-else
-                v-model="form.name"
-                v-model:search="resourceSearch"
-                :label="t('delegate.resource')"
-                :items="resourceDisplayItems"
-                item-title="label"
-                item-value="id"
-                :loading="resourceLoading"
-                :rules="[rules.required]"
-                :hint="t('delegate.resourceHint')"
-                persistent-hint
-                no-filter
-                clearable
-                auto-select-first
-                variant="outlined"
-                class="mb-2"
-                @update:search="onResourceSearch"
-                @update:menu="onResourceMenu"
-              />
+              <v-text-field v-if="form.type === 'TREE'" v-model="form.name" :label="t('delegate.resource')" :rules="[rules.required]" :hint="t('delegate.resourceDnHint')" persistent-hint
+                variant="outlined" class="mb-2" />
+              <v-autocomplete v-else v-model="form.name" v-model:search="resourceSearch" :label="t('delegate.resource')" :items="resourceDisplayItems" item-title="label" item-value="id"
+                :loading="resourceLoading" :rules="[rules.required]" :hint="t('delegate.resourceHint')" persistent-hint no-filter clearable auto-select-first variant="outlined" class="mb-2"
+                @update:search="onResourceSearch" @update:menu="onResourceMenu" />
             </v-col>
           </v-row>
 
@@ -111,25 +74,11 @@
       </v-card-actions>
     </v-card>
 
-    <LigojConfirmDialog
-      v-model="confirmDelete"
-      :title="t('delegate.deleteTitle')"
-      :message="t('delegate.deleteConfirm', { name: form.receiver })"
-      :confirm-label="t('common.delete')"
-      confirm-color="error"
-      :loading="deleting"
-      @confirm="remove"
-    />
+    <LigojConfirmDialog v-model="confirmDelete" :title="t('delegate.deleteTitle')" :message="t('delegate.deleteConfirm', { name: form.receiver })" :confirm-label="t('common.delete')"
+      confirm-color="error" :loading="deleting" @confirm="remove" />
 
-    <LigojConfirmDialog
-      v-model="showGuardDialog"
-      :title="t('common.unsavedTitle')"
-      :message="t('common.unsavedMsg')"
-      :confirm-label="t('common.discard')"
-      confirm-color="warning"
-      @confirm="confirmLeave"
-      @cancel="cancelLeave"
-    />
+    <LigojConfirmDialog v-model="showGuardDialog" :title="t('common.unsavedTitle')" :message="t('common.unsavedMsg')" :confirm-label="t('common.discard')" confirm-color="warning"
+      @confirm="confirmLeave" @cancel="cancelLeave" />
   </div>
 </template>
 
@@ -218,8 +167,8 @@ const typeIcon = computed(() => TYPE_ICONS[form.value.type] || '')
 // TREE is intentionally absent — TREE-typed delegates use a free-form
 // DN (rendered via v-text-field), so no list endpoint applies.
 const TYPE_TO_ENDPOINT = {
-  USER:    'service/id/user',
-  GROUP:   'service/id/group',
+  USER: 'service/id/user',
+  GROUP: 'service/id/group',
   COMPANY: 'service/id/company',
 }
 

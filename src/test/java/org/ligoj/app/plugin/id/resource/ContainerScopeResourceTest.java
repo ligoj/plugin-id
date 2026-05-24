@@ -46,7 +46,7 @@ class ContainerScopeResourceTest extends AbstractJpaTest {
 
 	@BeforeEach
 	void setUpEntities() throws IOException {
-		persistEntities("csv", new Class<?>[]{ContainerScope.class}, StandardCharsets.UTF_8);
+		persistEntities("csv", new Class<?>[] { ContainerScope.class }, StandardCharsets.UTF_8);
 	}
 
 	@Test
@@ -67,7 +67,7 @@ class ContainerScopeResourceTest extends AbstractJpaTest {
 		Assertions.assertEquals(4, result.size());
 		final ContainerScope type = result.get(2);
 		Assertions.assertEquals("Project", type.getName());
-		Assertions.assertEquals("ou=projects,dc=sample,dc=com", type.getDn());
+		Assertions.assertEquals("ou=project,dc=sample,dc=com", type.getDn());
 	}
 
 	@Test
@@ -142,7 +142,7 @@ class ContainerScopeResourceTest extends AbstractJpaTest {
 	private void checkType(final ContainerScope type) {
 		Assertions.assertEquals("Project", type.getName());
 		Assertions.assertTrue(type.isLocked());
-		Assertions.assertEquals("ou=projects,dc=sample,dc=com", type.getDn());
+		Assertions.assertEquals("ou=project,dc=sample,dc=com", type.getDn());
 		Assertions.assertEquals(ContainerType.GROUP, type.getType());
 	}
 
@@ -174,7 +174,7 @@ class ContainerScopeResourceTest extends AbstractJpaTest {
 		final ContainerScope vo = new ContainerScope();
 		vo.setName("Name");
 		vo.setType(ContainerType.GROUP);
-		vo.setDn("ou=projects,dc=sample,dc=com");
+		vo.setDn("ou=project,dc=sample,dc=com");
 		Assertions.assertThrows(DataIntegrityViolationException.class, () -> resource.create(vo));
 	}
 
