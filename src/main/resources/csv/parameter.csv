@@ -1,5 +1,5 @@
-id;mandatory;mode;secured;type;owner.id
-service:id:group;true;;false;TEXT;service:id
-service:id:ou;true;CREATE;false;TEXT;service:id
-service:id:parent-group;false;CREATE;false;TEXT;service:id
-service:id:uid-pattern;false;;false;TEXT;service:id
+id;data;mandatory;secured;type;owner.id;defaultValue;mode;availableForSubscription;availableForNode
+service:id:group;TRUE;;FALSE;TEXT;service:id;;;TRUE;FALSE
+service:id:ou;TRUE;CREATE;FALSE;TEXT;service:id;;;TRUE;TRUE
+service:id:parent-group;FALSE;CREATE;FALSE;TEXT;service:id;;;TRUE;TRUE
+service:id:uid-pattern;FALSE;;FALSE;TEXT;service:id;;;FALSE;TRUE
