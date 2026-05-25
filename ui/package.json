@@ -1,8 +1,34 @@
 {
-  "name": "ligoj-plugin-id-ui",
+  "name": "ligoj-plugin-id",
   "version": "0.1.0",
+  "description": "Identity plugin for the Ligoj Vue UI host — users, groups, companies, delegations, container scopes.",
   "private": true,
   "type": "module",
+  "license": "MIT",
+  "author": "kloudy.io",
+  "contributors": [
+    "Fabrice Daugan <fabrice.daugan@gmail.com>"
+  ],
+  "homepage": "https://github.com/ligoj/plugin-id#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ligoj/plugin-id.git"
+  },
+  "bugs": {
+    "url": "https://github.com/ligoj/plugin-id/issues"
+  },
+  "keywords": [
+    "ligoj",
+    "plugin",
+    "identity",
+    "users",
+    "groups",
+    "vue",
+    "vite"
+  ],
+  "engines": {
+    "node": ">=24"
+  },
   "scripts": {
     "dev": "vite",
     "build": "vite build",
