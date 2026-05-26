@@ -132,8 +132,8 @@ const editDelegateId = ref(null)
 const headers = computed(() => [
   { title: t('delegate.receiver'), key: 'receiver', sortable: true },
   { title: t('delegate.resource'), key: 'name', sortable: false },
-  { title: t('delegate.admin'), key: 'canAdmin', sortable: false, width: '80px' },
-  { title: t('delegate.write'), key: 'canWrite', sortable: false, width: '80px' },
+  { title: t('delegate.admin'), key: 'canAdmin', sortable: false, width: '80px', tooltip: t('delegate.adminHelp') },
+  { title: t('delegate.write'), key: 'canWrite', sortable: false, width: '80px', tooltip: t('delegate.writeHelp') },
   { title: '', key: 'actions', sortable: false, width: '120px', align: 'center' },
 ])
 
