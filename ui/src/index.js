@@ -41,7 +41,6 @@ import GroupEditView from './views/GroupEditView.vue'
 import CompanyListView from './views/CompanyListView.vue'
 import CompanyEditView from './views/CompanyEditView.vue'
 import DelegateListView from './views/DelegateListView.vue'
-import DelegateEditView from './views/DelegateEditView.vue'
 import ContainerScopeView from './views/ContainerScopeView.vue'
 import GroupMembersView from './views/GroupMembersView.vue'
 import enMessages from './i18n/en.js'
@@ -72,9 +71,9 @@ const routes = [
   { path: '/id/company', name: 'id-company', component: CompanyListView },
   { path: '/id/company/new', name: 'id-company-new', component: CompanyEditView },
   { path: '/id/company/:id', name: 'id-company-edit', component: CompanyEditView },
+  // Delegate create/edit is a dialog hosted by DelegateListView (chantier D3),
+  // so there is no per-entity delegate route — mirrors the Users screen.
   { path: '/id/delegate', name: 'id-delegate', component: DelegateListView },
-  { path: '/id/delegate/new', name: 'id-delegate-new', component: DelegateEditView },
-  { path: '/id/delegate/:id', name: 'id-delegate-edit', component: DelegateEditView },
   { path: '/id/container-scope', name: 'id-container-scope', component: ContainerScopeView },
   // Per-subscription configuration view (ported from the legacy
   // `service/id/id.html`): lists group members, lets the user add

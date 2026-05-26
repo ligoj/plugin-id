@@ -40,12 +40,15 @@ describe('plugin-id contract', () => {
       '/id/user',
       '/id/group', '/id/group/new', '/id/group/:id',
       '/id/company', '/id/company/new', '/id/company/:id',
-      '/id/delegate', '/id/delegate/new', '/id/delegate/:id',
+      // Delegates likewise edit through a dialog (DelegateEditDialog,
+      // chantier D3), so /id/delegate/new and /id/delegate/:id are
+      // no longer routes either.
+      '/id/delegate',
       '/id/container-scope',
       // Subscription-scoped group members view (legacy id.html port).
       '/id/subscription/:id',
     ]))
-    expect(registered).toHaveLength(12)
+    expect(registered).toHaveLength(10)
   })
 
   it('feature("renderFeatures") returns VNodes the host can mount', () => {
