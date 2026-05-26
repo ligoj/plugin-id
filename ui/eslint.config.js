@@ -15,7 +15,6 @@ export default [
     ],
   },
   js.configs.recommended,
-  // Match the host's eslint.config.js — essential-only Vue rules.
   ...pluginVue.configs['flat/essential'],
   {
     files: ['**/*.{js,mjs,cjs,vue}'],
@@ -29,7 +28,6 @@ export default [
     },
     rules: {
       'vue/multi-word-component-names': 'off',
-      // Vuetify data-table uses dotted slot names (`#item.foo`).
       'vue/valid-v-slot': ['error', { allowModifiers: true }],
       'no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
     },
