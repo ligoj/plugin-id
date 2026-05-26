@@ -4,7 +4,7 @@
       <v-spacer />
       <v-text-field v-model="dt.search.value" prepend-inner-icon="mdi-magnify" :label="t('common.search')" variant="outlined" density="compact" hide-details class="search-field"
         @update:model-value="onSearch" />
-      <v-btn color="primary" prepend-icon="mdi-plus" @click="router.push('/id/delegate/new')">
+      <v-btn color="primary" prepend-icon="mdi-plus" @click="openDialog(null)">
         {{ t('delegate.new') }}
       </v-btn>
     </div>
@@ -27,14 +27,25 @@
 
     <LigojDataTableServer filename="delegates.csv" :fetch-all="dt.loadAll" v-if="!dt.error.value" v-show="dt.items.value.length > 0 || !dt.loading.value" v-model="selected"
       v-model:items-per-page="itemsPerPage" :headers="headers" :items="dt.items.value" :items-length="dt.totalItems.value" :loading="dt.loading.value" item-value="id" show-select hover
-      @update:options="loadData" @click:row="(_, { item }) => router.push('/id/delegate/' + item.id)">
+      @update:options="loadData" @click:row="(_, { item }) => openDialog(item.id)">
+      <!-- Receiver column (chantier D5): the receiver's *kind* is rendered
+           as a small leading icon (Account / Group / Domain) followed by
+           its identifier. The dedicated Type chip column has been removed
+           entirely (chantier D6+D8).
+           Note: backend stores receiverType in lowercase ("company", …)
+           for some rows, so normalize before the TYPE_ICONS lookup —
+           same rationale as DelegateEditDialog.loadOnOpen(). -->
       <template #item.receiver="{ item }">
+        <v-icon size="small" class="me-1">{{ TYPE_ICONS[item.receiverType?.toUpperCase()] || 'mdi-account' }}</v-icon>
         {{ item.receiver?.name || item.receiver?.id || item.name || '-' }}
       </template>
-      <template #item.type="{ item }">
-        <v-chip size="small" :color="typeColor(item.type || item.receiverType)">
-          {{ item.type || item.receiverType || '-' }}
-        </v-chip>
+      <!-- Resource column (chantier D5+D8): fuses the former Type and
+           Resource columns. The kind is the leading icon (Account /
+           Group / Domain / File-tree); the text is the resource name
+           (or DN for TREE delegates). Same lowercase-normalize as above. -->
+      <template #item.name="{ item }">
+        <v-icon size="small" class="me-1">{{ TYPE_ICONS[item.type?.toUpperCase()] || '' }}</v-icon>
+        {{ item.name || '-' }}
       </template>
       <template #item.canAdmin="{ item }">
         <v-icon v-if="item.canAdmin" color="success" size="small">mdi-check</v-icon>
@@ -43,7 +54,7 @@
         <v-icon v-if="item.canWrite" color="success" size="small">mdi-check</v-icon>
       </template>
       <template #item.actions="{ item }">
-        <v-btn icon size="small" variant="text" @click.stop="router.push('/id/delegate/' + item.id)">
+        <v-btn icon size="small" variant="text" @click.stop="openDialog(item.id)">
           <v-icon size="small">mdi-pencil</v-icon>
         </v-btn>
         <v-btn icon size="small" variant="text" color="error" @click.stop="startDelete(item)">
@@ -81,15 +92,18 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
+
+    <!-- Delegate create/edit popup (chantier D3). editDelegateId null = create mode. -->
+    <DelegateEditDialog v-model="editDialog" :delegate-id="editDelegateId" @saved="onDelegateSaved" />
   </div>
 </template>
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
 import { useDataTable, useApi, useAppStore, useI18nStore, LigojDataTableServer } from '@ligoj/host'
+import DelegateEditDialog from './DelegateEditDialog.vue'
+import { TYPE_ICONS } from '../composables/delegateTypes.js'
 
-const router = useRouter()
 const appStore = useAppStore()
 const api = useApi()
 const i18n = useI18nStore()
@@ -106,19 +120,22 @@ const deleting = ref(false)
 const bulkDeleteDialog = ref(false)
 let lastOptions = {}
 
+// Delegate create/edit dialog state. editDelegateId null = create mode.
+const editDialog = ref(false)
+const editDelegateId = ref(null)
+
+// Headers revised per Fabrice's 22-may review (chantiers D5+D6+D8):
+//  - Receiver gets a leading kind icon (slot below).
+//  - Type and Resource are fused into a single "Resource" column whose
+//    text is the resource name and whose leading icon is the type. The
+//    Type chip column is gone.
 const headers = computed(() => [
   { title: t('delegate.receiver'), key: 'receiver', sortable: true },
-  { title: t('delegate.type'), key: 'type', sortable: false, width: '120px' },
   { title: t('delegate.resource'), key: 'name', sortable: false },
   { title: t('delegate.admin'), key: 'canAdmin', sortable: false, width: '80px' },
   { title: t('delegate.write'), key: 'canWrite', sortable: false, width: '80px' },
-  { title: '', key: 'actions', sortable: false, width: '100px', align: 'end' },
+  { title: '', key: 'actions', sortable: false, width: '120px', align: 'center' },
 ])
-
-function typeColor(type) {
-  const colors = { USER: 'blue', GROUP: 'teal', COMPANY: 'indigo', TREE: 'orange' }
-  return colors[type] || 'grey'
-}
 
 function loadData(options) {
   lastOptions = options
@@ -128,6 +145,17 @@ function loadData(options) {
 function onSearch() {
   clearTimeout(searchTimeout)
   searchTimeout = setTimeout(() => dt.load({ page: 1, itemsPerPage: itemsPerPage.value }), 300)
+}
+
+function openDialog(id = null) {
+  editDelegateId.value = id
+  editDialog.value = true
+}
+
+function onDelegateSaved() {
+  // Reload the current page after a create/edit/delete performed from
+  // the dialog so the list reflects the new state.
+  dt.load(lastOptions)
 }
 
 function startDelete(item) {

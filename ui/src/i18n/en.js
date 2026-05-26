@@ -32,6 +32,12 @@ export default {
   'delegate.type.company': 'Company',
   'delegate.type.tree': 'Tree',
   'delegate.resourceDnHint': 'LDAP DN of the subtree (e.g. ou=project,dc=acme,dc=com)',
+  // Chantier D7 — labels and help text for the Admin/Write security
+  // levels in the delegate dialog. Mirrors the legacy plugin-id wording.
+  'delegate.admin': 'Administration',
+  'delegate.write': 'Write',
+  'delegate.adminHelp': 'With the administration security level on this resource, the receivers of this delegation can create other delegations to share this access with other valid receivers',
+  'delegate.writeHelp': 'With the write security level, the receivers of this delegation can modify the members of the involved groups. Without this access, this delegation grants read-only rights',
   'user.deleteConfirmBefore': 'Are you sure you want to delete ',
   'user.deleteConfirmAfter': '?',
   'group.deleteConfirmBefore': 'Are you sure you want to delete ',

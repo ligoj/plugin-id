@@ -25,6 +25,12 @@ export default {
   'delegate.type.company': 'Entité',
   'delegate.type.tree': 'Arborescence',
   'delegate.resourceDnHint': 'DN LDAP du sous-arbre (ex. ou=project,dc=acme,dc=com)',
+  // Chantier D7 — libellés et aides pour les niveaux de sécurité Admin/Write
+  // du dialog de délégation. Textes récupérés du plugin-id legacy.
+  'delegate.admin': 'Administration',
+  'delegate.write': 'Écriture',
+  'delegate.adminHelp': 'Avec le niveau de sécurité d\'administration sur cette ressource, les receveurs de cette délégation peuvent créer d\'autres délégations pour partager cet accès avec d\'autres receveurs valides',
+  'delegate.writeHelp': 'Avec le niveau de sécurité d\'écriture, les receveurs de cette délégation peuvent modifier les membres des groupes impliqués. Sans cet accès cette délégation ne donne qu\'un droit de lecture',
   'user.deleteConfirmBefore': 'Êtes-vous certain de supprimer ',
   'user.deleteConfirmAfter': ' ?',
   'group.deleteConfirmBefore': 'Êtes-vous certain de supprimer ',
