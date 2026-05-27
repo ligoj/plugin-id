@@ -27,6 +27,26 @@ export default {
   'delegate.resourceDnHint': 'DN LDAP du sous-arbre (ex. ou=project,dc=acme,dc=com)',
   'user.deleteConfirmBefore': 'Êtes-vous certain de supprimer ',
   'user.deleteConfirmAfter': ' ?',
+  // Chantier D4 — saisie multi-email (v-combobox)
+  'user.emailHint': 'Appuyez sur Entrée ou Tab pour valider chaque email',
+  // Chantier D2 (rattrapage) — fragments encadrant le nombre d'éléments
+  // en gras-rouge pour la suppression en masse.
+  'common.bulkDeleteConfirmBefore': 'Supprimer ',
+  'common.bulkDeleteConfirmAfter': ' éléments ? Cette action est irréversible.',
+  // Chantier D2 — confirmations sensibles découpées en deux fragments
+  // pour insérer l'identifiant en gras-rouge entre eux. Les clés
+  // monolithiques `user.<action>Confirm` restent côté host pour
+  // d'éventuels autres usages, on les surcharge plus.
+  'user.lockConfirmBefore': 'Verrouiller l\'utilisateur ',
+  'user.lockConfirmAfter': ' ? Il ne pourra plus se connecter.',
+  'user.unlockConfirmBefore': 'Déverrouiller l\'utilisateur ',
+  'user.unlockConfirmAfter': ' ? Il pourra à nouveau se connecter.',
+  'user.isolateConfirmBefore': 'Isoler l\'utilisateur ',
+  'user.isolateConfirmAfter': ' ? Cela supprimera toutes ses appartenances aux groupes.',
+  'user.restoreConfirmBefore': 'Restaurer l\'utilisateur ',
+  'user.restoreConfirmAfter': ' ?',
+  'user.resetPasswordConfirmBefore': 'Réinitialiser le mot de passe de l\'utilisateur ',
+  'user.resetPasswordConfirmAfter': ' ? Un nouveau mot de passe lui sera envoyé.',
   'group.deleteConfirmBefore': 'Êtes-vous certain de supprimer ',
   'group.deleteConfirmAfter': ' ?',
   'company.deleteConfirmBefore': 'Êtes-vous certain de supprimer ',
@@ -45,7 +65,9 @@ export default {
   'id.group.add': 'Ajouter',
   'id.group.addedToast': '{user} ajouté à {group}',
   'id.group.removeTitle': 'Retirer un membre',
-  'id.group.removeConfirm': 'Retirer {user} du groupe {group} ?',
+  // Chantier D2 — fragments encadrant l'identifiant utilisateur en gras-rouge.
+  'id.group.removeConfirmBefore': 'Retirer ',
+  'id.group.removeConfirmAfter': ' du groupe {group} ?',
   'id.group.removedToast': '{user} retiré de {group}',
   'id.group.transitive': 'Membre indirect via un sous-groupe — à gérer depuis le groupe parent.',
 }

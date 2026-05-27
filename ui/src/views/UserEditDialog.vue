@@ -61,7 +61,21 @@
                   </v-list-item>
                 </template>
               </v-autocomplete>
-              <v-text-field v-model="form.mail" :label="t('user.email')" type="email" variant="outlined" class="mb-2" />
+              <!-- Free-text multi-email input (chantier D4). v-combobox +
+                   multiple + chips lets the user type any email (no
+                   autocomplete source) and confirm with Enter or Tab;
+                   existing emails are restored as chips at load time. -->
+              <v-combobox
+                v-model="form.mails"
+                :label="t('user.email')"
+                multiple
+                chips
+                closable-chips
+                variant="outlined"
+                class="mb-2"
+                :hint="t('user.emailHint')"
+                persistent-hint
+              />
               <!-- Auto-suggest for groups (multi-select). Queries
                    rest/service/id/group as the user types (300 ms debounced).
                    v-model holds an array of group **names** (strings),
@@ -157,13 +171,19 @@
       @cancel="onGuardCancel"
     />
 
+    <!-- Chantier D2 (rattrapage): mirror the UserListView pattern so the
+         login is rendered in bold red here too. The previous monolithic
+         `user.<action>Confirm` message with {id} interpolation kept the
+         name as plain text, which felt visually weaker than the same
+         action triggered from the list row. -->
     <LigojConfirmDialog
       v-model="actionDialog"
       :title="t('user.' + actionType)"
-      :message="t('user.' + actionType + 'Confirm', { id: form.id })"
       :loading="actionLoading"
       @confirm="confirmAction"
-    />
+    >
+      {{ t('user.' + actionType + 'ConfirmBefore') }}<strong class="text-error">{{ form.id }}</strong>{{ t('user.' + actionType + 'ConfirmAfter') }}
+    </LigojConfirmDialog>
   </div>
 </template>
 
@@ -219,7 +239,9 @@ const form = ref({
   firstName: '',
   lastName: '',
   company: '',
-  mail: '',
+  // Chantier D4: emails as a list. Backend response carries `mails: [...]`;
+  // a string fallback at load time keeps tolerance for any legacy payload.
+  mails: [],
 })
 
 // useFormGuard still drives the dirty tracking (snapshot + deep watch) and
@@ -399,7 +421,9 @@ function loadDemoUser(id) {
     form.value.firstName = user.firstName
     form.value.lastName = user.lastName
     form.value.company = user.company
-    form.value.mail = user.mails?.[0] || ''
+    // Chantier D4: hydrate the full mails list (the demo seed already
+    // carries an array, but be defensive against any string fallback).
+    form.value.mails = Array.isArray(user.mails) ? [...user.mails] : user.mails ? [user.mails] : []
     // Normalize groups to an array of names (strings) so v-autocomplete
     // with item-value="name" can roundtrip them through v-model.
     groups.value = (user.groups || []).map(g => g.name || g)
@@ -412,7 +436,7 @@ function loadDemoUser(id) {
 /** Reset all form state to a clean create-mode baseline. Called every time
  *  the dialog opens so a previous edit never bleeds into the next one. */
 function resetForm() {
-  form.value = { id: '', firstName: '', lastName: '', company: '', mail: '' }
+  form.value = { id: '', firstName: '', lastName: '', company: '', mails: [] }
   groups.value = []
   locked.value = false
   isolated.value = false
@@ -440,7 +464,10 @@ async function loadOnOpen() {
       form.value.firstName = data.firstName || ''
       form.value.lastName = data.lastName || ''
       form.value.company = data.company || ''
-      form.value.mail = data.mails?.[0] || ''
+      // Chantier D4: keep the entire mails array, with string fallback
+      // for any legacy payload that stored a single email as `mail`.
+      form.value.mails = Array.isArray(data.mails) ? [...data.mails]
+                       : data.mail ? [data.mail] : []
       // Normalize groups to an array of names (strings) so v-autocomplete
       // with item-value="name" can roundtrip them through v-model.
       groups.value = (data.groups || []).map(g => g.name || g)
@@ -553,7 +580,10 @@ async function save() {
     firstName: form.value.firstName,
     lastName: form.value.lastName,
     company: form.value.company,
-    mail: form.value.mail,
+    // Chantier D4: send the full mails list — fixes a latent bug where
+    // the previous single-string `mail` field would drop every address
+    // past the first at save time.
+    mails: form.value.mails,
     // groups is an array of names (strings). Defensive `.map(g => g.name || g)`
     // in case any legacy object slipped through.
     groups: groups.value.map(g => g.name || g),
