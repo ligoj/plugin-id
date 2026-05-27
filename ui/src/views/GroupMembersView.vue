@@ -121,15 +121,19 @@
       </LigojDataTableServer>
     </template>
 
+    <!-- Chantier D2: the user being removed is rendered in bold red
+         via the default slot so the action carries the same visual
+         weight as the delete dialogs across the rest of the screen. -->
     <LigojConfirmDialog
       v-model="removeDialog"
       :title="t('id.group.removeTitle')"
-      :message="t('id.group.removeConfirm', { user: removeTarget?.id || '', group: groupName || '' })"
       :confirm-label="t('common.remove')"
       confirm-color="error"
       :loading="removing"
       @confirm="confirmRemove"
-    />
+    >
+      {{ t('id.group.removeConfirmBefore') }}<strong class="text-error">{{ removeTarget?.id }}</strong>{{ t('id.group.removeConfirmAfter', { group: groupName }) }}
+    </LigojConfirmDialog>
   </div>
 </template>
 

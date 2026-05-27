@@ -35,8 +35,17 @@
     <LigojDataTableServer filename="users.csv" :fetch-all="dt.loadAll" v-if="!dt.error.value" v-show="dt.items.value.length > 0 || !dt.loading.value" v-model="selected"
       v-model:items-per-page="itemsPerPage" :headers="headers" :items="dt.items.value" :items-length="dt.totalItems.value" :loading="dt.loading.value" item-value="id" show-select hover
       @update:options="loadData" @click:row="(_, { item }) => openEdit(item.id)">
+      <!-- Mails column (chantier D4): render each address as a v-chip, cap
+           at 2 visible and fold the rest into a "+N" indicator so rows stay
+           on a single line even when a user has many addresses. Pattern
+           matches the existing groups-cell rendering below. -->
       <template #item.mails="{ item }">
-        {{ item.mails?.[0] || '' }}
+        <div class="mails-cell">
+          <v-chip v-for="m in (item.mails || []).slice(0, 2)" :key="m" size="small" variant="tonal" class="mr-1">{{ m }}</v-chip>
+          <span v-if="(item.mails || []).length > 2" class="text-caption text-medium-emphasis">
+            +{{ item.mails.length - 2 }}
+          </span>
+        </div>
       </template>
       <template #item.groups="{ item }">
         <div class="groups-cell">
@@ -64,7 +73,7 @@
              user is locked/isolated. -->
         <v-menu>
           <template #activator="{ props }">
-            <v-btn icon size="small" variant="text" :aria-label="t('user.actions')" v-bind="props" @click.stop>
+            <v-btn icon size="x-small" variant="text" :aria-label="t('user.actions')" v-bind="props" @click.stop>
               <v-icon size="small">mdi-cog</v-icon>
             </v-btn>
           </template>
@@ -82,46 +91,48 @@
       </template>
     </LigojDataTableServer>
 
-    <v-dialog v-model="deleteDialog" max-width="400">
-      <v-card>
-        <v-card-title>{{ t('user.deleteTitle') }}</v-card-title>
-        <v-card-text>
-          {{ t('user.deleteConfirmBefore') }}<strong class="text-error">{{ deleteTarget?.id }}</strong>{{ t('user.deleteConfirmAfter') }}
-        </v-card-text>
-        <v-card-actions>
-          <v-spacer />
-          <v-btn variant="text" @click="deleteDialog = false">{{ t('common.cancel') }}</v-btn>
-          <v-btn color="error" variant="elevated" :loading="deleting" @click="confirmDeleteUser">{{ t('common.delete') }}</v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
+    <!-- Single-user delete (chantier D2): name in bold red via the
+         default slot of LigojConfirmDialog. -->
+    <LigojConfirmDialog
+      v-model="deleteDialog"
+      :title="t('user.deleteTitle')"
+      :confirm-label="t('common.delete')"
+      confirm-color="error"
+      :loading="deleting"
+      @confirm="confirmDeleteUser"
+    >
+      {{ t('user.deleteConfirmBefore') }}<strong class="text-error">{{ deleteTarget?.id }}</strong>{{ t('user.deleteConfirmAfter') }}
+    </LigojConfirmDialog>
 
-    <v-dialog v-model="bulkDeleteDialog" max-width="400">
-      <v-card>
-        <v-card-title>{{ t('common.bulkDeleteTitle') }}</v-card-title>
-        <v-card-text>{{ t('common.bulkDeleteConfirm', { count: selected.length }) }}</v-card-text>
-        <v-card-actions>
-          <v-spacer />
-          <v-btn variant="text" @click="bulkDeleteDialog = false">{{ t('common.cancel') }}</v-btn>
-          <v-btn color="error" variant="elevated" :loading="deleting" @click="confirmBulkDelete">{{ t('common.delete') }}</v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
+    <!-- Bulk delete (chantier D2 rattrapage): the selected count is
+         rendered in bold red via the default slot, same visual weight
+         as a sensitive single-item confirmation. The host's monolithic
+         `common.bulkDeleteConfirm` key stays intact; we just use two
+         new plugin-local fragments around the count. -->
+    <LigojConfirmDialog
+      v-model="bulkDeleteDialog"
+      :title="t('common.bulkDeleteTitle')"
+      :confirm-label="t('common.delete')"
+      confirm-color="error"
+      :loading="deleting"
+      @confirm="confirmBulkDelete"
+    >
+      {{ t('common.bulkDeleteConfirmBefore') }}<strong class="text-error">{{ selected.length }}</strong>{{ t('common.bulkDeleteConfirmAfter') }}
+    </LigojConfirmDialog>
 
     <!-- Confirmation for the sensitive lock/isolate/reset actions
-         triggered from the row gear menu. Mirrors the actionDialog
-         pattern of UserEditView so the two screens stay consistent. -->
-    <v-dialog v-model="actionDialog" max-width="400">
-      <v-card>
-        <v-card-title>{{ t('user.' + actionType) }}</v-card-title>
-        <v-card-text>{{ t('user.' + actionType + 'Confirm', { id: actionTarget?.id }) }}</v-card-text>
-        <v-card-actions>
-          <v-spacer />
-          <v-btn variant="text" @click="actionDialog = false">{{ t('common.cancel') }}</v-btn>
-          <v-btn color="primary" variant="elevated" :loading="actionLoading" @click="confirmUserAction">{{ t('common.confirm') }}</v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
+         triggered from the row gear menu (chantier D2): the login is
+         now bolded and coloured via two i18n fragments around it
+         (user.<action>ConfirmBefore / user.<action>ConfirmAfter). -->
+    <LigojConfirmDialog
+      v-model="actionDialog"
+      :title="t('user.' + actionType)"
+      :confirm-label="t('common.confirm')"
+      :loading="actionLoading"
+      @confirm="confirmUserAction"
+    >
+      {{ t('user.' + actionType + 'ConfirmBefore') }}<strong class="text-error">{{ actionTarget?.id }}</strong>{{ t('user.' + actionType + 'ConfirmAfter') }}
+    </LigojConfirmDialog>
 
     <!-- User create/edit popup (chantier I.2). userId null = create mode. -->
     <UserEditDialog v-model="editDialog" :user-id="editUserId" @saved="onUserSaved" />
@@ -130,7 +141,7 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
-import { useDataTable, useApi, useAppStore, useErrorStore, useI18nStore, ImportExportBar, LigojDataTableServer } from '@ligoj/host'
+import { useDataTable, useApi, useAppStore, useErrorStore, useI18nStore, ImportExportBar, LigojDataTableServer, LigojConfirmDialog } from '@ligoj/host'
 import UserEditDialog from './UserEditDialog.vue'
 
 const appStore = useAppStore()
@@ -176,8 +187,8 @@ const headers = computed(() => [
   { title: t('user.company'), key: 'company', sortable: true },
   { title: t('user.email'), key: 'mails', sortable: false },
   { title: t('user.groups'), key: 'groups', sortable: false },
-  { title: t('common.status'), key: 'locked', sortable: false, width: '80px' },
-  { title: '', key: 'actions', sortable: false, width: '120px', align: 'center' },
+  { title: t('common.status'), key: 'locked', sortable: false, width: '80px', align: 'center' },
+  { title: '', key: 'actions', sortable: false, width: '120px', align: 'end' },
 ])
 
 function loadData(options) {
@@ -303,5 +314,15 @@ onMounted(() => {
   flex-wrap: nowrap;
   overflow: hidden;
   white-space: nowrap;
+}
+
+/* Mails column (chantier D4). Soft-wrap is acceptable here because
+   email addresses can be long: stacking onto a 2nd line keeps the
+   column readable. The +N indicator at the end of (item.mails || [])
+   keeps the visual footprint bounded. */
+.mails-cell {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
 }
 </style>

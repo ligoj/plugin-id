@@ -40,6 +40,26 @@ export default {
   'delegate.writeHelp': 'With the write security level, the receivers of this delegation can modify the members of the involved groups. Without this access, this delegation grants read-only rights',
   'user.deleteConfirmBefore': 'Are you sure you want to delete ',
   'user.deleteConfirmAfter': '?',
+  // Chantier D4 — multi-email input (v-combobox)
+  'user.emailHint': 'Press Enter or Tab to confirm each email',
+  // Chantier D2 (rattrapage) — fragments wrapping the bulk-delete count
+  // in bold red.
+  'common.bulkDeleteConfirmBefore': 'Are you sure you want to delete ',
+  'common.bulkDeleteConfirmAfter': ' items? This cannot be undone.',
+  // Chantier D2 — sensitive confirmations split in two fragments so the
+  // login can be wrapped in bold red between them. The monolithic
+  // `user.<action>Confirm` keys stay on the host side for any other
+  // consumer; we just stop relying on them here.
+  'user.lockConfirmBefore': 'Lock user ',
+  'user.lockConfirmAfter': '? They will no longer be able to log in.',
+  'user.unlockConfirmBefore': 'Unlock user ',
+  'user.unlockConfirmAfter': '? They will be able to log in again.',
+  'user.isolateConfirmBefore': 'Isolate user ',
+  'user.isolateConfirmAfter': '? This will remove all group memberships.',
+  'user.restoreConfirmBefore': 'Restore user ',
+  'user.restoreConfirmAfter': '?',
+  'user.resetPasswordConfirmBefore': 'Reset password for user ',
+  'user.resetPasswordConfirmAfter': '? A new password will be sent.',
   'group.deleteConfirmBefore': 'Are you sure you want to delete ',
   'group.deleteConfirmAfter': '?',
   'company.deleteConfirmBefore': 'Are you sure you want to delete ',
@@ -59,7 +79,9 @@ export default {
   'id.group.add': 'Add',
   'id.group.addedToast': 'Added {user} to {group}',
   'id.group.removeTitle': 'Remove member',
-  'id.group.removeConfirm': 'Remove {user} from group {group}?',
+  // Chantier D2 — fragments wrapping the user identifier in bold red.
+  'id.group.removeConfirmBefore': 'Remove ',
+  'id.group.removeConfirmAfter': ' from group {group}?',
   'id.group.removedToast': 'Removed {user} from {group}',
   'id.group.transitive': 'Indirect member through a sub-group — manage them on the parent.',
 }
