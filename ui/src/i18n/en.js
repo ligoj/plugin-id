@@ -38,6 +38,11 @@ export default {
   'delegate.write': 'Write',
   'delegate.adminHelp': 'With the administration security level on this resource, the receivers of this delegation can create other delegations to share this access with other valid receivers',
   'delegate.writeHelp': 'With the write security level, the receivers of this delegation can modify the members of the involved groups. Without this access, this delegation grants read-only rights',
+  // Fragments wrapping the receiver name in bold red on the delete
+  // confirmation (issue #37). The host keeps the monolithic
+  // `delegate.deleteConfirm` key intact.
+  'delegate.deleteConfirmBefore': 'Are you sure you want to delete the delegation for ',
+  'delegate.deleteConfirmAfter': '?',
   'user.deleteConfirmBefore': 'Are you sure you want to delete ',
   'user.deleteConfirmAfter': '?',
   // Chantier D4 — multi-email input (v-combobox)

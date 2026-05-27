@@ -103,8 +103,16 @@
       </v-card>
     </v-dialog>
 
-    <LigojConfirmDialog v-model="confirmDelete" :title="t('delegate.deleteTitle')" :message="t('delegate.deleteConfirm', { name: form.receiver })" :confirm-label="t('common.delete')"
-      confirm-color="error" :loading="deleting" @confirm="remove" />
+    <!-- Receiver name rendered in bold red via the LigojConfirmDialog
+         default slot, mirroring the User/Group/Company/GroupMembers
+         confirmation pattern. The host's monolithic
+         `delegate.deleteConfirm` key stays intact for any other
+         consumer; we just use two plugin-local fragments around the
+         name. -->
+    <LigojConfirmDialog v-model="confirmDelete" :title="t('delegate.deleteTitle')" :confirm-label="t('common.delete')"
+      confirm-color="error" :loading="deleting" @confirm="remove">
+      {{ t('delegate.deleteConfirmBefore') }}<strong class="text-error">{{ form.receiver }}</strong>{{ t('delegate.deleteConfirmAfter') }}
+    </LigojConfirmDialog>
 
     <!-- Unsaved-changes guard. Triggered either by a dialog close request
          (Cancel / Esc / scrim) or by useFormGuard's onBeforeRouteLeave

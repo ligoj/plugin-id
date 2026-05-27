@@ -67,19 +67,20 @@
       {{ t('delegate.empty') }}
     </v-alert>
 
-    <v-dialog v-model="deleteDialog" max-width="400">
-      <v-card>
-        <v-card-title>{{ t('delegate.deleteTitle') }}</v-card-title>
-        <v-card-text>
-          {{ t('delegate.deleteConfirm', { name: deleteTarget?.receiver?.name || deleteTarget?.name || deleteTarget?.id }) }}
-        </v-card-text>
-        <v-card-actions>
-          <v-spacer />
-          <v-btn variant="text" @click="deleteDialog = false">{{ t('common.cancel') }}</v-btn>
-          <v-btn color="error" variant="elevated" :loading="deleting" @click="confirmDelete">{{ t('common.delete') }}</v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
+    <!-- Receiver name rendered in bold red via the LigojConfirmDialog
+         default slot (issue #37), matching the pattern of PR #39
+         for User / Company / Group / GroupMembers and the in-popup
+         delete confirmation of DelegateEditDialog. -->
+    <LigojConfirmDialog
+      v-model="deleteDialog"
+      :title="t('delegate.deleteTitle')"
+      :confirm-label="t('common.delete')"
+      confirm-color="error"
+      :loading="deleting"
+      @confirm="confirmDelete"
+    >
+      {{ t('delegate.deleteConfirmBefore') }}<strong class="text-error">{{ deleteTarget?.receiver?.name || deleteTarget?.name || deleteTarget?.id }}</strong>{{ t('delegate.deleteConfirmAfter') }}
+    </LigojConfirmDialog>
 
     <v-dialog v-model="bulkDeleteDialog" max-width="400">
       <v-card>
@@ -100,7 +101,7 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
-import { useDataTable, useApi, useAppStore, useI18nStore, LigojDataTableServer } from '@ligoj/host'
+import { useDataTable, useApi, useAppStore, useI18nStore, LigojDataTableServer, LigojConfirmDialog } from '@ligoj/host'
 import DelegateEditDialog from './DelegateEditDialog.vue'
 import { TYPE_ICONS } from '../composables/delegateTypes.js'
 

@@ -31,6 +31,11 @@ export default {
   'delegate.write': 'Écriture',
   'delegate.adminHelp': 'Avec le niveau de sécurité d\'administration sur cette ressource, les receveurs de cette délégation peuvent créer d\'autres délégations pour partager cet accès avec d\'autres receveurs valides',
   'delegate.writeHelp': 'Avec le niveau de sécurité d\'écriture, les receveurs de cette délégation peuvent modifier les membres des groupes impliqués. Sans cet accès cette délégation ne donne qu\'un droit de lecture',
+  // Fragments encadrant le nom du destinataire en gras-rouge dans la
+  // confirmation de suppression (issue #37). Le host garde la clé
+  // monolithique `delegate.deleteConfirm` intacte.
+  'delegate.deleteConfirmBefore': 'Êtes-vous certain de supprimer la délégation pour ',
+  'delegate.deleteConfirmAfter': ' ?',
   'user.deleteConfirmBefore': 'Êtes-vous certain de supprimer ',
   'user.deleteConfirmAfter': ' ?',
   // Chantier D4 — saisie multi-email (v-combobox)
