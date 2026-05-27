@@ -93,14 +93,7 @@
 
     <!-- Single-user delete (chantier D2): name in bold red via the
          default slot of LigojConfirmDialog. -->
-    <LigojConfirmDialog
-      v-model="deleteDialog"
-      :title="t('user.deleteTitle')"
-      :confirm-label="t('common.delete')"
-      confirm-color="error"
-      :loading="deleting"
-      @confirm="confirmDeleteUser"
-    >
+    <LigojConfirmDialog v-model="deleteDialog" :title="t('user.deleteTitle')" :confirm-label="t('common.delete')" confirm-color="error" :loading="deleting" @confirm="confirmDeleteUser">
       {{ t('user.deleteConfirmBefore') }}<strong class="text-error">{{ deleteTarget?.id }}</strong>{{ t('user.deleteConfirmAfter') }}
     </LigojConfirmDialog>
 
@@ -109,14 +102,7 @@
          as a sensitive single-item confirmation. The host's monolithic
          `common.bulkDeleteConfirm` key stays intact; we just use two
          new plugin-local fragments around the count. -->
-    <LigojConfirmDialog
-      v-model="bulkDeleteDialog"
-      :title="t('common.bulkDeleteTitle')"
-      :confirm-label="t('common.delete')"
-      confirm-color="error"
-      :loading="deleting"
-      @confirm="confirmBulkDelete"
-    >
+    <LigojConfirmDialog v-model="bulkDeleteDialog" :title="t('common.bulkDeleteTitle')" :confirm-label="t('common.delete')" confirm-color="error" :loading="deleting" @confirm="confirmBulkDelete">
       {{ t('common.bulkDeleteConfirmBefore') }}<strong class="text-error">{{ selected.length }}</strong>{{ t('common.bulkDeleteConfirmAfter') }}
     </LigojConfirmDialog>
 
@@ -124,13 +110,7 @@
          triggered from the row gear menu (chantier D2): the login is
          now bolded and coloured via two i18n fragments around it
          (user.<action>ConfirmBefore / user.<action>ConfirmAfter). -->
-    <LigojConfirmDialog
-      v-model="actionDialog"
-      :title="t('user.' + actionType)"
-      :confirm-label="t('common.confirm')"
-      :loading="actionLoading"
-      @confirm="confirmUserAction"
-    >
+    <LigojConfirmDialog v-model="actionDialog" :title="t('user.' + actionType)" :confirm-label="t('common.confirm')" :loading="actionLoading" @confirm="confirmUserAction">
       {{ t('user.' + actionType + 'ConfirmBefore') }}<strong class="text-error">{{ actionTarget?.id }}</strong>{{ t('user.' + actionType + 'ConfirmAfter') }}
     </LigojConfirmDialog>
 
@@ -185,7 +165,7 @@ const headers = computed(() => [
   { title: t('user.firstName'), key: 'firstName', sortable: true },
   { title: t('user.lastName'), key: 'lastName', sortable: true },
   { title: t('user.company'), key: 'company', sortable: true },
-  { title: t('user.email'), key: 'mails', sortable: false },
+  { title: t('user.emails'), key: 'mails', sortable: false },
   { title: t('user.groups'), key: 'groups', sortable: false },
   { title: t('common.status'), key: 'locked', sortable: false, width: '80px', align: 'center' },
   { title: '', key: 'actions', sortable: false, width: '120px', align: 'end' },

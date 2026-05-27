@@ -18,38 +18,20 @@
 
           <template v-else>
             <v-form ref="formRef" @submit.prevent="save">
-              <v-text-field v-model="form.id" :label="t('user.login')" :rules="[rules.required]" :disabled="isEdit" :hint="isEdit ? '' : t('user.loginHint')" persistent-hint
-                variant="outlined" class="mb-2" autofocus />
+              <v-text-field v-model="form.id" :label="t('user.login')" :rules="[rules.required]" :disabled="isEdit" :hint="isEdit ? '' : t('user.loginHint')" persistent-hint variant="outlined"
+                class="mb-2" autofocus />
               <v-text-field v-model="form.firstName" :label="t('user.firstName')" :rules="[rules.required]" variant="outlined" class="mb-2" />
               <v-text-field v-model="form.lastName" :label="t('user.lastName')" :rules="[rules.required]" variant="outlined" class="mb-2" />
               <!-- Auto-suggest for company. Queries rest/service/id/company as the
                    user types (300 ms debounced). v-model stores the company name
                    as a string, matching the payload contract of rest/service/id/user. -->
-              <v-autocomplete
-                v-model="form.company"
-                :items="companyResults"
-                :loading="companyLoading"
-                :search="companySearchQuery"
-                item-title="name"
-                item-value="name"
-                :label="t('user.company')"
-                placeholder="Rechercher une entité…"
-                variant="outlined"
-                class="mb-2"
-                no-filter
-                clearable
-                @update:search="onCompanySearch"
-              >
+              <v-autocomplete v-model="form.company" :items="companyResults" :loading="companyLoading" :search="companySearchQuery" item-title="name" item-value="name" :label="t('user.company')"
+                placeholder="Rechercher une entité…" variant="outlined" class="mb-2" no-filter clearable @update:search="onCompanySearch">
                 <template #item="{ props: itemProps, item }">
                   <v-list-item v-bind="itemProps" :title="item?.name || ''">
                     <template v-if="item?.scope || item?.count !== undefined" #subtitle>
                       <span v-if="item?.scope" class="text-caption mr-2">{{ item.scope }}</span>
-                      <v-chip
-                        v-if="item?.count !== undefined"
-                        size="x-small"
-                        variant="tonal"
-                        class="mr-1"
-                      >{{ item.count }} {{ t('user.title').toLowerCase() }}</v-chip>
+                      <v-chip v-if="item?.count !== undefined" size="x-small" variant="tonal" class="mr-1">{{ item.count }} {{ t('user.title').toLowerCase() }}</v-chip>
                     </template>
                   </v-list-item>
                 </template>
@@ -65,41 +47,14 @@
                    multiple + chips lets the user type any email (no
                    autocomplete source) and confirm with Enter or Tab;
                    existing emails are restored as chips at load time. -->
-              <v-combobox
-                v-model="form.mails"
-                :label="t('user.email')"
-                multiple
-                chips
-                closable-chips
-                variant="outlined"
-                class="mb-2"
-                :hint="t('user.emailHint')"
-                persistent-hint
-              />
+              <v-combobox v-model="form.mails" :label="t('user.emails')" multiple chips closable-chips variant="outlined" class="mb-2" :hint="t('user.emailsHint')" persistent-hint />
               <!-- Auto-suggest for groups (multi-select). Queries
                    rest/service/id/group as the user types (300 ms debounced).
                    v-model holds an array of group **names** (strings),
                    matching the payload contract of rest/service/id/user. -->
-              <v-autocomplete
-                v-model="groups"
-                v-model:menu="groupMenu"
-                :items="groupResults"
-                :loading="groupLoading"
-                :search="groupSearchQuery"
-                item-title="name"
-                item-value="name"
-                :label="t('user.groups')"
-                placeholder="Ajouter un groupe…"
-                variant="outlined"
-                class="mb-2"
-                multiple
-                chips
-                closable-chips
-                no-filter
-                clearable
-                @update:search="onGroupSearch"
-                @update:model-value="onGroupModelUpdate"
-              >
+              <v-autocomplete v-model="groups" v-model:menu="groupMenu" :items="groupResults" :loading="groupLoading" :search="groupSearchQuery" item-title="name" item-value="name"
+                :label="t('user.groups')" placeholder="Ajouter un groupe…" variant="outlined" class="mb-2" multiple chips closable-chips no-filter clearable @update:search="onGroupSearch"
+                @update:model-value="onGroupModelUpdate">
                 <template #item="{ props: itemProps, item }">
                   <v-list-item v-bind="itemProps" :title="item?.name || ''" />
                 </template>
@@ -121,8 +76,7 @@
               <v-divider class="my-4" />
               <div class="text-subtitle-2 text-medium-emphasis mb-2">{{ t('user.actions') }}</div>
               <v-list border rounded density="compact" bg-color="transparent">
-                <v-list-item :prepend-icon="locked ? 'mdi-lock-open-variant' : 'mdi-lock'" :title="locked ? t('user.unlock') : t('user.lock')"
-                  @click="startAction(locked ? 'unlock' : 'lock')" />
+                <v-list-item :prepend-icon="locked ? 'mdi-lock-open-variant' : 'mdi-lock'" :title="locked ? t('user.unlock') : t('user.lock')" @click="startAction(locked ? 'unlock' : 'lock')" />
                 <v-list-item :prepend-icon="isolated ? 'mdi-account-check' : 'mdi-account-off'" :title="isolated ? t('user.restore') : t('user.isolate')"
                   @click="startAction(isolated ? 'restore' : 'isolate')" />
                 <v-list-item prepend-icon="mdi-lock-reset" :title="t('user.resetPassword')" @click="startAction('resetPassword')" />
@@ -144,14 +98,7 @@
       </v-card>
     </v-dialog>
 
-    <LigojConfirmDialog
-      v-model="confirmDelete"
-      :title="t('user.deleteTitle')"
-      :confirm-label="t('common.delete')"
-      confirm-color="error"
-      :loading="deleting"
-      @confirm="remove"
-    >
+    <LigojConfirmDialog v-model="confirmDelete" :title="t('user.deleteTitle')" :confirm-label="t('common.delete')" confirm-color="error" :loading="deleting" @confirm="remove">
       {{ t('user.deleteConfirmBefore') }}<strong class="text-error">{{ form.id }}</strong>{{ t('user.deleteConfirmAfter') }}
     </LigojConfirmDialog>
 
@@ -160,28 +107,15 @@
          navigating away from the list with the dialog still open.
          persistent: only the explicit buttons dismiss it, so pendingClose
          is always reset through onGuardConfirm/onGuardCancel. -->
-    <LigojConfirmDialog
-      v-model="showGuardDialog"
-      :title="t('common.unsavedTitle')"
-      :message="t('common.unsavedMsg')"
-      :confirm-label="t('common.discard')"
-      confirm-color="warning"
-      persistent
-      @confirm="onGuardConfirm"
-      @cancel="onGuardCancel"
-    />
+    <LigojConfirmDialog v-model="showGuardDialog" :title="t('common.unsavedTitle')" :message="t('common.unsavedMsg')" :confirm-label="t('common.discard')" confirm-color="warning" persistent
+      @confirm="onGuardConfirm" @cancel="onGuardCancel" />
 
     <!-- Chantier D2 (rattrapage): mirror the UserListView pattern so the
          login is rendered in bold red here too. The previous monolithic
          `user.<action>Confirm` message with {id} interpolation kept the
          name as plain text, which felt visually weaker than the same
          action triggered from the list row. -->
-    <LigojConfirmDialog
-      v-model="actionDialog"
-      :title="t('user.' + actionType)"
-      :loading="actionLoading"
-      @confirm="confirmAction"
-    >
+    <LigojConfirmDialog v-model="actionDialog" :title="t('user.' + actionType)" :loading="actionLoading" @confirm="confirmAction">
       {{ t('user.' + actionType + 'ConfirmBefore') }}<strong class="text-error">{{ form.id }}</strong>{{ t('user.' + actionType + 'ConfirmAfter') }}
     </LigojConfirmDialog>
   </div>
@@ -467,7 +401,7 @@ async function loadOnOpen() {
       // Chantier D4: keep the entire mails array, with string fallback
       // for any legacy payload that stored a single email as `mail`.
       form.value.mails = Array.isArray(data.mails) ? [...data.mails]
-                       : data.mail ? [data.mail] : []
+        : data.mail ? [data.mail] : []
       // Normalize groups to an array of names (strings) so v-autocomplete
       // with item-value="name" can roundtrip them through v-model.
       groups.value = (data.groups || []).map(g => g.name || g)
@@ -667,6 +601,7 @@ async function confirmAction() {
 .v-autocomplete__content .v-list-item-title {
   color: rgb(var(--v-theme-on-surface)) !important;
 }
+
 .v-autocomplete__content .v-list-item-subtitle {
   color: rgb(var(--v-theme-on-surface)) !important;
   opacity: 0.7;

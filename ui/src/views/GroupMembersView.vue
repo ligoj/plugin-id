@@ -26,46 +26,16 @@
            reloads the table. -->
       <v-card variant="tonal" class="mb-4">
         <v-card-text class="d-flex flex-wrap align-center ga-2">
-          <v-autocomplete
-            v-model="newMember"
-            v-model:search="searchTerm"
-            :label="t('id.group.addPlaceholder')"
-            :items="searchResults"
-            item-title="label"
-            item-value="id"
-            :loading="searching"
-            no-filter
-            clearable
-            return-object="false"
-            variant="outlined"
-            density="compact"
-            hide-details
-            style="min-width: 320px; flex: 1 1 320px"
-            @update:search="onSearch"
-            @update:menu="onSearchMenu"
-          />
-          <v-btn
-            color="primary"
-            prepend-icon="mdi-account-plus"
-            :disabled="!newMember || !groupName"
-            :loading="adding"
-            @click="addMember"
-          >
+          <v-autocomplete v-model="newMember" v-model:search="searchTerm" :label="t('id.group.addPlaceholder')" :items="searchResults" item-title="label" item-value="id" :loading="searching" no-filter
+            clearable return-object="false" variant="outlined" density="compact" hide-details style="min-width: 320px; flex: 1 1 320px" @update:search="onSearch" @update:menu="onSearchMenu" />
+          <v-btn color="primary" prepend-icon="mdi-account-plus" :disabled="!newMember || !groupName" :loading="adding" @click="addMember">
             {{ t('id.group.add') }}
           </v-btn>
         </v-card-text>
       </v-card>
 
-      <v-text-field
-        v-model="dt.search.value"
-        prepend-inner-icon="mdi-magnify"
-        :label="t('common.search')"
-        variant="outlined"
-        density="compact"
-        hide-details
-        class="search-field mb-4"
-        @update:model-value="onMemberSearch"
-      />
+      <v-text-field v-model="dt.search.value" prepend-inner-icon="mdi-magnify" :label="t('common.search')" variant="outlined" density="compact" hide-details class="search-field mb-4"
+        @update:model-value="onMemberSearch" />
 
       <v-alert v-if="dt.error.value" type="warning" variant="tonal" class="mb-4">
         {{ dt.error.value === 'internal' ? t('user.noProviderMsg') : dt.error.value }}
@@ -73,20 +43,8 @@
 
       <v-skeleton-loader v-if="dt.loading.value && dt.items.value.length === 0" type="table-heading, table-row@5" class="mb-4" />
 
-      <LigojDataTableServer
-        v-if="!dt.error.value"
-        v-show="dt.items.value.length > 0 || !dt.loading.value"
-        filename="members.csv"
-        :fetch-all="dt.loadAll"
-        v-model:items-per-page="itemsPerPage"
-        :headers="headers"
-        :items="dt.items.value"
-        :items-length="dt.totalItems.value"
-        :loading="dt.loading.value"
-        item-value="id"
-        hover
-        @update:options="loadData"
-      >
+      <LigojDataTableServer v-if="!dt.error.value" v-show="dt.items.value.length > 0 || !dt.loading.value" filename="members.csv" :fetch-all="dt.loadAll" v-model:items-per-page="itemsPerPage"
+        :headers="headers" :items="dt.items.value" :items-length="dt.totalItems.value" :loading="dt.loading.value" item-value="id" hover @update:options="loadData">
         <template #item.mails="{ item }">
           {{ item.mails?.[0] || '' }}
         </template>
@@ -101,15 +59,7 @@
           </div>
         </template>
         <template #item.actions="{ item }">
-          <v-btn
-            v-if="canRemove(item)"
-            icon
-            size="small"
-            variant="text"
-            color="error"
-            :title="t('id.group.removeTitle')"
-            @click.stop="startRemove(item)"
-          >
+          <v-btn v-if="canRemove(item)" icon size="small" variant="text" color="error" :title="t('id.group.removeTitle')" @click.stop="startRemove(item)">
             <v-icon size="small">mdi-account-minus</v-icon>
           </v-btn>
           <v-tooltip v-else-if="isTransitive(item)" :text="t('id.group.transitive')" location="top">
@@ -124,14 +74,7 @@
     <!-- Chantier D2: the user being removed is rendered in bold red
          via the default slot so the action carries the same visual
          weight as the delete dialogs across the rest of the screen. -->
-    <LigojConfirmDialog
-      v-model="removeDialog"
-      :title="t('id.group.removeTitle')"
-      :confirm-label="t('common.remove')"
-      confirm-color="error"
-      :loading="removing"
-      @confirm="confirmRemove"
-    >
+    <LigojConfirmDialog v-model="removeDialog" :title="t('id.group.removeTitle')" :confirm-label="t('common.remove')" confirm-color="error" :loading="removing" @confirm="confirmRemove">
       {{ t('id.group.removeConfirmBefore') }}<strong class="text-error">{{ removeTarget?.id }}</strong>{{ t('id.group.removeConfirmAfter', { group: groupName }) }}
     </LigojConfirmDialog>
   </div>
@@ -177,13 +120,13 @@ let searchTimer = null
 const dt = useDataTable('service/id/user', { defaultSort: 'id' })
 
 const headers = computed(() => [
-  { title: t('user.login'),     key: 'id',        sortable: true,  width: '160px' },
+  { title: t('user.login'), key: 'id', sortable: true, width: '160px' },
   { title: t('user.firstName'), key: 'firstName', sortable: true },
-  { title: t('user.lastName'),  key: 'lastName',  sortable: true },
-  { title: t('user.company'),   key: 'company',   sortable: true },
-  { title: t('user.email'),     key: 'mails',     sortable: false },
-  { title: t('user.groups'),    key: 'groups',    sortable: false },
-  { title: '',                  key: 'actions',   sortable: false, width: '60px', align: 'end' },
+  { title: t('user.lastName'), key: 'lastName', sortable: true },
+  { title: t('user.company'), key: 'company', sortable: true },
+  { title: t('user.emails'), key: 'mails', sortable: false },
+  { title: t('user.groups'), key: 'groups', sortable: false },
+  { title: '', key: 'actions', sortable: false, width: '60px', align: 'end' },
 ])
 
 function loadData(options) {
@@ -348,6 +291,7 @@ watch(() => route.params.id, async (id) => {
 .search-field {
   max-width: 320px;
 }
+
 .groups-cell {
   max-width: 320px;
   overflow: hidden;
