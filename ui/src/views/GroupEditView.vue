@@ -10,7 +10,7 @@
       <v-card-text>
         <v-form ref="formRef" @submit.prevent="save">
           <v-text-field v-model="form.name" :label="t('common.name')" :rules="[rules.required]" :disabled="isEdit" variant="outlined" class="mb-2" />
-          <v-autocomplete v-model="form.scope" :label="t('group.scope')" :items="availableScopes" :loading="scopesLoading" clearable variant="outlined" class="mb-2" />
+          <v-autocomplete v-model="form.scope" :label="t('group.scope')" :items="availableScopes" :loading="scopesLoading" clearable variant="outlined" class="mb-2" autocomplete="off" />
           <!-- Parent group: lazy server-backed autosuggest. No groups are
                loaded until the dropdown opens (chantier H, Fabrice review) —
                the former mount-time bulk GET doesn't scale to 100k+ groups. -->
@@ -28,6 +28,7 @@
             class="mb-2"
             no-filter
             clearable
+            autocomplete="off"
             @update:menu="onParentMenu"
             @update:search="onParentSearch"
           >

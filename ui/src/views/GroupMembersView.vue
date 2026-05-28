@@ -27,7 +27,7 @@
       <v-card variant="tonal" class="mb-4">
         <v-card-text class="d-flex flex-wrap align-center ga-2">
           <v-autocomplete v-model="newMember" v-model:search="searchTerm" :label="t('id.group.addPlaceholder')" :items="searchResults" item-title="label" item-value="id" :loading="searching" no-filter
-            clearable return-object="false" variant="outlined" density="compact" hide-details style="min-width: 320px; flex: 1 1 320px" @update:search="onSearch" @update:menu="onSearchMenu" />
+            clearable return-object="false" variant="outlined" density="compact" hide-details autocomplete="off" style="min-width: 320px; flex: 1 1 320px" @update:search="onSearch" @update:menu="onSearchMenu" />
           <v-btn color="primary" prepend-icon="mdi-account-plus" :disabled="!newMember || !groupName" :loading="adding" @click="addMember">
             {{ t('id.group.add') }}
           </v-btn>
@@ -61,6 +61,7 @@
         <template #item.actions="{ item }">
           <v-btn v-if="canRemove(item)" icon size="small" variant="text" color="error" :title="t('id.group.removeTitle')" @click.stop="startRemove(item)">
             <v-icon size="small">mdi-account-minus</v-icon>
+            <v-tooltip activator="parent" :text="t('id.group.removeTitle')" location="top" />
           </v-btn>
           <v-tooltip v-else-if="isTransitive(item)" :text="t('id.group.transitive')" location="top">
             <template #activator="{ props: tt }">

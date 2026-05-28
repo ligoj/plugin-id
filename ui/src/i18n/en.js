@@ -38,6 +38,8 @@ export default {
   'delegate.write': 'Write',
   'delegate.adminHelp': 'With the administration security level on this resource, the receivers of this delegation can create other delegations to share this access with other valid receivers',
   'delegate.writeHelp': 'With the write security level, the receivers of this delegation can modify the members of the involved groups. Without this access, this delegation grants read-only rights',
+  'delegate.adminGranted': 'Administration granted',
+  'delegate.writeGranted': 'Write access granted',
   // Fragments wrapping the receiver name in bold red on the delete
   // confirmation (issue #37). The host keeps the monolithic
   // `delegate.deleteConfirm` key intact.
@@ -51,6 +53,7 @@ export default {
   // in bold red.
   'common.bulkDeleteConfirmBefore': 'Are you sure you want to delete ',
   'common.bulkDeleteConfirmAfter': ' items? This cannot be undone.',
+  'common.edit': 'Edit',
   // Chantier D2 — sensitive confirmations split in two fragments so the
   // login can be wrapped in bold red between them. The monolithic
   // `user.<action>Confirm` keys stay on the host side for any other
@@ -65,6 +68,8 @@ export default {
   'user.restoreConfirmAfter': '?',
   'user.resetPasswordConfirmBefore': 'Reset password for user ',
   'user.resetPasswordConfirmAfter': '? A new password will be sent.',
+  'user.statusLocked': 'Locked',
+  'user.statusActive': 'Active',
   'group.deleteConfirmBefore': 'Are you sure you want to delete ',
   'group.deleteConfirmAfter': '?',
   'company.deleteConfirmBefore': 'Are you sure you want to delete ',

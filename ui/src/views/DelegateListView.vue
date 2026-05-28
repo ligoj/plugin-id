@@ -36,7 +36,11 @@
            for some rows, so normalize before the TYPE_ICONS lookup —
            same rationale as DelegateEditDialog.loadOnOpen(). -->
       <template #item.receiver="{ item }">
-        <v-icon size="small" class="me-1">{{ TYPE_ICONS[item.receiverType?.toUpperCase()] || 'mdi-account' }}</v-icon>
+        <v-tooltip :text="t('delegate.type.' + (item.receiverType || '').toLowerCase())" location="top">
+          <template #activator="{ props: tt }">
+            <v-icon v-bind="tt" size="small" class="me-1">{{ TYPE_ICONS[item.receiverType?.toUpperCase()] || 'mdi-account' }}</v-icon>
+          </template>
+        </v-tooltip>
         {{ item.receiver?.name || item.receiver?.id || item.name || '-' }}
       </template>
       <!-- Resource column (chantier D5+D8): fuses the former Type and
@@ -44,18 +48,35 @@
            Group / Domain / File-tree); the text is the resource name
            (or DN for TREE delegates). Same lowercase-normalize as above. -->
       <template #item.name="{ item }">
-        <v-icon size="small" class="me-1">{{ TYPE_ICONS[item.type?.toUpperCase()] || '' }}</v-icon>
+        <v-tooltip :text="t('delegate.type.' + (item.type || '').toLowerCase())" location="top">
+          <template #activator="{ props: tt }">
+            <v-icon v-bind="tt" size="small" class="me-1">{{ TYPE_ICONS[item.type?.toUpperCase()] || '' }}</v-icon>
+          </template>
+        </v-tooltip>
         {{ item.name || '-' }}
       </template>
       <template #item.canAdmin="{ item }">
-        <v-icon v-if="item.canAdmin" color="success" size="small">mdi-check</v-icon>
+        <div class="text-center">
+          <v-tooltip v-if="item.canAdmin" :text="t('delegate.adminGranted')" location="top">
+            <template #activator="{ props: tt }">
+              <v-icon v-bind="tt" color="success" size="small">mdi-check</v-icon>
+            </template>
+          </v-tooltip>
+        </div>
       </template>
       <template #item.canWrite="{ item }">
-        <v-icon v-if="item.canWrite" color="success" size="small">mdi-check</v-icon>
+        <div class="text-center">
+          <v-tooltip v-if="item.canWrite" :text="t('delegate.writeGranted')" location="top">
+            <template #activator="{ props: tt }">
+              <v-icon v-bind="tt" color="success" size="small">mdi-check</v-icon>
+            </template>
+          </v-tooltip>
+        </div>
       </template>
       <template #item.actions="{ item }">
         <v-btn icon size="small" variant="text" @click.stop="openDialog(item.id)">
           <v-icon size="small">mdi-pencil</v-icon>
+          <v-tooltip activator="parent" :text="t('common.edit')" location="top" />
         </v-btn>
         <v-btn icon size="small" variant="text" color="error" @click.stop="startDelete(item)">
           <v-icon size="small">mdi-delete</v-icon>
@@ -133,8 +154,8 @@ const editDelegateId = ref(null)
 const headers = computed(() => [
   { title: t('delegate.receiver'), key: 'receiver', sortable: true },
   { title: t('delegate.resource'), key: 'name', sortable: false },
-  { title: t('delegate.admin'), key: 'canAdmin', sortable: false, width: '80px', tooltip: t('delegate.adminHelp') },
-  { title: t('delegate.write'), key: 'canWrite', sortable: false, width: '80px', tooltip: t('delegate.writeHelp') },
+  { title: t('delegate.admin'), key: 'canAdmin', sortable: false, width: '80px', align: 'center', tooltip: t('delegate.adminHelp') },
+  { title: t('delegate.write'), key: 'canWrite', sortable: false, width: '80px', align: 'center', tooltip: t('delegate.writeHelp') },
   { title: '', key: 'actions', sortable: false, width: '120px', align: 'center' },
 ])
 

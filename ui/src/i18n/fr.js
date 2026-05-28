@@ -31,6 +31,8 @@ export default {
   'delegate.write': 'Écriture',
   'delegate.adminHelp': 'Avec le niveau de sécurité d\'administration sur cette ressource, les receveurs de cette délégation peuvent créer d\'autres délégations pour partager cet accès avec d\'autres receveurs valides',
   'delegate.writeHelp': 'Avec le niveau de sécurité d\'écriture, les receveurs de cette délégation peuvent modifier les membres des groupes impliqués. Sans cet accès cette délégation ne donne qu\'un droit de lecture',
+  'delegate.adminGranted': 'Administration accordée',
+  'delegate.writeGranted': 'Écriture accordée',
   // Fragments encadrant le nom du destinataire en gras-rouge dans la
   // confirmation de suppression (issue #37). Le host garde la clé
   // monolithique `delegate.deleteConfirm` intacte.
@@ -44,6 +46,7 @@ export default {
   // en gras-rouge pour la suppression en masse.
   'common.bulkDeleteConfirmBefore': 'Supprimer ',
   'common.bulkDeleteConfirmAfter': ' éléments ? Cette action est irréversible.',
+  'common.edit': 'Modifier',
   // Chantier D2 — confirmations sensibles découpées en deux fragments
   // pour insérer l'identifiant en gras-rouge entre eux. Les clés
   // monolithiques `user.<action>Confirm` restent côté host pour
@@ -58,6 +61,8 @@ export default {
   'user.restoreConfirmAfter': ' ?',
   'user.resetPasswordConfirmBefore': 'Réinitialiser le mot de passe de l\'utilisateur ',
   'user.resetPasswordConfirmAfter': ' ? Un nouveau mot de passe lui sera envoyé.',
+  'user.statusLocked': 'Verrouillé',
+  'user.statusActive': 'Actif',
   'group.deleteConfirmBefore': 'Êtes-vous certain de supprimer ',
   'group.deleteConfirmAfter': ' ?',
   'company.deleteConfirmBefore': 'Êtes-vous certain de supprimer ',
