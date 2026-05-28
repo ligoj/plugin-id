@@ -56,18 +56,22 @@
         {{ item.name || '-' }}
       </template>
       <template #item.canAdmin="{ item }">
-        <v-tooltip v-if="item.canAdmin" :text="t('delegate.adminGranted')" location="top">
-          <template #activator="{ props: tt }">
-            <v-icon v-bind="tt" color="success" size="small">mdi-check</v-icon>
-          </template>
-        </v-tooltip>
+        <div class="text-center">
+          <v-tooltip v-if="item.canAdmin" :text="t('delegate.adminGranted')" location="top">
+            <template #activator="{ props: tt }">
+              <v-icon v-bind="tt" color="success" size="small">mdi-check</v-icon>
+            </template>
+          </v-tooltip>
+        </div>
       </template>
       <template #item.canWrite="{ item }">
-        <v-tooltip v-if="item.canWrite" :text="t('delegate.writeGranted')" location="top">
-          <template #activator="{ props: tt }">
-            <v-icon v-bind="tt" color="success" size="small">mdi-check</v-icon>
-          </template>
-        </v-tooltip>
+        <div class="text-center">
+          <v-tooltip v-if="item.canWrite" :text="t('delegate.writeGranted')" location="top">
+            <template #activator="{ props: tt }">
+              <v-icon v-bind="tt" color="success" size="small">mdi-check</v-icon>
+            </template>
+          </v-tooltip>
+        </div>
       </template>
       <template #item.actions="{ item }">
         <v-btn icon size="small" variant="text" @click.stop="openDialog(item.id)">
@@ -150,8 +154,8 @@ const editDelegateId = ref(null)
 const headers = computed(() => [
   { title: t('delegate.receiver'), key: 'receiver', sortable: true },
   { title: t('delegate.resource'), key: 'name', sortable: false },
-  { title: t('delegate.admin'), key: 'canAdmin', sortable: false, width: '80px', tooltip: t('delegate.adminHelp') },
-  { title: t('delegate.write'), key: 'canWrite', sortable: false, width: '80px', tooltip: t('delegate.writeHelp') },
+  { title: t('delegate.admin'), key: 'canAdmin', sortable: false, width: '80px', align: 'center', tooltip: t('delegate.adminHelp') },
+  { title: t('delegate.write'), key: 'canWrite', sortable: false, width: '80px', align: 'center', tooltip: t('delegate.writeHelp') },
   { title: '', key: 'actions', sortable: false, width: '120px', align: 'center' },
 ])
 

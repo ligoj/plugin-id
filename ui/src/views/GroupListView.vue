@@ -34,11 +34,13 @@
       v-model:items-per-page="itemsPerPage" :headers="headers" :items="dt.items.value" :items-length="dt.totalItems.value" :loading="dt.loading.value" item-value="name" show-select hover
       @update:options="loadData" @click:row="(_, { item }) => router.push('/id/group/' + item.name)">
       <template #item.locked="{ item }">
-        <v-tooltip v-if="item.locked" :text="t('user.statusLocked')" location="top">
-          <template #activator="{ props: tt }">
-            <v-icon v-bind="tt" color="error" size="small">mdi-lock</v-icon>
-          </template>
-        </v-tooltip>
+        <div class="text-center">
+          <v-tooltip v-if="item.locked" :text="t('user.statusLocked')" location="top">
+            <template #activator="{ props: tt }">
+              <v-icon v-bind="tt" color="error" size="small">mdi-lock</v-icon>
+            </template>
+          </v-tooltip>
+        </div>
       </template>
       <template #item.actions="{ item }">
         <v-btn icon size="small" variant="text" @click.stop="router.push('/id/group/' + item.name)">
@@ -113,8 +115,8 @@ let lastOptions = {}
 const headers = computed(() => [
   { title: t('common.name'), key: 'name', sortable: true },
   { title: t('group.scope'), key: 'scope', sortable: false },
-  { title: t('group.members'), key: 'count', sortable: false, width: '100px' },
-  { title: t('group.locked'), key: 'locked', sortable: false, width: '80px' },
+  { title: t('group.members'), key: 'count', sortable: false, width: '100px', align: 'center' },
+  { title: t('group.locked'), key: 'locked', sortable: false, width: '80px', align: 'center' },
   { title: '', key: 'actions', sortable: false, width: '120px', align: 'center' },
 ])
 
