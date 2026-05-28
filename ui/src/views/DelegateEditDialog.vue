@@ -33,7 +33,7 @@
               </v-col>
               <v-col cols="12" sm="7">
                 <v-autocomplete v-model="form.receiver" v-model:search="receiverSearch" :label="t('delegate.receiver')" :items="receiverDisplayItems" item-title="label" item-value="id"
-                  :loading="receiverLoading" :rules="[rules.required]" no-filter clearable auto-select-first variant="outlined" class="mb-2" @update:search="onReceiverSearch"
+                  :loading="receiverLoading" :rules="[rules.required]" no-filter clearable auto-select-first variant="outlined" class="mb-2" autocomplete="off" @update:search="onReceiverSearch"
                   @update:menu="onReceiverMenu" />
               </v-col>
             </v-row>
@@ -62,7 +62,7 @@
                 <v-text-field v-if="form.type === 'TREE'" v-model="form.name" :label="t('delegate.resource')" :rules="[rules.required]" :hint="t('delegate.resourceDnHint')" persistent-hint
                   variant="outlined" class="mb-2" />
                 <v-autocomplete v-else v-model="form.name" v-model:search="resourceSearch" :label="t('delegate.resource')" :items="resourceDisplayItems" item-title="label" item-value="id"
-                  :loading="resourceLoading" :rules="[rules.required]" :hint="t('delegate.resourceHint')" persistent-hint no-filter clearable auto-select-first variant="outlined" class="mb-2"
+                  :loading="resourceLoading" :rules="[rules.required]" :hint="t('delegate.resourceHint')" persistent-hint no-filter clearable auto-select-first variant="outlined" class="mb-2" autocomplete="off"
                   @update:search="onResourceSearch" @update:menu="onResourceMenu" />
               </v-col>
             </v-row>
