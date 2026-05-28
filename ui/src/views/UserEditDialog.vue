@@ -26,7 +26,7 @@
                    user types (300 ms debounced). v-model stores the company name
                    as a string, matching the payload contract of rest/service/id/user. -->
               <v-autocomplete v-model="form.company" :items="companyResults" :loading="companyLoading" :search="companySearchQuery" item-title="name" item-value="name" :label="t('user.company')"
-                placeholder="Rechercher une entité…" variant="outlined" class="mb-2" no-filter clearable @update:search="onCompanySearch">
+                placeholder="Rechercher une entité…" variant="outlined" class="mb-2" no-filter clearable autocomplete="off" @update:search="onCompanySearch">
                 <template #item="{ props: itemProps, item }">
                   <v-list-item v-bind="itemProps" :title="item?.name || ''">
                     <template v-if="item?.scope || item?.count !== undefined" #subtitle>
@@ -47,13 +47,13 @@
                    multiple + chips lets the user type any email (no
                    autocomplete source) and confirm with Enter or Tab;
                    existing emails are restored as chips at load time. -->
-              <v-combobox v-model="form.mails" :label="t('user.emails')" multiple chips closable-chips variant="outlined" class="mb-2" :hint="t('user.emailsHint')" persistent-hint />
+              <v-combobox v-model="form.mails" :label="t('user.emails')" multiple chips closable-chips variant="outlined" class="mb-2" :hint="t('user.emailsHint')" persistent-hint autocomplete="off" />
               <!-- Auto-suggest for groups (multi-select). Queries
                    rest/service/id/group as the user types (300 ms debounced).
                    v-model holds an array of group **names** (strings),
                    matching the payload contract of rest/service/id/user. -->
               <v-autocomplete v-model="groups" v-model:menu="groupMenu" :items="groupResults" :loading="groupLoading" :search="groupSearchQuery" item-title="name" item-value="name"
-                :label="t('user.groups')" placeholder="Ajouter un groupe…" variant="outlined" class="mb-2" multiple chips closable-chips no-filter clearable @update:search="onGroupSearch"
+                :label="t('user.groups')" placeholder="Ajouter un groupe…" variant="outlined" class="mb-2" multiple chips closable-chips no-filter clearable autocomplete="off" @update:search="onGroupSearch"
                 @update:model-value="onGroupModelUpdate">
                 <template #item="{ props: itemProps, item }">
                   <v-list-item v-bind="itemProps" :title="item?.name || ''" />

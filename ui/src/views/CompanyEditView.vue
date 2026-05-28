@@ -29,6 +29,7 @@
             class="mb-2"
             no-filter
             clearable
+            autocomplete="off"
             @update:search="onScopeSearch"
           >
             <template #item="{ props: itemProps, item }">
