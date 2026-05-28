@@ -44,6 +44,7 @@ export default {
   // en gras-rouge pour la suppression en masse.
   'common.bulkDeleteConfirmBefore': 'Supprimer ',
   'common.bulkDeleteConfirmAfter': ' éléments ? Cette action est irréversible.',
+  'common.edit': 'Modifier',
   // Chantier D2 — confirmations sensibles découpées en deux fragments
   // pour insérer l'identifiant en gras-rouge entre eux. Les clés
   // monolithiques `user.<action>Confirm` restent côté host pour
@@ -58,6 +59,8 @@ export default {
   'user.restoreConfirmAfter': ' ?',
   'user.resetPasswordConfirmBefore': 'Réinitialiser le mot de passe de l\'utilisateur ',
   'user.resetPasswordConfirmAfter': ' ? Un nouveau mot de passe lui sera envoyé.',
+  'user.statusLocked': 'Verrouillé',
+  'user.statusActive': 'Actif',
   'group.deleteConfirmBefore': 'Êtes-vous certain de supprimer ',
   'group.deleteConfirmAfter': ' ?',
   'company.deleteConfirmBefore': 'Êtes-vous certain de supprimer ',

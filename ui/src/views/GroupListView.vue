@@ -34,14 +34,20 @@
       v-model:items-per-page="itemsPerPage" :headers="headers" :items="dt.items.value" :items-length="dt.totalItems.value" :loading="dt.loading.value" item-value="name" show-select hover
       @update:options="loadData" @click:row="(_, { item }) => router.push('/id/group/' + item.name)">
       <template #item.locked="{ item }">
-        <v-icon v-if="item.locked" color="error" size="small">mdi-lock</v-icon>
+        <v-tooltip v-if="item.locked" :text="t('user.statusLocked')" location="top">
+          <template #activator="{ props: tt }">
+            <v-icon v-bind="tt" color="error" size="small">mdi-lock</v-icon>
+          </template>
+        </v-tooltip>
       </template>
       <template #item.actions="{ item }">
         <v-btn icon size="small" variant="text" @click.stop="router.push('/id/group/' + item.name)">
           <v-icon size="small">mdi-pencil</v-icon>
+          <v-tooltip activator="parent" :text="t('common.edit')" location="top" />
         </v-btn>
         <v-btn icon size="small" variant="text" color="error" @click.stop="startDelete(item)">
           <v-icon size="small">mdi-delete</v-icon>
+          <v-tooltip activator="parent" :text="t('common.delete')" location="top" />
         </v-btn>
       </template>
     </LigojDataTableServer>

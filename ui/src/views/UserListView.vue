@@ -56,8 +56,16 @@
         </div>
       </template>
       <template #item.locked="{ item }">
-        <v-icon v-if="item.locked" color="error" size="small">mdi-lock</v-icon>
-        <v-icon v-else color="success" size="small">mdi-lock-open-variant</v-icon>
+        <v-tooltip v-if="item.locked" :text="t('user.statusLocked')" location="top">
+          <template #activator="{ props: tt }">
+            <v-icon v-bind="tt" color="error" size="small">mdi-lock</v-icon>
+          </template>
+        </v-tooltip>
+        <v-tooltip v-else :text="t('user.statusActive')" location="top">
+          <template #activator="{ props: tt }">
+            <v-icon v-bind="tt" color="success" size="small">mdi-lock-open-variant</v-icon>
+          </template>
+        </v-tooltip>
       </template>
       <template #item.actions="{ item }">
         <!-- Single gear button opening a menu of row actions (Fabrice
@@ -75,6 +83,7 @@
           <template #activator="{ props }">
             <v-btn icon size="x-small" variant="text" :aria-label="t('user.actions')" v-bind="props" @click.stop>
               <v-icon size="small">mdi-cog</v-icon>
+              <v-tooltip activator="parent" :text="t('user.actions')" location="top" />
             </v-btn>
           </template>
           <v-list density="compact" min-width="220">

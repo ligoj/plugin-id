@@ -61,6 +61,7 @@
         <template #item.actions="{ item }">
           <v-btn v-if="canRemove(item)" icon size="small" variant="text" color="error" :title="t('id.group.removeTitle')" @click.stop="startRemove(item)">
             <v-icon size="small">mdi-account-minus</v-icon>
+            <v-tooltip activator="parent" :text="t('id.group.removeTitle')" location="top" />
           </v-btn>
           <v-tooltip v-else-if="isTransitive(item)" :text="t('id.group.transitive')" location="top">
             <template #activator="{ props: tt }">
