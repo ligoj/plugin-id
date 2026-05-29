@@ -77,6 +77,8 @@ export default {
   // Vue de gestion des membres d'un groupe (portage de id.html legacy).
   'id.group.unknown': '(groupe inconnu)',
   'id.group.subtitle': 'Les membres de ce groupe héritent des permissions de la souscription.',
+  'id.group.manage': 'Gérer les membres',
+  'id.group.manageTitle': 'Membres du groupe —',
   'id.group.addPlaceholder': 'Rechercher un utilisateur à ajouter',
   'id.group.add': 'Ajouter',
   'id.group.addedToast': '{user} ajouté à {group}',

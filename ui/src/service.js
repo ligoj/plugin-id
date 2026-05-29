@@ -1,5 +1,6 @@
 import { h } from 'vue'
 import { VBtn, VChip, VIcon, pluginRegistry, useI18nStore } from '@ligoj/host'
+import { useGroupMembersDialog } from './composables/useGroupMembersDialog.js'
 
 const REST = '/rest/'
 
@@ -65,6 +66,7 @@ const service = {
   renderFeatures(subscription) {
     const { t } = useI18nStore()
     const help = subscription?.parameters?.['service:id:help']
+    const group = groupOf(subscription)
     const buttons = [
       h(
         VBtn,
@@ -73,7 +75,26 @@ const service = {
           size: 'small',
           variant: 'text',
           title: t('id.renderFeatures.manage'),
-          to: `/id/subscription/${subscription?.id ?? ''}`,
+          // Was a route nav to `/id/subscription/<id>` — now opens the
+          // globally-mounted GroupMembersDialog scoped to this row's
+          // group. Same UX in fewer clicks; no navigation away from
+          // the project. Disabled when the subscription carries no
+          // group parameter (defensive — shouldn't happen).
+          //
+          // The `onChanged` callback fires once on dialog close if the
+          // user added/removed at least one member, dispatching a
+          // window-level event so the host view that mounted this
+          // button (typically plugin-ui's `ProjectDetailView`) can
+          // refresh its subscriptions — without plugin-id needing to
+          // depend on plugin-ui code. The `detail` carries the
+          // subscription id and the group so an interested view can
+          // refresh just the affected row instead of the whole list.
+          disabled: !group,
+          onClick: () => group && useGroupMembersDialog().openFor(group, {
+            onChanged: () => window.dispatchEvent(new CustomEvent('ligoj:subscription-data-changed', {
+              detail: { subscriptionId: subscription?.id, group },
+            })),
+          }),
         },
         () => h(VIcon, { size: 'small' }, () => 'mdi-account-multiple'),
       ),

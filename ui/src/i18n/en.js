@@ -85,6 +85,8 @@ export default {
   // Group members management view (ported from legacy id.html).
   'id.group.unknown': '(unknown group)',
   'id.group.subtitle': 'Members of this group inherit the subscription\'s permissions.',
+  'id.group.manage': 'Manage members',
+  'id.group.manageTitle': 'Group members —',
   'id.group.addPlaceholder': 'Search a user to add',
   'id.group.add': 'Add',
   'id.group.addedToast': 'Added {user} to {group}',

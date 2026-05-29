@@ -33,7 +33,7 @@ if (typeof document !== 'undefined') {
  * Shared host surface (stores, composables) is imported from `@ligoj/host`,
  * kept external at build so plugin and host share the same instances.
  */
-import { useI18nStore } from '@ligoj/host'
+import { useI18nStore, useAppStore } from '@ligoj/host'
 import IdPlugin from './IdPlugin.vue'
 import UserListView from './views/UserListView.vue'
 import GroupListView from './views/GroupListView.vue'
@@ -43,6 +43,7 @@ import CompanyEditView from './views/CompanyEditView.vue'
 import DelegateListView from './views/DelegateListView.vue'
 import ContainerScopeView from './views/ContainerScopeView.vue'
 import GroupMembersView from './views/GroupMembersView.vue'
+import GroupMembersDialog from './components/GroupMembersDialog.vue'
 import enMessages from './i18n/en.js'
 import frMessages from './i18n/fr.js'
 import service from './service.js'
@@ -94,6 +95,14 @@ export default {
     const i18n = useI18nStore()
     i18n.merge(enMessages, 'en')
     i18n.merge(frMessages, 'fr')
+    // Mount the group-members dialog globally via the host's header-
+    // item slot. The component returns nothing visible (Vuetify's
+    // `<v-dialog>` teleports to <body>) but staying alive across
+    // route changes lets it be opened from anywhere via
+    // `useGroupMembersDialog().openFor(name)` — the GroupListView
+    // action column AND the host's subscription-row buttons both
+    // trigger it without each mounting their own dialog instance.
+    useAppStore().registerHeaderItem(GroupMembersDialog)
   },
   feature(action, ...args) {
     const fn = features[action]

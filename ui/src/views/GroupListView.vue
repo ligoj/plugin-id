@@ -43,6 +43,17 @@
         </div>
       </template>
       <template #item.actions="{ item }">
+        <!-- Manage members: opens the global GroupMembersDialog
+             scoped to this row's group. Dialog is header-mounted
+             via `install()` so we just push state to it here. The
+             `onChanged` callback fires once on dialog close IF the
+             user added/removed at least one member — refreshing the
+             groups table so the member-count column reflects the
+             new total. -->
+        <v-btn icon size="small" variant="text" @click.stop="onManageMembers(item.name)">
+          <v-icon size="small">mdi-account-multiple</v-icon>
+          <v-tooltip activator="parent" :text="t('id.group.manage')" location="top" />
+        </v-btn>
         <v-btn icon size="small" variant="text" @click.stop="router.push('/id/group/' + item.name)">
           <v-icon size="small">mdi-pencil</v-icon>
           <v-tooltip activator="parent" :text="t('common.edit')" location="top" />
@@ -86,6 +97,22 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useDataTable, useApi, useAppStore, useErrorStore, useI18nStore, LigojDataTableServer } from '@ligoj/host'
+import { useGroupMembersDialog } from '../composables/useGroupMembersDialog.js'
+
+const membersDialog = useGroupMembersDialog()
+
+/**
+ * Click handler for the Manage-members action. Opens the global
+ * dialog and registers an `onChanged` callback the dialog will
+ * invoke ONCE on close if the user added/removed at least one
+ * member — refreshing the table so this row's member-count column
+ * shows the new total.
+ */
+function onManageMembers(name) {
+  membersDialog.openFor(name, {
+    onChanged: () => dt.load(lastOptions),
+  })
+}
 
 const router = useRouter()
 const appStore = useAppStore()
@@ -117,7 +144,7 @@ const headers = computed(() => [
   { title: t('group.scope'), key: 'scope', sortable: false },
   { title: t('group.members'), key: 'count', sortable: false, width: '100px', align: 'center' },
   { title: t('group.locked'), key: 'locked', sortable: false, width: '80px', align: 'center' },
-  { title: '', key: 'actions', sortable: false, width: '120px', align: 'center' },
+  { title: '', key: 'actions', sortable: false, width: '160px', align: 'center' },
 ])
 
 function loadData(options) {
