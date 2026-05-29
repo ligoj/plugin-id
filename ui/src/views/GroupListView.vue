@@ -4,7 +4,7 @@
       <v-spacer />
       <v-text-field v-model="dt.search.value" prepend-inner-icon="mdi-magnify" :label="t('common.search')" variant="outlined" density="compact" hide-details class="search-field"
         @update:model-value="onSearch" />
-      <v-btn color="primary" prepend-icon="mdi-plus" @click="router.push('/id/group/new')">
+      <v-btn color="primary" prepend-icon="mdi-plus" @click="openCreate">
         {{ t('group.new') }}
       </v-btn>
     </div>
@@ -32,7 +32,7 @@
 
     <LigojDataTableServer filename="groups.csv" :fetch-all="dt.loadAll" v-if="!dt.error.value" v-show="dt.items.value.length > 0 || !dt.loading.value" v-model="selected"
       v-model:items-per-page="itemsPerPage" :headers="headers" :items="dt.items.value" :items-length="dt.totalItems.value" :loading="dt.loading.value" item-value="name" show-select hover
-      @update:options="loadData" @click:row="(_, { item }) => router.push('/id/group/' + item.name)">
+      @update:options="loadData" @click:row="(_, { item }) => openEdit(item.name)">
       <template #item.locked="{ item }">
         <div class="text-center">
           <v-tooltip v-if="item.locked" :text="t('user.statusLocked')" location="top">
@@ -54,9 +54,15 @@
           <v-icon size="small">mdi-account-multiple</v-icon>
           <v-tooltip activator="parent" :text="t('id.group.manage')" location="top" />
         </v-btn>
-        <v-btn icon size="small" variant="text" @click.stop="router.push('/id/group/' + item.name)">
-          <v-icon size="small">mdi-pencil</v-icon>
-          <v-tooltip activator="parent" :text="t('common.edit')" location="top" />
+        <!-- View details: group properties (name / scope / parent) are
+             effectively read-only once a group exists at the LDAP
+             level, so this is an "open the details panel" gesture,
+             not an "edit" one. The eye icon + "View" tooltip
+             communicate that — and the row click still routes through
+             the same handler so the affordance is consistent. -->
+        <v-btn icon size="small" variant="text" @click.stop="openEdit(item.name)">
+          <v-icon size="small">mdi-eye-outline</v-icon>
+          <v-tooltip activator="parent" :text="t('common.view')" location="top" />
         </v-btn>
         <v-btn icon size="small" variant="text" color="error" @click.stop="startDelete(item)">
           <v-icon size="small">mdi-delete</v-icon>
@@ -64,6 +70,38 @@
         </v-btn>
       </template>
     </LigojDataTableServer>
+
+    <!-- Group view / create dialog. NOT `persistent`: viewing an
+         existing group is read-only (nothing to lose on accidental
+         dismiss) and the create form is small enough that ESC /
+         backdrop closing is an acceptable trade for the Escape-to-
+         dismiss reflex the user expects. The Panel is
+         `v-if`-mounted on `editDialog` so each open is a fresh
+         component (clean form state, fresh REST fetch for the target
+         group); `:key="editingId ?? 'new'"` belt-and-suspenders for
+         the rare in-place target swap. -->
+    <v-dialog v-model="editDialog" max-width="700" scrollable>
+      <v-card>
+        <v-card-title class="d-flex align-center ga-2">
+          <v-icon color="primary">{{ editingId ? 'mdi-eye-outline' : 'mdi-account-group' }}</v-icon>
+          <span v-if="editingId">{{ t('group.detailsTitle') }}</span>
+          <span v-else>{{ t('group.new') }}</span>
+          <span v-if="editingId" class="text-primary">{{ editingId }}</span>
+          <v-spacer />
+          <v-btn icon size="small" variant="text" @click="editDialog = false">
+            <v-icon>mdi-close</v-icon>
+          </v-btn>
+        </v-card-title>
+        <GroupEditPanel
+          v-if="editDialog"
+          :key="editingId ?? 'new'"
+          :group-id="editingId"
+          @saved="onEditSaved"
+          @deleted="onEditDeleted"
+          @cancel="editDialog = false"
+        />
+      </v-card>
+    </v-dialog>
 
     <v-dialog v-model="deleteDialog" max-width="400">
       <v-card>
@@ -95,9 +133,10 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { useDataTable, useApi, useAppStore, useErrorStore, useI18nStore, LigojDataTableServer } from '@ligoj/host'
 import { useGroupMembersDialog } from '../composables/useGroupMembersDialog.js'
+import GroupEditPanel from '../components/GroupEditPanel.vue'
 
 const membersDialog = useGroupMembersDialog()
 
@@ -114,7 +153,41 @@ function onManageMembers(name) {
   })
 }
 
+/* ---- Create / edit dialog ----------------------------------------
+ * Replaces the legacy `router.push('/id/group/<id>')` page navigation
+ * with an in-place dialog so the user keeps the list (and any scroll
+ * / filter state) when editing. The routed URLs still resolve here
+ * (see `index.js` route table) and auto-open the dialog on mount,
+ * preserving email / bookmark deep links.
+ * ------------------------------------------------------------------ */
+
+const editDialog = ref(false)
+const editingId = ref(null)
+
+function openCreate() {
+  editingId.value = null
+  editDialog.value = true
+}
+
+function openEdit(name) {
+  editingId.value = name
+  editDialog.value = true
+}
+
+function onEditSaved() {
+  editDialog.value = false
+  editingId.value = null
+  dt.load(lastOptions)
+}
+
+function onEditDeleted() {
+  editDialog.value = false
+  editingId.value = null
+  dt.load(lastOptions)
+}
+
 const router = useRouter()
+const route = useRoute()
 const appStore = useAppStore()
 const api = useApi()
 const errorStore = useErrorStore()
@@ -205,6 +278,16 @@ onMounted(() => {
     ],
     { refresh: () => dt.load(lastOptions) },
   )
+  // Deep-link support. `/id/group/new` and `/id/group/<id>` route
+  // here (see plugin index.js) and open the dialog over the list so
+  // emails / bookmarks pointing at the old per-entity URLs still
+  // land the user in the right place — but inside the list context.
+  const id = route.params?.id
+  if (id === 'new' || route.path?.endsWith('/group/new')) {
+    openCreate()
+  } else if (id) {
+    openEdit(String(id))
+  }
 })
 </script>
 
