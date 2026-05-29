@@ -6,8 +6,8 @@
     </div>
 
     <v-tabs v-model="activeTab" class="mb-4">
-      <v-tab value="group">{{ t('nav.groups') }}</v-tab>
-      <v-tab value="company">{{ t('nav.companies') }}</v-tab>
+      <v-tab value="group" prepend-icon="mdi-account-group">{{ t('nav.groups') }}</v-tab>
+      <v-tab value="company" prepend-icon="mdi-domain">{{ t('nav.companies') }}</v-tab>
     </v-tabs>
 
     <v-alert v-if="error" type="warning" variant="tonal" class="mb-4">
@@ -96,7 +96,7 @@ const demoMode = ref(false)
 const headers = computed(() => [
   { title: t('common.name'), key: 'name', sortable: true },
   { title: t('common.status'), key: 'locked', sortable: false, width: '80px' },
-  { title: '', key: 'actions', sortable: false, width: '100px', align: 'end' },
+  { title: '', key: 'actions', sortable: false, width: '120px', align: 'end' },
 ])
 
 const formRef = ref(null)
