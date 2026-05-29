@@ -94,4 +94,8 @@ export default {
   'id.group.removeConfirmAfter': ' from group {group}?',
   'id.group.removedToast': 'Removed {user} from {group}',
   'id.group.transitive': 'Indirect member through a sub-group — manage them on the parent.',
+  // LDAP DN exposed in the container-scope view (issue #44). The other
+  // `containerScope.*` keys live in the host; this one is contributed by
+  // the plugin and merged into the i18n store at install time.
+  'containerScope.dn': 'LDAP path',
 }

@@ -41,6 +41,7 @@
         <v-card-text>
           <v-form ref="formRef" @submit.prevent="save">
             <v-text-field v-model="editForm.name" :label="t('common.name')" :rules="[rules.required]" variant="outlined" class="mb-2" />
+            <v-text-field v-if="editTarget?.id" v-model="editForm.dn" :label="t('containerScope.dn')" variant="outlined" class="mb-2" disabled />
           </v-form>
         </v-card-text>
         <v-card-actions>
@@ -78,13 +79,13 @@ const t = i18n.t
 const activeTab = ref('group')
 
 const DEMO_GROUP_SCOPES = [
-  { id: 1, name: 'Department', locked: false },
-  { id: 2, name: 'Team', locked: false },
-  { id: 3, name: 'Project', locked: true },
+  { id: 1, name: 'Department', dn: 'ou=Department,dc=demo,dc=com', locked: false },
+  { id: 2, name: 'Team', dn: 'ou=Team,dc=demo,dc=com', locked: false },
+  { id: 3, name: 'Project', dn: 'ou=Project,dc=demo,dc=com', locked: true },
 ]
 const DEMO_COMPANY_SCOPES = [
-  { id: 1, name: 'Organization', locked: false },
-  { id: 2, name: 'Business Unit', locked: true },
+  { id: 1, name: 'Organization', dn: 'ou=Organization,dc=demo,dc=com', locked: false },
+  { id: 2, name: 'Business Unit', dn: 'ou=BusinessUnit,dc=demo,dc=com', locked: true },
 ]
 
 const items = ref([])
@@ -95,6 +96,7 @@ const demoMode = ref(false)
 
 const headers = computed(() => [
   { title: t('common.name'), key: 'name', sortable: true },
+  { title: t('containerScope.dn'), key: 'dn', sortable: true },
   { title: t('common.status'), key: 'locked', sortable: false, width: '80px' },
   { title: '', key: 'actions', sortable: false, width: '100px', align: 'end' },
 ])
@@ -140,13 +142,13 @@ watch(activeTab, () => {
 
 function openNew() {
   editTarget.value = null
-  editForm.value = { name: '' }
+  editForm.value = { name: '', dn: '' }
   editDialog.value = true
 }
 
 function openEdit(item) {
   editTarget.value = item
-  editForm.value = { name: item.name }
+  editForm.value = { name: item.name, dn: item.dn || '' }
   editDialog.value = true
 }
 
