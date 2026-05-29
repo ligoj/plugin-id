@@ -38,7 +38,6 @@ import IdPlugin from './IdPlugin.vue'
 import UserListView from './views/UserListView.vue'
 import GroupListView from './views/GroupListView.vue'
 import CompanyListView from './views/CompanyListView.vue'
-import CompanyEditView from './views/CompanyEditView.vue'
 import DelegateListView from './views/DelegateListView.vue'
 import ContainerScopeView from './views/ContainerScopeView.vue'
 import GroupMembersView from './views/GroupMembersView.vue'
@@ -74,8 +73,14 @@ const routes = [
   { path: '/id/group/new', name: 'id-group-new', component: GroupListView },
   { path: '/id/group/:id', name: 'id-group-edit', component: GroupListView },
   { path: '/id/company', name: 'id-company', component: CompanyListView },
-  { path: '/id/company/new', name: 'id-company-new', component: CompanyEditView },
-  { path: '/id/company/:id', name: 'id-company-edit', component: CompanyEditView },
+  // Company create + view are now dialogs hosted by `CompanyListView`
+  // — the same `CompanyEditPanel` powers both modes (editable on
+  // create, read-only on view). These routes still resolve here so
+  // legacy email / bookmark links keep working — the list's
+  // `onMounted` reads `route.params.id` (and the `/new` segment) to
+  // auto-open the dialog in the right mode.
+  { path: '/id/company/new', name: 'id-company-new', component: CompanyListView },
+  { path: '/id/company/:id', name: 'id-company-view', component: CompanyListView },
   // Delegate create/edit is a dialog hosted by DelegateListView (chantier D3),
   // so there is no per-entity delegate route — mirrors the Users screen.
   { path: '/id/delegate', name: 'id-delegate', component: DelegateListView },

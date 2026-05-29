@@ -7,7 +7,15 @@
          unsaved-changes guard before it actually closes. -->
     <v-dialog :model-value="modelValue" @update:model-value="onDialogModel" max-width="700" scrollable>
       <v-card>
-        <v-card-title>{{ isEdit ? t('user.edit') : t('user.new') }}</v-card-title>
+        <!-- Edit mode includes the user id (login) as a primary-color
+             span so the user sees who they're editing the moment the
+             dialog opens, matching the convention used by the group
+             details and group-members dialogs. Sourced from the prop
+             — `form.id` would lag until the load completes. -->
+        <v-card-title class="d-flex align-center ga-2">
+          <span>{{ isEdit ? t('user.edit') : t('user.new') }}</span>
+          <span v-if="isEdit" class="text-primary">{{ userId }}</span>
+        </v-card-title>
 
         <v-card-text>
           <v-alert v-if="demoMode" type="info" variant="tonal" density="compact" class="mb-4">

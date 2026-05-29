@@ -4,7 +4,7 @@
       <v-spacer />
       <v-text-field v-model="dt.search.value" prepend-inner-icon="mdi-magnify" :label="t('common.search')" variant="outlined" density="compact" hide-details class="search-field"
         @update:model-value="onSearch" />
-      <v-btn color="primary" prepend-icon="mdi-plus" @click="router.push('/id/company/new')">
+      <v-btn color="primary" prepend-icon="mdi-plus" @click="openCreate">
         {{ t('company.new') }}
       </v-btn>
     </div>
@@ -32,7 +32,7 @@
 
     <LigojDataTableServer filename="companies.csv" :fetch-all="dt.loadAll" v-if="!dt.error.value" v-show="dt.items.value.length > 0 || !dt.loading.value" v-model="selected"
       v-model:items-per-page="itemsPerPage" :headers="headers" :items="dt.items.value" :items-length="dt.totalItems.value" :loading="dt.loading.value" item-value="name" show-select hover
-      @update:options="loadData" @click:row="(_, { item }) => router.push('/id/company/' + item.name)">
+      @update:options="loadData" @click:row="(_, { item }) => openDetails(item.name)">
       <template #item.locked="{ item }">
         <div class="text-center">
           <v-tooltip v-if="item.locked" :text="t('user.statusLocked')" location="top">
@@ -43,9 +43,13 @@
         </div>
       </template>
       <template #item.actions="{ item }">
-        <v-btn icon size="small" variant="text" @click.stop="router.push('/id/company/' + item.name)">
-          <v-icon size="small">mdi-pencil</v-icon>
-          <v-tooltip activator="parent" :text="t('common.edit')" location="top" />
+        <!-- View details: company properties (name / scope / lock /
+             member count) are LDAP-managed and effectively immutable
+             from this UI, so this is "open the details panel" — not
+             "edit". The eye icon + "View" tooltip communicate that. -->
+        <v-btn icon size="small" variant="text" @click.stop="openDetails(item.name)">
+          <v-icon size="small">mdi-eye-outline</v-icon>
+          <v-tooltip activator="parent" :text="t('common.view')" location="top" />
         </v-btn>
         <v-btn icon size="small" variant="text" color="error" @click.stop="startDelete(item)">
           <v-icon size="small">mdi-delete</v-icon>
@@ -53,6 +57,38 @@
         </v-btn>
       </template>
     </LigojDataTableServer>
+
+    <!-- Company view / create dialog. View mode renders the form with
+         every field disabled (LDAP companies are immutable from this
+         UI) PLUS extra read-only rows for lock status + member count
+         that the form alone can't show. Create mode renders the same
+         form editable, with the usual Save/Cancel pair. NOT
+         `persistent` — ESC and backdrop click both close it. Panel
+         is `v-if`-mounted on `editDialog` so each open is a fresh
+         component (clean form state, fresh GET); `:key` covers the
+         rare in-place target swap. -->
+    <v-dialog v-model="editDialog" max-width="700" scrollable>
+      <v-card>
+        <v-card-title class="d-flex align-center ga-2">
+          <v-icon color="primary">{{ editingId ? 'mdi-eye-outline' : 'mdi-domain' }}</v-icon>
+          <span v-if="editingId">{{ t('company.detailsTitle') }}</span>
+          <span v-else>{{ t('company.new') }}</span>
+          <span v-if="editingId" class="text-primary">{{ editingId }}</span>
+          <v-spacer />
+          <v-btn icon size="small" variant="text" @click="editDialog = false">
+            <v-icon>mdi-close</v-icon>
+          </v-btn>
+        </v-card-title>
+        <CompanyEditPanel
+          v-if="editDialog"
+          :key="editingId ?? 'new'"
+          :company-id="editingId"
+          @saved="onEditSaved"
+          @deleted="onEditDeleted"
+          @cancel="editDialog = false"
+        />
+      </v-card>
+    </v-dialog>
 
     <v-dialog v-model="deleteDialog" max-width="400">
       <v-card>
@@ -84,10 +120,12 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { useDataTable, useApi, useAppStore, useErrorStore, useI18nStore, LigojDataTableServer } from '@ligoj/host'
+import CompanyEditPanel from '../components/CompanyEditPanel.vue'
 
 const router = useRouter()
+const route = useRoute()
 const appStore = useAppStore()
 const api = useApi()
 const errorStore = useErrorStore()
@@ -109,6 +147,41 @@ const deleteTarget = ref(null)
 const deleting = ref(false)
 const bulkDeleteDialog = ref(false)
 let lastOptions = {}
+
+/* ---- Create / view dialog ---------------------------------------
+ * Replaces the legacy `router.push('/id/company/<id>')` and
+ * `router.push('/id/company/new')` navigations. The routed URLs
+ * still resolve here (see plugin index.js) and auto-open the dialog
+ * in the appropriate mode so email / bookmark deep links keep
+ * working. The Panel itself decides between view (disabled fields,
+ * Close+Delete) and create (editable, Save+Cancel) based on its
+ * `companyId` prop.
+ * ----------------------------------------------------------------- */
+
+const editDialog = ref(false)
+const editingId = ref(null)
+
+function openCreate() {
+  editingId.value = null
+  editDialog.value = true
+}
+
+function openDetails(name) {
+  editingId.value = name
+  editDialog.value = true
+}
+
+function onEditSaved() {
+  editDialog.value = false
+  editingId.value = null
+  dt.load(lastOptions)
+}
+
+function onEditDeleted() {
+  editDialog.value = false
+  editingId.value = null
+  dt.load(lastOptions)
+}
 
 const headers = computed(() => [
   { title: t('common.name'), key: 'name', sortable: true },
@@ -176,6 +249,16 @@ onMounted(() => {
     ],
     { refresh: () => dt.load(lastOptions) },
   )
+  // Deep-link support. `/id/company/new` and `/id/company/<name>`
+  // both resolve here (see plugin index.js) and auto-open the dialog
+  // in the right mode so emails / bookmarks pointing at the legacy
+  // per-entity URLs still land in the list context.
+  const id = route.params?.id
+  if (id === 'new' || route.path?.endsWith('/company/new')) {
+    openCreate()
+  } else if (id) {
+    openDetails(String(id))
+  }
 })
 </script>
 
