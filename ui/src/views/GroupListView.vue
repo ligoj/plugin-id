@@ -33,6 +33,9 @@
     <LigojDataTableServer filename="groups.csv" :fetch-all="dt.loadAll" v-if="!dt.error.value" v-show="dt.items.value.length > 0 || !dt.loading.value" v-model="selected"
       v-model:items-per-page="itemsPerPage" :headers="headers" :items="dt.items.value" :items-length="dt.totalItems.value" :loading="dt.loading.value" item-value="name" show-select hover
       @update:options="loadData" @click:row="(_, { item }) => openEdit(item.name)">
+      <template #header.scope="{ column }"><span class="d-inline-flex align-center"><v-icon size="small" class="mr-1">mdi-shape-outline</v-icon>{{ column.title }}<v-tooltip activator="parent" location="top" :text="column.title" /></span></template>
+      <template #header.count="{ column }"><span class="d-inline-flex align-center"><v-icon size="small" class="mr-1">mdi-account-multiple-outline</v-icon>{{ column.title }}<v-tooltip activator="parent" location="top" :text="column.title" /></span></template>
+      <template #header.locked="{ column }"><span class="d-inline-flex align-center"><v-icon size="small" class="mr-1">mdi-shield-lock-outline</v-icon>{{ column.title }}<v-tooltip activator="parent" location="top" :text="column.title" /></span></template>
       <template #item.locked="{ item }">
         <div class="text-center">
           <v-tooltip v-if="item.locked" :text="t('user.statusLocked')" location="top">

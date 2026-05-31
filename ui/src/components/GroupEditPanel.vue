@@ -22,14 +22,15 @@
          state is purely visual / no-op in view mode. -->
     <v-card-text v-if="!loading">
       <v-form ref="formRef" @submit.prevent="save">
-        <v-text-field v-model="form.name" :label="t('common.name')" :rules="[rules.required]" :disabled="isEdit" variant="outlined" class="mb-2" />
-        <v-autocomplete v-model="form.scope" :label="t('group.scope')" :items="availableScopes" :loading="scopesLoading" :disabled="isEdit" clearable variant="outlined" class="mb-2"
+        <v-text-field v-model="form.name" prepend-inner-icon="mdi-form-textbox" :label="t('common.name')" :rules="[rules.required]" :disabled="isEdit" variant="outlined" class="mb-2" />
+        <v-autocomplete v-model="form.scope" prepend-inner-icon="mdi-shape-outline" :label="t('group.scope')" :items="availableScopes" :loading="scopesLoading" :disabled="isEdit" clearable variant="outlined" class="mb-2"
           autocomplete="off" />
         <!-- Parent group: lazy server-backed autosuggest. No groups are
              loaded until the dropdown opens — the former mount-time
              bulk GET doesn't scale to 100k+ groups. -->
         <v-autocomplete
           v-model="form.parent"
+          prepend-inner-icon="mdi-file-tree-outline"
           :items="parentResults"
           :loading="parentLoading"
           :search="parentSearchQuery"

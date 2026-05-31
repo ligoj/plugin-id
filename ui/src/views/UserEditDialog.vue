@@ -26,14 +26,21 @@
 
           <template v-else>
             <v-form ref="formRef" @submit.prevent="save">
-              <v-text-field v-model="form.id" :label="t('user.login')" :rules="[rules.required]" :disabled="isEdit" :hint="isEdit ? '' : t('user.loginHint')" persistent-hint variant="outlined"
+              <v-text-field v-model="form.id" :label="t('user.login')" prepend-inner-icon="mdi-account" :rules="[rules.required]" :disabled="isEdit" :hint="isEdit ? '' : t('user.loginHint')" persistent-hint variant="outlined"
                 class="mb-2" autofocus />
-              <v-text-field v-model="form.firstName" :label="t('user.firstName')" :rules="[rules.required]" variant="outlined" class="mb-2" />
-              <v-text-field v-model="form.lastName" :label="t('user.lastName')" :rules="[rules.required]" variant="outlined" class="mb-2" />
+              <!-- First + last name grouped on a single row (stacks below sm). -->
+              <v-row>
+                <v-col cols="12" sm="6">
+                  <v-text-field v-model="form.firstName" :label="t('user.firstName')" prepend-inner-icon="mdi-account-outline" :rules="[rules.required]" variant="outlined" class="mb-2" />
+                </v-col>
+                <v-col cols="12" sm="6">
+                  <v-text-field v-model="form.lastName" :label="t('user.lastName')" prepend-inner-icon="mdi-account-outline" :rules="[rules.required]" variant="outlined" class="mb-2" />
+                </v-col>
+              </v-row>
               <!-- Auto-suggest for company. Queries rest/service/id/company as the
                    user types (300 ms debounced). v-model stores the company name
                    as a string, matching the payload contract of rest/service/id/user. -->
-              <v-autocomplete v-model="form.company" :items="companyResults" :loading="companyLoading" :search="companySearchQuery" item-title="name" item-value="name" :label="t('user.company')"
+              <v-autocomplete v-model="form.company" :items="companyResults" :loading="companyLoading" :search="companySearchQuery" item-title="name" item-value="name" :label="t('user.company')" prepend-inner-icon="mdi-domain"
                 placeholder="Rechercher une entité…" variant="outlined" class="mb-2" no-filter clearable autocomplete="off" @update:search="onCompanySearch">
                 <template #item="{ props: itemProps, item }">
                   <v-list-item v-bind="itemProps" :title="item?.name || ''">
@@ -55,13 +62,13 @@
                    multiple + chips lets the user type any email (no
                    autocomplete source) and confirm with Enter or Tab;
                    existing emails are restored as chips at load time. -->
-              <v-combobox v-model="form.mails" :label="t('user.emails')" multiple chips closable-chips variant="outlined" class="mb-2" :hint="t('user.emailsHint')" persistent-hint autocomplete="off" />
+              <v-combobox v-model="form.mails" :label="t('user.emails')" prepend-inner-icon="mdi-email-outline" multiple chips closable-chips variant="outlined" class="mb-2" :hint="t('user.emailsHint')" persistent-hint autocomplete="off" />
               <!-- Auto-suggest for groups (multi-select). Queries
                    rest/service/id/group as the user types (300 ms debounced).
                    v-model holds an array of group **names** (strings),
                    matching the payload contract of rest/service/id/user. -->
               <v-autocomplete v-model="groups" v-model:menu="groupMenu" :items="groupResults" :loading="groupLoading" :search="groupSearchQuery" item-title="name" item-value="name"
-                :label="t('user.groups')" placeholder="Ajouter un groupe…" variant="outlined" class="mb-2" multiple chips closable-chips no-filter clearable autocomplete="off" @update:search="onGroupSearch"
+                :label="t('user.groups')" prepend-inner-icon="mdi-account-group" placeholder="Ajouter un groupe…" variant="outlined" class="mb-2" multiple chips closable-chips no-filter clearable autocomplete="off" @update:search="onGroupSearch"
                 @update:model-value="onGroupModelUpdate">
                 <template #item="{ props: itemProps, item }">
                   <v-list-item v-bind="itemProps" :title="item?.name || ''" />

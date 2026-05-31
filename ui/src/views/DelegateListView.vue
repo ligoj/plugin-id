@@ -35,6 +35,7 @@
            Note: backend stores receiverType in lowercase ("company", …)
            for some rows, so normalize before the TYPE_ICONS lookup —
            same rationale as DelegateEditDialog.loadOnOpen(). -->
+      <template #header.receiver="{ column }"><span class="d-inline-flex align-center"><v-icon size="small" class="mr-1">mdi-account-arrow-right-outline</v-icon>{{ column.title }}<v-tooltip activator="parent" location="top" :text="column.title" /></span></template>
       <template #item.receiver="{ item }">
         <v-tooltip :text="t('delegate.type.' + (item.receiverType || '').toLowerCase())" location="top">
           <template #activator="{ props: tt }">
@@ -59,7 +60,7 @@
         <div class="text-center">
           <v-tooltip v-if="item.canAdmin" :text="t('delegate.adminGranted')" location="top">
             <template #activator="{ props: tt }">
-              <v-icon v-bind="tt" color="success" size="small">mdi-check</v-icon>
+              <v-icon v-bind="tt" color="success" size="small">mdi-check-circle</v-icon>
             </template>
           </v-tooltip>
         </div>
@@ -68,7 +69,7 @@
         <div class="text-center">
           <v-tooltip v-if="item.canWrite" :text="t('delegate.writeGranted')" location="top">
             <template #activator="{ props: tt }">
-              <v-icon v-bind="tt" color="success" size="small">mdi-check</v-icon>
+              <v-icon v-bind="tt" color="success" size="small">mdi-check-circle</v-icon>
             </template>
           </v-tooltip>
         </div>
@@ -80,6 +81,7 @@
         </v-btn>
         <v-btn icon size="small" variant="text" color="error" @click.stop="startDelete(item)">
           <v-icon size="small">mdi-delete</v-icon>
+          <v-tooltip activator="parent" location="top" :text="t('common.delete')" />
         </v-btn>
       </template>
     </LigojDataTableServer>

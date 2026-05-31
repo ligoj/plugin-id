@@ -22,15 +22,23 @@
 
     <LigojDataTable filename="container-scopes.csv" v-if="!error" v-show="items.length > 0 || !loading" :headers="headers" :items="items" :loading="loading" item-value="id" hover
       @click:row="(_, { item }) => openEdit(item)">
+      <template #header.dn="{ column }"><span class="d-inline-flex align-center"><v-icon size="small" class="mr-1">mdi-file-tree-outline</v-icon>{{ column.title }}<v-tooltip activator="parent" location="top" :text="column.title" /></span></template>
+      <template #header.locked="{ column }"><span class="d-inline-flex align-center"><v-icon size="small" class="mr-1">mdi-shield-lock-outline</v-icon>{{ column.title }}<v-tooltip activator="parent" location="top" :text="column.title" /></span></template>
       <template #item.locked="{ item }">
-        <v-icon v-if="item.locked" color="warning" size="small">mdi-lock</v-icon>
+        <v-tooltip v-if="item.locked" :text="t('user.statusLocked')" location="top">
+          <template #activator="{ props: tt }">
+            <v-icon v-bind="tt" color="warning" size="small">mdi-lock</v-icon>
+          </template>
+        </v-tooltip>
       </template>
       <template #item.actions="{ item }">
         <v-btn icon size="small" variant="text" @click.stop="openEdit(item)">
           <v-icon size="small">mdi-pencil</v-icon>
+          <v-tooltip activator="parent" location="top" :text="t('common.edit')" />
         </v-btn>
         <v-btn icon size="small" variant="text" color="error" @click.stop="startDelete(item)" :disabled="item.locked">
           <v-icon size="small">mdi-delete</v-icon>
+          <v-tooltip activator="parent" location="top" :text="t('common.delete')" />
         </v-btn>
       </template>
     </LigojDataTable>

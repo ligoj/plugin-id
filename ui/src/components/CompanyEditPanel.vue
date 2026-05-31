@@ -20,13 +20,14 @@
 
     <v-card-text v-if="!loading">
       <v-form ref="formRef" @submit.prevent="save">
-        <v-text-field v-model="form.name" :label="t('common.name')" :rules="[rules.required]" :disabled="isEdit" variant="outlined" class="mb-2" />
+        <v-text-field v-model="form.name" prepend-inner-icon="mdi-form-textbox" :label="t('common.name')" :rules="[rules.required]" :disabled="isEdit" variant="outlined" class="mb-2" />
         <!-- Scope autocomplete. Mode-agnostic UI; `:disabled="isEdit"`
              flips it to read-only in view mode (the picked value
              still renders correctly because we pre-seed
              `scopeResults` with the current scope). -->
         <v-autocomplete
           v-model="form.scope"
+          prepend-inner-icon="mdi-shape-outline"
           :items="scopeResults"
           :loading="scopeLoading"
           :search="scopeSearchQuery"

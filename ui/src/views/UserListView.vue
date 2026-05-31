@@ -39,6 +39,22 @@
            at 2 visible and fold the rest into a "+N" indicator so rows stay
            on a single line even when a user has many addresses. Pattern
            matches the existing groups-cell rendering below. -->
+      <template #item.id="{ item }">
+        <div class="d-flex align-center ga-2">
+          <v-icon size="small" color="medium-emphasis">mdi-account-circle</v-icon>
+          <code>{{ item.id }}</code>
+        </div>
+      </template>
+      <template #header.id="{ column }"><span class="d-inline-flex align-center"><v-icon size="small" class="mr-1">mdi-account</v-icon>{{ column.title }}<v-tooltip activator="parent" location="top" :text="column.title" /></span></template>
+      <template #header.company="{ column }"><span class="d-inline-flex align-center"><v-icon size="small" class="mr-1">mdi-domain</v-icon>{{ column.title }}<v-tooltip activator="parent" location="top" :text="column.title" /></span></template>
+      <template #header.mails="{ column }"><span class="d-inline-flex align-center"><v-icon size="small" class="mr-1">mdi-email-outline</v-icon>{{ column.title }}<v-tooltip activator="parent" location="top" :text="column.title" /></span></template>
+      <template #header.groups="{ column }"><span class="d-inline-flex align-center"><v-icon size="small" class="mr-1">mdi-account-group</v-icon>{{ column.title }}<v-tooltip activator="parent" location="top" :text="column.title" /></span></template>
+      <template #header.locked="{ column }">
+        <span class="d-inline-flex align-center">
+          <v-icon size="small">mdi-shield-account-outline</v-icon>
+          <v-tooltip activator="parent" location="top" :text="column.title" />
+        </span>
+      </template>
       <template #item.mails="{ item }">
         <div class="mails-cell">
           <v-chip v-for="m in (item.mails || []).slice(0, 2)" :key="m" size="small" variant="tonal" class="mr-1">{{ m }}</v-chip>
