@@ -1,13 +1,10 @@
 <template>
   <div>
-    <div class="d-flex flex-wrap align-center mb-4 ga-2">
-      <v-spacer />
-      <v-btn color="primary" prepend-icon="mdi-plus" @click="openNew">{{ t('containerScope.new') }}</v-btn>
-    </div>
-
     <v-tabs v-model="activeTab" class="mb-4">
       <v-tab value="group" prepend-icon="mdi-account-group">{{ t('nav.groups') }}</v-tab>
       <v-tab value="company" prepend-icon="mdi-domain">{{ t('nav.companies') }}</v-tab>
+      <v-spacer />
+      <v-btn color="primary" prepend-icon="mdi-plus" @click="openNew" class="mr-2 align-self-center">{{ t('containerScope.new') }}</v-btn>
     </v-tabs>
 
     <v-alert v-if="error" type="warning" variant="tonal" class="mb-4">
