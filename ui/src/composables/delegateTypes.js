@@ -18,6 +18,12 @@ export const TYPE_ICONS = {
   GROUP: 'mdi-account-group',
   COMPANY: 'mdi-domain',
   TREE: 'mdi-file-tree',
+  // Entity icons reused for dialog titles (issue #51): the container-scope
+  // view and delegations have no delegation-enum entry but still need a
+  // representative icon. SCOPE matches the file-tree-outline used in the
+  // container-scope datatable header.
+  SCOPE: 'mdi-file-tree-outline',
+  DELEGATE: 'mdi-shield-account-outline',
 }
 
 // Receivers cannot be a TREE — only USER / GROUP / COMPANY can hold a

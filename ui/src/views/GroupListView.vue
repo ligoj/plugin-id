@@ -108,7 +108,10 @@
 
     <v-dialog v-model="deleteDialog" max-width="400">
       <v-card>
-        <v-card-title>{{ t('group.deleteTitle') }}</v-card-title>
+        <v-card-title class="d-flex align-center ga-2">
+          <v-icon color="primary">{{ TYPE_ICONS.GROUP }}</v-icon>
+          <span>{{ t('group.deleteTitle') }}</span>
+        </v-card-title>
         <v-card-text>
           {{ t('group.deleteConfirmBefore') }}<strong class="text-error">{{ deleteTarget?.name }}</strong>{{ t('group.deleteConfirmAfter') }}
         </v-card-text>
@@ -122,7 +125,10 @@
 
     <v-dialog v-model="bulkDeleteDialog" max-width="400">
       <v-card>
-        <v-card-title>{{ t('common.bulkDeleteTitle') }}</v-card-title>
+        <v-card-title class="d-flex align-center ga-2">
+          <v-icon color="primary">{{ TYPE_ICONS.GROUP }}</v-icon>
+          <span>{{ t('common.bulkDeleteTitle') }}</span>
+        </v-card-title>
         <v-card-text>{{ t('common.bulkDeleteConfirm', { count: selected.length }) }}</v-card-text>
         <v-card-actions>
           <v-spacer />
@@ -138,6 +144,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useDataTable, useApi, useAppStore, useErrorStore, useI18nStore, LigojDataTableServer } from '@ligoj/host'
+import { TYPE_ICONS } from '../composables/delegateTypes.js'
 import { useGroupMembersDialog } from '../composables/useGroupMembersDialog.js'
 import GroupEditPanel from '../components/GroupEditPanel.vue'
 

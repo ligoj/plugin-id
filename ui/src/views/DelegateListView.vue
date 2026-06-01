@@ -97,6 +97,7 @@
     <LigojConfirmDialog
       v-model="deleteDialog"
       :title="t('delegate.deleteTitle')"
+      :icon="TYPE_ICONS.DELEGATE"
       :confirm-label="t('common.delete')"
       confirm-color="error"
       :loading="deleting"
@@ -107,7 +108,10 @@
 
     <v-dialog v-model="bulkDeleteDialog" max-width="400">
       <v-card>
-        <v-card-title>{{ t('common.bulkDeleteTitle') }}</v-card-title>
+        <v-card-title class="d-flex align-center ga-2">
+          <v-icon color="primary">{{ TYPE_ICONS.DELEGATE }}</v-icon>
+          <span>{{ t('common.bulkDeleteTitle') }}</span>
+        </v-card-title>
         <v-card-text>{{ t('common.bulkDeleteConfirm', { count: selected.length }) }}</v-card-text>
         <v-card-actions>
           <v-spacer />
