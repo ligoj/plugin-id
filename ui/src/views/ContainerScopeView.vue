@@ -42,7 +42,10 @@
 
     <v-dialog v-model="editDialog" max-width="500">
       <v-card>
-        <v-card-title>{{ editTarget?.id ? t('containerScope.edit') : t('containerScope.new') }}</v-card-title>
+        <v-card-title class="d-flex align-center ga-2">
+          <v-icon color="primary">{{ TYPE_ICONS.SCOPE }}</v-icon>
+          <span>{{ editTarget?.id ? t('containerScope.edit') : t('containerScope.new') }}</span>
+        </v-card-title>
         <v-card-text>
           <v-form ref="formRef" @submit.prevent="save">
             <v-text-field v-model="editForm.name" :label="t('common.name')" :rules="[rules.required]" variant="outlined" class="mb-2" />
@@ -59,7 +62,10 @@
 
     <v-dialog v-model="deleteDialog" max-width="400">
       <v-card>
-        <v-card-title>{{ t('containerScope.deleteTitle') }}</v-card-title>
+        <v-card-title class="d-flex align-center ga-2">
+          <v-icon color="primary">{{ TYPE_ICONS.SCOPE }}</v-icon>
+          <span>{{ t('containerScope.deleteTitle') }}</span>
+        </v-card-title>
         <v-card-text>{{ t('containerScope.deleteConfirm', { name: deleteTarget?.name }) }}</v-card-text>
         <v-card-actions>
           <v-spacer />
@@ -74,6 +80,7 @@
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue'
 import { useApi, useAppStore, useErrorStore, useI18nStore, LigojDataTable } from '@ligoj/host'
+import { TYPE_ICONS } from '../composables/delegateTypes.js'
 
 const api = useApi()
 const appStore = useAppStore()

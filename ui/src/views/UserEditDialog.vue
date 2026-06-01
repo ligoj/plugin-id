@@ -13,6 +13,7 @@
              details and group-members dialogs. Sourced from the prop
              — `form.id` would lag until the load completes. -->
         <v-card-title class="d-flex align-center ga-2">
+          <v-icon color="primary">{{ TYPE_ICONS.USER }}</v-icon>
           <span>{{ isEdit ? t('user.edit') : t('user.new') }}</span>
           <span v-if="isEdit" class="text-primary">{{ userId }}</span>
         </v-card-title>
@@ -113,7 +114,7 @@
       </v-card>
     </v-dialog>
 
-    <LigojConfirmDialog v-model="confirmDelete" :title="t('user.deleteTitle')" :confirm-label="t('common.delete')" confirm-color="error" :loading="deleting" @confirm="remove">
+    <LigojConfirmDialog v-model="confirmDelete" :title="t('user.deleteTitle')" :icon="TYPE_ICONS.USER" :confirm-label="t('common.delete')" confirm-color="error" :loading="deleting" @confirm="remove">
       {{ t('user.deleteConfirmBefore') }}<strong class="text-error">{{ form.id }}</strong>{{ t('user.deleteConfirmAfter') }}
     </LigojConfirmDialog>
 
@@ -122,7 +123,7 @@
          navigating away from the list with the dialog still open.
          persistent: only the explicit buttons dismiss it, so pendingClose
          is always reset through onGuardConfirm/onGuardCancel. -->
-    <LigojConfirmDialog v-model="showGuardDialog" :title="t('common.unsavedTitle')" :message="t('common.unsavedMsg')" :confirm-label="t('common.discard')" confirm-color="warning" persistent
+    <LigojConfirmDialog v-model="showGuardDialog" :title="t('common.unsavedTitle')" icon="mdi-content-save-alert" icon-color="warning" :message="t('common.unsavedMsg')" :confirm-label="t('common.discard')" confirm-color="warning" persistent
       @confirm="onGuardConfirm" @cancel="onGuardCancel" />
 
     <!-- Chantier D2 (rattrapage): mirror the UserListView pattern so the
@@ -130,7 +131,7 @@
          `user.<action>Confirm` message with {id} interpolation kept the
          name as plain text, which felt visually weaker than the same
          action triggered from the list row. -->
-    <LigojConfirmDialog v-model="actionDialog" :title="t('user.' + actionType)" :loading="actionLoading" @confirm="confirmAction">
+    <LigojConfirmDialog v-model="actionDialog" :title="t('user.' + actionType)" :icon="TYPE_ICONS.USER" :loading="actionLoading" @confirm="confirmAction">
       {{ t('user.' + actionType + 'ConfirmBefore') }}<strong class="text-error">{{ form.id }}</strong>{{ t('user.' + actionType + 'ConfirmAfter') }}
     </LigojConfirmDialog>
   </div>
@@ -139,6 +140,7 @@
 <script setup>
 import { ref, computed, watch } from 'vue'
 import { useApi, useFormGuard, useErrorStore, useI18nStore, LigojConfirmDialog } from '@ligoj/host'
+import { TYPE_ICONS } from '../composables/delegateTypes.js'
 
 const props = defineProps({
   // Dialog visibility (v-model).

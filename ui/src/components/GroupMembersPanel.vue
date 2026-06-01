@@ -81,7 +81,7 @@
     <!-- Confirm dialog. Vuetify teleports it to <body>, so being
          nested inside this panel — which itself can be inside a
          <v-dialog> — doesn't cause z-index issues. -->
-    <LigojConfirmDialog v-model="removeDialog" :title="t('id.group.removeTitle')" :confirm-label="t('common.remove')" confirm-color="error" :loading="removing" @confirm="confirmRemove">
+    <LigojConfirmDialog v-model="removeDialog" :title="t('id.group.removeTitle')" :icon="TYPE_ICONS.USER" :confirm-label="t('common.remove')" confirm-color="error" :loading="removing" @confirm="confirmRemove">
       {{ t('id.group.removeConfirmBefore') }}<strong class="text-error">{{ removeTarget?.id }}</strong>{{ t('id.group.removeConfirmAfter', { group: groupName }) }}
     </LigojConfirmDialog>
   </div>
@@ -97,6 +97,7 @@ import {
   LigojDataTableServer,
   LigojConfirmDialog,
 } from '@ligoj/host'
+import { TYPE_ICONS } from '../composables/delegateTypes.js'
 
 const props = defineProps({
   /**

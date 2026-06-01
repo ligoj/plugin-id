@@ -8,7 +8,10 @@
          pattern as UserEditDialog. -->
     <v-dialog :model-value="modelValue" @update:model-value="onDialogModel" max-width="700" scrollable>
       <v-card>
-        <v-card-title>{{ isEdit ? t('delegate.edit') : t('delegate.new') }}</v-card-title>
+        <v-card-title class="d-flex align-center ga-2">
+          <v-icon color="primary">{{ TYPE_ICONS.DELEGATE }}</v-icon>
+          <span>{{ isEdit ? t('delegate.edit') : t('delegate.new') }}</span>
+        </v-card-title>
 
         <v-card-text>
           <v-skeleton-loader v-if="loading" type="article" />
@@ -109,7 +112,7 @@
          `delegate.deleteConfirm` key stays intact for any other
          consumer; we just use two plugin-local fragments around the
          name. -->
-    <LigojConfirmDialog v-model="confirmDelete" :title="t('delegate.deleteTitle')" :confirm-label="t('common.delete')"
+    <LigojConfirmDialog v-model="confirmDelete" :title="t('delegate.deleteTitle')" :icon="TYPE_ICONS.DELEGATE" :confirm-label="t('common.delete')"
       confirm-color="error" :loading="deleting" @confirm="remove">
       {{ t('delegate.deleteConfirmBefore') }}<strong class="text-error">{{ form.receiver }}</strong>{{ t('delegate.deleteConfirmAfter') }}
     </LigojConfirmDialog>
@@ -119,7 +122,7 @@
          when navigating away from the list with the dialog still open.
          persistent: only the explicit buttons dismiss it, so pendingClose
          is always reset through onGuardConfirm/onGuardCancel. -->
-    <LigojConfirmDialog v-model="showGuardDialog" :title="t('common.unsavedTitle')" :message="t('common.unsavedMsg')" :confirm-label="t('common.discard')" confirm-color="warning"
+    <LigojConfirmDialog v-model="showGuardDialog" :title="t('common.unsavedTitle')" icon="mdi-content-save-alert" icon-color="warning" :message="t('common.unsavedMsg')" :confirm-label="t('common.discard')" confirm-color="warning"
       persistent @confirm="onGuardConfirm" @cancel="onGuardCancel" />
   </div>
 </template>

@@ -75,6 +75,7 @@
     <LigojConfirmDialog
       v-model="confirmDelete"
       :title="t('group.deleteTitle')"
+      :icon="TYPE_ICONS.GROUP"
       :confirm-label="t('common.delete')"
       confirm-color="error"
       :loading="deleting"
@@ -88,6 +89,7 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useApi, useErrorStore, useI18nStore, LigojConfirmDialog } from '@ligoj/host'
+import { TYPE_ICONS } from '../composables/delegateTypes.js'
 
 const props = defineProps({
   /**
