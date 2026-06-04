@@ -92,4 +92,17 @@ export default {
   // Les autres clés `containerScope.*` vivent dans le host ; celle-ci est
   // contribuée par le plugin et mergée au store i18n à l'install.
   'containerScope.dn': 'Chemin LDAP',
+
+  // 2026 redesign: search placeholders + section subtitles
+  'company.searchPlaceholder': "Rechercher une entité…",
+  'company.subtitle2026': "Gérez les entités et leur annuaire.",
+  'containerScope.deleteConfirmAfter': " ?",
+  'containerScope.deleteConfirmBefore': "Êtes-vous certain de supprimer ",
+  'containerScope.subtitle2026': "Définissez les bases LDAP des groupes et entités.",
+  'delegate.searchPlaceholder': "Rechercher une délégation…",
+  'delegate.subtitle2026': "Déléguez des droits d'administration et d'écriture.",
+  'group.searchPlaceholder': "Rechercher un groupe…",
+  'group.subtitle2026': "Organisez les groupes et leurs membres.",
+  'user.searchPlaceholder': "Rechercher un utilisateur…",
+  'user.subtitle2026': "Gérez les comptes, leurs entités, groupes et accès.",
 }

@@ -44,7 +44,9 @@ describe('plugin-id contract', () => {
       // chantier D3), so /id/delegate/new and /id/delegate/:id are
       // no longer routes either.
       '/id/delegate',
-      '/id/container-scope',
+      // 2026 scheme: container scopes live at /id/scope (legacy
+      // /id/container-scope kept as a route alias, not a separate path).
+      '/id/scope',
       // Subscription-scoped group members view (legacy id.html port).
       '/id/subscription/:id',
     ]))

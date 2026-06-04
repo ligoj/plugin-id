@@ -84,7 +84,9 @@ const routes = [
   // Delegate create/edit is a dialog hosted by DelegateListView (chantier D3),
   // so there is no per-entity delegate route — mirrors the Users screen.
   { path: '/id/delegate', name: 'id-delegate', component: DelegateListView },
-  { path: '/id/container-scope', name: 'id-container-scope', component: ContainerScopeView },
+  // Container scopes. The 2026 shell nav links to `/id/scope`; the legacy
+  // `/id/container-scope` is kept as an alias so old bookmarks resolve.
+  { path: '/id/scope', name: 'id-container-scope', component: ContainerScopeView, alias: ['/id/container-scope'] },
   // Per-subscription configuration view (ported from the legacy
   // `service/id/id.html`): lists group members, lets the user add
   // and remove them.
