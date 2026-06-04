@@ -44,7 +44,7 @@ describe('plugin-id contract', () => {
       // chantier D3), so /id/delegate/new and /id/delegate/:id are
       // no longer routes either.
       '/id/delegate',
-      '/id/container-scope',
+      '/id/scope',
       // Subscription-scoped group members view (legacy id.html port).
       '/id/subscription/:id',
     ]))

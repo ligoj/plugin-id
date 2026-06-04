@@ -6,14 +6,15 @@
          one-way so a close request (Cancel / Esc / scrim) can be vetoed
          by the unsaved-changes guard before it actually closes — same
          pattern as UserEditDialog. -->
-    <v-dialog :model-value="modelValue" @update:model-value="onDialogModel" max-width="700" scrollable>
-      <v-card>
-        <v-card-title class="d-flex align-center ga-2">
-          <v-icon color="primary">{{ TYPE_ICONS.DELEGATE }}</v-icon>
-          <span>{{ isEdit ? t('delegate.edit') : t('delegate.new') }}</span>
-        </v-card-title>
+    <v-dialog :model-value="modelValue" @update:model-value="onDialogModel" max-width="640" scrollable>
+      <v-card class="vmodal">
+        <div class="vmodal-head">
+          <span class="mi"><v-icon color="#fff">{{ TYPE_ICONS.DELEGATE }}</v-icon></span>
+          <h3>{{ isEdit ? t('delegate.edit') : t('delegate.new') }}</h3>
+          <button class="x" :aria-label="t('common.cancel')" @click="requestClose"><v-icon size="20">mdi-close</v-icon></button>
+        </div>
 
-        <v-card-text>
+        <v-card-text class="vmodal-body">
           <v-skeleton-loader v-if="loading" type="article" />
 
           <v-form v-else ref="formRef" @submit.prevent="save">
@@ -93,16 +94,16 @@
           </v-form>
         </v-card-text>
 
-        <v-card-actions>
-          <v-btn v-if="isEdit" color="error" variant="tonal" :disabled="loading" @click="confirmDelete = true">
-            <v-icon start>mdi-delete</v-icon> {{ t('common.delete') }}
-          </v-btn>
-          <v-spacer />
-          <v-btn variant="text" @click="requestClose">{{ t('common.cancel') }}</v-btn>
-          <v-btn color="primary" variant="elevated" :loading="saving" :disabled="loading" @click="save">
-            <v-icon start>mdi-content-save</v-icon> {{ t('common.save') }}
-          </v-btn>
-        </v-card-actions>
+        <div class="vmodal-foot">
+          <button v-if="isEdit" class="mbtn ghost-danger" :disabled="loading" @click="confirmDelete = true">
+            <v-icon size="18">mdi-delete</v-icon>{{ t('common.delete') }}
+          </button>
+          <span class="foot-sp" />
+          <button class="mbtn ghost" @click="requestClose">{{ t('common.cancel') }}</button>
+          <button class="mbtn primary" :disabled="loading || saving" @click="save">
+            <span v-if="saving" class="mspin" aria-hidden="true" /><v-icon v-else size="18">mdi-content-save</v-icon>{{ t('common.save') }}
+          </button>
+        </div>
       </v-card>
     </v-dialog>
 
@@ -129,8 +130,9 @@
 
 <script setup>
 import { ref, computed, watch, nextTick } from 'vue'
-import { useApi, useFormGuard, useI18nStore, LigojConfirmDialog } from '@ligoj/host'
+import { useApi, useFormGuard, useI18nStore } from '@ligoj/host'
 import { TYPE_ICONS, RECEIVER_TYPES, RESOURCE_TYPES } from '../composables/delegateTypes.js'
+import LigojConfirmDialog from '@/components/VibrantConfirmDialog.vue'
 
 const props = defineProps({
   // Dialog visibility (v-model).
@@ -454,3 +456,41 @@ async function remove() {
   emit('update:modelValue', false)
 }
 </script>
+
+<style scoped>
+/* Vibrant dialog chrome (shared language with UserEditDialog). Vars on the
+   .vmodal card so they reach the teleported dialog content. */
+.vmodal {
+  --ink: rgb(var(--v-theme-on-surface));
+  --ink-2: rgba(var(--v-theme-on-surface), .72);
+  --ink-3: rgba(var(--v-theme-on-surface), .5);
+  --border: rgba(var(--v-theme-on-surface), .14);
+  --border-2: rgba(var(--v-theme-on-surface), .26);
+  --hover: rgba(var(--v-theme-on-surface), .06);
+  --font: var(--v26-font, "Bricolage Grotesque", system-ui, sans-serif);
+  border-radius: 20px !important;
+  box-shadow: 0 30px 80px -30px rgba(0, 0, 0, .55) !important;
+}
+.vmodal-head { display: flex; align-items: center; gap: 13px; padding: 22px 24px 8px; }
+.vmodal-head .mi { width: 42px; height: 42px; border-radius: 12px; display: grid; place-items: center; flex: none; background: linear-gradient(135deg, #ff9436, #ff5a52); box-shadow: 0 8px 18px -8px rgba(255, 90, 82, .6); }
+.vmodal-head h3 { font-family: var(--font); font-weight: 800; font-size: 20px; margin: 0; flex: 1; color: var(--ink); letter-spacing: -.02em; }
+.vmodal-head .x { width: 36px; height: 36px; border: 0; background: transparent; border-radius: 9px; cursor: pointer; display: grid; place-items: center; color: var(--ink-3); }
+.vmodal-head .x:hover { background: var(--hover); color: var(--ink); }
+.vmodal-body { padding: 12px 24px 6px !important; }
+.vmodal :deep(.v-field) { border-radius: 12px; font-family: var(--font); }
+.vmodal :deep(.v-field__prepend-inner .v-icon) { opacity: .55; }
+.vmodal :deep(.v-label) { font-weight: 600; }
+
+.vmodal-foot { display: flex; align-items: center; gap: 10px; padding: 14px 24px 22px; }
+.foot-sp { flex: 1; }
+.mbtn { display: inline-flex; align-items: center; gap: 8px; font-family: var(--font); font-weight: 700; font-size: 14px; padding: 10px 17px; border-radius: 12px; cursor: pointer; border: 1px solid transparent; transition: filter .15s, background .15s, border-color .15s; }
+.mbtn.primary { color: #fff; background: linear-gradient(135deg, #ff9436, #ff5a52); box-shadow: 0 8px 18px -10px rgba(255, 90, 82, .55); }
+.mbtn.primary:hover:not(:disabled) { filter: brightness(1.04); }
+.mbtn.ghost { color: var(--ink-2); background: transparent; border-color: var(--border); }
+.mbtn.ghost:hover:not(:disabled) { background: var(--hover); border-color: var(--border-2); }
+.mbtn.ghost-danger { color: rgb(var(--v-theme-error)); background: transparent; border-color: rgba(var(--v-theme-error), .35); }
+.mbtn.ghost-danger:hover:not(:disabled) { background: rgba(var(--v-theme-error), .08); }
+.mbtn:disabled { opacity: .6; cursor: default; }
+.mspin { width: 15px; height: 15px; border: 2px solid rgba(255, 255, 255, .5); border-top-color: #fff; border-radius: 50%; animation: dspin .7s linear infinite; }
+@keyframes dspin { to { transform: rotate(360deg); } }
+</style>

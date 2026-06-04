@@ -100,4 +100,17 @@ export default {
   // `containerScope.*` keys live in the host; this one is contributed by
   // the plugin and merged into the i18n store at install time.
   'containerScope.dn': 'LDAP path',
+
+  // --- 2026 redesign additions (chantier ui-2026) ---
+  'user.subtitle2026': 'Manage accounts, their entities, groups and access.',
+  'user.searchPlaceholder': 'Search a user…',
+  'group.subtitle2026': 'Organise groups and their members.',
+  'group.searchPlaceholder': 'Search a group…',
+  'company.subtitle2026': 'Manage entities and their directory.',
+  'company.searchPlaceholder': 'Search an entity…',
+  'delegate.subtitle2026': 'Delegate administration and write rights.',
+  'delegate.searchPlaceholder': 'Search a delegation…',
+  'containerScope.subtitle2026': 'Define the LDAP bases for groups and entities.',
+  'containerScope.deleteConfirmBefore': 'Are you sure you want to delete ',
+  'containerScope.deleteConfirmAfter': '?',
 }

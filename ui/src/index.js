@@ -84,7 +84,7 @@ const routes = [
   // Delegate create/edit is a dialog hosted by DelegateListView (chantier D3),
   // so there is no per-entity delegate route — mirrors the Users screen.
   { path: '/id/delegate', name: 'id-delegate', component: DelegateListView },
-  { path: '/id/container-scope', name: 'id-container-scope', component: ContainerScopeView },
+  { path: '/id/scope', name: 'id-scope', component: ContainerScopeView },
   // Per-subscription configuration view (ported from the legacy
   // `service/id/id.html`): lists group members, lets the user add
   // and remove them.
