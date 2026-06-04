@@ -11,7 +11,7 @@
        UI; the dialog is informational. The lock status + member
        count are surfaced as a read-only chip / line item so the
        view actually shows MORE than the form does, not less. -->
-  <v-card flat>
+  <v-card flat class="cep">
     <v-alert v-if="demoMode" type="info" variant="tonal" density="compact" class="ma-4">
       {{ t('company.demoEdit') }}
     </v-alert>
@@ -79,22 +79,16 @@
       </v-form>
     </v-card-text>
 
-    <v-card-actions v-if="!loading">
-      <v-btn v-if="isEdit" color="error" variant="tonal" :disabled="saving" @click="confirmDelete = true">
-        <v-icon start>mdi-delete</v-icon> {{ t('common.delete') }}
-      </v-btn>
-      <v-spacer />
-      <!-- View mode: a single "Close" button is the only sane action
-           when nothing is editable. Create mode keeps the usual
-           Cancel + Save pair so the form validation has a submit
-           target. -->
-      <v-btn variant="text" :disabled="saving" @click="emit('cancel')">
-        {{ isEdit ? t('common.close') : t('common.cancel') }}
-      </v-btn>
-      <v-btn v-if="!isEdit" color="primary" variant="elevated" :loading="saving" @click="save">
-        <v-icon start>mdi-content-save</v-icon> {{ t('common.save') }}
-      </v-btn>
-    </v-card-actions>
+    <div v-if="!loading" class="cep-foot">
+      <button v-if="isEdit" class="mbtn ghost-danger" :disabled="saving" @click="confirmDelete = true">
+        <v-icon size="18">mdi-delete</v-icon>{{ t('common.delete') }}
+      </button>
+      <span class="foot-sp" />
+      <button class="mbtn ghost" :disabled="saving" @click="emit('cancel')">{{ isEdit ? t('common.close') : t('common.cancel') }}</button>
+      <button v-if="!isEdit" class="mbtn primary" :disabled="saving" @click="save">
+        <span v-if="saving" class="mspin" aria-hidden="true" /><v-icon v-else size="18">mdi-content-save</v-icon>{{ t('common.save') }}
+      </button>
+    </div>
 
     <LigojConfirmDialog
       v-model="confirmDelete"
@@ -112,8 +106,9 @@
 
 <script setup>
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
-import { useApi, useErrorStore, useI18nStore, LigojConfirmDialog } from '@ligoj/host'
+import { useApi, useErrorStore, useI18nStore } from '@ligoj/host'
 import { TYPE_ICONS } from '../composables/delegateTypes.js'
+import LigojConfirmDialog from '@/components/VibrantConfirmDialog.vue'
 
 const props = defineProps({
   /**
@@ -308,4 +303,31 @@ async function remove() {
   color: rgb(var(--v-theme-on-surface)) !important;
   opacity: 0.7;
 }
+</style>
+
+<style scoped>
+.cep {
+  --ink-2: rgba(var(--v-theme-on-surface), .72);
+  --border: rgba(var(--v-theme-on-surface), .14);
+  --border-2: rgba(var(--v-theme-on-surface), .26);
+  --hover: rgba(var(--v-theme-on-surface), .06);
+  --font: var(--v26-font, "Bricolage Grotesque", system-ui, sans-serif);
+  background: transparent !important;
+}
+.cep :deep(.v-card-text) { padding: 4px 24px 4px !important; }
+.cep :deep(.v-field) { border-radius: 12px; font-family: var(--font); }
+.cep :deep(.v-field__prepend-inner .v-icon) { opacity: .55; }
+.cep :deep(.v-label) { font-weight: 600; }
+.cep-foot { display: flex; align-items: center; gap: 10px; padding: 12px 24px 22px; }
+.foot-sp { flex: 1; }
+.mbtn { display: inline-flex; align-items: center; gap: 8px; font-family: var(--font); font-weight: 700; font-size: 14px; padding: 10px 17px; border-radius: 12px; cursor: pointer; border: 1px solid transparent; transition: filter .15s, background .15s, border-color .15s; }
+.mbtn.primary { color: #fff; background: linear-gradient(135deg, #ff9436, #ff5a52); box-shadow: 0 8px 18px -10px rgba(255, 90, 82, .55); }
+.mbtn.primary:hover:not(:disabled) { filter: brightness(1.04); }
+.mbtn.ghost { color: var(--ink-2); background: transparent; border-color: var(--border); }
+.mbtn.ghost:hover:not(:disabled) { background: var(--hover); border-color: var(--border-2); }
+.mbtn.ghost-danger { color: rgb(var(--v-theme-error)); background: transparent; border-color: rgba(var(--v-theme-error), .35); }
+.mbtn.ghost-danger:hover:not(:disabled) { background: rgba(var(--v-theme-error), .08); }
+.mbtn:disabled { opacity: .6; cursor: default; }
+.mspin { width: 15px; height: 15px; border: 2px solid rgba(255, 255, 255, .5); border-top-color: #fff; border-radius: 50%; animation: cepspin .7s linear infinite; }
+@keyframes cepspin { to { transform: rotate(360deg); } }
 </style>
