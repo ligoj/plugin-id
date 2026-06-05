@@ -4,27 +4,20 @@
   on the security/delegate endpoint. Columns: receiver, resource, admin, write.
 -->
 <template>
-  <div class="delegates">
-    <header class="ph">
-      <div class="ph-txt">
-        <h1>{{ t('delegate.title') }}</h1>
-        <p class="sub">{{ t('delegate.subtitle2026') }}</p>
-      </div>
-      <div class="ph-actions">
-        <button class="btn" @click="openDialog(null)"><v-icon size="18">mdi-plus</v-icon>{{ t('delegate.new') }}</button>
-      </div>
-    </header>
+  <div class="delegates lj-surface">
+    <LjPageHeader :title="t('delegate.title')" :subtitle="t('delegate.subtitle2026')">
+      <template #actions>
+        <LjButton icon="mdi-plus" @click="openDialog(null)">{{ t('delegate.new') }}</LjButton>
+      </template>
+    </LjPageHeader>
 
     <div class="toolbar">
-      <label class="search">
-        <v-icon size="18">mdi-magnify</v-icon>
-        <input v-model="dt.search.value" :placeholder="t('delegate.searchPlaceholder') || t('common.search')" @input="onSearch" />
-      </label>
+      <LjSearch v-model="dt.search.value" :placeholder="t('delegate.searchPlaceholder') || t('common.search')" @input="onSearch" />
       <span class="tb-sp" />
       <v-slide-x-transition>
         <div v-if="selected.length" class="bulkbar">
           <span class="bulk-count">{{ selected.length }} {{ t('common.selected') }}</span>
-          <button class="btn-danger" @click="startBulkDelete"><v-icon size="16">mdi-delete</v-icon>{{ t('common.delete') }}</button>
+          <LjButton variant="danger" icon="mdi-delete" :icon-size="16" @click="startBulkDelete">{{ t('common.delete') }}</LjButton>
         </div>
       </v-slide-x-transition>
     </div>
@@ -58,9 +51,9 @@
       <template #actions="{ item }">
         <v-menu location="bottom end">
           <template #activator="{ props }">
-            <button class="iconbtn" v-bind="props" :aria-label="t('common.edit')" @click.stop><v-icon size="18">mdi-cog</v-icon></button>
+            <button class="lj-iconbtn" v-bind="props" :aria-label="t('common.edit')" @click.stop><v-icon size="18">mdi-cog</v-icon></button>
           </template>
-          <div class="popmenu">
+          <div class="lj-popmenu">
             <button @click="openDialog(item.id)"><v-icon size="18">mdi-pencil</v-icon>{{ t('common.edit') }}</button>
             <div class="sep" />
             <button class="danger" @click="startDelete(item)"><v-icon size="18">mdi-delete</v-icon>{{ t('common.delete') }}</button>
@@ -86,9 +79,8 @@
 import { ref, computed, onMounted } from 'vue'
 import { useDataTable, useApi, useAppStore, useI18nStore } from '@ligoj/host'
 import { TYPE_ICONS } from '../composables/delegateTypes.js'
-import { VibrantDataTable as VibrantDataTable } from '@ligoj/host'
+import { VibrantDataTable, VibrantConfirmDialog as LigojConfirmDialog, LjPageHeader, LjButton, LjSearch } from '@ligoj/host'
 import DelegateEditDialog from './DelegateEditDialog.vue'
-import { VibrantConfirmDialog as LigojConfirmDialog } from '@ligoj/host'
 
 const appStore = useAppStore()
 const api = useApi()
@@ -147,86 +139,10 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.delegates {
-  --surface: rgb(var(--v-theme-surface));
-  --ink: rgb(var(--v-theme-on-surface));
-  --ink-2: rgba(var(--v-theme-on-surface), .72);
-  --ink-3: rgba(var(--v-theme-on-surface), .55);
-  --border: rgba(var(--v-theme-on-surface), .12);
-  --border-2: rgba(var(--v-theme-on-surface), .26);
-  --hover: rgba(var(--v-theme-on-surface), .05);
-  --primary: rgb(var(--v-theme-primary));
-  --accent: rgb(var(--v-theme-secondary));
-  --font: var(--v26-font, "Bricolage Grotesque", system-ui, sans-serif);
-  color: var(--ink);
-}
-
-.ph {
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: 18px;
-  flex-wrap: wrap;
-  margin-bottom: 18px;
-}
-
-.ph-txt h1 {
-  font-family: var(--font);
-  font-weight: 800;
-  letter-spacing: -.03em;
-  font-size: 28px;
-  margin: 0;
-  color: var(--ink);
-}
-
-.ph-txt .sub {
-  margin: 4px 0 0;
-  font-size: 14px;
-  color: var(--ink-3);
-  font-weight: 500;
-}
-
-.ph-actions {
-  display: flex;
-  gap: 10px;
-  align-items: center;
-  flex-wrap: wrap;
-}
-
-.btn,
-.btn-danger {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  font-family: var(--font);
-  font-weight: 700;
-  font-size: 14px;
-  padding: 11px 17px;
-  border-radius: 12px;
-  cursor: pointer;
-  border: 1px solid transparent;
-  transition: filter .15s;
-}
-
-.btn {
-  color: #fff;
-  background: linear-gradient(135deg, #ff9436, #ff5a52);
-  box-shadow: 0 8px 18px -10px rgba(255, 90, 82, .55);
-}
-
-.btn:hover {
-  filter: brightness(1.04);
-}
-
-.btn-danger {
-  color: #fff;
-  background: rgb(var(--v-theme-error));
-}
-
-.btn-danger:hover {
-  filter: brightness(1.06);
-}
-
+/* View-specific cells only — all chrome lives in the shared host components
+   (LjPageHeader / LjButton / LjSearch) and the global `.lj-surface` /
+   `.lj-iconbtn` / `.lj-popmenu` classes. The `--ink-*` vars these cells read
+   are supplied by `.lj-surface` on the root. */
 .toolbar {
   display: flex;
   align-items: center;
@@ -236,39 +152,6 @@ onMounted(() => {
 
 .tb-sp {
   flex: 1;
-}
-
-.search {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  width: 100%;
-  max-width: 520px;
-  padding: 9px 14px;
-  border-radius: 12px;
-  border: 1px solid var(--border);
-  background: var(--surface);
-  color: var(--ink-3);
-  transition: border-color .15s, box-shadow .15s;
-}
-
-.search:focus-within {
-  border-color: var(--accent);
-  box-shadow: 0 0 0 4px rgba(var(--v-theme-secondary), .15);
-}
-
-.search input {
-  flex: 1;
-  border: 0;
-  outline: 0;
-  background: transparent;
-  font-family: var(--font);
-  font-size: 14px;
-  color: var(--ink);
-}
-
-.search input::placeholder {
-  color: var(--ink-3);
 }
 
 .bulkbar {
@@ -313,62 +196,5 @@ onMounted(() => {
 .bdot.on {
   background: #1d9d63;
   box-shadow: 0 0 0 3px rgba(29, 157, 99, .18), 0 0 10px 1px rgba(29, 157, 99, .6);
-}
-
-.iconbtn {
-  width: 32px;
-  height: 32px;
-  border-radius: 9px;
-  border: 1px solid transparent;
-  background: transparent;
-  cursor: pointer;
-  display: inline-grid;
-  place-items: center;
-  color: var(--ink-2);
-  transition: background .12s;
-}
-
-.iconbtn:hover {
-  background: var(--hover);
-}
-
-.popmenu {
-  min-width: 190px;
-  background: rgb(var(--v-theme-surface));
-  border: 1px solid rgba(var(--v-theme-on-surface), .12);
-  border-radius: 12px;
-  box-shadow: 0 16px 44px -14px rgba(0, 0, 0, .45);
-  padding: 6px;
-}
-
-.popmenu button {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  width: 100%;
-  border: 0;
-  background: transparent;
-  cursor: pointer;
-  font-family: var(--font);
-  font-size: 13.5px;
-  font-weight: 600;
-  color: rgb(var(--v-theme-on-surface));
-  padding: 10px 12px;
-  border-radius: 8px;
-  text-align: left;
-}
-
-.popmenu button:hover {
-  background: rgba(var(--v-theme-on-surface), .06);
-}
-
-.popmenu button.danger {
-  color: rgb(var(--v-theme-error));
-}
-
-.popmenu .sep {
-  height: 1px;
-  background: rgba(var(--v-theme-on-surface), .12);
-  margin: 5px 4px;
 }
 </style>

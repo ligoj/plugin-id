@@ -8,35 +8,26 @@
   CRUD dialogs (UserEditDialog, LigojConfirmDialog) via @ligoj/host.
 -->
 <template>
-  <div class="users">
-    <!-- Page header (mockup .ph): title + count + actions. -->
-    <header class="ph">
-      <div class="ph-txt">
-        <h1>{{ t('user.title') }}</h1>
-        <p class="sub">{{ t('user.subtitle2026') }}</p>
-      </div>
-      <div class="ph-actions">
-        <button class="btn" @click="openCreate"><v-icon size="18">mdi-plus</v-icon>{{ t('user.new') }}</button>
-        <button class="btn-ghost" :disabled="exporting" @click="onExport"><v-icon size="18">mdi-download</v-icon>{{ t('common.export') || 'Exporter' }}</button>
-        <button class="btn-ghost" :disabled="importing" @click="importInput?.click()">
-          <span v-if="importing" class="ispin" aria-hidden="true" /><v-icon v-else size="18">mdi-upload</v-icon>{{ importing ? (t('common.importing') || 'Import…') : (t('common.import') || 'Importer')
-          }}
-        </button>
+  <div class="users lj-surface">
+    <LjPageHeader :title="t('user.title')" :subtitle="t('user.subtitle2026')">
+      <template #actions>
+        <LjButton icon="mdi-plus" @click="openCreate">{{ t('user.new') }}</LjButton>
+        <LjButton variant="ghost" icon="mdi-download" :disabled="exporting" @click="onExport">{{ t('common.export') || 'Exporter' }}</LjButton>
+        <LjButton variant="ghost" icon="mdi-upload" :loading="importing" @click="importInput?.click()">
+          {{ importing ? (t('common.importing') || 'Import…') : (t('common.import') || 'Importer') }}
+        </LjButton>
         <input ref="importInput" type="file" accept=".csv,.tsv,text/csv" hidden @change="onImport" />
-      </div>
-    </header>
+      </template>
+    </LjPageHeader>
 
-    <!-- Search toolbar (mockup .toolbar). -->
+    <!-- Search toolbar. -->
     <div class="toolbar">
-      <label class="search">
-        <v-icon size="18">mdi-magnify</v-icon>
-        <input v-model="dt.search.value" :placeholder="t('user.searchPlaceholder') || t('common.search')" @input="onSearch" />
-      </label>
+      <LjSearch v-model="dt.search.value" :placeholder="t('user.searchPlaceholder') || t('common.search')" @input="onSearch" />
       <span class="tb-sp" />
       <v-slide-x-transition>
         <div v-if="selected.length" class="bulkbar">
           <span class="bulk-count">{{ selected.length }} {{ t('common.selected') }}</span>
-          <button class="btn-danger" @click="startBulkDelete"><v-icon size="16">mdi-delete</v-icon>{{ t('common.delete') }}</button>
+          <LjButton variant="danger" icon="mdi-delete" :icon-size="16" @click="startBulkDelete">{{ t('common.delete') }}</LjButton>
         </div>
       </v-slide-x-transition>
     </div>
@@ -78,9 +69,9 @@
       <template #actions="{ item }">
         <v-menu location="bottom end">
           <template #activator="{ props }">
-            <button class="iconbtn" v-bind="props" :aria-label="t('user.actions')" @click.stop><v-icon size="18">mdi-cog</v-icon></button>
+            <button class="lj-iconbtn" v-bind="props" :aria-label="t('user.actions')" @click.stop><v-icon size="18">mdi-cog</v-icon></button>
           </template>
-          <div class="popmenu">
+          <div class="lj-popmenu">
             <button @click="openEdit(item.id)"><v-icon size="18">mdi-pencil</v-icon>{{ t('user.edit') }}</button>
             <button class="danger" @click="startDelete(item)"><v-icon size="18">mdi-delete</v-icon>{{ t('common.delete') }}</button>
             <div class="sep" />
@@ -117,10 +108,9 @@
 import { ref, computed, onMounted } from 'vue'
 import { useDataTable, useApi, useAppStore, useErrorStore, useI18nStore } from '@ligoj/host'
 import { TYPE_ICONS } from '../composables/delegateTypes.js'
-import { VibrantDataTable as VibrantDataTable } from '@ligoj/host'
-// Vibrant replacement for the host's (stock-Vuetify) confirm dialog; aliased
-// so the existing <LigojConfirmDialog> tags need no change.
-import { VibrantConfirmDialog as LigojConfirmDialog } from '@ligoj/host'
+// Shared 2026 chrome: table, confirm dialog (aliased so <LigojConfirmDialog>
+// tags need no change), page header, buttons, search — all from the host.
+import { VibrantDataTable, VibrantConfirmDialog as LigojConfirmDialog, LjPageHeader, LjButton, LjSearch } from '@ligoj/host'
 import UserEditDialog from './UserEditDialog.vue'
 
 const appStore = useAppStore()
@@ -285,125 +275,11 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.users {
-  --surface: rgb(var(--v-theme-surface));
-  --ink: rgb(var(--v-theme-on-surface));
-  --ink-2: rgba(var(--v-theme-on-surface), .72);
-  --ink-3: rgba(var(--v-theme-on-surface), .55);
-  --border: rgba(var(--v-theme-on-surface), .12);
-  --border-2: rgba(var(--v-theme-on-surface), .26);
-  --hover: rgba(var(--v-theme-on-surface), .05);
-  --pill: rgba(var(--v-theme-on-surface), .06);
-  --primary: rgb(var(--v-theme-primary));
-  --accent: rgb(var(--v-theme-secondary));
-  --font: var(--v26-font, "Bricolage Grotesque", system-ui, sans-serif);
-  --mono: var(--v26-mono, "JetBrains Mono", ui-monospace, monospace);
-  color: var(--ink);
-}
-
-/* Page header (.ph). */
-.ph {
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: 18px;
-  flex-wrap: wrap;
-  margin-bottom: 18px;
-}
-
-.ph-txt h1 {
-  font-family: var(--font);
-  font-weight: 800;
-  letter-spacing: -.03em;
-  font-size: 28px;
-  margin: 0;
-  color: var(--ink);
-}
-
-.ph-txt .sub {
-  margin: 4px 0 0;
-  font-size: 14px;
-  color: var(--ink-3);
-  font-weight: 500;
-}
-
-.ph-actions {
-  display: flex;
-  gap: 10px;
-  align-items: center;
-  flex-wrap: wrap;
-}
-
-.btn,
-.btn-ghost,
-.btn-danger {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  font-family: var(--font);
-  font-weight: 700;
-  font-size: 14px;
-  padding: 11px 17px;
-  border-radius: 12px;
-  cursor: pointer;
-  border: 1px solid transparent;
-  transition: filter .15s, background .15s, border-color .15s, box-shadow .15s;
-}
-
-/* Vibrant brand CTA — warm orange→coral gradient (validated mockup --btn1/--btn2),
-   not a cross-hue orange→indigo which read as cheap. Soft, short shadow. */
-.btn {
-  color: #fff;
-  background: linear-gradient(135deg, #ff9436, #ff5a52);
-  box-shadow: 0 8px 18px -10px rgba(255, 90, 82, .55);
-}
-
-.btn:hover {
-  filter: brightness(1.04);
-  box-shadow: 0 10px 22px -10px rgba(255, 90, 82, .65);
-}
-
-.btn-ghost {
-  color: var(--ink-2);
-  background: var(--surface);
-  border-color: var(--border);
-}
-
-.btn-ghost:hover:not(:disabled) {
-  border-color: var(--border-2);
-  background: var(--hover);
-}
-
-.btn-ghost:disabled {
-  opacity: .55;
-  cursor: default;
-}
-
-.ispin {
-  width: 15px;
-  height: 15px;
-  border: 2px solid var(--border-2);
-  border-top-color: var(--ink-2);
-  border-radius: 50%;
-  animation: ispin .7s linear infinite;
-}
-
-@keyframes ispin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-.btn-danger {
-  color: #fff;
-  background: rgb(var(--v-theme-error));
-}
-
-.btn-danger:hover {
-  filter: brightness(1.06);
-}
-
-/* Toolbar (.toolbar) + search. */
+/* Chrome (header, buttons, search, row menu) lives in the shared host
+   components + the global `.lj-surface` / `.lj-iconbtn` / `.lj-popmenu`
+   classes. This block keeps only the view-specific toolbar layout + table
+   cell rendering; the `--mono` / `--ink-*` / `--pill` / `--radius-sm` vars
+   it reads are supplied by `.lj-surface` on the root. */
 .toolbar {
   display: flex;
   align-items: center;
@@ -413,39 +289,6 @@ onMounted(() => {
 
 .tb-sp {
   flex: 1;
-}
-
-.search {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  width: 100%;
-  max-width: 520px;
-  padding: 9px 14px;
-  border-radius: 12px;
-  border: 1px solid var(--border);
-  background: var(--surface);
-  color: var(--ink-3);
-  transition: border-color .15s, box-shadow .15s;
-}
-
-.search:focus-within {
-  border-color: var(--accent);
-  box-shadow: 0 0 0 4px rgba(var(--v-theme-secondary), .15);
-}
-
-.search input {
-  flex: 1;
-  border: 0;
-  outline: 0;
-  background: transparent;
-  font-family: var(--font);
-  font-size: 14px;
-  color: var(--ink);
-}
-
-.search input::placeholder {
-  color: var(--ink-3);
 }
 
 .bulkbar {
@@ -492,8 +335,8 @@ onMounted(() => {
   font-weight: 600;
   color: var(--ink-2);
   background: var(--pill);
-  border: 1px solid var(--border);
-  border-radius: 8px;
+  border: var(--border-w) var(--lj-border-style, solid) var(--border-c);
+  border-radius: var(--radius-sm);
   padding: 3px 9px;
 }
 
@@ -516,8 +359,8 @@ onMounted(() => {
   font-weight: 700;
   color: var(--ink-2);
   background: var(--pill);
-  border: 1px solid var(--border);
-  border-radius: 20px;
+  border: var(--border-w) var(--lj-border-style, solid) var(--border-c);
+  border-radius: var(--lj-radius-sm, 20px);
   padding: 3px 11px;
   white-space: nowrap;
 }
@@ -530,67 +373,5 @@ onMounted(() => {
 
 .dash {
   color: var(--ink-3);
-}
-
-/* Gear button + popmenu (matches mockup .iconbtn / .popmenu). */
-.iconbtn {
-  width: 32px;
-  height: 32px;
-  border-radius: 9px;
-  border: 1px solid transparent;
-  background: transparent;
-  cursor: pointer;
-  display: inline-grid;
-  place-items: center;
-  color: var(--ink-2);
-  transition: background .12s;
-}
-
-.iconbtn:hover {
-  background: var(--hover);
-}
-
-/* NOTE: v-menu teleports this content to <body>, OUTSIDE the .users scope,
-   so the local --surface/--ink/--border vars don't resolve here. Use the
-   global Vuetify theme tokens directly, or the menu renders transparent
-   ("floating in the background"). */
-.popmenu {
-  min-width: 210px;
-  background: rgb(var(--v-theme-surface));
-  border: 1px solid rgba(var(--v-theme-on-surface), .12);
-  border-radius: 12px;
-  box-shadow: 0 16px 44px -14px rgba(0, 0, 0, .45);
-  padding: 6px;
-}
-
-.popmenu button {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  width: 100%;
-  border: 0;
-  background: transparent;
-  cursor: pointer;
-  font-family: var(--v26-font, "Bricolage Grotesque", system-ui, sans-serif);
-  font-size: 13.5px;
-  font-weight: 600;
-  color: rgb(var(--v-theme-on-surface));
-  padding: 10px 12px;
-  border-radius: 8px;
-  text-align: left;
-}
-
-.popmenu button:hover {
-  background: rgba(var(--v-theme-on-surface), .06);
-}
-
-.popmenu button.danger {
-  color: rgb(var(--v-theme-error));
-}
-
-.popmenu .sep {
-  height: 1px;
-  background: rgba(var(--v-theme-on-surface), .12);
-  margin: 5px 4px;
 }
 </style>

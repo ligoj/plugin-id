@@ -9,21 +9,16 @@
        Lifting the body out of the routed view is the deduplication
        that made the dialog cheap: backend API contract is "group name
        → members list", no project / subscription context required. -->
-  <div class="gmpanel">
+  <div class="gmpanel lj-surface">
     <!-- Add-member bar: server-side autocomplete + Vibrant CTA. -->
     <div class="addbar">
       <v-autocomplete v-model="newMember" v-model:search="searchTerm" :label="t('id.group.addPlaceholder')" :items="searchResults" item-title="label" item-value="id" :loading="searching" no-filter
         clearable variant="outlined" density="comfortable" rounded="lg" hide-details autocomplete="off" class="addsel" prepend-inner-icon="mdi-account-search"
         @update:search="onSearch" @update:menu="onSearchMenu" />
-      <button class="btn" :disabled="!newMember || !groupName || adding" @click="addMember">
-        <span v-if="adding" class="bspin" aria-hidden="true" /><v-icon v-else size="18">mdi-account-plus</v-icon>{{ t('id.group.add') }}
-      </button>
+      <LjButton icon="mdi-account-plus" :disabled="!newMember || !groupName" :loading="adding" @click="addMember">{{ t('id.group.add') }}</LjButton>
     </div>
 
-    <label class="search">
-      <v-icon size="18">mdi-magnify</v-icon>
-      <input v-model="dt.search.value" :placeholder="t('common.search')" @input="onMemberSearch" />
-    </label>
+    <LjSearch v-model="dt.search.value" :placeholder="t('common.search')" class="member-search" @input="onMemberSearch" />
 
     <v-alert v-if="dt.error.value" type="warning" variant="tonal" class="mb-4" rounded="lg">
       {{ dt.error.value === 'internal' ? t('user.noProviderMsg') : dt.error.value }}
@@ -49,7 +44,7 @@
         </span>
       </template>
       <template #actions="{ item }">
-        <button v-if="canRemove(item)" class="iconbtn danger" :aria-label="t('id.group.removeTitle')" @click.stop="startRemove(item)">
+        <button v-if="canRemove(item)" class="lj-iconbtn remove-danger" :aria-label="t('id.group.removeTitle')" @click.stop="startRemove(item)">
           <v-icon size="18">mdi-account-minus</v-icon>
           <v-tooltip activator="parent" :text="t('id.group.removeTitle')" location="top" />
         </button>
@@ -79,8 +74,7 @@ import {
   useI18nStore,
 } from '@ligoj/host'
 import { TYPE_ICONS } from '../composables/delegateTypes.js'
-import { VibrantConfirmDialog as LigojConfirmDialog } from '@ligoj/host'
-import { VibrantDataTable as VibrantDataTable } from '@ligoj/host'
+import { VibrantConfirmDialog as LigojConfirmDialog, VibrantDataTable, LjButton, LjSearch } from '@ligoj/host'
 
 const props = defineProps({
   /**
@@ -264,45 +258,29 @@ watch(() => groupName.value, (g) => {
 </script>
 
 <style scoped>
-.gmpanel {
-  --ink: rgb(var(--v-theme-on-surface));
-  --ink-3: rgba(var(--v-theme-on-surface), .55);
-  --border: rgba(var(--v-theme-on-surface), .12);
-  --border-2: rgba(var(--v-theme-on-surface), .26);
-  --surface: rgb(var(--v-theme-surface));
-  --pill: rgba(var(--v-theme-on-surface), .06);
-  --accent: rgb(var(--v-theme-secondary));
-  --font: var(--v26-font, "Bricolage Grotesque", system-ui, sans-serif);
-  --mono: var(--v26-mono, "JetBrains Mono", ui-monospace, monospace);
-}
+/* Chrome (add CTA, member search) now comes from the shared host components
+   (LjButton, LjSearch) plus the global lj-surface / lj-iconbtn classes,
+   which supply the mono/ink/pill/radius tokens these cells read. Only the
+   panel-specific add-bar layout, danger remove button hover, and table cell
+   rendering remain. */
 
-/* Add-member bar + CTA. */
+/* Add-member bar + search spacing. */
 .addbar { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-bottom: 14px; }
 .addsel { min-width: 320px; flex: 1 1 320px; }
-.btn { display: inline-flex; align-items: center; gap: 8px; font-family: var(--font); font-weight: 700; font-size: 14px; padding: 11px 17px; border-radius: 12px; cursor: pointer; border: 0; color: #fff; background: linear-gradient(135deg, #ff9436, #ff5a52); box-shadow: 0 8px 18px -10px rgba(255, 90, 82, .55); transition: filter .15s; }
-.btn:hover:not(:disabled) { filter: brightness(1.04); }
-.btn:disabled { opacity: .55; cursor: default; }
-.bspin { width: 15px; height: 15px; border: 2px solid rgba(255, 255, 255, .5); border-top-color: #fff; border-radius: 50%; animation: bspin .7s linear infinite; }
-@keyframes bspin { to { transform: rotate(360deg); } }
+.member-search { margin-bottom: 14px; }
 
-/* Member search. */
-.search { display: flex; align-items: center; gap: 8px; width: 100%; max-width: 360px; padding: 9px 14px; border-radius: 12px; border: 1px solid var(--border); background: var(--surface); color: var(--ink-3); margin-bottom: 14px; transition: border-color .15s, box-shadow .15s; }
-.search:focus-within { border-color: var(--accent); box-shadow: 0 0 0 4px rgba(var(--v-theme-secondary), .15); }
-.search input { flex: 1; border: 0; outline: 0; background: transparent; font-family: var(--font); font-size: 14px; color: var(--ink); }
-.search input::placeholder { color: var(--ink-3); }
+/* Danger variant of the global ghost icon button (member removal). */
+.remove-danger.lj-iconbtn:hover { background: rgba(var(--v-theme-error), .1); color: rgb(var(--v-theme-error)); }
 
 /* Cells (shared language with UsersView). */
 .login { display: inline-flex; align-items: center; gap: 8px; }
 .login-ic { color: var(--ink-3); }
 .mono { font-family: var(--mono); font-size: 13px; font-weight: 600; }
 .mails { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 5px; }
-.mailchip { display: inline-flex; align-items: center; gap: 5px; font-size: 12.5px; font-weight: 600; color: rgba(var(--v-theme-on-surface), .72); background: var(--pill); border: 1px solid var(--border); border-radius: 8px; padding: 3px 9px; }
+.mailchip { display: inline-flex; align-items: center; gap: 5px; font-size: 12.5px; font-weight: 600; color: rgba(var(--v-theme-on-surface), .72); background: var(--pill); border: var(--border-w) var(--lj-border-style, solid) var(--border-c); border-radius: var(--radius-sm); padding: 3px 9px; }
 .mailchip :deep(.v-icon) { opacity: .6; }
 .groups { display: inline-flex; align-items: center; flex-wrap: nowrap; gap: 5px; overflow: hidden; }
-.chip { display: inline-flex; align-items: center; font-size: 12px; font-weight: 700; color: rgba(var(--v-theme-on-surface), .72); background: var(--pill); border: 1px solid var(--border); border-radius: 20px; padding: 3px 11px; white-space: nowrap; }
+.chip { display: inline-flex; align-items: center; font-size: 12px; font-weight: 700; color: rgba(var(--v-theme-on-surface), .72); background: var(--pill); border: var(--border-w) var(--lj-border-style, solid) var(--border-c); border-radius: var(--lj-radius-sm, 20px); padding: 3px 11px; white-space: nowrap; }
 .more { font-size: 12px; font-weight: 700; color: var(--ink-3); }
 .dash { color: var(--ink-3); }
-
-.iconbtn { width: 32px; height: 32px; border-radius: 9px; border: 1px solid transparent; background: transparent; cursor: pointer; display: inline-grid; place-items: center; color: var(--ink-3); transition: background .12s, color .12s; }
-.iconbtn.danger:hover { background: rgba(var(--v-theme-error), .1); color: rgb(var(--v-theme-error)); }
 </style>

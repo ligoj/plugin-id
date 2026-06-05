@@ -80,14 +80,10 @@
     </v-card-text>
 
     <div v-if="!loading" class="cep-foot">
-      <button v-if="isEdit" class="mbtn ghost-danger" :disabled="saving" @click="confirmDelete = true">
-        <v-icon size="18">mdi-delete</v-icon>{{ t('common.delete') }}
-      </button>
+      <LjButton v-if="isEdit" variant="danger" icon="mdi-delete" :disabled="saving" @click="confirmDelete = true">{{ t('common.delete') }}</LjButton>
       <span class="foot-sp" />
-      <button class="mbtn ghost" :disabled="saving" @click="emit('cancel')">{{ isEdit ? t('common.close') : t('common.cancel') }}</button>
-      <button v-if="!isEdit" class="mbtn primary" :disabled="saving" @click="save">
-        <span v-if="saving" class="mspin" aria-hidden="true" /><v-icon v-else size="18">mdi-content-save</v-icon>{{ t('common.save') }}
-      </button>
+      <LjButton variant="ghost" :disabled="saving" @click="emit('cancel')">{{ isEdit ? t('common.close') : t('common.cancel') }}</LjButton>
+      <LjButton v-if="!isEdit" icon="mdi-content-save" :loading="saving" @click="save">{{ t('common.save') }}</LjButton>
     </div>
 
     <LigojConfirmDialog
@@ -108,7 +104,7 @@
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import { useApi, useErrorStore, useI18nStore } from '@ligoj/host'
 import { TYPE_ICONS } from '../composables/delegateTypes.js'
-import { VibrantConfirmDialog as LigojConfirmDialog } from '@ligoj/host'
+import { VibrantConfirmDialog as LigojConfirmDialog, LjButton } from '@ligoj/host'
 
 const props = defineProps({
   /**
@@ -306,28 +302,17 @@ async function remove() {
 </style>
 
 <style scoped>
+/* Footer buttons now come from <LjButton>; the surface tokens (--font,
+   --radius-sm) cascade from the enclosing LjDialog card's `.lj-surface`.
+   Only the transparent panel background, field refinements, and the footer
+   layout remain. */
 .cep {
-  --ink-2: rgba(var(--v-theme-on-surface), .72);
-  --border: rgba(var(--v-theme-on-surface), .14);
-  --border-2: rgba(var(--v-theme-on-surface), .26);
-  --hover: rgba(var(--v-theme-on-surface), .06);
-  --font: var(--v26-font, "Bricolage Grotesque", system-ui, sans-serif);
   background: transparent !important;
 }
 .cep :deep(.v-card-text) { padding: 4px 24px 4px !important; }
-.cep :deep(.v-field) { border-radius: 12px; font-family: var(--font); }
+.cep :deep(.v-field) { border-radius: var(--radius-sm, var(--lj-radius-sm, 12px)); font-family: var(--font, "Bricolage Grotesque", system-ui, sans-serif); }
 .cep :deep(.v-field__prepend-inner .v-icon) { opacity: .55; }
 .cep :deep(.v-label) { font-weight: 600; }
 .cep-foot { display: flex; align-items: center; gap: 10px; padding: 12px 24px 22px; }
 .foot-sp { flex: 1; }
-.mbtn { display: inline-flex; align-items: center; gap: 8px; font-family: var(--font); font-weight: 700; font-size: 14px; padding: 10px 17px; border-radius: 12px; cursor: pointer; border: 1px solid transparent; transition: filter .15s, background .15s, border-color .15s; }
-.mbtn.primary { color: #fff; background: linear-gradient(135deg, #ff9436, #ff5a52); box-shadow: 0 8px 18px -10px rgba(255, 90, 82, .55); }
-.mbtn.primary:hover:not(:disabled) { filter: brightness(1.04); }
-.mbtn.ghost { color: var(--ink-2); background: transparent; border-color: var(--border); }
-.mbtn.ghost:hover:not(:disabled) { background: var(--hover); border-color: var(--border-2); }
-.mbtn.ghost-danger { color: rgb(var(--v-theme-error)); background: transparent; border-color: rgba(var(--v-theme-error), .35); }
-.mbtn.ghost-danger:hover:not(:disabled) { background: rgba(var(--v-theme-error), .08); }
-.mbtn:disabled { opacity: .6; cursor: default; }
-.mspin { width: 15px; height: 15px; border: 2px solid rgba(255, 255, 255, .5); border-top-color: #fff; border-radius: 50%; animation: cepspin .7s linear infinite; }
-@keyframes cepspin { to { transform: rotate(360deg); } }
 </style>
