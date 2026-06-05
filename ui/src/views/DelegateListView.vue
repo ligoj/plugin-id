@@ -43,10 +43,14 @@
         </span>
       </template>
       <template #cell.canAdmin="{ item }">
-        <span class="bdot" :class="{ on: item.canAdmin }" :title="item.canAdmin ? t('delegate.adminGranted') : ''" />
+        <span class="bdot" :class="{ on: item.canAdmin }">
+          <v-tooltip activator="parent" :text="item.canAdmin ? t('delegate.adminGranted') : t('delegate.adminNotGranted')" location="top" />
+        </span>
       </template>
       <template #cell.canWrite="{ item }">
-        <span class="bdot" :class="{ on: item.canWrite }" :title="item.canWrite ? t('delegate.writeGranted') : ''" />
+        <span class="bdot" :class="{ on: item.canWrite }">
+          <v-tooltip activator="parent" :text="item.canWrite ? t('delegate.writeGranted') : t('delegate.writeNotGranted')" location="top" />
+        </span>
       </template>
       <template #actions="{ item }">
         <v-menu location="bottom end">
