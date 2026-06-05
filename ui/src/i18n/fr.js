@@ -32,7 +32,9 @@ export default {
   'delegate.adminHelp': 'Avec le niveau de sécurité d\'administration sur cette ressource, les receveurs de cette délégation peuvent créer d\'autres délégations pour partager cet accès avec d\'autres receveurs valides',
   'delegate.writeHelp': 'Avec le niveau de sécurité d\'écriture, les receveurs de cette délégation peuvent modifier les membres des groupes impliqués. Sans cet accès cette délégation ne donne qu\'un droit de lecture',
   'delegate.adminGranted': 'Administration accordée',
+  'delegate.adminNotGranted': 'Administration non accordée',
   'delegate.writeGranted': 'Écriture accordée',
+  'delegate.writeNotGranted': 'Écriture non accordée',
   // Fragments encadrant le nom du destinataire en gras-rouge dans la
   // confirmation de suppression (issue #37). Le host garde la clé
   // monolithique `delegate.deleteConfirm` intacte.
