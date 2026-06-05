@@ -26,7 +26,7 @@
     <v-alert v-if="demoMode" type="info" variant="tonal" density="compact" class="mb-4" rounded="lg">{{ t('containerScope.demoMode') }}</v-alert>
 
     <VibrantDataTable v-if="!error" :headers="headers" :items="filteredItems" :items-length="filteredItems.length" :loading="loading"
-      item-value="id" @row-click="openEdit">
+      item-value="id" filename="container-scopes.csv" @row-click="openEdit">
       <template #cell.name="{ item }">
         <span class="sname"><v-icon size="16" class="sname-ic">mdi-file-tree-outline</v-icon><span>{{ item.name }}</span></span>
       </template>
@@ -112,7 +112,7 @@ const filteredItems = computed(() => {
 const headers = computed(() => [
   { label: t('common.name'), key: 'name' },
   { label: t('containerScope.dn'), key: 'dn' },
-  { label: t('common.status'), key: 'locked', align: 'center', width: '90px' },
+  { label: t('common.status'), key: 'locked', align: 'center', width: '90px', exportValue: (r) => (r.locked ? t('user.statusLocked') : t('user.statusActive')) },
 ])
 
 const formRef = ref(null)

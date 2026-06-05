@@ -25,7 +25,7 @@
     </v-alert>
 
     <VibrantDataTable v-if="!dt.error.value" :headers="headers" :items="dt.items.value" :items-length="dt.totalItems.value" :loading="dt.loading.value"
-      item-value="id" default-sort="id" @update:options="loadData">
+      item-value="id" default-sort="id" :fetch-all="dt.loadAll" filename="members.csv" @update:options="loadData">
       <template #cell.id="{ item }">
         <span class="login"><v-icon size="16" class="login-ic">mdi-account-circle</v-icon><span class="mono">{{ item.id }}</span></span>
       </template>
@@ -125,8 +125,8 @@ const headers = computed(() => [
   { label: t('user.firstName'), key: 'firstName', sortable: true },
   { label: t('user.lastName'), key: 'lastName', sortable: true },
   { label: t('user.company'), key: 'company', sortable: true },
-  { label: t('user.emails'), key: 'mails' },
-  { label: t('user.groups'), key: 'groups' },
+  { label: t('user.emails'), key: 'mails', exportValue: (r) => (r.mails || []).join(' ') },
+  { label: t('user.groups'), key: 'groups', exportValue: (r) => (r.groups || []).map((g) => g.name || g).join(' ') },
 ])
 
 function loadData(options) {

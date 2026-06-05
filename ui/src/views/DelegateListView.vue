@@ -25,7 +25,7 @@
     <v-alert v-if="dt.error.value" type="warning" variant="tonal" class="mb-4" rounded="lg">{{ dt.error.value }}</v-alert>
 
     <VibrantDataTable v-if="!dt.error.value" :headers="headers" :items="dt.items.value" :items-length="dt.totalItems.value" :loading="dt.loading.value" selectable v-model="selected" item-value="id"
-      default-sort="receiver" @update:options="loadData" @row-click="(item) => openDialog(item.id)">
+      default-sort="receiver" :fetch-all="dt.loadAll" filename="delegates.csv" @update:options="loadData" @row-click="(item) => openDialog(item.id)">
       <template #cell.receiver="{ item }">
         <span class="rcv">
           <v-tooltip :text="t('delegate.type.' + (item.receiverType || '').toLowerCase())" location="top">
@@ -100,10 +100,10 @@ const editDialog = ref(false)
 const editDelegateId = ref(null)
 
 const headers = computed(() => [
-  { label: t('delegate.receiver'), key: 'receiver', sortable: true },
-  { label: t('delegate.resource'), key: 'name' },
-  { label: t('delegate.admin'), key: 'canAdmin', align: 'center', width: '90px' },
-  { label: t('delegate.write'), key: 'canWrite', align: 'center', width: '90px' },
+  { label: t('delegate.receiver'), key: 'receiver', sortable: true, exportValue: (r) => r.receiver?.name || r.receiver?.id || r.name || '' },
+  { label: t('delegate.resource'), key: 'name', exportValue: (r) => r.name || '' },
+  { label: t('delegate.admin'), key: 'canAdmin', align: 'center', width: '90px', exportValue: (r) => (r.canAdmin ? t('delegate.adminGranted') : '') },
+  { label: t('delegate.write'), key: 'canWrite', align: 'center', width: '90px', exportValue: (r) => (r.canWrite ? t('delegate.writeGranted') : '') },
 ])
 
 function loadData(options) { lastOptions = options; dt.load(options) }

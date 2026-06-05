@@ -12,7 +12,8 @@
     <LjPageHeader :title="t('user.title')" :subtitle="t('user.subtitle2026')">
       <template #actions>
         <LjButton icon="mdi-plus" @click="openCreate">{{ t('user.new') }}</LjButton>
-        <LjButton variant="ghost" icon="mdi-download" :disabled="exporting" @click="onExport">{{ t('common.export') || 'Exporter' }}</LjButton>
+        <!-- Export/Copy now live in the table's own tools cog (VibrantDataTable
+             :fetch-all). Only the CSV Import action remains here. -->
         <LjButton variant="ghost" icon="mdi-upload" :loading="importing" @click="importInput?.click()">
           {{ importing ? (t('common.importing') || 'Import…') : (t('common.import') || 'Importer') }}
         </LjButton>
@@ -41,7 +42,7 @@
     </v-alert>
 
     <VibrantDataTable v-if="!dt.error.value" :headers="headers" :items="dt.items.value" :items-length="dt.totalItems.value" :loading="dt.loading.value" selectable v-model="selected" item-value="id"
-      default-sort="id" @update:options="loadData" @row-click="(item) => openEdit(item.id)">
+      default-sort="id" :fetch-all="dt.loadAll" filename="users.csv" @update:options="loadData" @row-click="(item) => openEdit(item.id)">
       <template #cell.id="{ item }">
         <span class="login"><v-icon size="16" class="login-ic">mdi-account-circle</v-icon><span class="mono">{{ item.id }}</span></span>
       </template>
@@ -144,17 +145,18 @@ const actionLoading = ref(false)
 const editDialog = ref(false)
 const editUserId = ref(null)
 const importInput = ref(null)
-const exporting = ref(false)
 const importing = ref(false)
 
+// `exportValue` keeps the CSV/clipboard output human-readable (arrays and
+// the locked boolean would otherwise serialize as JSON / true|false).
 const headers = computed(() => [
   { title: t('user.login'), label: t('user.login'), key: 'id', sortable: true },
   { label: t('user.firstName'), key: 'firstName', sortable: true },
   { label: t('user.lastName'), key: 'lastName', sortable: true },
   { label: t('user.company'), key: 'company', sortable: true },
-  { label: t('user.emails'), key: 'mails' },
-  { label: t('user.groups'), key: 'groups' },
-  { label: t('common.status'), key: 'locked', align: 'center', width: '90px' },
+  { label: t('user.emails'), key: 'mails', exportValue: (r) => (r.mails || []).join(' ') },
+  { label: t('user.groups'), key: 'groups', exportValue: (r) => (r.groups || []).map((g) => g.name || g).join(' ') },
+  { label: t('common.status'), key: 'locked', align: 'center', width: '90px', exportValue: (r) => (r.locked ? t('user.statusLocked') : t('user.statusActive')) },
 ])
 
 function loadData(options) {
@@ -215,35 +217,9 @@ function openCreate() { editUserId.value = null; editDialog.value = true }
 function openEdit(id) { editUserId.value = id; editDialog.value = true }
 function onUserSaved() { dt.load(lastOptions) }
 
-/* Export: pull all rows then build a CSV client-side (reuses dt.loadAll). */
-async function onExport() {
-  if (dt.demoMode.value) { errorStore.push({ message: t('user.demoMode'), status: 0 }); return }
-  exporting.value = true
-  try {
-    const rows = await dt.loadAll()
-    const cols = headers.value
-    const head = cols.map((c) => csvCell(c.label)).join(',')
-    const body = (rows || []).map((r) => cols.map((c) => csvCell(formatCell(r, c.key))).join(',')).join('\n')
-    downloadCsv(` ${head}\n${body}`, 'users.csv')
-  } finally {
-    exporting.value = false
-  }
-}
-function formatCell(row, key) {
-  const v = row[key]
-  if (key === 'mails') return (v || []).join(' ')
-  if (key === 'groups') return (v || []).map((g) => g.name || g).join(' ')
-  if (key === 'locked') return v ? t('user.statusLocked') : t('user.statusActive')
-  return v ?? ''
-}
-function csvCell(s) { const v = String(s ?? ''); return /[",\n]/.test(v) ? `"${v.replace(/"/g, '""')}"` : v }
-function downloadCsv(content, filename) {
-  const blob = new Blob([content], { type: 'text/csv;charset=utf-8' })
-  const url = URL.createObjectURL(blob)
-  const a = document.createElement('a')
-  a.href = url; a.download = filename; a.click()
-  URL.revokeObjectURL(url)
-}
+/* Export / Copy are provided by VibrantDataTable's tools cog (it calls the
+   `:fetch-all="dt.loadAll"` we pass to pull every row). No view-local CSV
+   code needed. */
 
 async function onImport(e) {
   const file = e.target.files?.[0]

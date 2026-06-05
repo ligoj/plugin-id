@@ -31,7 +31,7 @@
     </v-alert>
 
     <VibrantDataTable v-if="!dt.error.value" :headers="headers" :items="dt.items.value" :items-length="dt.totalItems.value" :loading="dt.loading.value" selectable v-model="selected" item-value="name"
-      default-sort="name" @update:options="loadData" @row-click="(item) => openDetails(item.name)">
+      default-sort="name" :fetch-all="dt.loadAll" filename="companies.csv" @update:options="loadData" @row-click="(item) => openDetails(item.name)">
       <template #cell.name="{ item }">
         <span class="cname"><v-icon size="16" class="cname-ic">mdi-office-building-outline</v-icon><span>{{ item.name }}</span></span>
       </template>
@@ -111,7 +111,7 @@ const headers = computed(() => [
   { title: t('common.name'), label: t('common.name'), key: 'name', sortable: true },
   { label: t('group.scope'), key: 'scope' },
   { label: t('group.members'), key: 'count', align: 'center', width: '110px' },
-  { label: t('group.locked'), key: 'locked', align: 'center', width: '90px' },
+  { label: t('group.locked'), key: 'locked', align: 'center', width: '90px', exportValue: (r) => (r.locked ? t('user.statusLocked') : t('user.statusActive')) },
 ])
 
 function scopeColor(scope) { return /intern/i.test(scope) ? '#2563eb' : '#e6a019' }
