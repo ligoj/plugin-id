@@ -22,7 +22,14 @@
          state is purely visual / no-op in view mode. -->
     <v-card-text v-if="!loading">
       <v-form ref="formRef" @submit.prevent="save">
-        <v-text-field v-model="form.name" prepend-inner-icon="mdi-form-textbox" :label="t('common.name')" :rules="[rules.required]" :disabled="isEdit" variant="outlined" class="mb-2" />
+        <v-text-field v-model="form.name" prepend-inner-icon="mdi-form-textbox" :label="t('common.name')" :rules="[rules.required]" :disabled="isEdit" variant="outlined" class="mb-2"
+          :error-messages="nameStatus === 'taken' ? t('id.availability.taken') : ''">
+          <template #append-inner>
+            <v-progress-circular v-if="nameStatus === 'checking'" size="18" width="2" indeterminate />
+            <v-icon v-else-if="nameStatus === 'available'" color="success">mdi-check-circle</v-icon>
+            <v-icon v-else-if="nameStatus === 'taken'" color="error">mdi-alert-circle</v-icon>
+          </template>
+        </v-text-field>
         <v-autocomplete v-model="form.scope" prepend-inner-icon="mdi-shape-outline" :label="t('group.scope')" :items="availableScopes" :loading="scopesLoading" :disabled="isEdit" clearable variant="outlined" class="mb-2"
           autocomplete="off" />
         <!-- Parent group: lazy server-backed autosuggest. No groups are
@@ -80,6 +87,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { useApi, useErrorStore, useI18nStore } from '@ligoj/host'
 import { TYPE_ICONS } from '../composables/delegateTypes.js'
+import { useAvailability, existsByExact } from '../composables/useAvailability.js'
 import { VibrantConfirmDialog as LigojConfirmDialog, LjButton } from '@ligoj/host'
 
 const props = defineProps({
@@ -129,6 +137,13 @@ const form = ref({
 const rules = {
   required: (v) => !!v || t('common.required'),
 }
+
+// Live name-availability check (create mode only).
+const { status: nameStatus } = useAvailability(
+  () => form.value.name,
+  (v) => existsByExact(api, 'service/id/group', v, 'name'),
+  { enabled: () => !isEdit.value && !demoMode.value },
+)
 
 const DEMO_GROUPS = [
   { name: 'Engineering', scope: 'Group' },
@@ -235,6 +250,7 @@ onMounted(async () => {
 async function save() {
   const { valid } = await formRef.value.validate()
   if (!valid) return
+  if (nameStatus.value === 'taken') return
 
   if (demoMode.value) {
     errorStore.push({ message: t('group.demoSave'), status: 0 })

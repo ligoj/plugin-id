@@ -64,8 +64,12 @@
     </VibrantDataTable>
 
     <!-- Group view / create dialog (shared chrome around the reused panel). -->
+    <!-- No `v-if` on the panel: the v-dialog is lazy and owns the
+         mount/unmount, so the content unmounts AFTER the close transition.
+         Adding `v-if="editDialog"` here removed the panel synchronously while
+         the dialog was still animating out, which could orphan the header. -->
     <LjDialog v-model="editDialog" :title="editingId ? `${t('group.detailsTitle')} ${editingId}` : t('group.new')" :icon="editingId ? 'mdi-eye-outline' : 'mdi-account-group'" :max-width="600">
-      <GroupEditPanel v-if="editDialog" :key="editingId ?? 'new'" :group-id="editingId" @saved="onEditSaved" @deleted="onEditDeleted" @cancel="editDialog = false" />
+      <GroupEditPanel :key="editingId ?? 'new'" :group-id="editingId" @saved="onEditSaved" @deleted="onEditDeleted" @cancel="editDialog = false" />
     </LjDialog>
 
     <LigojConfirmDialog v-model="deleteDialog" :title="t('group.deleteTitle')" :icon="TYPE_ICONS.GROUP" :confirm-label="t('common.delete')" confirm-color="error" :loading="deleting"

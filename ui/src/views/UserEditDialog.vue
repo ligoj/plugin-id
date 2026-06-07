@@ -15,7 +15,13 @@
           <template v-else>
             <v-form ref="formRef" @submit.prevent="save">
               <v-text-field v-model="form.id" :label="t('user.login')" prepend-inner-icon="mdi-account" :rules="[rules.required]" :disabled="isEdit" :hint="isEdit ? '' : t('user.loginHint')" persistent-hint variant="outlined"
-                class="mb-2" autofocus />
+                class="mb-2" autofocus :error-messages="loginStatus === 'taken' ? t('id.availability.taken') : ''">
+                <template #append-inner>
+                  <v-progress-circular v-if="loginStatus === 'checking'" size="18" width="2" indeterminate />
+                  <v-icon v-else-if="loginStatus === 'available'" color="success">mdi-check-circle</v-icon>
+                  <v-icon v-else-if="loginStatus === 'taken'" color="error">mdi-alert-circle</v-icon>
+                </template>
+              </v-text-field>
               <!-- First + last name grouped on a single row (stacks below sm). -->
               <v-row>
                 <v-col cols="12" sm="6">
@@ -121,6 +127,7 @@
 import { ref, computed, watch } from 'vue'
 import { useApi, useFormGuard, useErrorStore, useI18nStore } from '@ligoj/host'
 import { TYPE_ICONS } from '../composables/delegateTypes.js'
+import { useAvailability, existsByExact } from '../composables/useAvailability.js'
 // Vibrant replacement for the host's confirm dialog (aliased → tags unchanged).
 import { VibrantConfirmDialog as LigojConfirmDialog, LjDialog, LjButton } from '@ligoj/host'
 
@@ -176,6 +183,14 @@ const form = ref({
   // a string fallback at load time keeps tolerance for any legacy payload.
   mails: [],
 })
+
+// Live login-availability check (create mode only): flags a login that already
+// exists while the user types, before submitting.
+const { status: loginStatus } = useAvailability(
+  () => form.value.id,
+  (v) => existsByExact(api, 'service/id/user', v, 'id'),
+  { enabled: () => !isEdit.value && !demoMode.value },
+)
 
 // useFormGuard still drives the dirty tracking (snapshot + deep watch) and
 // keeps its onBeforeRouteLeave guard for the "navigate away with the dialog
@@ -501,6 +516,8 @@ function onGuardCancel() {
 async function save() {
   const { valid } = await formRef.value.validate()
   if (!valid) return
+  // Block submit of a known-duplicate login (the live check already flags it).
+  if (loginStatus.value === 'taken') return
 
   if (demoMode.value) {
     errorStore.push({ message: t('user.demoSave'), status: 0 })

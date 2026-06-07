@@ -60,8 +60,11 @@
       </template>
     </VibrantDataTable>
 
+    <!-- No `v-if` on the panel: the lazy v-dialog owns the mount/unmount so the
+         content tears down after the close transition (avoids orphaning the
+         header). See GroupListView for the same fix. -->
     <LjDialog v-model="editDialog" :title="editingId ? `${t('company.detailsTitle')} ${editingId}` : t('company.new')" :icon="editingId ? 'mdi-eye-outline' : 'mdi-office-building'" :max-width="600">
-      <CompanyEditPanel v-if="editDialog" :key="editingId ?? 'new'" :company-id="editingId" @saved="onEditSaved" @deleted="onEditDeleted" @cancel="editDialog = false" />
+      <CompanyEditPanel :key="editingId ?? 'new'" :company-id="editingId" @saved="onEditSaved" @deleted="onEditDeleted" @cancel="editDialog = false" />
     </LjDialog>
 
     <LigojConfirmDialog v-model="deleteDialog" :title="t('company.deleteTitle')" :icon="TYPE_ICONS.COMPANY" :confirm-label="t('common.delete')" confirm-color="error" :loading="deleting"

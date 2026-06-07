@@ -77,6 +77,8 @@ export default {
   'company.deleteConfirmBefore': 'Are you sure you want to delete ',
   'company.deleteConfirmAfter': '?',
   // Subscription row actions contributed via renderFeatures.
+  'id.availability.taken': 'Already exists',
+  'id.availability.available': 'Available',
   'id.renderFeatures.manage': 'Manage members',
   'id.renderFeatures.help': 'Documentation',
   // Subscription row details: stable "key" (group name) + live

@@ -20,7 +20,14 @@
 
     <v-card-text v-if="!loading">
       <v-form ref="formRef" @submit.prevent="save">
-        <v-text-field v-model="form.name" prepend-inner-icon="mdi-form-textbox" :label="t('common.name')" :rules="[rules.required]" :disabled="isEdit" variant="outlined" class="mb-2" />
+        <v-text-field v-model="form.name" prepend-inner-icon="mdi-form-textbox" :label="t('common.name')" :rules="[rules.required]" :disabled="isEdit" variant="outlined" class="mb-2"
+          :error-messages="nameStatus === 'taken' ? t('id.availability.taken') : ''">
+          <template #append-inner>
+            <v-progress-circular v-if="nameStatus === 'checking'" size="18" width="2" indeterminate />
+            <v-icon v-else-if="nameStatus === 'available'" color="success">mdi-check-circle</v-icon>
+            <v-icon v-else-if="nameStatus === 'taken'" color="error">mdi-alert-circle</v-icon>
+          </template>
+        </v-text-field>
         <!-- Scope autocomplete. Mode-agnostic UI; `:disabled="isEdit"`
              flips it to read-only in view mode (the picked value
              still renders correctly because we pre-seed
@@ -104,6 +111,7 @@
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import { useApi, useErrorStore, useI18nStore } from '@ligoj/host'
 import { TYPE_ICONS } from '../composables/delegateTypes.js'
+import { useAvailability, existsByExact } from '../composables/useAvailability.js'
 import { VibrantConfirmDialog as LigojConfirmDialog, LjButton } from '@ligoj/host'
 
 const props = defineProps({
@@ -147,6 +155,13 @@ const form = ref({
 const rules = {
   required: (v) => !!v || t('common.required'),
 }
+
+// Live name-availability check (create mode only).
+const { status: nameStatus } = useAvailability(
+  () => form.value.name,
+  (v) => existsByExact(api, 'service/id/company', v, 'name'),
+  { enabled: () => !isEdit.value && !demoMode.value },
+)
 
 const DEMO_COMPANIES = [
   { name: 'Ligoj', scope: 'Company', locked: false, count: 4 },
@@ -238,6 +253,7 @@ onMounted(async () => {
 async function save() {
   const { valid } = await formRef.value.validate()
   if (!valid) return
+  if (nameStatus.value === 'taken') return
 
   if (demoMode.value) {
     errorStore.push({ message: t('company.demoSave'), status: 0 })

@@ -54,7 +54,14 @@
     <!-- Create / edit dialog (shared chrome). -->
     <LjDialog v-model="editDialog" :title="editTarget?.id ? t('containerScope.edit') : t('containerScope.new')" :icon="TYPE_ICONS.SCOPE" :max-width="520">
       <v-form ref="formRef" @submit.prevent="save">
-        <v-text-field v-model="editForm.name" prepend-inner-icon="mdi-form-textbox" :label="t('common.name')" :rules="[rules.required]" variant="outlined" class="mb-2" autofocus />
+        <v-text-field v-model="editForm.name" prepend-inner-icon="mdi-form-textbox" :label="t('common.name')" :rules="[rules.required]" variant="outlined" class="mb-2" autofocus
+          :error-messages="nameStatus === 'taken' ? t('id.availability.taken') : ''">
+          <template #append-inner>
+            <v-progress-circular v-if="nameStatus === 'checking'" size="18" width="2" indeterminate />
+            <v-icon v-else-if="nameStatus === 'available'" color="success">mdi-check-circle</v-icon>
+            <v-icon v-else-if="nameStatus === 'taken'" color="error">mdi-alert-circle</v-icon>
+          </template>
+        </v-text-field>
         <v-text-field v-if="editTarget?.id" v-model="editForm.dn" prepend-inner-icon="mdi-file-tree-outline" :label="t('containerScope.dn')" variant="outlined" disabled />
       </v-form>
       <template #footer>
@@ -73,6 +80,7 @@
 import { ref, computed, watch, onMounted } from 'vue'
 import { useApi, useAppStore, useErrorStore, useI18nStore } from '@ligoj/host'
 import { TYPE_ICONS } from '../composables/delegateTypes.js'
+import { useAvailability, existsByExact } from '../composables/useAvailability.js'
 import { VibrantDataTable, VibrantConfirmDialog as LigojConfirmDialog, LjPageHeader, LjButton, LjSearch, LjSegmented, LjDialog } from '@ligoj/host'
 
 const api = useApi()
@@ -126,6 +134,14 @@ const deleting = ref(false)
 
 const rules = { required: (v) => !!v || t('common.required') }
 
+// Live scope-name availability check (create mode only), against the active
+// tab's container-scope list.
+const { status: nameStatus } = useAvailability(
+  () => editForm.value.name,
+  (v) => existsByExact(api, `service/id/container-scope/${activeTab.value}`, v, 'name'),
+  { enabled: () => !editTarget.value?.id && !demoMode.value },
+)
+
 async function loadData() {
   loading.value = true
   error.value = null
@@ -156,6 +172,7 @@ function startDelete(item) { deleteTarget.value = item; deleteDialog.value = tru
 async function save() {
   const { valid } = await formRef.value.validate()
   if (!valid) return
+  if (nameStatus.value === 'taken') return
   if (demoMode.value) { errorStore.push({ message: t('containerScope.demoSave'), status: 0 }); editDialog.value = false; return }
   saving.value = true
   const payload = { name: editForm.value.name }
