@@ -70,8 +70,6 @@ export default {
   'company.deleteConfirmBefore': 'Êtes-vous certain de supprimer ',
   'company.deleteConfirmAfter': ' ?',
   // Actions de ligne d'abonnement, contribuées via renderFeatures.
-  'id.availability.taken': 'Existe déjà',
-  'id.availability.available': 'Disponible',
   'id.renderFeatures.manage': 'Gérer les membres',
   'id.renderFeatures.help': 'Documentation',
   // Détails de ligne d'abonnement : « clé » stable (nom du groupe) +
