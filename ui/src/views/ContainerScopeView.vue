@@ -56,7 +56,8 @@
       <v-form ref="formRef" @submit.prevent="save">
         <LjAvailabilityField v-model="editForm.name" v-model:taken="nameTaken" :endpoint="'service/id/container-scope/' + activeTab" :enabled="!editTarget?.id && !demoMode"
           prepend-inner-icon="mdi-form-textbox" :label="t('common.name')" class="mb-2" autofocus />
-        <v-text-field v-if="editTarget?.id" v-model="editForm.dn" prepend-inner-icon="mdi-file-tree-outline" :label="t('containerScope.dn')" variant="outlined" disabled />
+        <v-text-field v-model="editForm.dn" prepend-inner-icon="mdi-file-tree-outline" :label="t('containerScope.dn')" variant="outlined"
+          :disabled="!!editTarget?.id" :rules="editTarget?.id ? [] : [rules.required]" />
       </v-form>
       <template #footer>
         <LjButton variant="ghost" @click="editDialog = false">{{ t('common.cancel') }}</LjButton>
@@ -128,6 +129,9 @@ const deleting = ref(false)
 // Set by LjAvailabilityField when the typed scope name already exists (create).
 const nameTaken = ref(false)
 
+// The DN is required at creation (backend ContainerScope.dn is @NotNull/@NotBlank).
+const rules = { required: (v) => !!v || t('common.required') }
+
 async function loadData() {
   loading.value = true
   error.value = null
@@ -161,7 +165,7 @@ async function save() {
   if (nameTaken.value) return
   if (demoMode.value) { errorStore.push({ message: t('containerScope.demoSave'), status: 0 }); editDialog.value = false; return }
   saving.value = true
-  const payload = { name: editForm.value.name }
+  const payload = { name: editForm.value.name, dn: editForm.value.dn }
   if (editTarget.value?.id) {
     await api.put(`rest/service/id/container-scope/${activeTab.value}`, { id: editTarget.value.id, ...payload })
   } else {
