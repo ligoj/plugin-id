@@ -49,16 +49,18 @@
     </VibrantDataTable>
 
     <!-- Create / edit dialog (shared chrome). -->
-    <LjDialog v-model="editDialog" :title="editTarget?.id ? t('containerScope.edit') : t('containerScope.new')" :icon="TYPE_ICONS.SCOPE" :max-width="520">
+    <LjDialog v-model="editDialog" :title="readOnly ? t('containerScope.view') : (editTarget?.id ? t('containerScope.edit') : t('containerScope.new'))" :icon="TYPE_ICONS.SCOPE" :max-width="520">
       <v-form ref="formRef" @submit.prevent="save">
         <LjAvailabilityField v-model="editForm.name" v-model:taken="nameTaken" :endpoint="'service/id/container-scope/' + activeTab" :enabled="!editTarget?.id && !demoMode"
-          prepend-inner-icon="mdi-form-textbox" :label="t('common.name')" class="mb-2" autofocus />
+          prepend-inner-icon="mdi-form-textbox" :label="t('common.name')" :disabled="readOnly" class="mb-2" autofocus />
         <v-text-field v-model="editForm.dn" prepend-inner-icon="mdi-file-tree-outline" :label="t('containerScope.dn')" variant="outlined"
-          :disabled="!!editTarget?.id" :rules="editTarget?.id ? [] : [rules.required]" />
+          :disabled="!!editTarget?.id || readOnly" :rules="editTarget?.id ? [] : [rules.required]" />
+        <v-checkbox v-model="editForm.locked" :label="t('containerScope.locked')" :disabled="readOnly" color="primary" density="compact" hide-details />
+        <p v-if="editForm.locked" class="locked-note"><v-icon size="14">mdi-alert-outline</v-icon>{{ t('containerScope.lockedHint') }}</p>
       </v-form>
       <template #footer>
-        <LjButton variant="ghost" @click="editDialog = false">{{ t('common.cancel') }}</LjButton>
-        <LjButton icon="mdi-content-save" :loading="saving" @click="save">{{ t('common.save') }}</LjButton>
+        <LjButton variant="ghost" @click="editDialog = false">{{ readOnly ? t('common.close') : t('common.cancel') }}</LjButton>
+        <LjButton v-if="!readOnly" icon="mdi-content-save" :loading="saving" @click="save">{{ t('common.save') }}</LjButton>
       </template>
     </LjDialog>
 
@@ -117,8 +119,12 @@ const headers = computed(() => [
 const formRef = ref(null)
 const editDialog = ref(false)
 const editTarget = ref(null)
-const editForm = ref({ name: '', dn: '' })
+const editForm = ref({ name: '', dn: '', locked: false })
 const saving = ref(false)
+
+// A locked scope is read-only: the dialog opens as a view (no save, fields
+// disabled), matching the backend rule that locked scopes can't be mutated.
+const readOnly = computed(() => !!editTarget.value?.locked)
 const deleteDialog = ref(false)
 const deleteTarget = ref(null)
 const deleting = ref(false)
@@ -152,21 +158,30 @@ async function loadData() {
 
 watch(activeTab, () => { search.value = ''; loadData() })
 
-function openNew() { editTarget.value = null; editForm.value = { name: '', dn: '' }; editDialog.value = true }
-function openEdit(item) { editTarget.value = item; editForm.value = { name: item.name, dn: item.dn || '' }; editDialog.value = true }
+function openNew() { editTarget.value = null; editForm.value = { name: '', dn: '', locked: false }; editDialog.value = true }
+function openEdit(item) { editTarget.value = item; editForm.value = { name: item.name, dn: item.dn || '', locked: !!item.locked }; editDialog.value = true }
 function startDelete(item) { deleteTarget.value = item; deleteDialog.value = true }
 
 async function save() {
+  if (readOnly.value) { editDialog.value = false; return } // locked → view only
   const { valid } = await formRef.value.validate()
   if (!valid) return
   if (nameTaken.value) return
   if (demoMode.value) { errorStore.push({ message: t('containerScope.demoSave'), status: 0 }); editDialog.value = false; return }
   saving.value = true
-  const payload = { name: editForm.value.name, dn: editForm.value.dn }
+  // The REST create/update map to the base `container-scope` path (NOT the
+  // `/{type}` GET path → 405); `type` is carried in the body (uppercase enum,
+  // derived from the active tab) along with the `locked` flag.
+  const payload = {
+    name: editForm.value.name,
+    dn: editForm.value.dn,
+    type: activeTab.value.toUpperCase(),
+    locked: editForm.value.locked,
+  }
   if (editTarget.value?.id) {
-    await api.put(`rest/service/id/container-scope/${activeTab.value}`, { id: editTarget.value.id, ...payload })
+    await api.put('rest/service/id/container-scope', { id: editTarget.value.id, ...payload })
   } else {
-    await api.post(`rest/service/id/container-scope/${activeTab.value}`, payload)
+    await api.post('rest/service/id/container-scope', payload)
   }
   saving.value = false
   editDialog.value = false
@@ -176,7 +191,7 @@ async function save() {
 async function confirmDelete() {
   if (demoMode.value) { errorStore.push({ message: t('containerScope.demoDelete'), status: 0 }); deleteDialog.value = false; return }
   deleting.value = true
-  await api.del(`rest/service/id/container-scope/${activeTab.value}/${deleteTarget.value.id}`)
+  await api.del(`rest/service/id/container-scope/${deleteTarget.value.id}`)
   deleting.value = false
   deleteDialog.value = false
   loadData()
@@ -196,6 +211,8 @@ onMounted(() => {
    (LjPageHeader / LjSegmented / LjSearch / LjButton / LjDialog) and the
    global `.lj-surface` / `.lj-iconbtn` / `.lj-popmenu` classes. */
 .sname { font-weight: 600; }
+.locked-note { display: flex; align-items: center; gap: 6px; margin: 6px 0 0 8px; font-size: 12px; color: var(--ink-3); }
+.locked-note .v-icon { color: rgb(var(--v-theme-warning)); }
 .dn { font-family: var(--mono); font-size: 12.5px; color: var(--ink-2); }
 .dash { color: var(--ink-3); }
 </style>
