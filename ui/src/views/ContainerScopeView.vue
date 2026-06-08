@@ -13,14 +13,11 @@
   <div class="scopes lj-surface">
     <LjPageHeader :title="t('containerScope.title')" :subtitle="t('containerScope.subtitle2026')">
       <template #actions>
+        <LjSegmented v-model="activeTab" :options="tabs" />
+        <LjSearch v-model="search" :placeholder="t('common.search')" />
         <LjButton icon="mdi-plus" @click="openNew">{{ t('containerScope.new') }}</LjButton>
       </template>
     </LjPageHeader>
-
-    <div class="toolbar">
-      <LjSegmented v-model="activeTab" :options="tabs" />
-      <LjSearch v-model="search" :placeholder="t('common.search')" />
-    </div>
 
     <v-alert v-if="error" type="warning" variant="tonal" class="mb-4" rounded="lg">{{ t('containerScope.noProvider') }}</v-alert>
     <v-alert v-if="demoMode" type="info" variant="tonal" density="compact" class="mb-4" rounded="lg">{{ t('containerScope.demoMode') }}</v-alert>
@@ -28,7 +25,7 @@
     <VibrantDataTable v-if="!error" :headers="headers" :items="filteredItems" :items-length="filteredItems.length" :loading="loading"
       item-value="id" filename="container-scopes.csv" @row-click="openEdit">
       <template #cell.name="{ item }">
-        <span class="sname"><v-icon size="16" class="sname-ic">mdi-file-tree-outline</v-icon><span>{{ item.name }}</span></span>
+        <span class="sname">{{ item.name }}</span>
       </template>
       <template #cell.dn="{ item }"><code class="dn">{{ item.dn || '—' }}</code></template>
       <template #cell.locked="{ item }">
@@ -198,9 +195,7 @@ onMounted(() => {
 /* View-specific cells only — all chrome lives in the shared host components
    (LjPageHeader / LjSegmented / LjSearch / LjButton / LjDialog) and the
    global `.lj-surface` / `.lj-iconbtn` / `.lj-popmenu` classes. */
-.toolbar { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; }
-.sname { display: inline-flex; align-items: center; gap: 8px; font-weight: 600; }
-.sname-ic { color: var(--ink-3); }
+.sname { font-weight: 600; }
 .dn { font-family: var(--mono); font-size: 12.5px; color: var(--ink-2); }
 .dash { color: var(--ink-3); }
 </style>

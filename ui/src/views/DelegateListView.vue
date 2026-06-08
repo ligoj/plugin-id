@@ -7,20 +7,16 @@
   <div class="delegates lj-surface">
     <LjPageHeader :title="t('delegate.title')" :subtitle="t('delegate.subtitle2026')">
       <template #actions>
+        <LjSearch v-model="dt.search.value" :placeholder="t('delegate.searchPlaceholder') || t('common.search')" @input="onSearch" />
+        <v-slide-x-transition>
+          <div v-if="selected.length" class="bulkbar">
+            <span class="bulk-count">{{ selected.length }} {{ t('common.selected') }}</span>
+            <LjButton variant="danger" icon="mdi-delete" :icon-size="16" @click="startBulkDelete">{{ t('common.delete') }}</LjButton>
+          </div>
+        </v-slide-x-transition>
         <LjButton icon="mdi-plus" @click="openDialog(null)">{{ t('delegate.new') }}</LjButton>
       </template>
     </LjPageHeader>
-
-    <div class="toolbar">
-      <LjSearch v-model="dt.search.value" :placeholder="t('delegate.searchPlaceholder') || t('common.search')" @input="onSearch" />
-      <span class="tb-sp" />
-      <v-slide-x-transition>
-        <div v-if="selected.length" class="bulkbar">
-          <span class="bulk-count">{{ selected.length }} {{ t('common.selected') }}</span>
-          <LjButton variant="danger" icon="mdi-delete" :icon-size="16" @click="startBulkDelete">{{ t('common.delete') }}</LjButton>
-        </div>
-      </v-slide-x-transition>
-    </div>
 
     <v-alert v-if="dt.error.value" type="warning" variant="tonal" class="mb-4" rounded="lg">{{ dt.error.value }}</v-alert>
 
@@ -147,17 +143,6 @@ onMounted(() => {
    (LjPageHeader / LjButton / LjSearch) and the global `.lj-surface` /
    `.lj-iconbtn` / `.lj-popmenu` classes. The `--ink-*` vars these cells read
    are supplied by `.lj-surface` on the root. */
-.toolbar {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 16px;
-}
-
-.tb-sp {
-  flex: 1;
-}
-
 .bulkbar {
   display: flex;
   align-items: center;

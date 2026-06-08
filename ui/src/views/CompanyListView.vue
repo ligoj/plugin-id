@@ -7,20 +7,16 @@
   <div class="companies lj-surface">
     <LjPageHeader :title="t('company.title')" :subtitle="t('company.subtitle2026')">
       <template #actions>
+        <LjSearch v-model="dt.search.value" :placeholder="t('company.searchPlaceholder') || t('common.search')" @input="onSearch" />
+        <v-slide-x-transition>
+          <div v-if="selected.length" class="bulkbar">
+            <span class="bulk-count">{{ selected.length }} {{ t('common.selected') }}</span>
+            <LjButton variant="danger" icon="mdi-delete" :icon-size="16" @click="startBulkDelete">{{ t('common.delete') }}</LjButton>
+          </div>
+        </v-slide-x-transition>
         <LjButton icon="mdi-plus" @click="openCreate">{{ t('company.new') }}</LjButton>
       </template>
     </LjPageHeader>
-
-    <div class="toolbar">
-      <LjSearch v-model="dt.search.value" :placeholder="t('company.searchPlaceholder') || t('common.search')" @input="onSearch" />
-      <span class="tb-sp" />
-      <v-slide-x-transition>
-        <div v-if="selected.length" class="bulkbar">
-          <span class="bulk-count">{{ selected.length }} {{ t('common.selected') }}</span>
-          <LjButton variant="danger" icon="mdi-delete" :icon-size="16" @click="startBulkDelete">{{ t('common.delete') }}</LjButton>
-        </div>
-      </v-slide-x-transition>
-    </div>
 
     <v-alert v-if="dt.error.value" type="warning" variant="tonal" class="mb-4" rounded="lg">
       <v-alert-title>{{ t('user.noProvider') }}</v-alert-title>
@@ -33,7 +29,7 @@
     <VibrantDataTable v-if="!dt.error.value" :headers="headers" :items="dt.items.value" :items-length="dt.totalItems.value" :loading="dt.loading.value" selectable v-model="selected" item-value="name"
       default-sort="name" :fetch-all="dt.loadAll" filename="companies.csv" @update:options="loadData" @row-click="(item) => openDetails(item.name)">
       <template #cell.name="{ item }">
-        <span class="cname"><v-icon size="16" class="cname-ic">mdi-office-building-outline</v-icon><span>{{ item.name }}</span></span>
+        <span class="cname">{{ item.name }}</span>
       </template>
       <template #cell.scope="{ item }">
         <span v-if="item.scope" class="tagdot"><span class="d" :style="{ background: scopeColor(item.scope) }" />{{ item.scope }}</span>
@@ -163,17 +159,6 @@ onMounted(() => {
    (LjPageHeader / LjButton / LjSearch / LjDialog) and the global
    `.lj-surface` / `.lj-iconbtn` / `.lj-popmenu` classes. The `--mono` /
    `--ink-*` vars these cells read are supplied by `.lj-surface` on the root. */
-.toolbar {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 16px;
-}
-
-.tb-sp {
-  flex: 1;
-}
-
 .bulkbar {
   display: flex;
   align-items: center;
@@ -187,14 +172,7 @@ onMounted(() => {
 }
 
 .cname {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
   font-weight: 600;
-}
-
-.cname-ic {
-  color: var(--ink-3);
 }
 
 .mono {

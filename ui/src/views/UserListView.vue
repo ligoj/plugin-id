@@ -11,6 +11,13 @@
   <div class="users lj-surface">
     <LjPageHeader :title="t('user.title')" :subtitle="t('user.subtitle2026')">
       <template #actions>
+        <LjSearch v-model="dt.search.value" :placeholder="t('user.searchPlaceholder') || t('common.search')" @input="onSearch" />
+        <v-slide-x-transition>
+          <div v-if="selected.length" class="bulkbar">
+            <span class="bulk-count">{{ selected.length }} {{ t('common.selected') }}</span>
+            <LjButton variant="danger" icon="mdi-delete" :icon-size="16" @click="startBulkDelete">{{ t('common.delete') }}</LjButton>
+          </div>
+        </v-slide-x-transition>
         <LjButton icon="mdi-plus" @click="openCreate">{{ t('user.new') }}</LjButton>
         <!-- Export/Copy now live in the table's own tools cog (VibrantDataTable
              :fetch-all). Only the CSV Import action remains here. -->
@@ -20,18 +27,6 @@
         <input ref="importInput" type="file" accept=".csv,.tsv,text/csv" hidden @change="onImport" />
       </template>
     </LjPageHeader>
-
-    <!-- Search toolbar. -->
-    <div class="toolbar">
-      <LjSearch v-model="dt.search.value" :placeholder="t('user.searchPlaceholder') || t('common.search')" @input="onSearch" />
-      <span class="tb-sp" />
-      <v-slide-x-transition>
-        <div v-if="selected.length" class="bulkbar">
-          <span class="bulk-count">{{ selected.length }} {{ t('common.selected') }}</span>
-          <LjButton variant="danger" icon="mdi-delete" :icon-size="16" @click="startBulkDelete">{{ t('common.delete') }}</LjButton>
-        </div>
-      </v-slide-x-transition>
-    </div>
 
     <v-alert v-if="dt.error.value" type="warning" variant="tonal" class="mb-4" rounded="lg">
       <v-alert-title>{{ t('user.noProvider') }}</v-alert-title>
@@ -44,7 +39,7 @@
     <VibrantDataTable v-if="!dt.error.value" :headers="headers" :items="dt.items.value" :items-length="dt.totalItems.value" :loading="dt.loading.value" selectable v-model="selected" item-value="id"
       default-sort="id" :fetch-all="dt.loadAll" filename="users.csv" @update:options="loadData" @row-click="(item) => openEdit(item.id)">
       <template #cell.id="{ item }">
-        <span class="login"><v-icon size="16" class="login-ic">mdi-account-circle</v-icon><span class="mono">{{ item.id }}</span></span>
+        <span class="mono">{{ item.id }}</span>
       </template>
       <template #cell.mails="{ item }">
         <span class="mails">
@@ -256,17 +251,6 @@ onMounted(() => {
    classes. This block keeps only the view-specific toolbar layout + table
    cell rendering; the `--mono` / `--ink-*` / `--pill` / `--radius-sm` vars
    it reads are supplied by `.lj-surface` on the root. */
-.toolbar {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 16px;
-}
-
-.tb-sp {
-  flex: 1;
-}
-
 .bulkbar {
   display: flex;
   align-items: center;
@@ -280,16 +264,6 @@ onMounted(() => {
 }
 
 /* Cells. */
-.login {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.login-ic {
-  color: var(--ink-3);
-}
-
 .mono {
   font-family: var(--mono);
   font-size: 13px;
