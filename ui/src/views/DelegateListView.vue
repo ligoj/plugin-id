@@ -39,14 +39,12 @@
         </span>
       </template>
       <template #cell.canAdmin="{ item }">
-        <span class="bdot" :class="{ on: item.canAdmin }">
-          <v-tooltip activator="parent" :text="item.canAdmin ? t('delegate.adminGranted') : t('delegate.adminNotGranted')" location="top" />
-        </span>
+        <LjStatus :active="item.canAdmin"
+                  :tooltip="item.canAdmin ? t('delegate.adminGranted') : t('delegate.adminNotGranted')" />
       </template>
       <template #cell.canWrite="{ item }">
-        <span class="bdot" :class="{ on: item.canWrite }">
-          <v-tooltip activator="parent" :text="item.canWrite ? t('delegate.writeGranted') : t('delegate.writeNotGranted')" location="top" />
-        </span>
+        <LjStatus :active="item.canWrite"
+                  :tooltip="item.canWrite ? t('delegate.writeGranted') : t('delegate.writeNotGranted')" />
       </template>
       <template #actions="{ item }">
         <v-menu location="bottom end">
@@ -79,7 +77,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { useDataTable, useApi, useAppStore, useI18nStore } from '@ligoj/host'
 import { TYPE_ICONS } from '../composables/delegateTypes.js'
-import { VibrantDataTable, VibrantConfirmDialog as LigojConfirmDialog, LjPageHeader, LjButton, LjSearch } from '@ligoj/host'
+import { VibrantDataTable, VibrantConfirmDialog as LigojConfirmDialog, LjPageHeader, LjButton, LjSearch, LjStatus } from '@ligoj/host'
 import DelegateEditDialog from './DelegateEditDialog.vue'
 
 const appStore = useAppStore()
@@ -170,20 +168,5 @@ onMounted(() => {
 
 .rcv-name {
   font-weight: 600;
-}
-
-/* Status dot: muted when off, vivid green with a glow when on. */
-.bdot {
-  display: inline-block;
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  background: rgba(var(--v-theme-on-surface), .2);
-  transition: background .15s, box-shadow .15s;
-}
-
-.bdot.on {
-  background: #1d9d63;
-  box-shadow: 0 0 0 3px rgba(29, 157, 99, .18), 0 0 10px 1px rgba(29, 157, 99, .6);
 }
 </style>

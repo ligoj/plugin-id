@@ -56,11 +56,8 @@
         </span>
       </template>
       <template #cell.locked="{ item }">
-        <v-tooltip :text="item.locked ? t('user.statusLocked') : t('user.statusActive')" location="top">
-          <template #activator="{ props: tt }">
-            <v-icon v-bind="tt" :color="item.locked ? 'error' : 'success'" size="19">{{ item.locked ? 'mdi-lock' : 'mdi-lock-open-variant' }}</v-icon>
-          </template>
-        </v-tooltip>
+        <LjStatus :status="item.locked ? 'error' : 'ok'"
+                  :tooltip="item.locked ? t('user.statusLocked') : t('user.statusActive')" />
       </template>
       <template #actions="{ item }">
         <v-menu location="bottom end">
@@ -106,7 +103,7 @@ import { useDataTable, useApi, useAppStore, useErrorStore, useI18nStore } from '
 import { TYPE_ICONS } from '../composables/delegateTypes.js'
 // Shared 2026 chrome: table, confirm dialog (aliased so <LigojConfirmDialog>
 // tags need no change), page header, buttons, search — all from the host.
-import { VibrantDataTable, VibrantConfirmDialog as LigojConfirmDialog, LjPageHeader, LjButton, LjSearch } from '@ligoj/host'
+import { VibrantDataTable, VibrantConfirmDialog as LigojConfirmDialog, LjPageHeader, LjButton, LjSearch, LjStatus } from '@ligoj/host'
 import UserEditDialog from './UserEditDialog.vue'
 
 const appStore = useAppStore()

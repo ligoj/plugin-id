@@ -37,10 +37,8 @@
       </template>
       <template #cell.count="{ item }"><span class="mono">{{ item.count ?? '—' }}</span></template>
       <template #cell.locked="{ item }">
-        <v-tooltip v-if="item.locked" :text="t('user.statusLocked')" location="top">
-          <template #activator="{ props: tt }"><v-icon v-bind="tt" color="error" size="19">mdi-lock</v-icon></template>
-        </v-tooltip>
-        <span v-else class="dash">—</span>
+        <LjStatus :status="item.locked ? 'error' : 'ok'"
+                  :tooltip="item.locked ? t('user.statusLocked') : t('user.statusActive')" />
       </template>
       <template #actions="{ item }">
         <v-menu location="bottom end">
@@ -79,7 +77,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { useDataTable, useApi, useAppStore, useErrorStore, useI18nStore } from '@ligoj/host'
 import { TYPE_ICONS } from '../composables/delegateTypes.js'
-import { VibrantDataTable, VibrantConfirmDialog as LigojConfirmDialog, LjPageHeader, LjButton, LjSearch, LjDialog } from '@ligoj/host'
+import { VibrantDataTable, VibrantConfirmDialog as LigojConfirmDialog, LjPageHeader, LjButton, LjSearch, LjDialog, LjStatus } from '@ligoj/host'
 import CompanyEditPanel from '../components/CompanyEditPanel.vue'
 
 const route = useRoute()

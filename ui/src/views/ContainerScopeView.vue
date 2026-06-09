@@ -29,10 +29,8 @@
       </template>
       <template #cell.dn="{ item }"><code class="dn">{{ item.dn || '—' }}</code></template>
       <template #cell.locked="{ item }">
-        <v-tooltip v-if="item.locked" :text="t('user.statusLocked')" location="top">
-          <template #activator="{ props: tt }"><v-icon v-bind="tt" color="warning" size="19">mdi-lock</v-icon></template>
-        </v-tooltip>
-        <span v-else class="dash">—</span>
+        <LjStatus :status="item.locked ? 'warn' : 'ok'"
+                  :tooltip="item.locked ? t('user.statusLocked') : t('user.statusActive')" />
       </template>
       <template #actions="{ item }">
         <v-menu location="bottom end">
@@ -74,7 +72,7 @@
 import { ref, computed, watch, onMounted } from 'vue'
 import { useApi, useAppStore, useErrorStore, useI18nStore } from '@ligoj/host'
 import { TYPE_ICONS } from '../composables/delegateTypes.js'
-import { VibrantDataTable, VibrantConfirmDialog as LigojConfirmDialog, LjPageHeader, LjButton, LjSearch, LjSegmented, LjDialog, LjAvailabilityField } from '@ligoj/host'
+import { VibrantDataTable, VibrantConfirmDialog as LigojConfirmDialog, LjPageHeader, LjButton, LjSearch, LjSegmented, LjDialog, LjAvailabilityField, LjStatus } from '@ligoj/host'
 
 const api = useApi()
 const appStore = useAppStore()
@@ -214,5 +212,4 @@ onMounted(() => {
 .locked-note { display: flex; align-items: center; gap: 6px; margin: 6px 0 0 8px; font-size: 12px; color: var(--ink-3); }
 .locked-note .v-icon { color: rgb(var(--v-theme-warning)); }
 .dn { font-family: var(--mono); font-size: 12.5px; color: var(--ink-2); }
-.dash { color: var(--ink-3); }
 </style>
