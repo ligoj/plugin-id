@@ -65,8 +65,7 @@ async function loadSubscription() {
 
 onMounted(async () => {
   await loadSubscription()
-  appStore.setBreadcrumbs(
-    [
+  appStore.setBreadcrumbs(() => [
       { title: t('nav.home'), to: '/' },
       { title: t('nav.projects'), to: '/home/project' },
       ...(projectId.value

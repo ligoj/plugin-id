@@ -131,8 +131,7 @@ async function confirmBulkDelete() {
 }
 
 onMounted(() => {
-  appStore.setBreadcrumbs(
-    [{ title: t('nav.home'), to: '/' }, { title: t('nav.identity') }, { title: t('delegate.title') }],
+  appStore.setBreadcrumbs(() => [{ title: t('nav.home'), to: '/' }, { title: t('nav.identity') }, { title: t('delegate.title') }],
     { refresh: () => dt.load(lastOptions) },
   )
 })

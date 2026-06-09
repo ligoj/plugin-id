@@ -238,8 +238,7 @@ async function onImport(e) {
 }
 
 onMounted(() => {
-  appStore.setBreadcrumbs(
-    [{ title: t('nav.home'), to: '/' }, { title: t('nav.identity') }, { title: t('user.title') }],
+  appStore.setBreadcrumbs(() => [{ title: t('nav.home'), to: '/' }, { title: t('nav.identity') }, { title: t('user.title') }],
     { refresh: () => dt.load(lastOptions) },
   )
 })

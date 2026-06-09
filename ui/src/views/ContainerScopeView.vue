@@ -198,8 +198,7 @@ async function confirmDelete() {
 }
 
 onMounted(() => {
-  appStore.setBreadcrumbs(
-    [{ title: t('nav.home'), to: '/' }, { title: t('nav.identity') }, { title: t('containerScope.title') }],
+  appStore.setBreadcrumbs(() => [{ title: t('nav.home'), to: '/' }, { title: t('nav.identity') }, { title: t('containerScope.title') }],
     { refresh: loadData },
   )
   loadData()

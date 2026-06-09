@@ -159,8 +159,7 @@ async function confirmBulkDelete() {
 }
 
 onMounted(() => {
-  appStore.setBreadcrumbs(
-    [{ title: t('nav.home'), to: '/' }, { title: t('nav.identity') }, { title: t('group.title') }],
+  appStore.setBreadcrumbs(() => [{ title: t('nav.home'), to: '/' }, { title: t('nav.identity') }, { title: t('group.title') }],
     { refresh: () => dt.load(lastOptions) },
   )
   const id = route.params?.id
