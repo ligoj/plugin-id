@@ -66,9 +66,8 @@
               {{ form.locked ? 'mdi-lock' : 'mdi-lock-open-variant-outline' }}
             </v-icon>
             <div class="text-body-2 text-medium-emphasis">{{ t('group.locked') }}</div>
-            <v-chip size="small" :color="form.locked ? 'error' : 'success'" variant="tonal">
-              {{ form.locked ? t('user.statusLocked') : t('user.statusActive') }}
-            </v-chip>
+            <LjStatus :status="form.locked ? 'error' : 'ok'"
+                      :tooltip="form.locked ? t('user.statusLocked') : t('user.statusActive')" />
           </div>
 
           <div v-if="form.count != null" class="d-flex align-center ga-3">
@@ -105,7 +104,7 @@
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import { useApi, useErrorStore, useI18nStore } from '@ligoj/host'
 import { TYPE_ICONS } from '../composables/delegateTypes.js'
-import { VibrantConfirmDialog as LigojConfirmDialog, LjButton, LjAvailabilityField } from '@ligoj/host'
+import { VibrantConfirmDialog as LigojConfirmDialog, LjButton, LjAvailabilityField, LjStatus } from '@ligoj/host'
 
 const props = defineProps({
   /**
