@@ -54,7 +54,7 @@
         <LjAvailabilityField v-model="editForm.name" v-model:taken="nameTaken" :endpoint="'service/id/container-scope/' + activeTab" :enabled="!editTarget?.id && !demoMode"
           prepend-inner-icon="mdi-form-textbox" :label="t('common.name')" :disabled="readOnly" class="mb-2" autofocus />
         <v-text-field v-model="editForm.dn" prepend-inner-icon="mdi-file-tree-outline" :label="t('containerScope.dn')" variant="outlined"
-          :disabled="!!editTarget?.id || readOnly" :rules="editTarget?.id ? [] : [rules.required]" />
+          :disabled="readOnly" :rules="[rules.required]" />
         <v-checkbox v-model="editForm.locked" :label="t('containerScope.locked')" :disabled="readOnly" color="primary" density="compact" hide-details />
         <p v-if="editForm.locked" class="locked-note"><v-icon size="14">mdi-alert-outline</v-icon>{{ t('containerScope.lockedHint') }}</p>
       </v-form>
