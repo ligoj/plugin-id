@@ -1,82 +1,78 @@
+<!--
+  ScopesView — 2026 "Vibrant" Container scopes (plugin-id ContainerScopeView).
+  Tabs (group / company), small client-side dataset fed to VibrantDataTable,
+  inline create/edit dialog + VibrantConfirmDialog. Endpoint:
+  rest/service/id/container-scope/{group|company}.
+
+  Chrome (header, tabs, search, primary button, dialog, row menu) comes from
+  the shared host components (LjPageHeader / LjSegmented / LjSearch / LjButton
+  / LjDialog) + the `.lj-surface` token class — so this view carries only its
+  own cell styling, not the repeated 2026 boilerplate.
+-->
 <template>
-  <div>
-    <div class="d-flex flex-wrap align-center mb-4 ga-2">
-      <h1 class="text-h4">{{ t('containerScope.title') }}</h1>
-      <v-spacer />
-      <v-btn color="primary" prepend-icon="mdi-plus" @click="openNew">{{ t('containerScope.new') }}</v-btn>
-    </div>
-
-    <v-tabs v-model="activeTab" class="mb-4">
-      <v-tab value="group">{{ t('nav.groups') }}</v-tab>
-      <v-tab value="company">{{ t('nav.companies') }}</v-tab>
-    </v-tabs>
-
-    <v-alert v-if="error" type="warning" variant="tonal" class="mb-4">
-      {{ t('containerScope.noProvider') }}
-    </v-alert>
-
-    <v-alert v-if="demoMode" type="info" variant="tonal" density="compact" class="mb-4">
-      {{ t('containerScope.demoMode') }}
-    </v-alert>
-
-    <v-skeleton-loader v-if="loading && items.length === 0" type="table-heading, table-row@5" class="mb-4" />
-
-    <v-data-table
-      v-if="!error"
-      v-show="items.length > 0 || !loading"
-      :headers="headers"
-      :items="items"
-      :loading="loading"
-      item-value="id"
-      hover
-      @click:row="(_, { item }) => openEdit(item)"
-    >
-      <template #item.locked="{ item }">
-        <v-icon v-if="item.locked" color="warning" size="small">mdi-lock</v-icon>
+  <div class="scopes lj-surface">
+    <LjPageHeader :title="t('containerScope.title')" :subtitle="t('containerScope.subtitle2026')">
+      <template #actions>
+        <LjSegmented v-model="activeTab" :options="tabs" />
+        <LjSearch v-model="search" :placeholder="t('common.search')" />
+        <LjButton icon="mdi-plus" @click="openNew">{{ t('containerScope.new') }}</LjButton>
       </template>
-      <template #item.actions="{ item }">
-        <v-btn icon size="small" variant="text" @click.stop="openEdit(item)">
-          <v-icon size="small">mdi-pencil</v-icon>
-        </v-btn>
-        <v-btn icon size="small" variant="text" color="error" @click.stop="startDelete(item)" :disabled="item.locked">
-          <v-icon size="small">mdi-delete</v-icon>
-        </v-btn>
+    </LjPageHeader>
+
+    <v-alert v-if="error" type="warning" variant="tonal" class="mb-4" rounded="lg">{{ t('containerScope.noProvider') }}</v-alert>
+    <v-alert v-if="demoMode" type="info" variant="tonal" density="compact" class="mb-4" rounded="lg">{{ t('containerScope.demoMode') }}</v-alert>
+
+    <VibrantDataTable v-if="!error" :headers="headers" :items="filteredItems" :items-length="filteredItems.length" :loading="loading"
+      item-value="id" filename="container-scopes.csv" @row-click="openEdit">
+      <template #cell.name="{ item }">
+        <span class="sname">{{ item.name }}</span>
       </template>
-    </v-data-table>
+      <template #cell.dn="{ item }"><code class="dn">{{ item.dn || '—' }}</code></template>
+      <template #cell.locked="{ item }">
+        <LjStatus :status="item.locked ? 'warn' : 'ok'"
+                  :tooltip="item.locked ? t('user.statusLocked') : t('user.statusActive')" />
+      </template>
+      <template #actions="{ item }">
+        <v-menu location="bottom end">
+          <template #activator="{ props }">
+            <button class="lj-iconbtn" v-bind="props" :aria-label="t('common.edit')" @click.stop><v-icon size="18">mdi-cog</v-icon></button>
+          </template>
+          <div class="lj-popmenu">
+            <button @click="openEdit(item)"><v-icon size="18">mdi-pencil</v-icon>{{ t('common.edit') }}</button>
+            <div class="sep" />
+            <button class="danger" :disabled="item.locked" @click="!item.locked && startDelete(item)"><v-icon size="18">mdi-delete</v-icon>{{ t('common.delete') }}</button>
+          </div>
+        </v-menu>
+      </template>
+    </VibrantDataTable>
 
-    <v-dialog v-model="editDialog" max-width="500">
-      <v-card>
-        <v-card-title>{{ editTarget?.id ? t('containerScope.edit') : t('containerScope.new') }}</v-card-title>
-        <v-card-text>
-          <v-form ref="formRef" @submit.prevent="save">
-            <v-text-field v-model="editForm.name" :label="t('common.name')" :rules="[rules.required]" variant="outlined" class="mb-2" />
-          </v-form>
-        </v-card-text>
-        <v-card-actions>
-          <v-spacer />
-          <v-btn variant="text" @click="editDialog = false">{{ t('common.cancel') }}</v-btn>
-          <v-btn color="primary" variant="elevated" :loading="saving" @click="save">{{ t('common.save') }}</v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
+    <!-- Create / edit dialog (shared chrome). -->
+    <LjDialog v-model="editDialog" :title="readOnly ? t('containerScope.view') : (editTarget?.id ? t('containerScope.edit') : t('containerScope.new'))" :icon="TYPE_ICONS.SCOPE" :max-width="520">
+      <v-form ref="formRef" @submit.prevent="save">
+        <LjAvailabilityField v-model="editForm.name" v-model:taken="nameTaken" :endpoint="'service/id/container-scope/' + activeTab" :enabled="!editTarget?.id && !demoMode"
+          prepend-inner-icon="mdi-form-textbox" :label="t('common.name')" :disabled="readOnly" class="mb-2" autofocus />
+        <v-text-field v-model="editForm.dn" prepend-inner-icon="mdi-file-tree-outline" :label="t('containerScope.dn')" variant="outlined"
+          :disabled="readOnly" :rules="[rules.required]" />
+        <v-checkbox v-model="editForm.locked" :label="t('containerScope.locked')" :disabled="readOnly" color="primary" density="compact" hide-details />
+        <p v-if="editForm.locked" class="locked-note"><v-icon size="14">mdi-alert-outline</v-icon>{{ t('containerScope.lockedHint') }}</p>
+      </v-form>
+      <template #footer>
+        <LjButton variant="ghost" @click="editDialog = false">{{ readOnly ? t('common.close') : t('common.cancel') }}</LjButton>
+        <LjButton v-if="!readOnly" icon="mdi-content-save" :loading="saving" @click="save">{{ t('common.save') }}</LjButton>
+      </template>
+    </LjDialog>
 
-    <v-dialog v-model="deleteDialog" max-width="400">
-      <v-card>
-        <v-card-title>{{ t('containerScope.deleteTitle') }}</v-card-title>
-        <v-card-text>{{ t('containerScope.deleteConfirm', { name: deleteTarget?.name }) }}</v-card-text>
-        <v-card-actions>
-          <v-spacer />
-          <v-btn variant="text" @click="deleteDialog = false">{{ t('common.cancel') }}</v-btn>
-          <v-btn color="error" variant="elevated" :loading="deleting" @click="confirmDelete">{{ t('common.delete') }}</v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
+    <LigojConfirmDialog v-model="deleteDialog" :title="t('containerScope.deleteTitle')" :icon="TYPE_ICONS.SCOPE" :confirm-label="t('common.delete')" confirm-color="error" :loading="deleting" @confirm="confirmDelete">
+      {{ t('containerScope.deleteConfirmBefore') }}<strong class="text-error">{{ deleteTarget?.name }}</strong>{{ t('containerScope.deleteConfirmAfter') }}
+    </LigojConfirmDialog>
   </div>
 </template>
 
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue'
 import { useApi, useAppStore, useErrorStore, useI18nStore } from '@ligoj/host'
+import { TYPE_ICONS } from '../composables/delegateTypes.js'
+import { VibrantDataTable, VibrantConfirmDialog as LigojConfirmDialog, LjPageHeader, LjButton, LjSearch, LjSegmented, LjDialog, LjAvailabilityField, LjStatus } from '@ligoj/host'
 
 const api = useApi()
 const appStore = useAppStore()
@@ -85,39 +81,57 @@ const i18n = useI18nStore()
 const t = i18n.t
 
 const activeTab = ref('group')
+const tabs = computed(() => [
+  { value: 'group', icon: 'mdi-account-group', label: t('nav.groups') },
+  { value: 'company', icon: 'mdi-domain', label: t('nav.companies') },
+])
 
 const DEMO_GROUP_SCOPES = [
-  { id: 1, name: 'Department', locked: false },
-  { id: 2, name: 'Team', locked: false },
-  { id: 3, name: 'Project', locked: true },
+  { id: 1, name: 'Department', dn: 'ou=Department,dc=demo,dc=com', locked: false },
+  { id: 2, name: 'Team', dn: 'ou=Team,dc=demo,dc=com', locked: false },
+  { id: 3, name: 'Project', dn: 'ou=Project,dc=demo,dc=com', locked: true },
 ]
 const DEMO_COMPANY_SCOPES = [
-  { id: 1, name: 'Organization', locked: false },
-  { id: 2, name: 'Business Unit', locked: true },
+  { id: 1, name: 'Organization', dn: 'ou=Organization,dc=demo,dc=com', locked: false },
+  { id: 2, name: 'Business Unit', dn: 'ou=BusinessUnit,dc=demo,dc=com', locked: true },
 ]
 
 const items = ref([])
-const totalItems = ref(0)
 const loading = ref(false)
 const error = ref(null)
 const demoMode = ref(false)
+const search = ref('')
+
+const filteredItems = computed(() => {
+  const q = search.value.trim().toLowerCase()
+  if (!q) return items.value
+  return items.value.filter((s) => (s.name || '').toLowerCase().includes(q) || (s.dn || '').toLowerCase().includes(q))
+})
 
 const headers = computed(() => [
-  { title: t('common.name'), key: 'name', sortable: true },
-  { title: t('common.status'), key: 'locked', sortable: false, width: '80px' },
-  { title: '', key: 'actions', sortable: false, width: '100px', align: 'end' },
+  { label: t('common.name'), key: 'name' },
+  { label: t('containerScope.dn'), key: 'dn' },
+  { label: t('common.status'), key: 'locked', align: 'center', width: '90px', exportValue: (r) => (r.locked ? t('user.statusLocked') : t('user.statusActive')) },
 ])
 
 const formRef = ref(null)
 const editDialog = ref(false)
 const editTarget = ref(null)
-const editForm = ref({ name: '' })
+const editForm = ref({ name: '', dn: '', locked: false })
 const saving = ref(false)
+
+// A locked scope is read-only: the dialog opens as a view (no save, fields
+// disabled), matching the backend rule that locked scopes can't be mutated.
+const readOnly = computed(() => !!editTarget.value?.locked)
 const deleteDialog = ref(false)
 const deleteTarget = ref(null)
 const deleting = ref(false)
 
-const rules = { required: v => !!v || t('common.required') }
+// Set by LjAvailabilityField when the typed scope name already exists (create).
+const nameTaken = ref(false)
+
+// The DN is required at creation (backend ContainerScope.dn is @NotNull/@NotBlank).
+const rules = { required: (v) => !!v || t('common.required') }
 
 async function loadData() {
   loading.value = true
@@ -126,58 +140,46 @@ async function loadData() {
     const data = await api.get(`rest/service/id/container-scope/${activeTab.value}`)
     if (data && !data.code) {
       items.value = Array.isArray(data) ? data : (data.data || [])
-      totalItems.value = items.value.length
       demoMode.value = false
     } else {
       demoMode.value = true
       errorStore.clear()
       items.value = activeTab.value === 'group' ? DEMO_GROUP_SCOPES : DEMO_COMPANY_SCOPES
-      totalItems.value = items.value.length
     }
   } catch {
     demoMode.value = true
     errorStore.clear()
     items.value = activeTab.value === 'group' ? DEMO_GROUP_SCOPES : DEMO_COMPANY_SCOPES
-    totalItems.value = items.value.length
   }
   loading.value = false
 }
 
-watch(activeTab, () => {
-  loadData()
-})
+watch(activeTab, () => { search.value = ''; loadData() })
 
-function openNew() {
-  editTarget.value = null
-  editForm.value = { name: '' }
-  editDialog.value = true
-}
-
-function openEdit(item) {
-  editTarget.value = item
-  editForm.value = { name: item.name }
-  editDialog.value = true
-}
-
-function startDelete(item) {
-  deleteTarget.value = item
-  deleteDialog.value = true
-}
+function openNew() { editTarget.value = null; editForm.value = { name: '', dn: '', locked: false }; editDialog.value = true }
+function openEdit(item) { editTarget.value = item; editForm.value = { name: item.name, dn: item.dn || '', locked: !!item.locked }; editDialog.value = true }
+function startDelete(item) { deleteTarget.value = item; deleteDialog.value = true }
 
 async function save() {
+  if (readOnly.value) { editDialog.value = false; return } // locked → view only
   const { valid } = await formRef.value.validate()
   if (!valid) return
-  if (demoMode.value) {
-    errorStore.push({ message: t('containerScope.demoSave'), status: 0 })
-    editDialog.value = false
-    return
-  }
+  if (nameTaken.value) return
+  if (demoMode.value) { errorStore.push({ message: t('containerScope.demoSave'), status: 0 }); editDialog.value = false; return }
   saving.value = true
-  const payload = { name: editForm.value.name }
+  // The REST create/update map to the base `container-scope` path (NOT the
+  // `/{type}` GET path → 405); `type` is carried in the body (uppercase enum,
+  // derived from the active tab) along with the `locked` flag.
+  const payload = {
+    name: editForm.value.name,
+    dn: editForm.value.dn,
+    type: activeTab.value.toUpperCase(),
+    locked: editForm.value.locked,
+  }
   if (editTarget.value?.id) {
-    await api.put(`rest/service/id/container-scope/${activeTab.value}`, { id: editTarget.value.id, ...payload })
+    await api.put('rest/service/id/container-scope', { id: editTarget.value.id, ...payload })
   } else {
-    await api.post(`rest/service/id/container-scope/${activeTab.value}`, payload)
+    await api.post('rest/service/id/container-scope', payload)
   }
   saving.value = false
   editDialog.value = false
@@ -185,25 +187,28 @@ async function save() {
 }
 
 async function confirmDelete() {
-  if (demoMode.value) {
-    errorStore.push({ message: t('containerScope.demoDelete'), status: 0 })
-    deleteDialog.value = false
-    return
-  }
+  if (demoMode.value) { errorStore.push({ message: t('containerScope.demoDelete'), status: 0 }); deleteDialog.value = false; return }
   deleting.value = true
-  await api.del(`rest/service/id/container-scope/${activeTab.value}/${deleteTarget.value.id}`)
+  await api.del(`rest/service/id/container-scope/${deleteTarget.value.id}`)
   deleting.value = false
   deleteDialog.value = false
   loadData()
 }
 
 onMounted(() => {
-  appStore.setTitle(t('containerScope.title'))
-  appStore.setBreadcrumbs([
-    { title: t('nav.home'), to: '/' },
-    { title: t('nav.identity') },
-    { title: t('containerScope.title') },
-  ])
+  appStore.setBreadcrumbs(() => [{ title: t('nav.home'), to: '/' }, { title: t('nav.identity') }, { title: t('containerScope.title') }],
+    { refresh: loadData },
+  )
   loadData()
 })
 </script>
+
+<style scoped>
+/* View-specific cells only — all chrome lives in the shared host components
+   (LjPageHeader / LjSegmented / LjSearch / LjButton / LjDialog) and the
+   global `.lj-surface` / `.lj-iconbtn` / `.lj-popmenu` classes. */
+.sname { font-weight: 600; }
+.locked-note { display: flex; align-items: center; gap: 6px; margin: 6px 0 0 8px; font-size: 12px; color: var(--ink-3); }
+.locked-note .v-icon { color: rgb(var(--v-theme-warning)); }
+.dn { font-family: var(--mono); font-size: 12.5px; color: var(--ink-2); }
+</style>

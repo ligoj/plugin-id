@@ -78,10 +78,11 @@ class TestAbstractMemCacheRepositoryTest extends AbstractDataGeneratorTest {
 		Mockito.when(userRepository.findAll()).thenReturn(users);
 
 		repository = new SampleIdMemCacheRepository();
-		repository.setIamProvider(new IamProvider[]{iamProvider});
+		repository.setIamProvider(new IamProvider[] { iamProvider });
 		repository.setCache(Mockito.mock(IdCacheDao.class));
 	}
 
+	@SuppressWarnings("unchecked")
 	@Test
 	void getLdapData() {
 
@@ -91,7 +92,7 @@ class TestAbstractMemCacheRepositoryTest extends AbstractDataGeneratorTest {
 
 		final var ldapData = repository.getData();
 
-		//noinspection unchecked
+		// noinspection unchecked
 		Assertions.assertEquals("Company", ((INamableBean<String>) ldapData.get(CacheDataType.COMPANY).get("company")).getName());
 		Assertions.assertEquals("dnc", ldapData.get(CacheDataType.COMPANY).get("company").getDn());
 		final var groupLdap = (GroupOrg) ldapData.get(CacheDataType.GROUP).get("group");
