@@ -1,5 +1,4 @@
-import { h } from 'vue'
-import { VBtn, VChip, VIcon, pluginRegistry, useI18nStore } from '@ligoj/host'
+import { renderServiceLink, renderDetailsChip, delegateFeature, useI18nStore } from '@ligoj/host'
 import { useGroupMembersDialog } from './composables/useGroupMembersDialog.js'
 
 const REST = '/rest/'
@@ -8,48 +7,6 @@ const REST = '/rest/'
  *  `subscription.parameters['service:id:group']` lookup. */
 function groupOf(subscription) {
   return subscription?.parameters?.['service:id:group'] ?? null
-}
-
-/**
- * Extract the tool segment from a node id (`service:id:<tool>[:<instance>]`)
- * and return the sub-plugin name the host expects to find in the registry
- * for that tool — e.g. `service:id:ldap:local` → `id-ldap`. Mirrors the
- * legacy `current.$super(...)` inheritance: identity-tool plugins extended
- * `plugin-id` and contributed their own subscription row actions.
- */
-function subPluginIdFor(subscription) {
-  const id = subscription?.node?.id || ''
-  const parts = id.split(':').filter(Boolean)
-  // Expect at least `service:id:<tool>` to delegate; pure `service:id:<x>`
-  // with two segments means we have no tool, nothing to delegate to.
-  if (parts.length < 3) return null
-  return `id-${parts[2]}`
-}
-
-/**
- * Calls `feature(action, ...args)` on the loaded sub-plugin for the
- * subscription's tool, returning its VNodes (or an empty array). Falls
- * back to `[]` when nothing is registered, when the plugin doesn't
- * implement the action, or when the call itself throws — sub-plugin
- * failures must never break the parent's rendering.
- */
-function delegateToToolPlugin(subscription, action) {
-  const subId = subPluginIdFor(subscription)
-  if (!subId) return []
-  const plugin = pluginRegistry.get(subId)
-  if (typeof plugin?.feature !== 'function') return []
-  try {
-    const result = plugin.feature(action, subscription)
-    if (result == null) return []
-    return Array.isArray(result) ? result : [result]
-  } catch (err) {
-    // Unknown actions are expected (plugin chose not to implement). Real
-    // errors get surfaced so they don't disappear into the console-void.
-    if (!new RegExp(`no feature ["']${action}["']`).test(err?.message || '')) {
-      console.warn(`[plugin:id] delegate to ${subId}.${action} threw`, err)
-    }
-    return []
-  }
 }
 
 const service = {
@@ -68,57 +25,31 @@ const service = {
     const help = subscription?.parameters?.['service:id:help']
     const group = groupOf(subscription)
     const buttons = [
-      h(
-        VBtn,
-        {
-          icon: true,
-          size: 'small',
-          variant: 'text',
-          title: t('id.renderFeatures.manage'),
-          // Was a route nav to `/id/subscription/<id>` — now opens the
-          // globally-mounted GroupMembersDialog scoped to this row's
-          // group. Same UX in fewer clicks; no navigation away from
-          // the project. Disabled when the subscription carries no
-          // group parameter (defensive — shouldn't happen).
-          //
-          // The `onChanged` callback fires once on dialog close if the
-          // user added/removed at least one member, dispatching a
-          // window-level event so the host view that mounted this
-          // button (typically plugin-ui's `ProjectDetailView`) can
-          // refresh its subscriptions — without plugin-id needing to
-          // depend on plugin-ui code. The `detail` carries the
-          // subscription id and the group so an interested view can
-          // refresh just the affected row instead of the whole list.
-          disabled: !group,
-          onClick: () => group && useGroupMembersDialog().openFor(group, {
-            onChanged: () => window.dispatchEvent(new CustomEvent('ligoj:subscription-data-changed', {
-              detail: { subscriptionId: subscription?.id, group },
-            })),
-          }),
-        },
-        () => h(VIcon, { size: 'small' }, () => 'mdi-account-multiple'),
-      ),
+      // "Manage group members" — opens the globally-mounted
+      // GroupMembersDialog scoped to this row's group (no navigation away
+      // from the project). Disabled when the subscription carries no group
+      // parameter (defensive — shouldn't happen). The `onChanged` callback
+      // fires once on dialog close if the user added/removed a member,
+      // dispatching a window-level event so the mounting host view
+      // (typically plugin-ui's `ProjectDetailView`) can refresh just the
+      // affected row — without plugin-id depending on plugin-ui code.
+      renderServiceLink({
+        icon: 'mdi-account-multiple',
+        title: t('id.renderFeatures.manage'),
+        disabled: !group,
+        onClick: () => group && useGroupMembersDialog().openFor(group, {
+          onChanged: () => window.dispatchEvent(new CustomEvent('ligoj:subscription-data-changed', {
+            detail: { subscriptionId: subscription?.id, group },
+          })),
+        }),
+      }),
     ]
     if (help) {
-      buttons.push(
-        h(
-          VBtn,
-          {
-            icon: true,
-            size: 'small',
-            variant: 'text',
-            title: t('id.renderFeatures.help'),
-            href: help,
-            target: '_blank',
-            rel: 'noopener noreferrer',
-          },
-          () => h(VIcon, { size: 'small' }, () => 'mdi-help-circle-outline'),
-        ),
-      )
+      buttons.push(renderServiceLink({ icon: 'mdi-help-circle-outline', title: t('id.renderFeatures.help'), href: help }))
     }
     // Append tool-specific actions contributed by an id-<tool> sub-plugin
     // (e.g. `plugin-id-ldap` injects activity-export buttons here).
-    buttons.push(...delegateToToolPlugin(subscription, 'renderFeatures'))
+    buttons.push(...delegateFeature(subscription, 'renderFeatures', 'id'))
     return buttons
   },
 
@@ -132,20 +63,7 @@ const service = {
     const { t } = useI18nStore()
     const group = groupOf(subscription)
     if (!group) return null
-    return h(
-      VChip,
-      {
-        size: 'small',
-        variant: 'tonal',
-        title: t('id.renderDetailsKey.group'),
-        class: 'mr-1',
-      },
-      () => [
-        h(VIcon, { start: true, size: 'small' }, () => 'mdi-account-group'),
-        ' ',
-        group,
-      ],
-    )
+    return renderDetailsChip({ icon: 'mdi-account-group', text: group, title: t('id.renderDetailsKey.group') })
   },
 
   /**
@@ -157,21 +75,7 @@ const service = {
     const { t } = useI18nStore()
     const count = subscription?.data?.members
     if (count == null) return null
-    return h(
-      VChip,
-      {
-        size: 'small',
-        variant: 'tonal',
-        color: 'primary',
-        title: t('id.renderDetailsFeatures.members'),
-        class: 'mr-1',
-      },
-      () => [
-        h(VIcon, { start: true, size: 'small' }, () => 'mdi-account-multiple'),
-        ' ',
-        String(count),
-      ],
-    )
+    return renderDetailsChip({ icon: 'mdi-account-multiple', text: count, title: t('id.renderDetailsFeatures.members'), color: 'primary' })
   },
 
   requireAgreement(userSettings) {
