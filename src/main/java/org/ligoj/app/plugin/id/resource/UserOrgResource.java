@@ -521,7 +521,7 @@ public class UserOrgResource extends AbstractOrgResource implements ISessionSett
 	}
 
 	private boolean canWrite(final List<DelegateOrg> delegates, final String dn, final DelegateType type) {
-		return resource.isAdmin(securityHelper.getLogin()) || delegates.stream().anyMatch(delegate -> canWrite(delegate, dn, type));
+		return securityHelper.isAdmin() || delegates.stream().anyMatch(delegate -> canWrite(delegate, dn, type));
 	}
 
 	protected boolean canWrite(final DelegateOrg delegate, final String dn, final DelegateType type) {

@@ -53,15 +53,6 @@ public class IdentityResource extends AbstractServicePlugin {
 	 */
 	public static final String PARAMETER_UID_PATTERN = SERVICE_KEY + ":uid-pattern";
 
-	@Autowired
-	protected SecurityHelper securityHelper;
-
-	/**
-	 * System user repository.
-	 */
-	@Autowired
-	protected SystemUserRepository systemUserRepository;
-
 	@Override
 	public String getKey() {
 		return SERVICE_KEY;
@@ -72,13 +63,4 @@ public class IdentityResource extends AbstractServicePlugin {
 		return Arrays.asList(Node.class, Parameter.class);
 	}
 
-	/**
-	 * Return <code>true</code> if the given user is an administrator.
-	 * @param user The username.
-	 * @return <code>true</code> if the given user is an administrator.
-	 */
-	@CacheResult(cacheName = "user-is-admin")
-	public boolean isAdmin(@CacheKey final String user) {
-		return systemUserRepository.isAdmin(user);
-	}
 }
