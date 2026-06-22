@@ -4,6 +4,7 @@
 package org.ligoj.app.plugin.id.resource;
 
 import jakarta.ws.rs.NotAuthorizedException;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -54,6 +55,7 @@ public abstract class AbstractPluginIdResource<U extends IUserRepository> extend
 	private final Map<String, IamConfiguration> nodeConfigurations = new HashMap<>();
 
 	@Autowired
+	@Setter
 	protected UserOrgResource userResource;
 
 	protected abstract AbstractPluginIdResource<U> getSelf();
@@ -121,7 +123,7 @@ public abstract class AbstractPluginIdResource<U extends IUserRepository> extend
 	 * @param account The account from the authentication.
 	 * @return A not <code>null</code> application user.
 	 */
-	protected String toApplicationUser(final UserOrg account) {
+	public String toApplicationUser(final UserOrg account) {
 		// Find the user by the mail in the primary repository
 		final var usersByMail = userResource.findAllBy("mails", account.getMails().getFirst());
 		if (usersByMail.isEmpty()) {
