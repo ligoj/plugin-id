@@ -20,6 +20,7 @@ import org.ligoj.app.plugin.id.dao.PasswordResetAuditRepository;
 import org.ligoj.bootstrap.MatcherUtil;
 import org.ligoj.bootstrap.core.json.datatable.DataTableAttributes;
 import org.ligoj.bootstrap.core.resource.BusinessException;
+import org.ligoj.bootstrap.core.security.RbacUserDetails;
 import org.ligoj.bootstrap.core.validation.ValidationJsonException;
 import org.ligoj.bootstrap.model.system.SystemAuthorization;
 import org.ligoj.bootstrap.model.system.SystemAuthorization.AuthorizationType;
@@ -35,10 +36,18 @@ import org.mockito.internal.verification.VerificationModeFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.data.domain.PageImpl;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.User;
 import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.ligoj.app.iam.IamProvider;
+import org.ligoj.bootstrap.core.json.TableItem;
+import org.ligoj.app.iam.UserOrg;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -962,13 +971,13 @@ class UserOrgResourceTest extends AbstractAppTest {
 	 */
 	@Test
 	void addUserToGroup() {
-		mockAddUser(DEFAULT_USER);
+		mockAddUser(DEFAULT_USER, null);
 		resource.addUserToGroup("wild-user", "dig rha");
 	}
 
 	@Test
 	void addUserToGroupNotExists() {
-		mockAddUser(DEFAULT_USER);
+		mockAddUser(DEFAULT_USER, null);
 		MatcherUtil.assertThrows(Assertions.assertThrows(ValidationJsonException.class, () ->
 				resource.addUserToGroup("wild-user", "-unknown-")), "group", "not-exist");
 	}
@@ -1001,17 +1010,53 @@ class UserOrgResourceTest extends AbstractAppTest {
 
 	}
 
+
+	/**
+	 * Initialize {@link SecurityContextHolder} for given user. And promoted as administrator.
+	 *
+	 * @param user
+	 *            the user to set in the context.
+	 * @param authorities
+	 *            the optional authorities name
+	 * @return The configured {@link SecurityContext}.
+	 */
+	protected SecurityContext initSpringSecurityContextAdmin(final String user, final GrantedAuthority... authorities) {
+		final var authoritiesAsList = Arrays.asList(authorities);
+		final var userDetails = new RbacUserDetails(user, "N/A", true ,authoritiesAsList);
+		return initSpringSecurityContext(userDetails);
+	}
+
+	/**
+	 * Initialize {@link SecurityContextHolder} for given user.
+	 *
+	 * @param userDetails
+	 *            the user details to set in the context.
+	 * @return The configured {@link SecurityContext}.
+	 */
+	@SuppressWarnings("unchecked")
+	protected SecurityContext initSpringSecurityContext(final User userDetails) {
+		SecurityContextHolder.clearContext();
+		final var context = Mockito.mock(SecurityContext.class);
+		final var authentication = Mockito.mock(Authentication.class);
+		Mockito.when((Collection<GrantedAuthority>) authentication.getAuthorities()).thenReturn( userDetails.getAuthorities());
+		Mockito.when(context.getAuthentication()).thenReturn(authentication);
+		Mockito.when(authentication.getPrincipal()).thenReturn(userDetails);
+		Mockito.when(authentication.getName()).thenReturn(userDetails.getUsername());
+		SecurityContextHolder.setContext(context);
+		return context;
+	}
+
 	/**
 	 * Add a user to a group without delegates but being system administrator.
 	 */
 	@Test
 	void addUserToGroupSystemAdmin() {
-		initSpringSecurityContext("my-admin");
+		initSpringSecurityContextAdmin("my-admin");
 		var user = new SystemUser();
 		user.setLogin("my-admin");
 		em.persist(user);
 		var role = new SystemRole();
-		role.setName("some");
+		role.setName("some-admin");
 		em.persist(role);
 		var authorization = new SystemAuthorization();
 		authorization.setType(AuthorizationType.API);
@@ -1022,23 +1067,36 @@ class UserOrgResourceTest extends AbstractAppTest {
 		assignment.setRole(role);
 		assignment.setUser(user);
 		em.persist(assignment);
-		mockAddUser("my-admin");
-		resource.addUserToGroup("wild-user", "dig rha");
+		mockAddUser("my-admin", "some-admin");
+		resource.addUserToGroup("my-admin", "dig rha");
 	}
 
-	private void mockAddUser(final String principal) {
+	private void mockAddUser(final String principal, String additionalGroup) {
 		final var groupOrg1 = new GroupOrg("cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com", "DIG",
 				Collections.singleton("user1"));
 		final var groupOrg2 = new GroupOrg("cn=DIG RHA,cn=DIG AS,cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com",
 				"DIG RHA", Collections.singleton("wild-user"));
 		groupOrg2.setLocked(true);
-		final var user = newUser(u -> u.setGroups(List.of("dig")));
+		final var user = newUser();
 		final var company = new CompanyOrg("ou=ing,ou=france,ou=people,dc=sample,dc=com", "ligoj");
 		Mockito.when(companyRepository.findById("ing")).thenReturn(company);
 		Mockito.when(userRepository.findByIdExpected("wild-user")).thenReturn(user);
 		Mockito.when(userRepository.findById("wild-user")).thenReturn(user);
 		groupFindById(principal, "dig", groupOrg1);
 		groupFindById(principal, "dig rha", groupOrg2);
+		if (additionalGroup != null) {
+			final var user3 = newUser(u -> {
+				u.setGroups(List.of("dig", additionalGroup));
+				u.setId(principal);
+				u.setDn("uid="+principal+",ou=ing,ou=france,ou=people,dc=sample,dc=com");
+			});
+			Mockito.when(userRepository.findById(principal)).thenReturn(user3);
+			Mockito.when(userRepository.findByIdExpected(principal)).thenReturn(user3);
+			final var groupOrg3 = new GroupOrg("cn=" + additionalGroup + ",ou=fonction,ou=groups,dc=sample,dc=com",
+					additionalGroup, Collections.singleton(principal));
+			groupFindById(principal, additionalGroup, groupOrg3);
+
+		}
 	}
 
 	/**
@@ -1220,15 +1278,15 @@ class UserOrgResourceTest extends AbstractAppTest {
 		userOrg.setGroups(List.of("Group1", "Group2"));
 		Mockito.when(userRepository.toUser("junit")).thenReturn(userOrg);
 		var authorities = resource.getGrantedAuthorities("junit");
-		Assertions.assertTrue( authorities.contains(new SimpleGrantedAuthority("Group1")));
-		Assertions.assertTrue( authorities.contains(new SimpleGrantedAuthority("group1")));
-		Assertions.assertTrue( authorities.contains(new SimpleGrantedAuthority("GROUP1")));
+		Assertions.assertTrue(authorities.contains(new SimpleGrantedAuthority("Group1")));
+		Assertions.assertTrue(authorities.contains(new SimpleGrantedAuthority("group1")));
+		Assertions.assertTrue(authorities.contains(new SimpleGrantedAuthority("GROUP1")));
 	}
 
 	@Test
 	void getGrantedAuthoritiesUserNotFound() {
 		var authorities = resource.getGrantedAuthorities("junit");
-		Assertions.assertTrue( authorities.isEmpty());
+		Assertions.assertTrue(authorities.isEmpty());
 	}
 
 }
