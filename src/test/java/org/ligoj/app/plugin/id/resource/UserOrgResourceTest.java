@@ -45,9 +45,6 @@ import org.springframework.security.core.userdetails.User;
 import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
-import org.ligoj.app.iam.IamProvider;
-import org.ligoj.bootstrap.core.json.TableItem;
-import org.ligoj.app.iam.UserOrg;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
