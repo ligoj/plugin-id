@@ -53,9 +53,16 @@ describe('plugin-id contract', () => {
     expect(registered).toHaveLength(10)
   })
 
-  it('feature("renderFeatures") returns VNodes the host can mount', () => {
+  it('feature("renderFeatures") returns the help link VNode when a help URL is set', () => {
+    // Group management moved onto the clickable chip in renderDetailsKey, so
+    // renderFeatures now only contributes the optional help link (+ delegated
+    // id-<tool> actions).
     setActivePinia(createPinia())
-    const result = pluginIdDef.feature('renderFeatures', { id: 42, node: { id: 'service:id:ldap:foo' } })
+    const result = pluginIdDef.feature('renderFeatures', {
+      id: 42,
+      node: { id: 'service:id:ldap:foo' },
+      parameters: { 'service:id:help': 'https://help.example' },
+    })
     expect(Array.isArray(result)).toBe(true)
     expect(result.length).toBeGreaterThan(0)
     // VNodes have a __v_isVNode flag in Vue 3.
@@ -85,15 +92,35 @@ describe('plugin-id contract', () => {
     expect(result).toBeNull()
   })
 
-  it('feature("renderDetailsFeatures") returns a member-count chip', () => {
+  it('feature("renderDetailsFeatures") returns null (member count merged into the key chip)', () => {
     setActivePinia(createPinia())
     const result = pluginIdDef.feature('renderDetailsFeatures', {
       id: 42,
       node: { id: 'service:id:ldap:foo' },
       data: { members: 12 },
     })
-    expect(result).toBeTruthy()
+    expect(result).toBeNull()
+  })
+
+  it('feature("renderDetailsKey") merges the member count into a single clickable chip', () => {
+    setActivePinia(createPinia())
+    const result = pluginIdDef.feature('renderDetailsKey', {
+      id: 42,
+      node: { id: 'service:id:ldap:foo' },
+      parameters: { 'service:id:group': 'engineering' },
+      data: { members: 12 },
+    })
     expect(result.__v_isVNode).toBe(true)
+    // Clickable → opens the group-members dialog; carries a tooltip (title).
+    expect(typeof result.props.onClick).toBe('function')
+    expect(String(result.props.title)).toContain('engineering')
+    // Both the group name and the member count live in the SAME chip:
+    const kids = result.children.default()
+    // group name is a direct text child...
+    expect(kids.filter((c) => typeof c === 'string').join(' ')).toContain('engineering')
+    // ...and the member count is a distinct INTERNAL chip (not a second icon+text).
+    const countChip = kids.find((c) => c && c.__v_isVNode && String(c.children?.default?.()) === '12')
+    expect(countChip).toBeTruthy()
   })
 
   it('feature("renderDetailsFeatures") returns null when no member count', () => {

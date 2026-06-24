@@ -1,4 +1,5 @@
-import { renderServiceLink, renderDetailsChip, delegateFeature, useI18nStore } from '@ligoj/host'
+import { h } from 'vue'
+import { renderServiceLink, delegateFeature, useI18nStore, VChip, VIcon } from '@ligoj/host'
 import { useGroupMembersDialog } from './composables/useGroupMembersDialog.js'
 
 const REST = '/rest/'
@@ -9,41 +10,32 @@ function groupOf(subscription) {
   return subscription?.parameters?.['service:id:group'] ?? null
 }
 
+/**
+ * Open the globally-mounted GroupMembersDialog scoped to a row's group. On
+ * change it dispatches a window-level event so the mounting host view
+ * (typically plugin-ui's ProjectDetailView) can refresh just the affected
+ * row — without plugin-id depending on plugin-ui code.
+ */
+function openGroupMembers(subscription, group) {
+  useGroupMembersDialog().openFor(group, {
+    onChanged: () => window.dispatchEvent(new CustomEvent('ligoj:subscription-data-changed', {
+      detail: { subscriptionId: subscription?.id, group },
+    })),
+  })
+}
+
 const service = {
   /**
    * Plugin-contributed buttons next to the host's unsubscribe icon on
-   * ProjectDetailView's subscription rows. Returns VNodes directly —
-   * the host mounts them as-is without HTML interpretation, mirroring
-   * the legacy `renderFeatures` convention.
-   *
-   * For an identity subscription we expose two actions:
-   *   - "Manage group members" → subscription-scoped `GroupMembersView`
-   *   - "Help" → external link from the subscription parameters
+   * ProjectDetailView's subscription rows. Group management is no longer a
+   * dedicated button here — it moved onto the clickable group chip in
+   * `renderDetailsKey`. What remains is the optional "Help" external link
+   * plus any id-<tool> sub-plugin actions.
    */
   renderFeatures(subscription) {
     const { t } = useI18nStore()
     const help = subscription?.parameters?.['service:id:help']
-    const group = groupOf(subscription)
-    const buttons = [
-      // "Manage group members" — opens the globally-mounted
-      // GroupMembersDialog scoped to this row's group (no navigation away
-      // from the project). Disabled when the subscription carries no group
-      // parameter (defensive — shouldn't happen). The `onChanged` callback
-      // fires once on dialog close if the user added/removed a member,
-      // dispatching a window-level event so the mounting host view
-      // (typically plugin-ui's `ProjectDetailView`) can refresh just the
-      // affected row — without plugin-id depending on plugin-ui code.
-      renderServiceLink({
-        icon: 'mdi-account-multiple',
-        title: t('id.renderFeatures.manage'),
-        disabled: !group,
-        onClick: () => group && useGroupMembersDialog().openFor(group, {
-          onChanged: () => window.dispatchEvent(new CustomEvent('ligoj:subscription-data-changed', {
-            detail: { subscriptionId: subscription?.id, group },
-          })),
-        }),
-      }),
-    ]
+    const buttons = []
     if (help) {
       buttons.push(renderServiceLink({ icon: 'mdi-help-circle-outline', title: t('id.renderFeatures.help'), href: help }))
     }
@@ -54,28 +46,57 @@ const service = {
   },
 
   /**
-   * Plugin-rendered subscription "key" — the resource identifier, in
-   * this case the LDAP group name pulled from the subscription
-   * parameters. Mirrors the legacy `renderDetailsKey` /
-   * `renderKey('service:id:group')` chain.
+   * Plugin-rendered subscription "key": a single CLICKABLE chip merging the
+   * group name (`service:id:group`) and its live member count
+   * (`subscription.data.members`, populated by status/refresh). Clicking the
+   * chip opens the group-members dialog (replacing the former dedicated
+   * "Manage group members" button); the multi-line `title:` is promoted to a
+   * v-tooltip by the host. Returns null when no group parameter is set.
    */
   renderDetailsKey(subscription) {
     const { t } = useI18nStore()
     const group = groupOf(subscription)
     if (!group) return null
-    return renderDetailsChip({ icon: 'mdi-account-group', text: group, title: t('id.renderDetailsKey.group') })
+    const count = subscription?.data?.members
+    const tip = [
+      `${t('id.renderDetailsKey.group')}: ${group}`,
+      count != null ? `${t('id.renderDetailsFeatures.members')}: ${count}` : null,
+      t('id.renderFeatures.manage'),
+    ].filter(Boolean).join('\n')
+    return h(
+      VChip,
+      {
+        size: 'small',
+        variant: 'tonal',
+        color: 'primary',
+        class: 'mr-1',
+        style: 'cursor: pointer',
+        role: 'button',
+        title: tip,
+        onClick: (e) => { e?.stopPropagation?.(); openGroupMembers(subscription, group) },
+      },
+      () => {
+        const children = [h(VIcon, { start: true, size: 'small' }, () => 'mdi-account-group'), ' ', String(group)]
+        if (count != null) {
+          // Member count as a distinct INTERNAL chip (solid badge) — no second
+          // person icon, so the group glyph isn't duplicated.
+          children.push(h(
+            VChip,
+            { size: 'x-small', variant: 'flat', color: 'primary', label: true, class: 'ml-2' },
+            () => String(count),
+          ))
+        }
+        return children
+      },
+    )
   },
 
   /**
-   * Plugin-rendered supplementary detail — the member count chip the
-   * legacy UI showed under "renderDetailsFeatures". Backend populates
-   * `subscription.data.members` for identity subscriptions.
+   * The member count is now merged into the clickable group chip in
+   * `renderDetailsKey`, so there is no separate features chip anymore.
    */
-  renderDetailsFeatures(subscription) {
-    const { t } = useI18nStore()
-    const count = subscription?.data?.members
-    if (count == null) return null
-    return renderDetailsChip({ icon: 'mdi-account-multiple', text: count, title: t('id.renderDetailsFeatures.members'), color: 'primary' })
+  renderDetailsFeatures() {
+    return null
   },
 
   requireAgreement(userSettings) {
