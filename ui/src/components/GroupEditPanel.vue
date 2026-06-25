@@ -24,12 +24,12 @@
       <v-form ref="formRef" @submit.prevent="save">
         <LjAvailabilityField v-model="form.name" v-model:taken="nameTaken" endpoint="service/id/group" :enabled="!isEdit && !demoMode"
           prepend-inner-icon="mdi-form-textbox" :label="t('common.name')" :disabled="isEdit" class="mb-2" />
-        <v-autocomplete v-model="form.scope" prepend-inner-icon="mdi-shape-outline" :label="t('group.scope')" :items="availableScopes" :loading="scopesLoading" :disabled="isEdit" clearable variant="outlined" class="mb-2"
+        <LigojAutocomplete v-model="form.scope" prepend-inner-icon="mdi-shape-outline" :label="t('group.scope')" :items="availableScopes" :loading="scopesLoading" :disabled="isEdit" clearable variant="outlined" class="mb-2"
           autocomplete="off" />
         <!-- Parent group: lazy server-backed autosuggest. No groups are
              loaded until the dropdown opens — the former mount-time
              bulk GET doesn't scale to 100k+ groups. -->
-        <v-autocomplete
+        <LigojAutocomplete
           v-model="form.parent"
           prepend-inner-icon="mdi-file-tree-outline"
           :items="parentResults"
@@ -52,7 +52,7 @@
           <template #item="{ props: itemProps, item }">
             <v-list-item v-bind="itemProps" :title="item?.name || ''" />
           </template>
-        </v-autocomplete>
+        </LigojAutocomplete>
       </v-form>
     </v-card-text>
 
@@ -81,7 +81,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { useApi, useErrorStore, useI18nStore } from '@ligoj/host'
 import { TYPE_ICONS } from '../composables/delegateTypes.js'
-import { VibrantConfirmDialog as LigojConfirmDialog, LjButton, LjAvailabilityField } from '@ligoj/host'
+import { VibrantConfirmDialog as LigojConfirmDialog, LjButton, LjAvailabilityField, LigojAutocomplete } from '@ligoj/host'
 
 const props = defineProps({
   /**

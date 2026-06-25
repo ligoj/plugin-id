@@ -12,7 +12,7 @@
   <div class="gmpanel lj-surface">
     <!-- Add-member bar: server-side autocomplete + Vibrant CTA. -->
     <div class="addbar">
-      <v-autocomplete v-model="newMember" v-model:search="searchTerm" :label="t('id.group.addPlaceholder')" :items="searchResults" item-title="label" item-value="id" :loading="searching" no-filter
+      <LigojAutocomplete v-model="newMember" v-model:search="searchTerm" :label="t('id.group.addPlaceholder')" :items="searchResults" item-title="label" item-value="id" :loading="searching" no-filter
         clearable variant="outlined" density="comfortable" rounded="lg" hide-details autocomplete="off" class="addsel" prepend-inner-icon="mdi-account-search"
         @update:search="onSearch" @update:menu="onSearchMenu" />
       <LjButton icon="mdi-account-plus" :disabled="!newMember || !groupName" :loading="adding" @click="addMember">{{ t('id.group.add') }}</LjButton>
@@ -74,7 +74,7 @@ import {
   useI18nStore,
 } from '@ligoj/host'
 import { TYPE_ICONS } from '../composables/delegateTypes.js'
-import { VibrantConfirmDialog as LigojConfirmDialog, VibrantDataTable, LjButton, LjSearch } from '@ligoj/host'
+import { VibrantConfirmDialog as LigojConfirmDialog, VibrantDataTable, LjButton, LjSearch, LigojAutocomplete } from '@ligoj/host'
 
 const props = defineProps({
   /**

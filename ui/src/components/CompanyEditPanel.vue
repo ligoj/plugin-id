@@ -26,7 +26,7 @@
              flips it to read-only in view mode (the picked value
              still renders correctly because we pre-seed
              `scopeResults` with the current scope). -->
-        <v-autocomplete
+        <LigojAutocomplete
           v-model="form.scope"
           prepend-inner-icon="mdi-shape-outline"
           :items="scopeResults"
@@ -54,7 +54,7 @@
               </v-list-item-title>
             </v-list-item>
           </template>
-        </v-autocomplete>
+        </LigojAutocomplete>
 
         <!-- View-only extras: lock status + member count surface what
              the form alone can't show. Only rendered in edit mode
@@ -104,7 +104,7 @@
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import { useApi, useErrorStore, useI18nStore } from '@ligoj/host'
 import { TYPE_ICONS } from '../composables/delegateTypes.js'
-import { VibrantConfirmDialog as LigojConfirmDialog, LjButton, LjAvailabilityField, LjStatus } from '@ligoj/host'
+import { VibrantConfirmDialog as LigojConfirmDialog, LjButton, LjAvailabilityField, LjStatus, LigojAutocomplete } from '@ligoj/host'
 
 const props = defineProps({
   /**
