@@ -15,13 +15,13 @@
         <v-slide-x-transition>
           <div v-if="selected.length" class="bulkbar">
             <span class="bulk-count">{{ selected.length }} {{ t('common.selected') }}</span>
-            <LjButton variant="danger" icon="mdi-delete" :icon-size="16" @click="startBulkDelete">{{ t('common.delete') }}</LjButton>
+            <LjButton v-if="auth.isAllowedApi(USER_API, 'DELETE')" variant="danger" icon="mdi-delete" :icon-size="16" @click="startBulkDelete">{{ t('common.delete') }}</LjButton>
           </div>
         </v-slide-x-transition>
-        <LjButton icon="mdi-plus" @click="openCreate">{{ t('user.new') }}</LjButton>
+        <LjButton v-if="auth.isAllowedApi(USER_API, 'POST')" icon="mdi-plus" @click="openCreate">{{ t('user.new') }}</LjButton>
         <!-- Export/Copy now live in the table's own tools cog (VibrantDataTable
              :fetch-all). Only the CSV Import action remains here. -->
-        <LjButton variant="ghost" icon="mdi-upload" :loading="importing" @click="importInput?.click()">
+        <LjButton v-if="auth.isAllowedApi('rest/service/id/user/import/csv/full', 'POST')" variant="ghost" icon="mdi-upload" :loading="importing" @click="importInput?.click()">
           {{ importing ? (t('common.importing') || 'Import…') : (t('common.import') || 'Importer') }}
         </LjButton>
         <input ref="importInput" type="file" accept=".csv,.tsv,text/csv" hidden @change="onImport" />
@@ -65,15 +65,15 @@
             <button class="lj-iconbtn" v-bind="props" :aria-label="t('user.actions')" @click.stop><v-icon size="18">mdi-cog</v-icon></button>
           </template>
           <div class="lj-popmenu">
-            <button @click="openEdit(item.id)"><v-icon size="18">mdi-pencil</v-icon>{{ t('user.edit') }}</button>
-            <button class="danger" @click="startDelete(item)"><v-icon size="18">mdi-delete</v-icon>{{ t('common.delete') }}</button>
+            <button v-if="auth.isAllowedApi(USER_API, 'PUT')" @click="openEdit(item.id)"><v-icon size="18">mdi-pencil</v-icon>{{ t('user.edit') }}</button>
+            <button v-if="auth.isAllowedApi(USER_API, 'DELETE')" class="danger" @click="startDelete(item)"><v-icon size="18">mdi-delete</v-icon>{{ t('common.delete') }}</button>
             <div class="sep" />
-            <button @click="startUserAction(item, item.locked ? 'unlock' : 'lock')"><v-icon size="18">{{ item.locked ? 'mdi-lock-open-variant' : 'mdi-lock' }}</v-icon>{{ item.locked ? t('user.unlock')
+            <button v-if="auth.isAllowedApi(USER_API, item.locked ? 'PUT' : 'DELETE')" @click="startUserAction(item, item.locked ? 'unlock' : 'lock')"><v-icon size="18">{{ item.locked ? 'mdi-lock-open-variant' : 'mdi-lock' }}</v-icon>{{ item.locked ? t('user.unlock')
               :
               t('user.lock') }}</button>
-            <button @click="startUserAction(item, item.isolated ? 'restore' : 'isolate')"><v-icon size="18">{{ item.isolated ? 'mdi-account-check' : 'mdi-account-off' }}</v-icon>{{ item.isolated ?
+            <button v-if="auth.isAllowedApi(USER_API, item.isolated ? 'PUT' : 'DELETE')" @click="startUserAction(item, item.isolated ? 'restore' : 'isolate')"><v-icon size="18">{{ item.isolated ? 'mdi-account-check' : 'mdi-account-off' }}</v-icon>{{ item.isolated ?
               t('user.restore') : t('user.isolate') }}</button>
-            <button @click="startUserAction(item, 'resetPassword')"><v-icon size="18">mdi-lock-reset</v-icon>{{ t('user.resetPassword') }}</button>
+            <button v-if="auth.isAllowedApi(USER_API, 'PUT')" @click="startUserAction(item, 'resetPassword')"><v-icon size="18">mdi-lock-reset</v-icon>{{ t('user.resetPassword') }}</button>
           </div>
         </v-menu>
       </template>
@@ -99,7 +99,7 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
-import { useDataTable, useApi, useAppStore, useErrorStore, useI18nStore } from '@ligoj/host'
+import { useDataTable, useApi, useAppStore, useAuthStore, useErrorStore, useI18nStore } from '@ligoj/host'
 import { TYPE_ICONS } from '../composables/delegateTypes.js'
 // Shared 2026 chrome: table, confirm dialog (aliased so <LigojConfirmDialog>
 // tags need no change), page header, buttons, search — all from the host.
@@ -108,9 +108,15 @@ import UserEditDialog from './UserEditDialog.vue'
 
 const appStore = useAppStore()
 const api = useApi()
+const auth = useAuthStore()
 const errorStore = useErrorStore()
 const i18n = useI18nStore()
 const t = i18n.t
+
+// API-permission gates (v-if auth.isAllowedApi) hide create/import/delete
+// actions the session can't perform (admins bypass). Toggling lock/isolate maps
+// to PUT (un-lock/restore) or DELETE (lock/isolate) — see confirmUserAction.
+const USER_API = 'rest/service/id/user'
 const DEMO_USERS = [
   { id: 'admin', firstName: 'Admin', lastName: 'User', company: 'Ligoj', mails: ['admin@ligoj.org'], groups: [{ name: 'Engineering' }, { name: 'Management' }], locked: false },
   { id: 'jdupont', firstName: 'Jean', lastName: 'Dupont', company: 'Ligoj', mails: ['jean.dupont@ligoj.org'], groups: [{ name: 'Engineering' }, { name: 'DevOps' }], locked: false },

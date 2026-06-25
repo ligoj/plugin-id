@@ -11,10 +11,10 @@
         <v-slide-x-transition>
           <div v-if="selected.length" class="bulkbar">
             <span class="bulk-count">{{ selected.length }} {{ t('common.selected') }}</span>
-            <LjButton variant="danger" icon="mdi-delete" :icon-size="16" @click="startBulkDelete">{{ t('common.delete') }}</LjButton>
+            <LjButton v-if="auth.isAllowedApi(COMPANY_API, 'DELETE')" variant="danger" icon="mdi-delete" :icon-size="16" @click="startBulkDelete">{{ t('common.delete') }}</LjButton>
           </div>
         </v-slide-x-transition>
-        <LjButton icon="mdi-plus" @click="openCreate">{{ t('company.new') }}</LjButton>
+        <LjButton v-if="auth.isAllowedApi(COMPANY_API, 'POST')" icon="mdi-plus" @click="openCreate">{{ t('company.new') }}</LjButton>
       </template>
     </LjPageHeader>
 
@@ -46,9 +46,9 @@
             <button class="lj-iconbtn" v-bind="props" :aria-label="t('common.view')" @click.stop><v-icon size="18">mdi-cog</v-icon></button>
           </template>
           <div class="lj-popmenu">
-            <button @click="openDetails(item.name)"><v-icon size="18">mdi-eye-outline</v-icon>{{ t('common.view') }}</button>
+            <button v-if="auth.isAllowedApi(COMPANY_API, 'GET')" @click="openDetails(item.name)"><v-icon size="18">mdi-eye-outline</v-icon>{{ t('common.view') }}</button>
             <div class="sep" />
-            <button class="danger" @click="startDelete(item)"><v-icon size="18">mdi-delete</v-icon>{{ t('common.delete') }}</button>
+            <button v-if="auth.isAllowedApi(COMPANY_API, 'DELETE')" class="danger" @click="startDelete(item)"><v-icon size="18">mdi-delete</v-icon>{{ t('common.delete') }}</button>
           </div>
         </v-menu>
       </template>
@@ -75,7 +75,7 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
-import { useDataTable, useApi, useAppStore, useErrorStore, useI18nStore } from '@ligoj/host'
+import { useDataTable, useApi, useAppStore, useAuthStore, useErrorStore, useI18nStore } from '@ligoj/host'
 import { TYPE_ICONS } from '../composables/delegateTypes.js'
 import { VibrantDataTable, VibrantConfirmDialog as LigojConfirmDialog, LjPageHeader, LjButton, LjSearch, LjDialog, LjStatus } from '@ligoj/host'
 import CompanyEditPanel from '../components/CompanyEditPanel.vue'
@@ -83,9 +83,14 @@ import CompanyEditPanel from '../components/CompanyEditPanel.vue'
 const route = useRoute()
 const appStore = useAppStore()
 const api = useApi()
+const auth = useAuthStore()
 const errorStore = useErrorStore()
 const i18n = useI18nStore()
 const t = i18n.t
+
+// API-permission gates (v-if auth.isAllowedApi) for the toolbar/row actions
+// (admins bypass).
+const COMPANY_API = 'rest/service/id/company'
 
 const DEMO_COMPANIES = [
   { name: 'Ligoj', scope: 'Internal', count: 12, locked: false },

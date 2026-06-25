@@ -29,7 +29,7 @@
               <!-- Auto-suggest for company. Queries rest/service/id/company as the
                    user types (300 ms debounced). v-model stores the company name
                    as a string, matching the payload contract of rest/service/id/user. -->
-              <v-autocomplete v-model="form.company" :items="companyResults" :loading="companyLoading" :search="companySearchQuery" item-title="name" item-value="name" :label="t('user.company')" prepend-inner-icon="mdi-domain"
+              <LigojAutocomplete v-model="form.company" :items="companyResults" :loading="companyLoading" :search="companySearchQuery" item-title="name" item-value="name" :label="t('user.company')" prepend-inner-icon="mdi-domain"
                 placeholder="Rechercher une entité…" variant="outlined" class="mb-2" no-filter clearable autocomplete="off" @update:search="onCompanySearch">
                 <template #item="{ props: itemProps, item }">
                   <v-list-item v-bind="itemProps" :title="item?.name || ''">
@@ -46,7 +46,7 @@
                     </v-list-item-title>
                   </v-list-item>
                 </template>
-              </v-autocomplete>
+              </LigojAutocomplete>
               <!-- Free-text multi-email input (chantier D4). v-combobox +
                    multiple + chips lets the user type any email (no
                    autocomplete source) and confirm with Enter or Tab;
@@ -56,7 +56,7 @@
                    rest/service/id/group as the user types (300 ms debounced).
                    v-model holds an array of group **names** (strings),
                    matching the payload contract of rest/service/id/user. -->
-              <v-autocomplete v-model="groups" v-model:menu="groupMenu" :items="groupResults" :loading="groupLoading" :search="groupSearchQuery" item-title="name" item-value="name"
+              <LigojAutocomplete v-model="groups" v-model:menu="groupMenu" :items="groupResults" :loading="groupLoading" :search="groupSearchQuery" item-title="name" item-value="name"
                 :label="t('user.groups')" prepend-inner-icon="mdi-account-group" placeholder="Ajouter un groupe…" variant="outlined" class="mb-2" multiple chips closable-chips no-filter clearable autocomplete="off" @update:search="onGroupSearch"
                 @update:model-value="onGroupModelUpdate">
                 <template #item="{ props: itemProps, item }">
@@ -69,7 +69,7 @@
                     </v-list-item-title>
                   </v-list-item>
                 </template>
-              </v-autocomplete>
+              </LigojAutocomplete>
             </v-form>
 
             <!-- Account actions (edit mode only). Rearranged per Fabrice's
@@ -89,7 +89,7 @@
           </template>
 
       <template #footer>
-        <LjButton v-if="isEdit" variant="danger" icon="mdi-delete" :disabled="loading" style="margin-right: auto" @click="confirmDelete = true">{{ t('common.delete') }}</LjButton>
+        <LjButton v-if="isEdit && auth.isAllowedApi('rest/service/id/user', 'DELETE')" variant="danger" icon="mdi-delete" :disabled="loading" style="margin-right: auto" @click="confirmDelete = true">{{ t('common.delete') }}</LjButton>
         <LjButton variant="ghost" @click="requestClose">{{ t('common.cancel') }}</LjButton>
         <LjButton icon="mdi-content-save" :disabled="loading" :loading="saving" @click="save">{{ t('common.save') }}</LjButton>
       </template>
@@ -120,10 +120,10 @@
 
 <script setup>
 import { ref, computed, watch } from 'vue'
-import { useApi, useFormGuard, useErrorStore, useI18nStore } from '@ligoj/host'
+import { useApi, useAuthStore, useFormGuard, useErrorStore, useI18nStore } from '@ligoj/host'
 import { TYPE_ICONS } from '../composables/delegateTypes.js'
 // Vibrant replacement for the host's confirm dialog (aliased → tags unchanged).
-import { VibrantConfirmDialog as LigojConfirmDialog, LjDialog, LjButton, LjAvailabilityField } from '@ligoj/host'
+import { VibrantConfirmDialog as LigojConfirmDialog, LjDialog, LjButton, LjAvailabilityField, LigojAutocomplete } from '@ligoj/host'
 
 const props = defineProps({
   // Dialog visibility (v-model).
@@ -134,6 +134,7 @@ const props = defineProps({
 const emit = defineEmits(['update:modelValue', 'saved'])
 
 const api = useApi()
+const auth = useAuthStore()
 const errorStore = useErrorStore()
 const i18n = useI18nStore()
 const t = i18n.t

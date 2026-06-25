@@ -13,10 +13,10 @@
         <v-slide-x-transition>
           <div v-if="selected.length" class="bulkbar">
             <span class="bulk-count">{{ selected.length }} {{ t('common.selected') }}</span>
-            <LjButton variant="danger" icon="mdi-delete" :icon-size="16" @click="startBulkDelete">{{ t('common.delete') }}</LjButton>
+            <LjButton v-if="auth.isAllowedApi(GROUP_API, 'DELETE')" variant="danger" icon="mdi-delete" :icon-size="16" @click="startBulkDelete">{{ t('common.delete') }}</LjButton>
           </div>
         </v-slide-x-transition>
-        <LjButton icon="mdi-plus" @click="openCreate">{{ t('group.new') }}</LjButton>
+        <LjButton v-if="auth.isAllowedApi(GROUP_API, 'POST')" icon="mdi-plus" @click="openCreate">{{ t('group.new') }}</LjButton>
       </template>
     </LjPageHeader>
 
@@ -48,10 +48,10 @@
             <button class="lj-iconbtn" v-bind="props" :aria-label="t('group.actions') || t('id.group.manage')" @click.stop><v-icon size="18">mdi-cog</v-icon></button>
           </template>
           <div class="lj-popmenu">
-            <button @click="onManageMembers(item.name)"><v-icon size="18">mdi-account-multiple</v-icon>{{ t('id.group.manage') }}</button>
-            <button @click="openEdit(item.name)"><v-icon size="18">mdi-eye-outline</v-icon>{{ t('common.view') }}</button>
+            <button v-if="auth.isAllowedApi(GROUP_API, 'PUT')" @click="onManageMembers(item.name)"><v-icon size="18">mdi-account-multiple</v-icon>{{ t('id.group.manage') }}</button>
+            <button v-if="auth.isAllowedApi(GROUP_API, 'GET')" @click="openEdit(item.name)"><v-icon size="18">mdi-eye-outline</v-icon>{{ t('common.view') }}</button>
             <div class="sep" />
-            <button class="danger" @click="startDelete(item)"><v-icon size="18">mdi-delete</v-icon>{{ t('common.delete') }}</button>
+            <button v-if="auth.isAllowedApi(GROUP_API, 'DELETE')" class="danger" @click="startDelete(item)"><v-icon size="18">mdi-delete</v-icon>{{ t('common.delete') }}</button>
           </div>
         </v-menu>
       </template>
@@ -80,7 +80,7 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
-import { useDataTable, useApi, useAppStore, useErrorStore, useI18nStore } from '@ligoj/host'
+import { useDataTable, useApi, useAppStore, useAuthStore, useErrorStore, useI18nStore } from '@ligoj/host'
 import { TYPE_ICONS } from '../composables/delegateTypes.js'
 import { useGroupMembersDialog } from '../composables/useGroupMembersDialog.js'
 import { VibrantDataTable, VibrantConfirmDialog as LigojConfirmDialog, LjPageHeader, LjButton, LjSearch, LjDialog, LjStatus } from '@ligoj/host'
@@ -89,9 +89,15 @@ import GroupEditPanel from '../components/GroupEditPanel.vue'
 const route = useRoute()
 const appStore = useAppStore()
 const api = useApi()
+const auth = useAuthStore()
 const errorStore = useErrorStore()
 const i18n = useI18nStore()
 const t = i18n.t
+
+// API-permission gates (v-if auth.isAllowedApi) for the toolbar/row actions
+// (admins bypass). Managing members PUTs the group; deletion DELETEs it; the
+// read-only "view" needs GET.
+const GROUP_API = 'rest/service/id/group'
 const membersDialog = useGroupMembersDialog()
 
 const DEMO_GROUPS = [

@@ -11,10 +11,10 @@
         <v-slide-x-transition>
           <div v-if="selected.length" class="bulkbar">
             <span class="bulk-count">{{ selected.length }} {{ t('common.selected') }}</span>
-            <LjButton variant="danger" icon="mdi-delete" :icon-size="16" @click="startBulkDelete">{{ t('common.delete') }}</LjButton>
+            <LjButton v-if="auth.isAllowedApi(DELEGATE_API, 'DELETE')" variant="danger" icon="mdi-delete" :icon-size="16" @click="startBulkDelete">{{ t('common.delete') }}</LjButton>
           </div>
         </v-slide-x-transition>
-        <LjButton icon="mdi-plus" @click="openDialog(null)">{{ t('delegate.new') }}</LjButton>
+        <LjButton v-if="auth.isAllowedApi(DELEGATE_API, 'POST')" icon="mdi-plus" @click="openDialog(null)">{{ t('delegate.new') }}</LjButton>
       </template>
     </LjPageHeader>
 
@@ -52,9 +52,9 @@
             <button class="lj-iconbtn" v-bind="props" :aria-label="t('common.edit')" @click.stop><v-icon size="18">mdi-cog</v-icon></button>
           </template>
           <div class="lj-popmenu">
-            <button @click="openDialog(item.id)"><v-icon size="18">mdi-pencil</v-icon>{{ t('common.edit') }}</button>
+            <button v-if="auth.isAllowedApi(DELEGATE_API, 'PUT')" @click="openDialog(item.id)"><v-icon size="18">mdi-pencil</v-icon>{{ t('common.edit') }}</button>
             <div class="sep" />
-            <button class="danger" @click="startDelete(item)"><v-icon size="18">mdi-delete</v-icon>{{ t('common.delete') }}</button>
+            <button v-if="auth.isAllowedApi(DELEGATE_API, 'DELETE')" class="danger" @click="startDelete(item)"><v-icon size="18">mdi-delete</v-icon>{{ t('common.delete') }}</button>
           </div>
         </v-menu>
       </template>
@@ -75,15 +75,21 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
-import { useDataTable, useApi, useAppStore, useI18nStore } from '@ligoj/host'
+import { useDataTable, useApi, useAppStore, useAuthStore, useI18nStore } from '@ligoj/host'
 import { TYPE_ICONS } from '../composables/delegateTypes.js'
 import { VibrantDataTable, VibrantConfirmDialog as LigojConfirmDialog, LjPageHeader, LjButton, LjSearch, LjStatus } from '@ligoj/host'
 import DelegateEditDialog from './DelegateEditDialog.vue'
 
 const appStore = useAppStore()
 const api = useApi()
+const auth = useAuthStore()
 const i18n = useI18nStore()
 const t = i18n.t
+
+// API-permission gates (v-if auth.isAllowedApi) for the toolbar/row actions
+// (admins bypass). Delegates live under rest/security/delegate (not the id
+// provider surface).
+const DELEGATE_API = 'rest/security/delegate'
 
 const dt = useDataTable('security/delegate', { defaultSort: 'receiver' })
 let searchTimeout = null

@@ -28,7 +28,7 @@
                 </v-select>
               </v-col>
               <v-col cols="12" sm="7">
-                <v-autocomplete v-model="form.receiver" v-model:search="receiverSearch" prepend-inner-icon="mdi-account-arrow-right-outline" :label="t('delegate.receiver')" :items="receiverDisplayItems" item-title="label" item-value="id"
+                <LigojAutocomplete v-model="form.receiver" v-model:search="receiverSearch" prepend-inner-icon="mdi-account-arrow-right-outline" :label="t('delegate.receiver')" :items="receiverDisplayItems" item-title="label" item-value="id"
                   :loading="receiverLoading" :rules="[rules.required]" no-filter clearable auto-select-first variant="outlined" class="mb-2" autocomplete="off" @update:search="onReceiverSearch"
                   @update:menu="onReceiverMenu" />
               </v-col>
@@ -57,7 +57,7 @@
                      free-form text field. -->
                 <v-text-field v-if="form.type === 'TREE'" v-model="form.name" prepend-inner-icon="mdi-file-tree-outline" :label="t('delegate.resource')" :rules="[rules.required]" :hint="t('delegate.resourceDnHint')" persistent-hint
                   variant="outlined" class="mb-2" />
-                <v-autocomplete v-else v-model="form.name" v-model:search="resourceSearch" prepend-inner-icon="mdi-shield-key-outline" :label="t('delegate.resource')" :items="resourceDisplayItems" item-title="label" item-value="id"
+                <LigojAutocomplete v-else v-model="form.name" v-model:search="resourceSearch" prepend-inner-icon="mdi-shield-key-outline" :label="t('delegate.resource')" :items="resourceDisplayItems" item-title="label" item-value="id"
                   :loading="resourceLoading" :rules="[rules.required]" :hint="t('delegate.resourceHint')" persistent-hint no-filter clearable auto-select-first variant="outlined" class="mb-2" autocomplete="off"
                   @update:search="onResourceSearch" @update:menu="onResourceMenu" />
               </v-col>
@@ -86,7 +86,7 @@
           </v-form>
 
       <template #footer>
-        <LjButton v-if="isEdit" variant="danger" icon="mdi-delete" :disabled="loading" style="margin-right: auto" @click="confirmDelete = true">{{ t('common.delete') }}</LjButton>
+        <LjButton v-if="isEdit && auth.isAllowedApi('rest/security/delegate', 'DELETE')" variant="danger" icon="mdi-delete" :disabled="loading" style="margin-right: auto" @click="confirmDelete = true">{{ t('common.delete') }}</LjButton>
         <LjButton variant="ghost" @click="requestClose">{{ t('common.cancel') }}</LjButton>
         <LjButton icon="mdi-content-save" :disabled="loading" :loading="saving" @click="save">{{ t('common.save') }}</LjButton>
       </template>
@@ -115,9 +115,9 @@
 
 <script setup>
 import { ref, computed, watch, nextTick } from 'vue'
-import { useApi, useFormGuard, useI18nStore } from '@ligoj/host'
+import { useApi, useAuthStore, useFormGuard, useI18nStore } from '@ligoj/host'
 import { TYPE_ICONS, RECEIVER_TYPES, RESOURCE_TYPES } from '../composables/delegateTypes.js'
-import { VibrantConfirmDialog as LigojConfirmDialog, LjDialog, LjButton } from '@ligoj/host'
+import { VibrantConfirmDialog as LigojConfirmDialog, LjDialog, LjButton, LigojAutocomplete } from '@ligoj/host'
 
 const props = defineProps({
   // Dialog visibility (v-model).
@@ -131,6 +131,7 @@ const props = defineProps({
 const emit = defineEmits(['update:modelValue', 'saved'])
 
 const api = useApi()
+const auth = useAuthStore()
 const i18n = useI18nStore()
 const t = i18n.t
 
