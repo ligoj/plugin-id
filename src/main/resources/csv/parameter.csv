@@ -1,4 +1,4 @@
-id;data;mandatory;secured;type;owner.id;defaultValue;mode;availableForSubscription;availableForNode
+id;mandatory;mode;secured;type;owner.id;defaultValue;mode;availableForSubscription;availableForNode
 service:id:group;TRUE;;FALSE;TEXT;service:id;;;TRUE;FALSE
 service:id:ou;TRUE;CREATE;FALSE;TEXT;service:id;;;TRUE;TRUE
 service:id:parent-group;FALSE;CREATE;FALSE;TEXT;service:id;;;TRUE;TRUE
