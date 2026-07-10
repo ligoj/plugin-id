@@ -70,6 +70,11 @@ export default {
   'company.deleteConfirmBefore': 'Êtes-vous certain de supprimer ',
   'company.deleteConfirmAfter': ' ?',
   // Actions de ligne d'abonnement, contribuées via renderFeatures.
+  // Bascule partagée « en créer un autre » (CreateAnotherToggle.vue),
+  // utilisée par les dialogues de création utilisateur / entité / groupe / délégation.
+  'id.createAnother': 'En créer un autre',
+  'id.createAnotherHint': 'Garde cette fenêtre ouverte après l\'enregistrement pour créer plusieurs entrées à la suite.',
+  'id.created': 'Entrée créée — prête pour la suivante.',
   'id.renderFeatures.manage': 'Gérer les membres',
   'id.renderFeatures.help': 'Documentation',
   // Détails de ligne d'abonnement : « clé » stable (nom du groupe) +

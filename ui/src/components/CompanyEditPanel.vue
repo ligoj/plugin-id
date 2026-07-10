@@ -81,6 +81,7 @@
 
     <div v-if="!loading" class="cep-foot">
       <LjButton v-if="isEdit" variant="danger" icon="mdi-delete" :disabled="saving" @click="confirmDelete = true">{{ t('common.delete') }}</LjButton>
+      <CreateAnotherToggle v-if="!isEdit" v-model="createAnother" />
       <span class="foot-sp" />
       <LjButton variant="ghost" :disabled="saving" @click="emit('cancel')">{{ isEdit ? t('common.close') : t('common.cancel') }}</LjButton>
       <LjButton v-if="!isEdit" icon="mdi-content-save" :loading="saving" @click="save">{{ t('common.save') }}</LjButton>
@@ -105,6 +106,7 @@ import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import { useApi, useErrorStore, useI18nStore } from '@ligoj/host'
 import { TYPE_ICONS } from '../composables/delegateTypes.js'
 import { VibrantConfirmDialog as LigojConfirmDialog, LjButton, LjAvailabilityField, LjStatus, LigojAutocomplete } from '@ligoj/host'
+import CreateAnotherToggle from './CreateAnotherToggle.vue'
 
 const props = defineProps({
   /**
@@ -128,6 +130,9 @@ const saving = ref(false)
 const deleting = ref(false)
 const confirmDelete = ref(false)
 const demoMode = ref(false)
+// "Create another": when checked, a successful create resets the form and
+// keeps the (parent-hosted) dialog open via the `keepOpen` saved flag.
+const createAnother = ref(false)
 
 const scopeSearchQuery = ref('')
 const scopeResults = ref([])
@@ -234,6 +239,14 @@ onMounted(async () => {
   }
 })
 
+/** Reset the form to a clean create baseline so several companies can be
+ *  created in a row without closing the dialog (see CreateAnotherToggle). */
+function resetCreateForm() {
+  form.value = { name: '', scope: '', locked: false, count: null }
+  nameTaken.value = false
+  formRef.value?.resetValidation()
+}
+
 async function save() {
   const { valid } = await formRef.value.validate()
   if (!valid) return
@@ -260,7 +273,14 @@ async function save() {
     } else {
       await api.post('rest/service/id/company', payload)
     }
-    emit('saved', { name: form.value.name })
+    // "Create another": ask the parent to keep the dialog open (keepOpen)
+    // and reset the form here for the next entry instead of closing.
+    const keepOpen = !isEdit.value && createAnother.value
+    emit('saved', { name: form.value.name, keepOpen })
+    if (keepOpen) {
+      errorStore.success(t('id.created'))
+      resetCreateForm()
+    }
   } finally {
     saving.value = false
   }

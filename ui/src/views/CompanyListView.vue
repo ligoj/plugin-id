@@ -126,7 +126,13 @@ function onSearch() {
 
 function openCreate() { editingId.value = null; editDialog.value = true }
 function openDetails(name) { editingId.value = name; editDialog.value = true }
-function onEditSaved() { editDialog.value = false; editingId.value = null; dt.load(lastOptions) }
+function onEditSaved(payload) {
+  // Refresh the list behind the dialog. On "create another" the panel reset
+  // itself and asks (keepOpen) to stay open for the next entry.
+  dt.load(lastOptions)
+  if (payload?.keepOpen) return
+  editDialog.value = false; editingId.value = null
+}
 function onEditDeleted() { editDialog.value = false; editingId.value = null; dt.load(lastOptions) }
 
 function startDelete(item) { deleteTarget.value = item; deleteDialog.value = true }

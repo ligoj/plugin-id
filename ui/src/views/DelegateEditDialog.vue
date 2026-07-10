@@ -87,6 +87,9 @@
 
       <template #footer>
         <LjButton v-if="isEdit && auth.isAllowedApi('rest/security/delegate', 'DELETE')" variant="danger" icon="mdi-delete" :disabled="loading" style="margin-right: auto" @click="confirmDelete = true">{{ t('common.delete') }}</LjButton>
+        <!-- order:-1 jumps the toggle ahead of LjDialog's leading `.foot-sp`
+             flex spacer so it sits flush-left while the buttons stay right. -->
+        <CreateAnotherToggle v-if="!isEdit" v-model="createAnother" style="order: -1" />
         <LjButton variant="ghost" @click="requestClose">{{ t('common.cancel') }}</LjButton>
         <LjButton icon="mdi-content-save" :disabled="loading" :loading="saving" @click="save">{{ t('common.save') }}</LjButton>
       </template>
@@ -115,9 +118,10 @@
 
 <script setup>
 import { ref, computed, watch, nextTick } from 'vue'
-import { useApi, useAuthStore, useFormGuard, useI18nStore } from '@ligoj/host'
+import { useApi, useAuthStore, useFormGuard, useErrorStore, useI18nStore } from '@ligoj/host'
 import { TYPE_ICONS, RECEIVER_TYPES, RESOURCE_TYPES } from '../composables/delegateTypes.js'
 import { VibrantConfirmDialog as LigojConfirmDialog, LjDialog, LjButton, LigojAutocomplete } from '@ligoj/host'
+import CreateAnotherToggle from '../components/CreateAnotherToggle.vue'
 
 const props = defineProps({
   // Dialog visibility (v-model).
@@ -132,6 +136,7 @@ const emit = defineEmits(['update:modelValue', 'saved'])
 
 const api = useApi()
 const auth = useAuthStore()
+const errorStore = useErrorStore()
 const i18n = useI18nStore()
 const t = i18n.t
 
@@ -140,6 +145,9 @@ const loading = ref(false)
 const saving = ref(false)
 const deleting = ref(false)
 const confirmDelete = ref(false)
+// "Create another": keep the dialog open with a fresh form after a
+// successful create. Reset on every genuine open (modelValue watch).
+const createAnother = ref(false)
 
 const isEdit = computed(() => props.delegateId !== null && props.delegateId !== undefined && props.delegateId !== '')
 
@@ -362,7 +370,7 @@ async function loadOnOpen() {
 }
 
 watch(() => props.modelValue, val => {
-  if (val) loadOnOpen()
+  if (val) { createAnother.value = false; loadOnOpen() }
 })
 
 // --- Close handling with the unsaved-changes guard ---
@@ -429,7 +437,14 @@ async function save() {
   saving.value = false
   markClean()
   emit('saved')
-  emit('update:modelValue', false)
+  // "Create another": keep the dialog open with a fresh form so several
+  // delegations can be added in a row (create mode only).
+  if (!isEdit.value && createAnother.value) {
+    errorStore.success(t('id.created'))
+    loadOnOpen()
+  } else {
+    emit('update:modelValue', false)
+  }
 }
 
 async function remove() {

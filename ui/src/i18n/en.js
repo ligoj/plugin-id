@@ -77,6 +77,11 @@ export default {
   'company.deleteConfirmBefore': 'Are you sure you want to delete ',
   'company.deleteConfirmAfter': '?',
   // Subscription row actions contributed via renderFeatures.
+  // Shared "create another" footer toggle (CreateAnotherToggle.vue),
+  // used by the user / company / group / delegate create dialogs.
+  'id.createAnother': 'Create another',
+  'id.createAnotherHint': 'Keep this dialog open after saving so you can create several entries in a row.',
+  'id.created': 'Entry created — ready for the next one.',
   'id.renderFeatures.manage': 'Manage members',
   'id.renderFeatures.help': 'Documentation',
   // Subscription row details: stable "key" (group name) + live

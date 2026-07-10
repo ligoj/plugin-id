@@ -90,6 +90,9 @@
 
       <template #footer>
         <LjButton v-if="isEdit && auth.isAllowedApi('rest/service/id/user', 'DELETE')" variant="danger" icon="mdi-delete" :disabled="loading" style="margin-right: auto" @click="confirmDelete = true">{{ t('common.delete') }}</LjButton>
+        <!-- order:-1 jumps the toggle ahead of LjDialog's leading `.foot-sp`
+             flex spacer so it sits flush-left while the buttons stay right. -->
+        <CreateAnotherToggle v-if="!isEdit" v-model="createAnother" style="order: -1" />
         <LjButton variant="ghost" @click="requestClose">{{ t('common.cancel') }}</LjButton>
         <LjButton icon="mdi-content-save" :disabled="loading" :loading="saving" @click="save">{{ t('common.save') }}</LjButton>
       </template>
@@ -124,6 +127,7 @@ import { useApi, useAuthStore, useFormGuard, useErrorStore, useI18nStore } from 
 import { TYPE_ICONS } from '../composables/delegateTypes.js'
 // Vibrant replacement for the host's confirm dialog (aliased → tags unchanged).
 import { VibrantConfirmDialog as LigojConfirmDialog, LjDialog, LjButton, LjAvailabilityField, LigojAutocomplete } from '@ligoj/host'
+import CreateAnotherToggle from '../components/CreateAnotherToggle.vue'
 
 const props = defineProps({
   // Dialog visibility (v-model).
@@ -145,6 +149,9 @@ const saving = ref(false)
 const deleting = ref(false)
 const confirmDelete = ref(false)
 const demoMode = ref(false)
+// "Create another": when checked, a successful create re-opens a fresh
+// form instead of closing the dialog. Reset on every genuine open.
+const createAnother = ref(false)
 const groups = ref([])
 const locked = ref(false)
 const isolated = ref(false)
@@ -448,7 +455,7 @@ async function loadOnOpen() {
 }
 
 watch(() => props.modelValue, val => {
-  if (val) loadOnOpen()
+  if (val) { createAnother.value = false; loadOnOpen() }
 })
 
 // Lazily preload the available groups when the dropdown opens — for edit
@@ -537,7 +544,16 @@ async function save() {
   saving.value = false
   markClean()
   emit('saved')
-  emit('update:modelValue', false)
+  // "Create another": keep the dialog open with a fresh create form so
+  // several users can be added in a row. loadOnOpen() re-runs the create
+  // baseline (resetForm + group preload + guard snapshot); createAnother is
+  // reset only on a genuine reopen (the modelValue watch), so it sticks here.
+  if (!isEdit.value && createAnother.value) {
+    errorStore.success(t('id.created'))
+    loadOnOpen()
+  } else {
+    emit('update:modelValue', false)
+  }
 }
 
 async function remove() {
