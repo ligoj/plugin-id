@@ -26,6 +26,34 @@ function openGroupMembers(subscription, group) {
 
 const service = {
   /**
+   * Sidebar contribution: the top-level "Identity" menu (Users / Groups /
+   * Companies / Delegates / Container scopes). Consumed by the host's
+   * `mergeNav` engine via the `renderNav` feature — this section used to be
+   * hardcoded in the host's BASE_NAV and now travels with the plugin that owns
+   * it. Declarative data: the host resolves each `labelKey` against the shared
+   * i18n store (the `nav.*` keys are host-owned sidebar vocabulary) and drops
+   * any entry the user can't reach per its REST `auth` path. Positioned
+   * `before: 'nav.projects'` so Identity keeps its historic slot between Home
+   * and Projects.
+   */
+  renderNav() {
+    return {
+      id: 'identity',
+      labelKey: 'nav.identity',
+      icon: 'mdi-account-group',
+      match: '/id',
+      before: 'nav.projects',
+      children: [
+        { id: 'id-users', labelKey: 'nav.users', icon: 'mdi-account', route: '/id/user', match: '/id/user', auth: 'id/user' },
+        { id: 'id-groups', labelKey: 'nav.groups', icon: 'mdi-account-group', route: '/id/group', match: '/id/group', auth: 'id/container/group' },
+        { id: 'id-companies', labelKey: 'nav.companies', icon: 'mdi-domain', route: '/id/company', match: '/id/company', auth: 'id/container/company' },
+        { id: 'id-delegates', labelKey: 'nav.delegates', icon: 'mdi-account-arrow-right', route: '/id/delegate', match: '/id/delegate', auth: 'id/delegate' },
+        { id: 'id-scopes', labelKey: 'nav.containerScopes', icon: 'mdi-file-tree', route: '/id/scope', match: '/id/scope', auth: 'id/container-scope' },
+      ],
+    }
+  },
+
+  /**
    * Plugin-contributed buttons next to the host's unsubscribe icon on
    * ProjectDetailView's subscription rows. Group management is no longer a
    * dedicated button here — it moved onto the clickable group chip in

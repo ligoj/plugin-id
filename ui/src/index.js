@@ -50,6 +50,10 @@ const features = {
   requireAgreement: service.requireAgreement,
   acceptAgreement: service.acceptAgreement,
   scheduleUpload: service.scheduleUpload,
+  // Host sidebar contribution: the top-level "Identity" menu (declarative;
+  // see service.renderNav). The host's mergeNav engine positions it before
+  // Projects and auth-filters its entries.
+  renderNav: service.renderNav,
   // Host's PluginFeatures slot calls this for each subscription row.
   renderFeatures: service.renderFeatures,
   // Plugin-rendered details column on subscription rows: the "key"
