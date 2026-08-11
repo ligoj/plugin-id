@@ -16,7 +16,6 @@ import org.ligoj.app.plugin.id.dao.ContainerScopeRepository;
 import org.ligoj.app.plugin.id.model.ContainerScope;
 import org.ligoj.bootstrap.AbstractJpaTest;
 import org.ligoj.bootstrap.core.json.TableItem;
-import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Sort;
@@ -28,6 +27,9 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 /**
  * Test class of {@link ContainerScopeResource}
@@ -96,8 +98,8 @@ class ContainerScopeResourceTest extends AbstractJpaTest {
 	}
 
 	private UriInfo newFindAllParameters() {
-		final UriInfo uriInfo = Mockito.mock(UriInfo.class);
-		Mockito.when(uriInfo.getQueryParameters()).thenReturn(new MetadataMap<>());
+		final UriInfo uriInfo = mock(UriInfo.class);
+		when(uriInfo.getQueryParameters()).thenReturn(new MetadataMap<>());
 		uriInfo.getQueryParameters().add("draw", "1");
 		uriInfo.getQueryParameters().add("start", "0");
 		uriInfo.getQueryParameters().add("length", "10");

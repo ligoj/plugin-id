@@ -3,9 +3,6 @@
  */
 package org.ligoj.app.plugin.id.resource.batch;
 
-import java.util.ArrayList;
-import java.util.function.Function;
-
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -17,8 +14,12 @@ import org.ligoj.bootstrap.AbstractSecurityTest;
 import org.ligoj.bootstrap.MatcherUtil;
 import org.ligoj.bootstrap.core.security.SecurityHelper;
 import org.ligoj.bootstrap.core.validation.ValidationJsonException;
-import org.mockito.Mockito;
 import org.mockito.exceptions.base.MockitoException;
+
+import java.util.ArrayList;
+import java.util.function.Function;
+
+import static org.mockito.Mockito.*;
 
 /**
  * Test of {@link UserAtomicTask}
@@ -30,7 +31,7 @@ class UserAtomicTaskTest extends AbstractSecurityTest {
 	@BeforeEach
 	void setup() {
 		task = new UserAtomicTask();
-		task.resource = Mockito.mock(UserOrgResource.class);
+		task.resource = mock(UserOrgResource.class);
 		task.securityHelper = new SecurityHelper();
 		initSpringSecurityContext(DEFAULT_USER);
 
@@ -43,7 +44,7 @@ class UserAtomicTaskTest extends AbstractSecurityTest {
 		user.setLocalId("untouched");
 		user.setMails(new ArrayList<>());
 		user.setGroups(new ArrayList<>());
-		Mockito.when(task.resource.findById(DEFAULT_USER)).thenReturn(user);
+		when(task.resource.findById(DEFAULT_USER)).thenReturn(user);
 	}
 
 	@Test
@@ -132,7 +133,7 @@ class UserAtomicTaskTest extends AbstractSecurityTest {
 		task.doBatch(entry);
 
 		// Check user
-		Mockito.verify(task.resource).isolate(DEFAULT_USER);
+		verify(task.resource).isolate(DEFAULT_USER);
 	}
 
 	@Test
@@ -143,7 +144,7 @@ class UserAtomicTaskTest extends AbstractSecurityTest {
 		task.doBatch(entry);
 
 		// Check user
-		Mockito.verify(task.resource).restore(DEFAULT_USER);
+		verify(task.resource).restore(DEFAULT_USER);
 	}
 
 	@Test
@@ -154,7 +155,7 @@ class UserAtomicTaskTest extends AbstractSecurityTest {
 		task.doBatch(entry);
 
 		// Check user
-		Mockito.verify(task.resource).lock(DEFAULT_USER);
+		verify(task.resource).lock(DEFAULT_USER);
 	}
 
 	@Test
@@ -165,13 +166,13 @@ class UserAtomicTaskTest extends AbstractSecurityTest {
 		task.doBatch(entry);
 
 		// Check user
-		Mockito.verify(task.resource).delete(DEFAULT_USER);
+		verify(task.resource).delete(DEFAULT_USER);
 	}
 
 	private void checkAttribute(final Function<UserOrgEditionVo, String> function, final String value) {
 
 		// Check user
-		Mockito.verify(task.resource, new DefaultVerificationMode(data -> {
+		verify(task.resource, new DefaultVerificationMode(data -> {
 			if (data.getAllInvocations().size() != 2) {
 				throw new MockitoException("Expect two calls");
 			}

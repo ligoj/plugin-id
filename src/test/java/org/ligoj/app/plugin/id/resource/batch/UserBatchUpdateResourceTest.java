@@ -3,20 +3,22 @@
  */
 package org.ligoj.app.plugin.id.resource.batch;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.util.ArrayList;
-
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.ligoj.app.DefaultVerificationMode;
 import org.ligoj.app.iam.UserOrg;
 import org.ligoj.app.plugin.id.resource.UserOrgEditionVo;
 import org.ligoj.bootstrap.core.validation.ValidationJsonException;
-import org.mockito.Mockito;
 import org.mockito.exceptions.base.MockitoException;
 import org.springframework.beans.factory.annotation.Autowired;
+
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
+
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 /**
  * Test of {@link UserBatchUpdateResource}
@@ -53,7 +55,7 @@ class UserBatchUpdateResourceTest extends AbstractUserBatchResourceTest {
 		user.setLocalId("untouched");
 		user.setMails(new ArrayList<>());
 		user.setGroups(new ArrayList<>());
-		Mockito.when(mockResource.findById("fdaugan")).thenReturn(user);
+		when(mockResource.findById("fdaugan")).thenReturn(user);
 
 		final long id = resource.execute(
 				new ByteArrayInputStream("fdaugan;mail;any.daugan@sample.com".getBytes("cp1252")),
@@ -71,7 +73,7 @@ class UserBatchUpdateResourceTest extends AbstractUserBatchResourceTest {
 		Assertions.assertNull(importEntry.getStatusText());
 
 		// Check user
-		Mockito.verify(mockResource, new DefaultVerificationMode(data -> {
+		verify(mockResource, new DefaultVerificationMode(data -> {
 			if (data.getAllInvocations().size() != 2) {
 				throw new MockitoException("Expect two calls");
 			}

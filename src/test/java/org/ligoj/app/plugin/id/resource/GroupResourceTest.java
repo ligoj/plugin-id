@@ -8,19 +8,23 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.ligoj.app.iam.*;
+import org.ligoj.app.iam.CompanyOrg;
+import org.ligoj.app.iam.GroupOrg;
+import org.ligoj.app.iam.IamProvider;
+import org.ligoj.app.iam.UserOrg;
 import org.ligoj.app.model.ContainerType;
 import org.ligoj.bootstrap.MatcherUtil;
 import org.ligoj.bootstrap.core.json.datatable.DataTableAttributes;
 import org.ligoj.bootstrap.core.validation.ValidationJsonException;
 import org.mockito.ArgumentMatchers;
-import org.mockito.Mockito;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.util.*;
+
+import static org.mockito.Mockito.when;
 
 /**
  * Test class of {@link GroupResource}
@@ -39,7 +43,7 @@ class GroupResourceTest extends AbstractContainerResourceTest {
 		resource = new GroupResource();
 		applicationContext.getAutowireCapableBeanFactory().autowireBean(resource);
 		resource.iamProvider = new IamProvider[]{iamProvider};
-		Mockito.when(groupRepository.getTypeName()).thenReturn("group");
+		when(groupRepository.getTypeName()).thenReturn("group");
 	}
 
 	@Test
@@ -67,10 +71,10 @@ class GroupResourceTest extends AbstractContainerResourceTest {
 		companies.put("france", companyOrg1);
 		companies.put("ing-internal", companyOrg2);
 
-		Mockito.when(companyRepository.findAll()).thenReturn(companies);
-		Mockito.when(userRepository.findAll()).thenReturn(users);
-		Mockito.when(groupRepository.findAll()).thenReturn(groupsMap);
-		Mockito.when(
+		when(companyRepository.findAll()).thenReturn(companies);
+		when(userRepository.findAll()).thenReturn(users);
+		when(groupRepository.findAll()).thenReturn(groupsMap);
+		when(
 						groupRepository.findAll(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
 				.thenReturn(new PageImpl<>(Arrays.asList(groupOrg1, groupOrg2)));
 
@@ -103,7 +107,7 @@ class GroupResourceTest extends AbstractContainerResourceTest {
 
 	@Test
 	void findByNameNoType() {
-		Mockito.when(groupRepository.findById(DEFAULT_USER, "business solution"))
+		when(groupRepository.findById(DEFAULT_USER, "business solution"))
 				.thenReturn(new GroupOrg("cn=Business Solution,ou=groups,dc=sample,dc=com", "Business Solution", null));
 		final var group = resource.findByName("business solution");
 		Assertions.assertEquals("Business Solution", group.getName());
@@ -117,7 +121,7 @@ class GroupResourceTest extends AbstractContainerResourceTest {
 
 	@Test
 	void findByName() {
-		Mockito.when(groupRepository.findById(DEFAULT_USER, "dig as"))
+		when(groupRepository.findById(DEFAULT_USER, "dig as"))
 				.thenReturn(new GroupOrg("cn=DIG AS,cn=DIG AS,cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com", "DIG AS", null));
 		final var group = resource.findByName("dig as");
 		Assertions.assertEquals("DIG AS", group.getName());
@@ -141,7 +145,7 @@ class GroupResourceTest extends AbstractContainerResourceTest {
 
 	@Test
 	void exists() {
-		Mockito.when(groupRepository.findById(DEFAULT_USER, "dig as"))
+		when(groupRepository.findById(DEFAULT_USER, "dig as"))
 				.thenReturn(new GroupOrg("cn=DIG AS,cn=DIG AS,cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com", "dig as", null));
 		Assertions.assertTrue(resource.exists("dig as"));
 	}
@@ -165,9 +169,9 @@ class GroupResourceTest extends AbstractContainerResourceTest {
 		final var user2 = new UserOrg();
 		user2.setCompany("internal");
 		user2.setDn("uid=fdaugan");
-		Mockito.when(userRepository.findByIdExpected("wuser")).thenReturn(user);
-		Mockito.when(userRepository.findByIdExpected("fdaugan")).thenReturn(user2);
-		Mockito.when(groupRepository.findByIdExpected(DEFAULT_USER, "dig"))
+		when(userRepository.findByIdExpected("wuser")).thenReturn(user);
+		when(userRepository.findByIdExpected("fdaugan")).thenReturn(user2);
+		when(groupRepository.findByIdExpected(DEFAULT_USER, "dig"))
 				.thenReturn(new GroupOrg("cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com", "DIG", null));
 
 		createInternal(group, "cn=new-group,cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com");
@@ -183,14 +187,14 @@ class GroupResourceTest extends AbstractContainerResourceTest {
 		group.setName("new-group");
 		group.setScope(scope.getId());
 		final var groupOrg1 = new GroupOrg("cn=new-group", "new-group", null);
-		Mockito.when(groupRepository.create(expected, "new-group")).thenReturn(groupOrg1);
+		when(groupRepository.create(expected, "new-group")).thenReturn(groupOrg1);
 		Assertions.assertEquals("new-group", resource.create(group));
 	}
 
 	@Test
 	void deleteNoRight() {
 		initSpringSecurityContext("mmartin");
-		Mockito.when(groupRepository.findByIdExpected("mmartin", "dig rha"))
+		when(groupRepository.findByIdExpected("mmartin", "dig rha"))
 				.thenReturn(new GroupOrg("cn=DIG RHA,cn=DIG AS,cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com", "dig rha", null));
 		MatcherUtil.assertThrows(Assertions.assertThrows(ValidationJsonException.class, () -> resource.delete("dig rha")), "group", "unknown-id");
 	}
@@ -204,8 +208,8 @@ class GroupResourceTest extends AbstractContainerResourceTest {
 		final var groupsMap = new HashMap<String, GroupOrg>();
 		groupsMap.put("dig", groupOrg1);
 		groupsMap.put("dig rha", groupOrg2);
-		Mockito.when(groupRepository.findAll()).thenReturn(groupsMap);
-		Mockito.when(groupRepository.findByIdExpected(DEFAULT_USER, "dig rha"))
+		when(groupRepository.findAll()).thenReturn(groupsMap);
+		when(groupRepository.findByIdExpected(DEFAULT_USER, "dig rha"))
 				.thenReturn(new GroupOrg("cn=DIG RHA,cn=DIG AS,cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com", "dig rha", null));
 		resource.empty("dig rha");
 	}
@@ -216,7 +220,7 @@ class GroupResourceTest extends AbstractContainerResourceTest {
 		final var group = new GroupEditionVo();
 		group.setName("new-group");
 		group.setParent(" DiG ");
-		Mockito.when(groupRepository.findByIdExpected(DEFAULT_USER, "dig"))
+		when(groupRepository.findByIdExpected(DEFAULT_USER, "dig"))
 				.thenReturn(new GroupOrg("cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com", "DIG", null));
 		Assertions.assertEquals("cn=new-group,cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com", resource.toDn(group, scope));
 	}
@@ -227,7 +231,7 @@ class GroupResourceTest extends AbstractContainerResourceTest {
 		final var group = new GroupEditionVo();
 		group.setName("new-group");
 		group.setParent(" DiG ");
-		Mockito.when(groupRepository.findByIdExpected(DEFAULT_USER, "dig"))
+		when(groupRepository.findByIdExpected(DEFAULT_USER, "dig"))
 				.thenReturn(new GroupOrg("cn=ext,dc=sample,dc=com", "DIG", null));
 		MatcherUtil.assertThrows(Assertions.assertThrows(ValidationJsonException.class, () -> resource.toDn(group, scope)), "parent", "container-parent-type-match");
 	}

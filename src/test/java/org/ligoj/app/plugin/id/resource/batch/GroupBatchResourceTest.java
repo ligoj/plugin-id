@@ -3,6 +3,7 @@
  */
 package org.ligoj.app.plugin.id.resource.batch;
 
+import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -18,7 +19,6 @@ import org.ligoj.app.plugin.id.resource.GroupResource;
 import org.ligoj.bootstrap.core.SpringUtils;
 import org.ligoj.bootstrap.resource.system.session.SessionSettings;
 import org.mockito.ArgumentMatchers;
-import org.mockito.Mockito;
 import org.mockito.exceptions.base.MockitoException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
@@ -26,11 +26,12 @@ import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-import jakarta.transaction.Transactional;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+
+import static org.mockito.Mockito.*;
 
 /**
  * Test of {@link GroupBatchResource}
@@ -62,7 +63,7 @@ class GroupBatchResourceTest extends AbstractBatchTest {
 		Assertions.assertNull(importEntry.getStatusText());
 
 		// Check group
-		Mockito.verify(mockResource, new DefaultVerificationMode(data -> {
+		verify(mockResource, new DefaultVerificationMode(data -> {
 			if (data.getAllInvocations().size() != 1) {
 				throw new MockitoException("Expect one call");
 			}
@@ -113,7 +114,7 @@ class GroupBatchResourceTest extends AbstractBatchTest {
 		Assertions.assertNull(importEntry.getStatusText());
 
 		// Check group
-		Mockito.verify(mockResource, new DefaultVerificationMode(data -> {
+		verify(mockResource, new DefaultVerificationMode(data -> {
 			if (data.getAllInvocations().size() != 1) {
 				throw new MockitoException("Expect one call");
 			}
@@ -134,15 +135,15 @@ class GroupBatchResourceTest extends AbstractBatchTest {
 	@SuppressWarnings("unchecked")
 	@BeforeEach
 	void mockApplicationContext() {
-		final ApplicationContext applicationContext = Mockito.mock(ApplicationContext.class);
+		final ApplicationContext applicationContext = mock(ApplicationContext.class);
 		SpringUtils.setSharedApplicationContext(applicationContext);
-		mockResource = Mockito.mock(GroupResource.class);
+		mockResource = mock(GroupResource.class);
 		final GroupFullTask mockTask = new GroupFullTask();
 		mockTask.resource = mockResource;
 		mockTask.securityHelper = securityHelper;
-		mockTask.containerScopeResource = Mockito.mock(ContainerScopeResource.class);
-		Mockito.when(applicationContext.getBean(SessionSettings.class)).thenReturn(new SessionSettings());
-		Mockito.when(applicationContext.getBean((Class<?>) ArgumentMatchers.any(Class.class))).thenAnswer(invocation -> {
+		mockTask.containerScopeResource = mock(ContainerScopeResource.class);
+		when(applicationContext.getBean(SessionSettings.class)).thenReturn(new SessionSettings());
+		when(applicationContext.getBean((Class<?>) ArgumentMatchers.any(Class.class))).thenAnswer(invocation -> {
 			final Class<?> requiredType = (Class<Object>) invocation.getArguments()[0];
 			if (requiredType == GroupFullTask.class) {
 				return mockTask;
@@ -154,7 +155,7 @@ class GroupBatchResourceTest extends AbstractBatchTest {
 		container.setId(1);
 		container.setName("Fonction");
 		container.setType(ContainerType.GROUP);
-		Mockito.when(mockTask.containerScopeResource.findByName(ContainerType.GROUP, "Fonction")).thenReturn(container);
+		when(mockTask.containerScopeResource.findByName(ContainerType.GROUP, "Fonction")).thenReturn(container);
 	}
 
 	@BeforeEach

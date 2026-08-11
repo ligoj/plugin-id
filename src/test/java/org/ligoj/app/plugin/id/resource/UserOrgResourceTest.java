@@ -31,7 +31,6 @@ import org.ligoj.bootstrap.resource.system.configuration.ConfigurationResource;
 import org.ligoj.bootstrap.resource.system.session.ApplicationSettings;
 import org.ligoj.bootstrap.resource.system.session.SessionSettings;
 import org.mockito.ArgumentMatchers;
-import org.mockito.Mockito;
 import org.mockito.internal.verification.VerificationModeFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
@@ -51,6 +50,8 @@ import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.*;
 import java.util.function.Consumer;
+
+import static org.mockito.Mockito.*;
 
 /**
  * Test of {@link UserOrgResource}<br>
@@ -76,19 +77,19 @@ class UserOrgResourceTest extends AbstractAppTest {
 	void prepareData() throws IOException {
 		persistEntities("csv", new Class<?>[]{DelegateOrg.class, CacheCompany.class, CacheGroup.class, CacheUser.class,
 				CacheMembership.class}, StandardCharsets.UTF_8);
-		iamProvider = Mockito.mock(IamProvider.class);
-		final IamConfiguration configuration = Mockito.mock(IamConfiguration.class);
-		Mockito.when(iamProvider.getConfiguration()).thenReturn(configuration);
-		userRepository = Mockito.mock(IUserRepository.class);
-		groupRepository = Mockito.mock(IGroupRepository.class);
-		companyRepository = Mockito.mock(ICompanyRepository.class);
-		Mockito.when(configuration.getUserRepository()).thenReturn(userRepository);
-		Mockito.when(configuration.getCompanyRepository()).thenReturn(companyRepository);
-		Mockito.when(configuration.getGroupRepository()).thenReturn(groupRepository);
+		iamProvider = mock(IamProvider.class);
+		final IamConfiguration configuration = mock(IamConfiguration.class);
+		when(iamProvider.getConfiguration()).thenReturn(configuration);
+		userRepository = mock(IUserRepository.class);
+		groupRepository = mock(IGroupRepository.class);
+		companyRepository = mock(ICompanyRepository.class);
+		when(configuration.getUserRepository()).thenReturn(userRepository);
+		when(configuration.getCompanyRepository()).thenReturn(companyRepository);
+		when(configuration.getGroupRepository()).thenReturn(groupRepository);
 		resource = new UserOrgResource();
 		applicationContext.getAutowireCapableBeanFactory().autowireBean(resource);
 		resource.setIamProvider(new IamProvider[]{iamProvider});
-		Mockito.when(companyRepository.getTypeName()).thenReturn("company");
+		when(companyRepository.getTypeName()).thenReturn("company");
 	}
 
 	@Override
@@ -106,19 +107,19 @@ class UserOrgResourceTest extends AbstractAppTest {
 		final var company = new CompanyOrg("ou=ing,ou=france,ou=people,dc=sample,dc=com", "ing");
 		final var groupOrg1 = new GroupOrg("cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com", "DIG",
 				Collections.singleton("wild-user"));
-		resource.groupResource = Mockito.mock(GroupResource.class);
-		Mockito.when(companyRepository.findByIdExpected(DEFAULT_USER, "ing")).thenReturn(company);
+		resource.groupResource = mock(GroupResource.class);
+		when(companyRepository.findByIdExpected(DEFAULT_USER, "ing")).thenReturn(company);
 		groupFindById(DEFAULT_USER, "dig", groupOrg1);
-		Mockito.when(userRepository.findByIdExpected(DEFAULT_USER, "wild-user")).thenReturn(newUser());
-		Mockito.when(resource.groupResource.getContainers()).thenReturn(Collections.singleton(groupOrg1));
-		Mockito.when(resource.groupResource.getContainersForWrite()).thenReturn(Collections.singleton(groupOrg1));
+		when(userRepository.findByIdExpected(DEFAULT_USER, "wild-user")).thenReturn(newUser());
+		when(resource.groupResource.getContainers()).thenReturn(Collections.singleton(groupOrg1));
+		when(resource.groupResource.getContainersForWrite()).thenReturn(Collections.singleton(groupOrg1));
 		Assertions.assertNull(checkUser(resource.findById("Wild-User")).getDn()); // Secured
 		// data
 	}
 
 	@Test
 	void findByIdNoCache() {
-		Mockito.when(userRepository.findByIdNoCache("wild-user")).thenReturn(newUser());
+		when(userRepository.findByIdNoCache("wild-user")).thenReturn(newUser());
 		Assertions.assertEquals("uid=wild-user,ou=ing,ou=france,ou=people,dc=sample,dc=com",
 				checkUser(resource.findByIdNoCache("Wild-User")).getDn());
 	}
@@ -126,7 +127,7 @@ class UserOrgResourceTest extends AbstractAppTest {
 	@Test
 	void findAllBy() {
 		final UserOrg userOrg = new UserOrg();
-		Mockito.when(userRepository.findAllBy("mail", "marc.martin@sample.com"))
+		when(userRepository.findAllBy("mail", "marc.martin@sample.com"))
 				.thenReturn(Collections.singletonList(userOrg));
 		Assertions.assertSame(userOrg, resource.findAllBy("mail", "marc.martin@sample.com").getFirst());
 	}
@@ -147,19 +148,19 @@ class UserOrgResourceTest extends AbstractAppTest {
 		final var groupsMap = new HashMap<String, GroupOrg>();
 		groupsMap.put("dig", groupOrg1);
 		groupsMap.put("dig rha", groupOrg2);
-		resource.groupResource = Mockito.mock(GroupResource.class);
-		resource.companyResource = Mockito.mock(CompanyResource.class);
+		resource.groupResource = mock(GroupResource.class);
+		resource.companyResource = mock(CompanyResource.class);
 		final var company = new CompanyOrg("ou=ing,ou=france,ou=people,dc=sample,dc=com", "ing");
-		Mockito.when(companyRepository.findByIdExpected(DEFAULT_USER, "ing")).thenReturn(company);
+		when(companyRepository.findByIdExpected(DEFAULT_USER, "ing")).thenReturn(company);
 		groupFindById(DEFAULT_USER, "dig", groupOrg1);
-		Mockito.when(groupRepository.findAll()).thenReturn(groupsMap);
-		Mockito.when(userRepository.getCustomAttributes()).thenReturn(ArrayUtils.EMPTY_STRING_ARRAY);
-		Mockito.when(userRepository.findAll(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(),
+		when(groupRepository.findAll()).thenReturn(groupsMap);
+		when(userRepository.getCustomAttributes()).thenReturn(ArrayUtils.EMPTY_STRING_ARRAY);
+		when(userRepository.findAll(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(),
 				ArgumentMatchers.any())).thenReturn(new PageImpl<>(new ArrayList<>(users.values())));
-		Mockito.when(resource.groupResource.getContainers()).thenReturn(new HashSet<>(groupsMap.values()));
-		Mockito.when(resource.groupResource.getContainersForWrite()).thenReturn(new HashSet<>(groupsMap.values()));
-		Mockito.when(resource.companyResource.getContainers()).thenReturn(Collections.singleton(company));
-		Mockito.when(resource.companyResource.getContainersForWrite()).thenReturn(Collections.singleton(company));
+		when(resource.groupResource.getContainers()).thenReturn(new HashSet<>(groupsMap.values()));
+		when(resource.groupResource.getContainersForWrite()).thenReturn(new HashSet<>(groupsMap.values()));
+		when(resource.companyResource.getContainers()).thenReturn(Collections.singleton(company));
+		when(resource.companyResource.getContainersForWrite()).thenReturn(Collections.singleton(company));
 
 		final var tableItem = resource.findAll("ing", "dig rha", "iRsT", newUriInfoAsc("id"));
 		Assertions.assertEquals(2, tableItem.getRecordsTotal());
@@ -188,19 +189,19 @@ class UserOrgResourceTest extends AbstractAppTest {
 		final var groupsMap = new HashMap<String, GroupOrg>();
 		groupsMap.put("dig", groupOrg1);
 		groupsMap.put("dig rha", groupOrg2);
-		resource.groupResource = Mockito.mock(GroupResource.class);
-		resource.companyResource = Mockito.mock(CompanyResource.class);
+		resource.groupResource = mock(GroupResource.class);
+		resource.companyResource = mock(CompanyResource.class);
 		final var company = new CompanyOrg("ou=ing,ou=france,ou=people,dc=sample,dc=com", "ing");
-		Mockito.when(companyRepository.findByIdExpected(DEFAULT_USER, "ing")).thenReturn(company);
+		when(companyRepository.findByIdExpected(DEFAULT_USER, "ing")).thenReturn(company);
 		groupFindById(DEFAULT_USER, "dig", groupOrg1);
-		Mockito.when(groupRepository.findAll()).thenReturn(groupsMap);
-		Mockito.when(userRepository.findAll(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(),
+		when(groupRepository.findAll()).thenReturn(groupsMap);
+		when(userRepository.findAll(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(),
 				ArgumentMatchers.any())).thenReturn(new PageImpl<>(new ArrayList<>(users.values())));
-		Mockito.when(userRepository.getCustomAttributes()).thenReturn(ArrayUtils.EMPTY_STRING_ARRAY);
-		Mockito.when(resource.groupResource.getContainers()).thenReturn(new HashSet<>(groupsMap.values()));
-		Mockito.when(resource.groupResource.getContainersForWrite()).thenReturn(new HashSet<>(groupsMap.values()));
-		Mockito.when(resource.companyResource.getContainers()).thenReturn(Collections.singleton(company));
-		Mockito.when(resource.companyResource.getContainersForWrite()).thenReturn(Collections.singleton(company));
+		when(userRepository.getCustomAttributes()).thenReturn(ArrayUtils.EMPTY_STRING_ARRAY);
+		when(resource.groupResource.getContainers()).thenReturn(new HashSet<>(groupsMap.values()));
+		when(resource.groupResource.getContainersForWrite()).thenReturn(new HashSet<>(groupsMap.values()));
+		when(resource.companyResource.getContainers()).thenReturn(Collections.singleton(company));
+		when(resource.companyResource.getContainersForWrite()).thenReturn(Collections.singleton(company));
 
 		final var tableItem = resource.findAll("ing", "not exist group", "iRsT", newUriInfoAsc("id"));
 		Assertions.assertEquals(2, tableItem.getRecordsTotal());
@@ -234,22 +235,22 @@ class UserOrgResourceTest extends AbstractAppTest {
 		final var groupsMap = new HashMap<String, GroupOrg>();
 		groupsMap.put("dig", groupOrg1);
 		groupsMap.put("dig rha", groupOrg2);
-		resource.groupResource = Mockito.mock(GroupResource.class);
-		resource.companyResource = Mockito.mock(CompanyResource.class);
+		resource.groupResource = mock(GroupResource.class);
+		resource.companyResource = mock(CompanyResource.class);
 		final var company1 = new CompanyOrg("ou=ing,ou=france,ou=people,dc=sample,dc=com", "ing");
 		final var company2 = new CompanyOrg("ou=ligoj,ou=france,ou=people,dc=sample,dc=com", "ing");
-		Mockito.when(companyRepository.findByIdExpected(DEFAULT_USER, "ing")).thenReturn(company1);
-		Mockito.when(companyRepository.findByIdExpected(DEFAULT_USER, "ligoj")).thenReturn(company2);
+		when(companyRepository.findByIdExpected(DEFAULT_USER, "ing")).thenReturn(company1);
+		when(companyRepository.findByIdExpected(DEFAULT_USER, "ligoj")).thenReturn(company2);
 		groupFindById(DEFAULT_USER, "dig", groupOrg1);
-		Mockito.when(groupRepository.findAll()).thenReturn(groupsMap);
-		Mockito.when(userRepository.getCustomAttributes()).thenReturn(ArrayUtils.EMPTY_STRING_ARRAY);
-		Mockito.when(userRepository.findAll(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(),
+		when(groupRepository.findAll()).thenReturn(groupsMap);
+		when(userRepository.getCustomAttributes()).thenReturn(ArrayUtils.EMPTY_STRING_ARRAY);
+		when(userRepository.findAll(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(),
 				ArgumentMatchers.any())).thenReturn(new PageImpl<>(new ArrayList<>(users.values())));
-		Mockito.when(resource.groupResource.getContainers()).thenReturn(new HashSet<>(groupsMap.values()));
-		Mockito.when(resource.groupResource.getContainersForWrite()).thenReturn(Collections.emptySet());
-		Mockito.when(resource.companyResource.getContainers())
+		when(resource.groupResource.getContainers()).thenReturn(new HashSet<>(groupsMap.values()));
+		when(resource.groupResource.getContainersForWrite()).thenReturn(Collections.emptySet());
+		when(resource.companyResource.getContainers())
 				.thenReturn(new HashSet<>(Arrays.asList(company1, company2)));
-		Mockito.when(resource.companyResource.getContainersForWrite()).thenReturn(Collections.emptySet());
+		when(resource.companyResource.getContainersForWrite()).thenReturn(Collections.emptySet());
 
 		final var tableItem = resource.findAll("ing", "not exist group", "iRsT", newUriInfoAsc("id"));
 		Assertions.assertEquals(2, tableItem.getRecordsTotal());
@@ -273,15 +274,15 @@ class UserOrgResourceTest extends AbstractAppTest {
 				Collections.singleton("wild-user"));
 		final var groupsMap = new HashMap<String, GroupOrg>();
 		groupsMap.put("dig", groupOrg1);
-		resource.groupResource = Mockito.mock(GroupResource.class);
+		resource.groupResource = mock(GroupResource.class);
 		final var company = new CompanyOrg("ou=ing,ou=france,ou=people,dc=sample,dc=com", "ing");
-		Mockito.when(companyRepository.findByIdExpected(DEFAULT_USER, "ing")).thenReturn(company);
+		when(companyRepository.findByIdExpected(DEFAULT_USER, "ing")).thenReturn(company);
 		groupFindById(DEFAULT_USER, "dig", groupOrg1);
-		Mockito.when(userRepository.getCustomAttributes()).thenReturn(ArrayUtils.EMPTY_STRING_ARRAY);
-		Mockito.when(userRepository.findAll(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(),
+		when(userRepository.getCustomAttributes()).thenReturn(ArrayUtils.EMPTY_STRING_ARRAY);
+		when(userRepository.findAll(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(),
 				ArgumentMatchers.any())).thenReturn(new PageImpl<>(new ArrayList<>(users.values())));
-		Mockito.when(resource.groupResource.getContainers()).thenReturn(new HashSet<>(groupsMap.values()));
-		Mockito.when(resource.groupResource.getContainersForWrite()).thenReturn(new HashSet<>(groupsMap.values()));
+		when(resource.groupResource.getContainers()).thenReturn(new HashSet<>(groupsMap.values()));
+		when(resource.groupResource.getContainersForWrite()).thenReturn(new HashSet<>(groupsMap.values()));
 
 		final var tableItem = resource.findAll("ing", "dig rha", "iRsT", newUriInfoAsc("id"));
 		Assertions.assertEquals(2, tableItem.getRecordsTotal());
@@ -357,7 +358,7 @@ class UserOrgResourceTest extends AbstractAppTest {
 				"DIG RHA", Collections.singleton("wild-user"));
 		groupOrg2.setLocked(true);
 		final var company = new CompanyOrg("ou=ing,ou=france,ou=people,dc=sample,dc=com", "ing");
-		Mockito.when(companyRepository.findByIdExpected("any", "ing")).thenReturn(company);
+		when(companyRepository.findByIdExpected("any", "ing")).thenReturn(company);
 		groupFindById("any", "dig", groupOrg1);
 		groupFindById("any", "dig rha", groupOrg2);
 
@@ -386,7 +387,7 @@ class UserOrgResourceTest extends AbstractAppTest {
 				"DIG RHA", Collections.singleton("wild-user"));
 		groupOrg2.setLocked(true);
 		final var company = new CompanyOrg("ou=ing,ou=france,ou=people,dc=sample,dc=com", "ing");
-		Mockito.when(companyRepository.findByIdExpected(DEFAULT_USER, "ing")).thenReturn(company);
+		when(companyRepository.findByIdExpected(DEFAULT_USER, "ing")).thenReturn(company);
 		groupFindById(DEFAULT_USER, "dig", groupOrg1);
 		groupFindById(DEFAULT_USER, "dig rha", groupOrg2);
 
@@ -411,20 +412,20 @@ class UserOrgResourceTest extends AbstractAppTest {
 
 	@Test
 	void updatePassword() {
-		resource.applicationContext = Mockito.mock(ApplicationContext.class);
-		final var generator = Mockito.mock(IPasswordGenerator.class);
-		Mockito.when(resource.applicationContext.getBeansOfType(IPasswordGenerator.class))
+		resource.applicationContext = mock(ApplicationContext.class);
+		final var generator = mock(IPasswordGenerator.class);
+		when(resource.applicationContext.getBeansOfType(IPasswordGenerator.class))
 				.thenReturn(Collections.singletonMap("bean", generator));
 		resource.updatePassword(newUser(), false);
-		Mockito.verify(generator, VerificationModeFactory.atLeast(1)).generate("wild-user", false);
+		verify(generator, VerificationModeFactory.atLeast(1)).generate("wild-user", false);
 	}
 
 	private IPasswordGenerator injectPasswordGenerator(final String user, final String password) {
-		resource.applicationContext = Mockito.mock(ApplicationContext.class);
-		final var generator = Mockito.mock(IPasswordGenerator.class);
-		Mockito.when(resource.applicationContext.getBeansOfType(IPasswordGenerator.class))
+		resource.applicationContext = mock(ApplicationContext.class);
+		final var generator = mock(IPasswordGenerator.class);
+		when(resource.applicationContext.getBeansOfType(IPasswordGenerator.class))
 				.thenReturn(Collections.singletonMap("bean", generator));
-		Mockito.doReturn(password).when(generator).generate(user, false);
+		doReturn(password).when(generator).generate(user, false);
 		return generator;
 	}
 
@@ -435,7 +436,7 @@ class UserOrgResourceTest extends AbstractAppTest {
 		final var generator = injectPasswordGenerator("wild-user", "my-secret");
 		resource.resetPassword("wild-user");
 		resource.resetPassword("wild-user");
-		Mockito.verify(generator, VerificationModeFactory.atLeast(2)).generate("wild-user", false);
+		verify(generator, VerificationModeFactory.atLeast(2)).generate("wild-user", false);
 
 		// Check the audit
 		Assertions.assertEquals(2, passwordResetAuditRepository.countBy("login", "wild-user"));
@@ -447,7 +448,7 @@ class UserOrgResourceTest extends AbstractAppTest {
 		// Self-service password
 		initSpringSecurityContext("wild-user");
 		resource.resetPassword("wild-user");
-		Mockito.verify(generator, VerificationModeFactory.atLeast(2)).generate("wild-user", false);
+		verify(generator, VerificationModeFactory.atLeast(2)).generate("wild-user", false);
 
 	}
 
@@ -455,8 +456,8 @@ class UserOrgResourceTest extends AbstractAppTest {
 	void resetPasswordNoPasswordGenerator() {
 		prepareUser();
 		Assertions.assertEquals(0, passwordResetAuditRepository.countBy("login", "wild-user"));
-		resource.applicationContext = Mockito.mock(ApplicationContext.class);
-		Mockito.when(resource.applicationContext.getBeansOfType(IPasswordGenerator.class))
+		resource.applicationContext = mock(ApplicationContext.class);
+		when(resource.applicationContext.getBeansOfType(IPasswordGenerator.class))
 				.thenReturn(Collections.emptyMap());
 		Assertions.assertNull(resource.resetPassword("wild-user"));
 
@@ -475,10 +476,10 @@ class UserOrgResourceTest extends AbstractAppTest {
 		user.setCompany("ing");
 		user.setGroups(Collections.singleton("dig rha"));
 
-		Mockito.when(userRepository.findByIdExpected(DEFAULT_USER, "wild-user")).thenReturn(user);
-		Mockito.when(userRepository.findByIdExpected("wild-user")).thenReturn(user);
-		Mockito.when(companyRepository.findById("ing")).thenReturn(company);
-		Mockito.when(groupRepository.findAll()).thenReturn(groupsMap);
+		when(userRepository.findByIdExpected(DEFAULT_USER, "wild-user")).thenReturn(user);
+		when(userRepository.findByIdExpected("wild-user")).thenReturn(user);
+		when(companyRepository.findById("ing")).thenReturn(company);
+		when(groupRepository.findAll()).thenReturn(groupsMap);
 	}
 
 	@Test
@@ -492,9 +493,9 @@ class UserOrgResourceTest extends AbstractAppTest {
 		userOrg.setCompany("ing");
 		userOrg.setGroups(Collections.singleton("dig rha"));
 		final var company = new CompanyOrg("ou=ing,ou=france,ou=people,dc=sample,dc=com", "ing");
-		Mockito.when(companyRepository.findByIdExpected(DEFAULT_USER, "ing")).thenReturn(company);
-		Mockito.when(userRepository.findByIdExpected("flasta")).thenReturn(userOrg);
-		Mockito.when(userRepository.findById("flasta")).thenReturn(userOrg);
+		when(companyRepository.findByIdExpected(DEFAULT_USER, "ing")).thenReturn(company);
+		when(userRepository.findByIdExpected("flasta")).thenReturn(userOrg);
+		when(userRepository.findById("flasta")).thenReturn(userOrg);
 		groupFindById(DEFAULT_USER, "dig", groupOrg1);
 		groupFindById(DEFAULT_USER, "dig rha", groupOrg2);
 
@@ -517,10 +518,10 @@ class UserOrgResourceTest extends AbstractAppTest {
 		final var user = new UserOrg();
 		user.setCompany("ing");
 		user.setGroups(Collections.singleton("dig"));
-		Mockito.when(userRepository.findByIdExpected(DEFAULT_USER, "wild-user")).thenReturn(user);
-		Mockito.when(groupRepository.findAll()).thenReturn(groupsMap);
+		when(userRepository.findByIdExpected(DEFAULT_USER, "wild-user")).thenReturn(user);
+		when(groupRepository.findAll()).thenReturn(groupsMap);
 		final var company = new CompanyOrg("ou=ing,ou=france,ou=people,dc=sample,dc=com", "ing");
-		Mockito.when(companyRepository.findById("ing")).thenReturn(company);
+		when(companyRepository.findById("ing")).thenReturn(company);
 		MatcherUtil.assertThrows(Assertions.assertThrows(ValidationJsonException.class, () -> resource.delete("wild-user")), "id", "last-member-of-group");
 	}
 
@@ -535,9 +536,9 @@ class UserOrgResourceTest extends AbstractAppTest {
 		final var user = new UserOrg();
 		user.setCompany("ing");
 		user.setGroups(Collections.singleton("dig"));
-		Mockito.when(userRepository.findByIdExpected("mtuyer", "wild-user")).thenReturn(user);
-		Mockito.when(companyRepository.findById("ing")).thenReturn(company);
-		Mockito.when(groupRepository.findAll()).thenReturn(groupsMap);
+		when(userRepository.findByIdExpected("mtuyer", "wild-user")).thenReturn(user);
+		when(companyRepository.findById("ing")).thenReturn(company);
+		when(groupRepository.findAll()).thenReturn(groupsMap);
 		MatcherUtil.assertThrows(Assertions.assertThrows(ValidationJsonException.class, () -> resource.delete("wild-user")), "id", "read-only");
 	}
 
@@ -549,10 +550,10 @@ class UserOrgResourceTest extends AbstractAppTest {
 				new HashSet<>(Arrays.asList("wild-user", "user1")));
 		final var groupsMap = new HashMap<String, GroupOrg>();
 		groupsMap.put("dig", groupOrg1);
-		Mockito.when(userRepository.findByIdExpected("mtuyer", "wild-user")).thenThrow(
+		when(userRepository.findByIdExpected("mtuyer", "wild-user")).thenThrow(
 				new ValidationJsonException("id", BusinessException.KEY_UNKNOWN_ID, "0", "user", "1", "mtuyer"));
-		Mockito.when(companyRepository.findById("ing")).thenReturn(company);
-		Mockito.when(groupRepository.findAll()).thenReturn(groupsMap);
+		when(companyRepository.findById("ing")).thenReturn(company);
+		when(groupRepository.findAll()).thenReturn(groupsMap);
 		MatcherUtil.assertThrows(Assertions.assertThrows(ValidationJsonException.class, () -> resource.delete("wild-user")), "id", BusinessException.KEY_UNKNOWN_ID);
 	}
 
@@ -567,9 +568,9 @@ class UserOrgResourceTest extends AbstractAppTest {
 		final var user = new UserOrg();
 		user.setCompany("ing");
 		user.setGroups(Collections.singleton("dig"));
-		Mockito.when(userRepository.findByIdExpected("mtuyer", "wild-user")).thenReturn(user);
-		Mockito.when(companyRepository.findById("ing")).thenReturn(company);
-		Mockito.when(groupRepository.findAll()).thenReturn(groupsMap);
+		when(userRepository.findByIdExpected("mtuyer", "wild-user")).thenReturn(user);
+		when(companyRepository.findById("ing")).thenReturn(company);
+		when(groupRepository.findAll()).thenReturn(groupsMap);
 		MatcherUtil.assertThrows(Assertions.assertThrows(ValidationJsonException.class, () -> resource.resetPassword("wild-user")), "id", "read-only");
 	}
 
@@ -583,9 +584,9 @@ class UserOrgResourceTest extends AbstractAppTest {
 		final var groupsMap = new HashMap<String, GroupOrg>();
 		groupsMap.put("dig", groupOrg1);
 		groupsMap.put("dig rha", groupOrg2);
-		Mockito.when(groupRepository.findAll()).thenReturn(groupsMap);
-		Mockito.when(groupRepository.findByDepartment("department1")).thenReturn(groupOrg1);
-		Mockito.when(groupRepository.findByDepartment("department2")).thenReturn(groupOrg2);
+		when(groupRepository.findAll()).thenReturn(groupsMap);
+		when(groupRepository.findByDepartment("department1")).thenReturn(groupOrg1);
+		when(groupRepository.findByDepartment("department2")).thenReturn(groupOrg2);
 
 		final UserOrg newUser = newUser();
 
@@ -604,9 +605,9 @@ class UserOrgResourceTest extends AbstractAppTest {
 		final var groupsMap = new HashMap<String, GroupOrg>();
 		groupsMap.put("dig", groupOrg1);
 		groupsMap.put("dig rha", groupOrg2);
-		Mockito.when(groupRepository.findAll()).thenReturn(groupsMap);
-		Mockito.when(groupRepository.findByDepartment("department1")).thenReturn(groupOrg1);
-		Mockito.when(groupRepository.findByDepartment("department2")).thenReturn(groupOrg2);
+		when(groupRepository.findAll()).thenReturn(groupsMap);
+		when(groupRepository.findByDepartment("department1")).thenReturn(groupOrg1);
+		when(groupRepository.findByDepartment("department2")).thenReturn(groupOrg2);
 
 		final UserOrg userOrg2 = newUser();
 		final UserOrg newUser = newUser();
@@ -627,9 +628,9 @@ class UserOrgResourceTest extends AbstractAppTest {
 		final var groupsMap = new HashMap<String, GroupOrg>();
 		groupsMap.put("dig", groupOrg1);
 		groupsMap.put("dig rha", groupOrg2);
-		Mockito.when(groupRepository.findAll()).thenReturn(groupsMap);
-		Mockito.when(groupRepository.findByDepartment("department1")).thenReturn(groupOrg1);
-		Mockito.when(groupRepository.findByDepartment("department2")).thenReturn(groupOrg2);
+		when(groupRepository.findAll()).thenReturn(groupsMap);
+		when(groupRepository.findByDepartment("department1")).thenReturn(groupOrg1);
+		when(groupRepository.findByDepartment("department2")).thenReturn(groupOrg2);
 
 		final UserOrg userOrg2 = newUser();
 		final UserOrg newUser = newUser();
@@ -655,10 +656,10 @@ class UserOrgResourceTest extends AbstractAppTest {
 		groupsMap.put("dig", groupOrg1);
 		groupsMap.put("dig rha", groupOrg2);
 		final var user = newUser();
-		Mockito.when(userRepository.findByIdExpected(DEFAULT_USER, "wild-user")).thenReturn(user);
-		Mockito.when(companyRepository.findById("ing")).thenReturn(company);
-		Mockito.when(companyRepository.findByIdExpected(DEFAULT_USER, "ing")).thenReturn(company);
-		Mockito.when(groupRepository.findAll()).thenReturn(groupsMap);
+		when(userRepository.findByIdExpected(DEFAULT_USER, "wild-user")).thenReturn(user);
+		when(companyRepository.findById("ing")).thenReturn(company);
+		when(companyRepository.findByIdExpected(DEFAULT_USER, "ing")).thenReturn(company);
+		when(groupRepository.findAll()).thenReturn(groupsMap);
 
 		final UserOrgEditionVo userVo = new UserOrgEditionVo();
 		userVo.setId("wild-user");
@@ -685,10 +686,10 @@ class UserOrgResourceTest extends AbstractAppTest {
 		groupsMap.put("dig", groupOrg1);
 		groupsMap.put("dig rha", groupOrg2);
 		final var user = newUser();
-		Mockito.when(userRepository.findByIdExpected("mtuyer", "wild-user")).thenReturn(user);
-		Mockito.when(companyRepository.findById("ing")).thenReturn(company);
-		Mockito.when(companyRepository.findByIdExpected("mtuyer", "ing")).thenReturn(company);
-		Mockito.when(groupRepository.findAll()).thenReturn(groupsMap);
+		when(userRepository.findByIdExpected("mtuyer", "wild-user")).thenReturn(user);
+		when(companyRepository.findById("ing")).thenReturn(company);
+		when(companyRepository.findByIdExpected("mtuyer", "ing")).thenReturn(company);
+		when(groupRepository.findAll()).thenReturn(groupsMap);
 
 		// Remove all write permission of this user
 		delegateOrgRepository.findAllByUser("mtuyer").forEach(d -> d.setCanWrite(false));
@@ -734,19 +735,19 @@ class UserOrgResourceTest extends AbstractAppTest {
 		groupsMap.put("other", groupOrg3);
 		groupsMap.put("invisible", groupOrg4);
 		final var user = newUser(consumerOld);
-		Mockito.when(userRepository.findByIdExpected(DEFAULT_USER, "wild-user")).thenReturn(user);
-		Mockito.when(userRepository.findById("wild-user")).thenReturn(user);
-		Mockito.when(companyRepository.findById("ing")).thenReturn(company);
-		Mockito.when(companyRepository.findByIdExpected(DEFAULT_USER, "ing")).thenReturn(company);
-		Mockito.when(companyRepository.findById("ligoj")).thenReturn(company2);
-		Mockito.when(companyRepository.findByIdExpected(DEFAULT_USER, "ligoj")).thenReturn(company2);
-		Mockito.when(groupRepository.findAll()).thenReturn(groupsMap);
+		when(userRepository.findByIdExpected(DEFAULT_USER, "wild-user")).thenReturn(user);
+		when(userRepository.findById("wild-user")).thenReturn(user);
+		when(companyRepository.findById("ing")).thenReturn(company);
+		when(companyRepository.findByIdExpected(DEFAULT_USER, "ing")).thenReturn(company);
+		when(companyRepository.findById("ligoj")).thenReturn(company2);
+		when(companyRepository.findByIdExpected(DEFAULT_USER, "ligoj")).thenReturn(company2);
+		when(groupRepository.findAll()).thenReturn(groupsMap);
 		groupFindById(DEFAULT_USER, "dig", groupOrg1);
 		groupFindById(DEFAULT_USER, "dig rha", groupOrg2);
 		groupFindById(DEFAULT_USER, "other", groupOrg3);
-		Mockito.when(groupRepository.findById("invisible")).thenReturn(groupOrg4);
-		Mockito.when(groupRepository.findByDepartment("department1")).thenReturn(groupOrg1);
-		Mockito.when(groupRepository.findByDepartment("department2")).thenReturn(groupOrg2);
+		when(groupRepository.findById("invisible")).thenReturn(groupOrg4);
+		when(groupRepository.findByDepartment("department1")).thenReturn(groupOrg1);
+		when(groupRepository.findByDepartment("department2")).thenReturn(groupOrg2);
 
 		final UserOrgEditionVo userVo = new UserOrgEditionVo();
 		userVo.setId("wild-user");
@@ -845,21 +846,21 @@ class UserOrgResourceTest extends AbstractAppTest {
 		final var groupOrg1 = new GroupOrg("cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com", "DIG",
 				Collections.singleton("wild-user"));
 		final var company = new CompanyOrg("ou=ing,ou=france,ou=people,dc=sample,dc=com", "ing");
-		Mockito.when(companyRepository.findByIdExpected(DEFAULT_USER, "ing")).thenReturn(company);
+		when(companyRepository.findByIdExpected(DEFAULT_USER, "ing")).thenReturn(company);
 		groupFindById(DEFAULT_USER, "dig", groupOrg1);
-		Mockito.when(userRepository.findAll(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(),
+		when(userRepository.findAll(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(),
 				ArgumentMatchers.any())).thenReturn(new PageImpl<>(new ArrayList<>(users.values())));
 		if (mockGroups) {
-			resource.groupResource = Mockito.mock(GroupResource.class);
+			resource.groupResource = mock(GroupResource.class);
 			final var groupsMap = new HashMap<String, GroupOrg>();
 			groupsMap.put("dig", groupOrg1);
-			Mockito.when(resource.groupResource.getContainers()).thenReturn(new HashSet<>(groupsMap.values()));
-			Mockito.when(resource.groupResource.getContainersForWrite()).thenReturn(new HashSet<>(groupsMap.values()));
+			when(resource.groupResource.getContainers()).thenReturn(new HashSet<>(groupsMap.values()));
+			when(resource.groupResource.getContainersForWrite()).thenReturn(new HashSet<>(groupsMap.values()));
 		}
 		if (mockCompanies) {
-			resource.companyResource = Mockito.mock(CompanyResource.class);
-			Mockito.when(resource.companyResource.getContainers()).thenReturn(Collections.singleton(company));
-			Mockito.when(resource.companyResource.getContainersForWrite()).thenReturn(Collections.singleton(company));
+			resource.companyResource = mock(CompanyResource.class);
+			when(resource.companyResource.getContainers()).thenReturn(Collections.singleton(company));
+			when(resource.companyResource.getContainersForWrite()).thenReturn(Collections.singleton(company));
 		}
 		final var data = resource.findAllNotSecure(search, null);
 
@@ -892,9 +893,9 @@ class UserOrgResourceTest extends AbstractAppTest {
 		final var user = new UserOrg();
 		user.setCompany("ing");
 		user.setGroups(Collections.singleton("dig rha"));
-		Mockito.when(userRepository.findByIdExpected(DEFAULT_USER, "wild-user")).thenReturn(user);
-		Mockito.when(companyRepository.findById("ing")).thenReturn(company);
-		Mockito.when(groupRepository.findAll()).thenReturn(groupsMap);
+		when(userRepository.findByIdExpected(DEFAULT_USER, "wild-user")).thenReturn(user);
+		when(companyRepository.findById("ing")).thenReturn(company);
+		when(groupRepository.findAll()).thenReturn(groupsMap);
 		resource.lock("wild-user");
 	}
 
@@ -908,9 +909,9 @@ class UserOrgResourceTest extends AbstractAppTest {
 		final var user = new UserOrg();
 		user.setCompany("ing");
 		user.setGroups(Collections.singleton("dig rha"));
-		Mockito.when(userRepository.findByIdExpected(DEFAULT_USER, "wild-user")).thenReturn(user);
-		Mockito.when(companyRepository.findById("ing")).thenReturn(company);
-		Mockito.when(groupRepository.findAll()).thenReturn(groupsMap);
+		when(userRepository.findByIdExpected(DEFAULT_USER, "wild-user")).thenReturn(user);
+		when(companyRepository.findById("ing")).thenReturn(company);
+		when(groupRepository.findAll()).thenReturn(groupsMap);
 		resource.isolate("wild-user");
 	}
 
@@ -925,9 +926,9 @@ class UserOrgResourceTest extends AbstractAppTest {
 		user.setCompany("ing");
 		user.setIsolated("ing");
 		user.setGroups(Collections.singleton("dig rha"));
-		Mockito.when(userRepository.findByIdExpected(DEFAULT_USER, "wild-user")).thenReturn(user);
-		Mockito.when(companyRepository.findById("ing")).thenReturn(company);
-		Mockito.when(groupRepository.findAll()).thenReturn(groupsMap);
+		when(userRepository.findByIdExpected(DEFAULT_USER, "wild-user")).thenReturn(user);
+		when(companyRepository.findById("ing")).thenReturn(company);
+		when(groupRepository.findAll()).thenReturn(groupsMap);
 		resource.restore("wild-user");
 	}
 
@@ -941,9 +942,9 @@ class UserOrgResourceTest extends AbstractAppTest {
 		final var user = new UserOrg();
 		user.setCompany("ing");
 		user.setGroups(Collections.singleton("dig"));
-		Mockito.when(userRepository.findByIdExpected(DEFAULT_USER, "wild-user")).thenReturn(user);
-		Mockito.when(companyRepository.findById("ing")).thenReturn(company);
-		Mockito.when(groupRepository.findAll()).thenReturn(groupsMap);
+		when(userRepository.findByIdExpected(DEFAULT_USER, "wild-user")).thenReturn(user);
+		when(companyRepository.findById("ing")).thenReturn(company);
+		when(groupRepository.findAll()).thenReturn(groupsMap);
 		resource.unlock("wild-user");
 	}
 
@@ -957,9 +958,9 @@ class UserOrgResourceTest extends AbstractAppTest {
 		final var user = new UserOrg();
 		user.setCompany("ing");
 		user.setGroups(Collections.singleton("dig"));
-		Mockito.when(userRepository.findByIdExpected(DEFAULT_USER, "wild-user")).thenReturn(user);
-		Mockito.when(companyRepository.findById("ing")).thenReturn(company);
-		Mockito.when(groupRepository.findAll()).thenReturn(groupsMap);
+		when(userRepository.findByIdExpected(DEFAULT_USER, "wild-user")).thenReturn(user);
+		when(companyRepository.findById("ing")).thenReturn(company);
+		when(groupRepository.findAll()).thenReturn(groupsMap);
 		resource.delete("wild-user");
 	}
 
@@ -1033,12 +1034,12 @@ class UserOrgResourceTest extends AbstractAppTest {
 	@SuppressWarnings("unchecked")
 	protected SecurityContext initSpringSecurityContext(final User userDetails) {
 		SecurityContextHolder.clearContext();
-		final var context = Mockito.mock(SecurityContext.class);
-		final var authentication = Mockito.mock(Authentication.class);
-		Mockito.when((Collection<GrantedAuthority>) authentication.getAuthorities()).thenReturn( userDetails.getAuthorities());
-		Mockito.when(context.getAuthentication()).thenReturn(authentication);
-		Mockito.when(authentication.getPrincipal()).thenReturn(userDetails);
-		Mockito.when(authentication.getName()).thenReturn(userDetails.getUsername());
+		final var context = mock(SecurityContext.class);
+		final var authentication = mock(Authentication.class);
+		when((Collection<GrantedAuthority>) authentication.getAuthorities()).thenReturn( userDetails.getAuthorities());
+		when(context.getAuthentication()).thenReturn(authentication);
+		when(authentication.getPrincipal()).thenReturn(userDetails);
+		when(authentication.getName()).thenReturn(userDetails.getUsername());
 		SecurityContextHolder.setContext(context);
 		return context;
 	}
@@ -1076,9 +1077,9 @@ class UserOrgResourceTest extends AbstractAppTest {
 		groupOrg2.setLocked(true);
 		final var user = newUser();
 		final var company = new CompanyOrg("ou=ing,ou=france,ou=people,dc=sample,dc=com", "ligoj");
-		Mockito.when(companyRepository.findById("ing")).thenReturn(company);
-		Mockito.when(userRepository.findByIdExpected("wild-user")).thenReturn(user);
-		Mockito.when(userRepository.findById("wild-user")).thenReturn(user);
+		when(companyRepository.findById("ing")).thenReturn(company);
+		when(userRepository.findByIdExpected("wild-user")).thenReturn(user);
+		when(userRepository.findById("wild-user")).thenReturn(user);
 		groupFindById(principal, "dig", groupOrg1);
 		groupFindById(principal, "dig rha", groupOrg2);
 		if (additionalGroup != null) {
@@ -1087,8 +1088,8 @@ class UserOrgResourceTest extends AbstractAppTest {
 				u.setId(principal);
 				u.setDn("uid="+principal+",ou=ing,ou=france,ou=people,dc=sample,dc=com");
 			});
-			Mockito.when(userRepository.findById(principal)).thenReturn(user3);
-			Mockito.when(userRepository.findByIdExpected(principal)).thenReturn(user3);
+			when(userRepository.findById(principal)).thenReturn(user3);
+			when(userRepository.findByIdExpected(principal)).thenReturn(user3);
 			final var groupOrg3 = new GroupOrg("cn=" + additionalGroup + ",ou=fonction,ou=groups,dc=sample,dc=com",
 					additionalGroup, Collections.singleton(principal));
 			groupFindById(principal, additionalGroup, groupOrg3);
@@ -1107,8 +1108,8 @@ class UserOrgResourceTest extends AbstractAppTest {
 				"DIG RHA", Collections.singleton("user2"));
 		groupOrg2.setLocked(true);
 		final var user = newUser();
-		Mockito.when(userRepository.findByIdExpected("wild-user")).thenReturn(user);
-		Mockito.when(userRepository.findById("wild-user")).thenReturn(user);
+		when(userRepository.findByIdExpected("wild-user")).thenReturn(user);
+		when(userRepository.findById("wild-user")).thenReturn(user);
 		groupFindById(DEFAULT_USER, "dig", groupOrg1);
 		groupFindById(DEFAULT_USER, "dig rha", groupOrg2);
 		resource.addUserToGroup("wild-user", "dig");
@@ -1128,9 +1129,9 @@ class UserOrgResourceTest extends AbstractAppTest {
 		user.setCompany("ligoj");
 		user.setGroups(Collections.singleton("dig rha"));
 		final var company = new CompanyOrg("ou=ligoj,ou=france,ou=people,dc=sample,dc=com", "ligoj");
-		Mockito.when(companyRepository.findById("ligoj")).thenReturn(company);
-		Mockito.when(userRepository.findByIdExpected("wild-user")).thenReturn(user);
-		Mockito.when(userRepository.findById("wild-user")).thenReturn(user);
+		when(companyRepository.findById("ligoj")).thenReturn(company);
+		when(userRepository.findByIdExpected("wild-user")).thenReturn(user);
+		when(userRepository.findById("wild-user")).thenReturn(user);
 		groupFindById("mlavoine", "dig", groupOrg1);
 		groupFindById("mlavoine", "dig rha", groupOrg2);
 		MatcherUtil.assertThrows(Assertions.assertThrows(ValidationJsonException.class,
@@ -1151,9 +1152,9 @@ class UserOrgResourceTest extends AbstractAppTest {
 		user.setCompany("ligoj");
 		user.setGroups(Collections.singleton("dig rha"));
 		final var company = new CompanyOrg("ou=ligoj,ou=france,ou=people,dc=sample,dc=com", "ligoj");
-		Mockito.when(companyRepository.findById("ligoj")).thenReturn(company);
-		Mockito.when(userRepository.findByIdExpected("wild-user")).thenReturn(user);
-		Mockito.when(userRepository.findById("wild-user")).thenReturn(user);
+		when(companyRepository.findById("ligoj")).thenReturn(company);
+		when(userRepository.findByIdExpected("wild-user")).thenReturn(user);
+		when(userRepository.findById("wild-user")).thenReturn(user);
 		groupFindById("mlavoine", "dig", groupOrg1);
 		groupFindById("mlavoine", "dig rha", groupOrg2);
 		MatcherUtil.assertThrows(Assertions.assertThrows(ValidationJsonException.class, () ->
@@ -1172,18 +1173,18 @@ class UserOrgResourceTest extends AbstractAppTest {
 		groupOrg2.setLocked(true);
 		final var user = newUser(u -> u.setGroups(Arrays.asList("dig rha", "dig as")));
 		final var company = new CompanyOrg("ou=ligoj,ou=france,ou=people,dc=sample,dc=com", "ligoj");
-		Mockito.when(companyRepository.findById("ing")).thenReturn(company);
-		Mockito.when(userRepository.findByIdExpected("wild-user")).thenReturn(user);
-		Mockito.when(userRepository.findById("wild-user")).thenReturn(user);
+		when(companyRepository.findById("ing")).thenReturn(company);
+		when(userRepository.findByIdExpected("wild-user")).thenReturn(user);
+		when(userRepository.findById("wild-user")).thenReturn(user);
 		groupFindById(DEFAULT_USER, "dig rha", groupOrg1);
 		groupFindById(DEFAULT_USER, "dig as", groupOrg2);
 		resource.removeUserFromGroup("wild-user", "dig rha");
 	}
 
 	private void groupFindById(final String user, final String id, final GroupOrg group) {
-		Mockito.when(groupRepository.findByIdExpected(user, id)).thenReturn(group);
-		Mockito.when(groupRepository.findById(user, id)).thenReturn(group);
-		Mockito.when(groupRepository.findById(id)).thenReturn(group);
+		when(groupRepository.findByIdExpected(user, id)).thenReturn(group);
+		when(groupRepository.findById(user, id)).thenReturn(group);
+		when(groupRepository.findById(id)).thenReturn(group);
 	}
 
 	@Test
@@ -1251,8 +1252,8 @@ class UserOrgResourceTest extends AbstractAppTest {
 		FieldUtils.writeDeclaredField(settings, "userName", "JUNIT", true);
 		FieldUtils.writeDeclaredField(settings, "applicationSettings", new ApplicationSettings(), true);
 		settings.setUserSettings(new HashMap<>());
-		var configuration = Mockito.mock(ConfigurationResource.class);
-		Mockito.when(configuration.get("service:id:user-display")).thenReturn("some");
+		var configuration = mock(ConfigurationResource.class);
+		when(configuration.get("service:id:user-display")).thenReturn("some");
 		FieldUtils.writeField(resource, "configuration", configuration, true);
 		resource.decorate(settings);
 		Assertions.assertEquals("some", settings.getApplicationSettings().getData().get("service:id:user-display"));
@@ -1273,7 +1274,7 @@ class UserOrgResourceTest extends AbstractAppTest {
 	void getGrantedAuthorities() {
 		final UserOrg userOrg = new UserOrg();
 		userOrg.setGroups(List.of("Group1", "Group2"));
-		Mockito.when(userRepository.toUser("junit")).thenReturn(userOrg);
+		when(userRepository.toUser("junit")).thenReturn(userOrg);
 		var authorities = resource.getGrantedAuthorities("junit");
 		Assertions.assertTrue(authorities.contains(new SimpleGrantedAuthority("Group1")));
 		Assertions.assertTrue(authorities.contains(new SimpleGrantedAuthority("group1")));

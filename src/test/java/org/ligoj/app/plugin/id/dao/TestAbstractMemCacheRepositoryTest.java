@@ -11,10 +11,11 @@ import org.ligoj.app.plugin.id.dao.AbstractMemCacheRepository.CacheDataType;
 import org.ligoj.bootstrap.AbstractDataGeneratorTest;
 import org.ligoj.bootstrap.core.INamableBean;
 import org.ligoj.bootstrap.core.SpringUtils;
-import org.mockito.Mockito;
 import org.springframework.context.ApplicationContext;
 
 import java.util.*;
+
+import static org.mockito.Mockito.*;
 
 /**
  * Test class of {@link AbstractMemCacheRepository}
@@ -30,17 +31,17 @@ class TestAbstractMemCacheRepositoryTest extends AbstractDataGeneratorTest {
 
 	@BeforeEach
 	void init() {
-		final var companyRepository = Mockito.mock(ICompanyRepository.class);
-		final var groupRepository = Mockito.mock(IGroupRepository.class);
-		final var userRepository = Mockito.mock(IUserRepository.class);
-		final var iamProvider = Mockito.mock(IamProvider.class);
-		final var applicationContext = Mockito.mock(ApplicationContext.class);
+		final var companyRepository = mock(ICompanyRepository.class);
+		final var groupRepository = mock(IGroupRepository.class);
+		final var userRepository = mock(IUserRepository.class);
+		final var iamProvider = mock(IamProvider.class);
+		final var applicationContext = mock(ApplicationContext.class);
 		SpringUtils.setSharedApplicationContext(applicationContext);
 		final var iamConfiguration = new IamConfiguration();
 		iamConfiguration.setCompanyRepository(companyRepository);
 		iamConfiguration.setGroupRepository(groupRepository);
 		iamConfiguration.setUserRepository(userRepository);
-		Mockito.when(iamProvider.getConfiguration()).thenReturn(iamConfiguration);
+		when(iamProvider.getConfiguration()).thenReturn(iamConfiguration);
 
 		companies = new HashMap<>();
 		companies.put("company", new CompanyOrg("dnc", "Company"));
@@ -70,16 +71,16 @@ class TestAbstractMemCacheRepositoryTest extends AbstractDataGeneratorTest {
 		users = new HashMap<>();
 		users.put("u", user);
 		users.put("u2", user2);
-		Mockito.when(companyRepository.findAllNoCache()).thenReturn(companies);
-		Mockito.when(groupRepository.findAllNoCache()).thenReturn(groups);
-		Mockito.when(userRepository.findAllNoCache(groups)).thenReturn(users);
-		Mockito.when(companyRepository.findAll()).thenReturn(companies);
-		Mockito.when(groupRepository.findAll()).thenReturn(groups);
-		Mockito.when(userRepository.findAll()).thenReturn(users);
+		when(companyRepository.findAllNoCache()).thenReturn(companies);
+		when(groupRepository.findAllNoCache()).thenReturn(groups);
+		when(userRepository.findAllNoCache(groups)).thenReturn(users);
+		when(companyRepository.findAll()).thenReturn(companies);
+		when(groupRepository.findAll()).thenReturn(groups);
+		when(userRepository.findAll()).thenReturn(users);
 
 		repository = new SampleIdMemCacheRepository();
 		repository.setIamProvider(new IamProvider[] { iamProvider });
-		repository.setCache(Mockito.mock(IdCacheDao.class));
+		repository.setCache(mock(IdCacheDao.class));
 	}
 
 	@SuppressWarnings("unchecked")
@@ -193,7 +194,7 @@ class TestAbstractMemCacheRepositoryTest extends AbstractDataGeneratorTest {
 
 		Assertions.assertEquals(newGroupLdap, repository.create(newGroupLdap));
 
-		Mockito.verify(repository.cache).create(newGroupLdap, Collections.emptyMap());
+		verify(repository.cache).create(newGroupLdap, Collections.emptyMap());
 		Assertions.assertEquals(newGroupLdap, groups.get("g3"));
 	}
 
@@ -203,7 +204,7 @@ class TestAbstractMemCacheRepositoryTest extends AbstractDataGeneratorTest {
 
 		Assertions.assertEquals(newCompanyLdap, repository.create(newCompanyLdap));
 
-		Mockito.verify(repository.cache).create(newCompanyLdap);
+		verify(repository.cache).create(newCompanyLdap);
 		Assertions.assertEquals(newCompanyLdap, companies.get("c3"));
 	}
 
@@ -217,7 +218,7 @@ class TestAbstractMemCacheRepositoryTest extends AbstractDataGeneratorTest {
 
 		Assertions.assertEquals(newUser, repository.create(newUser));
 
-		Mockito.verify(repository.cache).create(newUser);
+		verify(repository.cache).create(newUser);
 		Assertions.assertTrue(user.getGroups().contains("group"));
 		Assertions.assertSame(newUser, users.get("u3"));
 	}
@@ -228,7 +229,7 @@ class TestAbstractMemCacheRepositoryTest extends AbstractDataGeneratorTest {
 
 		repository.update(user);
 
-		Mockito.verify(repository.cache).update(user);
+		verify(repository.cache).update(user);
 		Assertions.assertSame("L", users.get("u").getFirstName());
 	}
 
@@ -262,7 +263,7 @@ class TestAbstractMemCacheRepositoryTest extends AbstractDataGeneratorTest {
 
 		repository.empty(groups.get("group"), users);
 
-		Mockito.verify(repository.cache).empty(groups.get("group"));
+		verify(repository.cache).empty(groups.get("group"));
 		Assertions.assertTrue(groups.get("group").getMembers().isEmpty());
 		Assertions.assertEquals(0, user.getGroups().size());
 	}
@@ -274,7 +275,7 @@ class TestAbstractMemCacheRepositoryTest extends AbstractDataGeneratorTest {
 
 		repository.delete(user);
 
-		Mockito.verify(repository.cache).delete(user);
+		verify(repository.cache).delete(user);
 		Assertions.assertFalse(users.containsKey("u"));
 	}
 }
