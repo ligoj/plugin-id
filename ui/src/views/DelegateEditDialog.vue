@@ -85,6 +85,10 @@
             </v-checkbox>
           </v-form>
 
+      <!-- Plugin contributions (`editExtension`, target 'delegate'). Extra
+           keys written into `form` ride along in the save payload. -->
+      <component :is="extension" v-for="(extension, i) in extensionComponents" :key="i" :mode="isEdit ? 'edit' : 'create'" :form="form" :context="extensionContext" />
+
       <template #footer>
         <LjButton v-if="isEdit && auth.isAllowedApi('rest/security/delegate', 'DELETE')" variant="danger" icon="mdi-delete" :disabled="loading" style="margin-right: auto" @click="confirmDelete = true">{{ t('common.delete') }}</LjButton>
         <!-- order:-1 jumps the toggle ahead of LjDialog's leading `.foot-sp`
@@ -118,7 +122,7 @@
 
 <script setup>
 import { ref, computed, watch, nextTick } from 'vue'
-import { useApi, useAuthStore, useFormGuard, useErrorStore, useI18nStore } from '@ligoj/host'
+import { useApi, useAuthStore, useEditExtensions, useFormGuard, useErrorStore, useI18nStore } from '@ligoj/host'
 import { TYPE_ICONS, RECEIVER_TYPES, RESOURCE_TYPES } from '../composables/delegateTypes.js'
 import { VibrantConfirmDialog as LigojConfirmDialog, LjDialog, LjButton, LigojAutocomplete } from '@ligoj/host'
 import CreateAnotherToggle from '../components/CreateAnotherToggle.vue'
@@ -150,6 +154,10 @@ const confirmDelete = ref(false)
 const createAnother = ref(false)
 
 const isEdit = computed(() => props.delegateId !== null && props.delegateId !== undefined && props.delegateId !== '')
+
+// Plugin extension point (`editExtension` feature, target 'delegate').
+const { components: extensionComponents, apiPath: extensionApiPath, context: extensionContext } = useEditExtensions(
+  'delegate', 'rest/security/delegate', () => ({ mode: isEdit.value ? 'edit' : 'create', delegateId: props.delegateId }))
 
 /** v-select item-title callback: resolves the i18n key from the item object. */
 function typeTitle(item) {
@@ -420,19 +428,14 @@ async function save() {
   if (!valid) return
 
   saving.value = true
-  const payload = {
-    receiver: form.value.receiver,
-    receiverType: form.value.receiverType,
-    name: form.value.name,
-    type: form.value.type,
-    canAdmin: form.value.canAdmin,
-    canWrite: form.value.canWrite,
-  }
+  // Spread the whole form: extension components (`editExtension`) may have
+  // written extra keys into it.
+  const payload = { ...form.value }
 
   if (isEdit.value) {
-    await api.put('rest/security/delegate', { id: Number(props.delegateId), ...payload })
+    await api.put(extensionApiPath.value, { id: Number(props.delegateId), ...payload })
   } else {
-    await api.post('rest/security/delegate', payload)
+    await api.post(extensionApiPath.value, payload)
   }
   saving.value = false
   markClean()

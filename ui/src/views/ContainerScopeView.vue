@@ -56,6 +56,9 @@
         <v-checkbox v-model="editForm.locked" :label="t('containerScope.locked')" :disabled="readOnly" color="primary" density="compact" hide-details />
         <p v-if="editForm.locked" class="locked-note"><v-icon size="14">mdi-alert-outline</v-icon>{{ t('containerScope.lockedHint') }}</p>
       </v-form>
+      <!-- Plugin contributions (`editExtension`, target 'container-scope').
+           Extra keys written into `editForm` ride along in the save payload. -->
+      <component :is="extension" v-for="(extension, i) in extensionComponents" :key="i" :mode="editTarget?.id ? 'edit' : 'create'" :form="editForm" :context="extensionContext" />
       <template #footer>
         <LjButton variant="ghost" @click="editDialog = false">{{ readOnly ? t('common.close') : t('common.cancel') }}</LjButton>
         <LjButton v-if="!readOnly" icon="mdi-content-save" :loading="saving" @click="save">{{ t('common.save') }}</LjButton>
@@ -70,7 +73,7 @@
 
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue'
-import { useApi, useAppStore, useErrorStore, useI18nStore } from '@ligoj/host'
+import { useApi, useAppStore, useEditExtensions, useErrorStore, useI18nStore } from '@ligoj/host'
 import { TYPE_ICONS } from '../composables/delegateTypes.js'
 import { VibrantDataTable, VibrantConfirmDialog as LigojConfirmDialog, LjPageHeader, LjButton, LjSearch, LjSegmented, LjDialog, LjAvailabilityField, LjStatus } from '@ligoj/host'
 
@@ -118,6 +121,11 @@ const formRef = ref(null)
 const editDialog = ref(false)
 const editTarget = ref(null)
 const editForm = ref({ name: '', dn: '', locked: false })
+
+// Plugin extension point (`editExtension` feature, target 'container-scope').
+const { components: extensionComponents, apiPath: extensionApiPath, context: extensionContext } = useEditExtensions(
+  'container-scope', 'rest/service/id/container-scope',
+  () => ({ mode: editTarget.value?.id ? 'edit' : 'create', scope: editTarget.value, type: activeTab.value }))
 const saving = ref(false)
 
 // A locked scope is read-only: the dialog opens as a view (no save, fields
@@ -170,16 +178,16 @@ async function save() {
   // The REST create/update map to the base `container-scope` path (NOT the
   // `/{type}` GET path → 405); `type` is carried in the body (uppercase enum,
   // derived from the active tab) along with the `locked` flag.
+  // Spread the whole form: extension components (`editExtension`) may have
+  // written extra keys into it.
   const payload = {
-    name: editForm.value.name,
-    dn: editForm.value.dn,
+    ...editForm.value,
     type: activeTab.value.toUpperCase(),
-    locked: editForm.value.locked,
   }
   if (editTarget.value?.id) {
-    await api.put('rest/service/id/container-scope', { id: editTarget.value.id, ...payload })
+    await api.put(extensionApiPath.value, { id: editTarget.value.id, ...payload })
   } else {
-    await api.post('rest/service/id/container-scope', payload)
+    await api.post(extensionApiPath.value, payload)
   }
   saving.value = false
   editDialog.value = false

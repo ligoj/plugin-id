@@ -86,6 +86,11 @@
                 <v-list-item prepend-icon="mdi-lock-reset" :title="t('user.resetPassword')" @click="startAction('resetPassword')" />
               </v-list>
             </template>
+
+            <!-- Plugin contributions (`editExtension`, target 'user'): below
+                 the form/actions, before the footer. Extra keys written into
+                 `form` ride along in the save payload. -->
+            <component :is="extension" v-for="(extension, i) in extensionComponents" :key="i" :mode="isEdit ? 'edit' : 'create'" :form="form" :context="extensionContext" />
           </template>
 
       <template #footer>
@@ -123,7 +128,7 @@
 
 <script setup>
 import { ref, computed, watch } from 'vue'
-import { useApi, useAuthStore, useFormGuard, useErrorStore, useI18nStore } from '@ligoj/host'
+import { useApi, useAuthStore, useEditExtensions, useFormGuard, useErrorStore, useI18nStore } from '@ligoj/host'
 import { TYPE_ICONS } from '../composables/delegateTypes.js'
 // Vibrant replacement for the host's confirm dialog (aliased → tags unchanged).
 import { VibrantConfirmDialog as LigojConfirmDialog, LjDialog, LjButton, LjAvailabilityField, LigojAutocomplete } from '@ligoj/host'
@@ -175,6 +180,11 @@ let groupDebounce = null
 let groupMenuTimer = null
 
 const isEdit = computed(() => !!props.userId)
+
+// Plugin extension point (`editExtension` feature, target 'user'): contributed
+// body components + optional replacement REST resource for the save call.
+const { components: extensionComponents, apiPath: extensionApiPath, context: extensionContext } = useEditExtensions(
+  'user', 'rest/service/id/user', () => ({ mode: isEdit.value ? 'edit' : 'create', userId: props.userId }))
 
 const form = ref({
   id: '',
@@ -522,24 +532,19 @@ async function save() {
   }
 
   saving.value = true
+  // Spread the whole form: extension components (`editExtension`) may have
+  // written extra keys into it. Chantier D4: `mails` is the full list.
   const payload = {
-    id: form.value.id,
-    firstName: form.value.firstName,
-    lastName: form.value.lastName,
-    company: form.value.company,
-    // Chantier D4: send the full mails list — fixes a latent bug where
-    // the previous single-string `mail` field would drop every address
-    // past the first at save time.
-    mails: form.value.mails,
+    ...form.value,
     // groups is an array of names (strings). Defensive `.map(g => g.name || g)`
     // in case any legacy object slipped through.
     groups: groups.value.map(g => g.name || g),
   }
 
   if (isEdit.value) {
-    await api.put('rest/service/id/user', payload)
+    await api.put(extensionApiPath.value, payload)
   } else {
-    await api.post('rest/service/id/user', payload)
+    await api.post(extensionApiPath.value, payload)
   }
   saving.value = false
   markClean()

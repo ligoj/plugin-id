@@ -56,6 +56,10 @@
       </v-form>
     </v-card-text>
 
+    <!-- Plugin contributions (`editExtension`, target 'group'). Extra keys
+         written into `form` ride along in the save payload. -->
+    <component :is="extension" v-for="(extension, i) in extensionComponents" :key="i" :mode="isEdit ? 'edit' : 'create'" :form="form" :context="extensionContext" />
+
     <div v-if="!loading" class="gp-foot">
       <LjButton v-if="isEdit" variant="danger" icon="mdi-delete" :disabled="saving" @click="confirmDelete = true">{{ t('common.delete') }}</LjButton>
       <CreateAnotherToggle v-if="!isEdit" v-model="createAnother" />
@@ -80,7 +84,7 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
-import { useApi, useErrorStore, useI18nStore } from '@ligoj/host'
+import { useApi, useEditExtensions, useErrorStore, useI18nStore } from '@ligoj/host'
 import { TYPE_ICONS } from '../composables/delegateTypes.js'
 import { VibrantConfirmDialog as LigojConfirmDialog, LjButton, LjAvailabilityField, LigojAutocomplete } from '@ligoj/host'
 import CreateAnotherToggle from './CreateAnotherToggle.vue'
@@ -125,6 +129,10 @@ const scopeAll = ref([])
 const scopesLoading = ref(false)
 
 const isEdit = computed(() => props.groupId != null && props.groupId !== '' && props.groupId !== 'new')
+
+// Plugin extension point (`editExtension` feature, target 'group').
+const { components: extensionComponents, apiPath: extensionApiPath, context: extensionContext } = useEditExtensions(
+  'group', 'rest/service/id/group', () => ({ mode: isEdit.value ? 'edit' : 'create', groupId: props.groupId }))
 
 const form = ref({
   name: '',
@@ -264,12 +272,14 @@ async function save() {
   }
 
   saving.value = true
-  const payload = { name: form.value.name, scope: scopeEntry.id, parent: form.value.parent || null }
+  // Spread the whole form (extension components may have written extra keys),
+  // override the scope name with its id and normalize the parent.
+  const payload = { ...form.value, scope: scopeEntry.id, parent: form.value.parent || null }
   try {
     if (isEdit.value) {
-      await api.put('rest/service/id/group', payload)
+      await api.put(extensionApiPath.value, payload)
     } else {
-      await api.post('rest/service/id/group', payload)
+      await api.post(extensionApiPath.value, payload)
     }
     // "Create another": ask the parent to keep the dialog open (keepOpen)
     // and reset the form here for the next entry instead of closing.
