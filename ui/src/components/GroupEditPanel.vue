@@ -64,6 +64,8 @@
       <LjButton v-if="isEdit" variant="danger" icon="mdi-delete" :disabled="saving" @click="confirmDelete = true">{{ t('common.delete') }}</LjButton>
       <CreateAnotherToggle v-if="!isEdit" v-model="createAnother" />
       <span class="foot-sp" />
+      <!-- Plugin action-bar contributions (`editExtension.footer`). -->
+      <component :is="f" v-for="(f, fi) in extensionFooters" :key="'xf' + fi" :mode="isEdit ? 'edit' : 'create'" :form="form" :context="extensionContext" />
       <LjButton variant="ghost" :disabled="saving" @click="emit('cancel')">{{ isEdit ? t('common.close') : t('common.cancel') }}</LjButton>
       <LjButton v-if="!isEdit" icon="mdi-content-save" :loading="saving" @click="save">{{ t('common.save') }}</LjButton>
     </div>
@@ -131,7 +133,7 @@ const scopesLoading = ref(false)
 const isEdit = computed(() => props.groupId != null && props.groupId !== '' && props.groupId !== 'new')
 
 // Plugin extension point (`editExtension` feature, target 'group').
-const { components: extensionComponents, apiPath: extensionApiPath, context: extensionContext } = useEditExtensions(
+const { components: extensionComponents, footers: extensionFooters, apiPath: extensionApiPath, context: extensionContext } = useEditExtensions(
   'group', 'rest/service/id/group', () => ({ mode: isEdit.value ? 'edit' : 'create', groupId: props.groupId }))
 
 const form = ref({

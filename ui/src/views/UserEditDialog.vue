@@ -98,6 +98,8 @@
         <!-- order:-1 jumps the toggle ahead of LjDialog's leading `.foot-sp`
              flex spacer so it sits flush-left while the buttons stay right. -->
         <CreateAnotherToggle v-if="!isEdit" v-model="createAnother" style="order: -1" />
+        <!-- Plugin action-bar contributions (`editExtension.footer`). -->
+        <component :is="f" v-for="(f, fi) in extensionFooters" :key="'xf' + fi" :mode="isEdit ? 'edit' : 'create'" :form="form" :context="extensionContext" />
         <LjButton variant="ghost" @click="requestClose">{{ t('common.cancel') }}</LjButton>
         <LjButton icon="mdi-content-save" :disabled="loading" :loading="saving" @click="save">{{ t('common.save') }}</LjButton>
       </template>
@@ -183,7 +185,7 @@ const isEdit = computed(() => !!props.userId)
 
 // Plugin extension point (`editExtension` feature, target 'user'): contributed
 // body components + optional replacement REST resource for the save call.
-const { components: extensionComponents, apiPath: extensionApiPath, context: extensionContext } = useEditExtensions(
+const { components: extensionComponents, footers: extensionFooters, apiPath: extensionApiPath, context: extensionContext } = useEditExtensions(
   'user', 'rest/service/id/user', () => ({ mode: isEdit.value ? 'edit' : 'create', userId: props.userId }))
 
 const form = ref({

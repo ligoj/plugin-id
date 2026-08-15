@@ -60,6 +60,8 @@
            Extra keys written into `editForm` ride along in the save payload. -->
       <component :is="extension" v-for="(extension, i) in extensionComponents" :key="i" :mode="editTarget?.id ? 'edit' : 'create'" :form="editForm" :context="extensionContext" />
       <template #footer>
+        <!-- Plugin action-bar contributions (`editExtension.footer`). -->
+        <component :is="f" v-for="(f, fi) in extensionFooters" :key="'xf' + fi" :mode="editTarget?.id ? 'edit' : 'create'" :form="editForm" :context="extensionContext" />
         <LjButton variant="ghost" @click="editDialog = false">{{ readOnly ? t('common.close') : t('common.cancel') }}</LjButton>
         <LjButton v-if="!readOnly" icon="mdi-content-save" :loading="saving" @click="save">{{ t('common.save') }}</LjButton>
       </template>
@@ -123,7 +125,7 @@ const editTarget = ref(null)
 const editForm = ref({ name: '', dn: '', locked: false })
 
 // Plugin extension point (`editExtension` feature, target 'container-scope').
-const { components: extensionComponents, apiPath: extensionApiPath, context: extensionContext } = useEditExtensions(
+const { components: extensionComponents, footers: extensionFooters, apiPath: extensionApiPath, context: extensionContext } = useEditExtensions(
   'container-scope', 'rest/service/id/container-scope',
   () => ({ mode: editTarget.value?.id ? 'edit' : 'create', scope: editTarget.value, type: activeTab.value }))
 const saving = ref(false)
