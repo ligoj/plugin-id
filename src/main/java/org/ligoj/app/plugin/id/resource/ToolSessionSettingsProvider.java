@@ -16,10 +16,10 @@ import org.ligoj.bootstrap.resource.system.session.SessionSettings;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import com.fasterxml.jackson.core.type.TypeReference;
 
 import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
+import tools.jackson.core.type.TypeReference;
 
 /**
  * Session resource.
@@ -71,7 +71,7 @@ public class ToolSessionSettingsProvider implements ISessionSettingsProvider, Fe
 				globalTool.remove("id");
 				return globalTool.containsKey("node");
 			}).toList());
-		} catch (final IOException ioe) {
+		} catch (final Exception ioe) {
 			log.error("Unable to write the global tools configuration for user {}", settings.getUserName(), ioe);
 		}
 	}

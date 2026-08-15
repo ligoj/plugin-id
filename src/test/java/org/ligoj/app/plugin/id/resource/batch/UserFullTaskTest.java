@@ -3,7 +3,6 @@
  */
 package org.ligoj.app.plugin.id.resource.batch;
 
-import com.fasterxml.jackson.jakarta.rs.json.JacksonJsonProvider;
 import jakarta.ws.rs.ext.ExceptionMapper;
 import org.apache.commons.lang3.reflect.FieldUtils;
 import org.apache.cxf.endpoint.Endpoint;
@@ -18,6 +17,7 @@ import org.ligoj.app.plugin.id.resource.UserOrgResource;
 import org.ligoj.bootstrap.AbstractSecurityTest;
 import org.ligoj.bootstrap.core.resource.mapper.FailSafeExceptionMapper;
 import org.ligoj.bootstrap.core.security.SecurityHelper;
+import tools.jackson.jakarta.rs.json.JacksonJsonProvider;
 
 import java.util.Collections;
 import java.util.List;
@@ -73,14 +73,14 @@ class UserFullTaskTest extends AbstractSecurityTest {
 		@SuppressWarnings("unchecked")
 		final List<ProviderInfo<ExceptionMapper<?>>> object = (List<ProviderInfo<ExceptionMapper<?>>>) FieldUtils
 				.getField(ServerProviderFactory.class, "exceptionMappers", true).get(instance);
-		final FailSafeExceptionMapper provider = new FailSafeExceptionMapper();
+		final var provider = new FailSafeExceptionMapper();
 		object.add(new ProviderInfo<>(provider, null, true));
-		final JacksonJsonProvider jacksonJsonProvider = new JacksonJsonProvider();
+		final var jacksonJsonProvider = new JacksonJsonProvider();
 		FieldUtils.getField(FailSafeExceptionMapper.class, "jacksonJsonProvider", true).set(provider, jacksonJsonProvider);
 
-		final UserImportEntry entry = mock(UserImportEntry.class);
+		final var entry = mock(UserImportEntry.class);
 		when(entry.getId()).thenThrow(new RuntimeException());
-		final BatchTaskVo<UserImportEntry> importTask = new BatchTaskVo<>();
+		final var importTask = new BatchTaskVo<UserImportEntry>();
 		importTask.setEntries(Collections.singletonList(entry));
 		task.configure(importTask);
 		task.jaxrsFactory = instance;
@@ -92,22 +92,22 @@ class UserFullTaskTest extends AbstractSecurityTest {
 
 	@Test
 	void configureMessage2() throws IllegalArgumentException {
-		final UserImportEntry entry = mock(UserImportEntry.class);
+		final var entry = mock(UserImportEntry.class);
 		when(entry.getId()).thenThrow(new RuntimeException());
-		final BatchTaskVo<UserImportEntry> importTask = new BatchTaskVo<>();
+		final var importTask = new BatchTaskVo<UserImportEntry>();
 		importTask.setEntries(Collections.singletonList(entry));
 
-		final Message message = mock(Message.class);
-		final UserFullTask task = new UserFullTask() {
+		final var message = mock(Message.class);
+		final var task = new UserFullTask() {
 			@Override
 			protected Message getMessage() {
 				return message;
 			}
 
 		};
-		final Exchange exchange = mock(Exchange.class);
+		final var exchange = mock(Exchange.class);
 		when(message.getExchange()).thenReturn(exchange);
-		final Endpoint endpoint = mock(Endpoint.class);
+		final var endpoint = mock(Endpoint.class);
 		when(exchange.getEndpoint()).thenReturn(endpoint);
 		when(endpoint.get("org.apache.cxf.jaxrs.provider.ServerProviderFactory")).thenReturn(ServerProviderFactory.getInstance());
 
