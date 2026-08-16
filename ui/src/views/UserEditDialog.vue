@@ -72,10 +72,6 @@
               </LigojAutocomplete>
             </v-form>
 
-            <!-- Account actions (edit mode only). Rearranged per Fabrice's
-                 review: the former separate "Actions" card with a row of
-                 tonal buttons is now an inline bordered list inside the
-                 dialog, consistent with the row gear menu of the list. -->
             <template v-if="isEdit">
               <v-divider class="my-4" />
               <div class="text-subtitle-2 text-medium-emphasis mb-2 actions-label">{{ t('user.actions') }}</div>
@@ -179,7 +175,6 @@ const groupLoading = ref(false)
 const groupMenu = ref(false)
 const groupsPreloaded = ref(false)
 let groupDebounce = null
-let groupMenuTimer = null
 
 const isEdit = computed(() => !!props.userId)
 
@@ -209,7 +204,7 @@ const loginTaken = ref(false)
 // separately below — onBeforeRouteLeave never fires without a route change.
 // The tracked value merges `form` with the `groups` multi-select (a separate
 // ref) so editing only the groups still flags the form as dirty.
-const { isDirty, showGuardDialog, markClean, confirmLeave, cancelLeave, init: initGuard } =
+const { isDirty, showGuardDialog, markClean, confirmLeave, cancelLeave, isConfirmationSkipped, init: initGuard } =
   useFormGuard(computed(() => ({ ...form.value, groups: groups.value })))
 // True while the guard dialog was raised by a dialog-close request (vs a
 // route-leave), so the confirm/cancel handlers know which path to resume.
@@ -379,7 +374,7 @@ function loadDemoUser(id) {
     form.value.id = user.id
     form.value.firstName = user.firstName
     form.value.lastName = user.lastName
-    form.value.company = user.company
+    form.value.company = user.company || null
     // Chantier D4: hydrate the full mails list (the demo seed already
     // carries an array, but be defensive against any string fallback).
     form.value.mails = Array.isArray(user.mails) ? [...user.mails] : user.mails ? [user.mails] : []
@@ -395,7 +390,7 @@ function loadDemoUser(id) {
 /** Reset all form state to a clean create-mode baseline. Called every time
  *  the dialog opens so a previous edit never bleeds into the next one. */
 function resetForm() {
-  form.value = { id: '', firstName: '', lastName: '', company: '', mails: [] }
+  form.value = { id: '', firstName: '', lastName: '', company: null, mails: [] }
   groups.value = []
   locked.value = false
   isolated.value = false
@@ -406,7 +401,6 @@ function resetForm() {
   groupSearchQuery.value = ''
   groupMenu.value = false
   groupsPreloaded.value = false
-  clearTimeout(groupMenuTimer)
   formRef.value?.resetValidation()
 }
 
@@ -422,7 +416,7 @@ async function loadOnOpen() {
       form.value.id = data.id || ''
       form.value.firstName = data.firstName || ''
       form.value.lastName = data.lastName || ''
-      form.value.company = data.company || ''
+      form.value.company = data.company || null
       // Chantier D4: keep the entire mails array, with string fallback
       // for any legacy payload that stored a single email as `mail`.
       form.value.mails = Array.isArray(data.mails) ? [...data.mails]
@@ -458,24 +452,32 @@ async function loadOnOpen() {
       demoMode.value = true
       errorStore.clear()
     }
-    // Preload the group list and auto-open the dropdown so the available
-    // groups are visible (per Fabrice's UX feedback, chantier B). Deferred
-    // so the dropdown opens once the dialog transition has settled.
+    // Preload the group list so the Groups dropdown is instant when opened.
+    // Do NOT auto-open it: initial focus belongs to the login field.
     await preloadGroups()
-    groupMenuTimer = setTimeout(() => { groupMenu.value = true }, 350)
   }
   // Snapshot the loaded state so the guard only flags real edits.
   initGuard()
 }
 
 watch(() => props.modelValue, val => {
-  if (val) { createAnother.value = false; loadOnOpen() }
+  if (val) { createAnother.value = false; loadOnOpen().then(focusFirstField) }
 })
+
+/** Focus the first editable field: the login on create, first name on edit
+ *  (the login is disabled there). Deferred so the dialog content and the
+ *  skeleton swap are rendered; wins over any competing autofocus. */
+function focusFirstField() {
+  setTimeout(() => {
+    const input = formRef.value?.$el?.querySelector('input:not([disabled])')
+    input?.focus()
+  }, 50)
+}
 
 // Lazily preload the available groups when the dropdown opens — for edit
 // mode as well as create, so opening the Groups field always shows a list
 // without typing. groupsPreloaded prevents a duplicate fetch on create
-// mode, where loadOnOpen already preloaded before auto-opening the menu.
+// mode, where loadOnOpen already preloaded.
 watch(groupMenu, open => {
   if (open && !groupsPreloaded.value && !groupSearchQuery.value) {
     preloadGroups()
@@ -493,7 +495,8 @@ function onDialogModel(val) {
 /** Close request from Cancel / Esc / scrim. Vetoed (guard dialog shown)
  *  when the form has unsaved changes. */
 function requestClose() {
-  if (isDirty.value) {
+  // Honor the profile's "skip leave confirmation" preference (live read).
+  if (isDirty.value && !isConfirmationSkipped()) {
     pendingClose.value = true
     showGuardDialog.value = true
   } else {
