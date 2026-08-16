@@ -192,7 +192,9 @@ const form = ref({
   id: '',
   firstName: '',
   lastName: '',
-  company: '',
+  // null (not ''): an empty string counts as a selected value for
+  // v-autocomplete — placeholder hidden and clear button shown.
+  company: null,
   // Chantier D4: emails as a list. Backend response carries `mails: [...]`;
   // a string fallback at load time keeps tolerance for any legacy payload.
   mails: [],
