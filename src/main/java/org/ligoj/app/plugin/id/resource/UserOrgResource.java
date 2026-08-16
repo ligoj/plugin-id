@@ -986,6 +986,18 @@ public class UserOrgResource extends AbstractOrgResource implements ISessionSett
 		}
 	}
 
+	/**
+	 * Decorate the session with the IAM user details ({@code userSettings.userDetails}) and forward the
+	 * {@code service:id:user-display} configuration driving the username displayed by the UI:
+	 * <ul>
+	 * <li>{@code id} (default): the login</li>
+	 * <li>{@code mail}: the first attached mail, fallback to {@code id}</li>
+	 * <li>{@code mail-short}: same as {@code mail} with the domain part dropped</li>
+	 * <li>any user attribute name ({@code firstName}, {@code lastName}, {@code company}, ...), also resolved
+	 * in the {@code customAttributes} map, fallback to {@code id}</li>
+	 * </ul>
+	 * The resolution itself happens in the UI from the forwarded raw details.
+	 */
 	@Override
 	public void decorate(final SessionSettings settings) {
 		try {
