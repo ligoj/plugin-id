@@ -16,7 +16,7 @@
                  visible. -->
             <v-row density="comfortable">
               <v-col cols="12" sm="5">
-                <v-select v-model="form.receiverType" :label="t('delegate.receiverType')" :items="RECEIVER_TYPES" :item-title="typeTitle" item-value="value" :prepend-inner-icon="receiverIcon"
+                <LigojSelect v-model="form.receiverType" :label="t('delegate.receiverType')" :items="RECEIVER_TYPES" :item-title="typeTitle" item-value="value" :prepend-inner-icon="receiverIcon"
                   :rules="[rules.required]" variant="outlined" class="mb-2">
                   <template #item="{ props: itemProps, item }">
                     <v-list-item v-bind="itemProps">
@@ -25,7 +25,7 @@
                       </template>
                     </v-list-item>
                   </template>
-                </v-select>
+                </LigojSelect>
               </v-col>
               <v-col cols="12" sm="7">
                 <LigojAutocomplete v-model="form.receiver" v-model:search="receiverSearch" prepend-inner-icon="mdi-account-arrow-right-outline" :label="t('delegate.receiver')" :items="receiverDisplayItems" item-title="label" item-value="id"
@@ -39,7 +39,7 @@
                  name). -->
             <v-row density="comfortable">
               <v-col cols="12" sm="5">
-                <v-select v-model="form.type" :label="t('delegate.type')" :items="RESOURCE_TYPES" :item-title="typeTitle" item-value="value" :prepend-inner-icon="typeIcon" :rules="[rules.required]"
+                <LigojSelect v-model="form.type" :label="t('delegate.type')" :items="RESOURCE_TYPES" :item-title="typeTitle" item-value="value" :prepend-inner-icon="typeIcon" :rules="[rules.required]"
                   variant="outlined" class="mb-2">
                   <template #item="{ props: itemProps, item }">
                     <v-list-item v-bind="itemProps">
@@ -48,7 +48,7 @@
                       </template>
                     </v-list-item>
                   </template>
-                </v-select>
+                </LigojSelect>
               </v-col>
               <v-col cols="12" sm="7">
                 <!-- TREE-typed delegates point at an arbitrary LDAP DN
@@ -124,7 +124,7 @@
 
 <script setup>
 import { ref, computed, watch, nextTick } from 'vue'
-import { useApi, useAuthStore, useEditExtensions, useFormGuard, useErrorStore, useI18nStore } from '@ligoj/host'
+import { useApi, useAuthStore, useEditExtensions, useFormGuard, useErrorStore, useI18nStore, LigojSelect } from '@ligoj/host'
 import { TYPE_ICONS, RECEIVER_TYPES, RESOURCE_TYPES } from '../composables/delegateTypes.js'
 import { VibrantConfirmDialog as LigojConfirmDialog, LjDialog, LjButton, LigojAutocomplete } from '@ligoj/host'
 import CreateAnotherToggle from '../components/CreateAnotherToggle.vue'
@@ -311,7 +311,7 @@ function onResourceMenu(open) {
   if (open && resourceItems.value.length === 0) loadResourceItems()
 }
 
-const { isDirty, showGuardDialog, confirmLeave, cancelLeave, markClean, init: initGuard } = useFormGuard(form)
+const { isDirty, showGuardDialog, confirmLeave, cancelLeave, markClean, isConfirmationSkipped, init: initGuard } = useFormGuard(form)
 // True while the guard dialog was raised by a dialog-close request (vs a
 // route-leave), so the confirm/cancel handlers know which path to resume.
 const pendingClose = ref(false)
@@ -392,9 +392,10 @@ function onDialogModel(val) {
 }
 
 /** Close request from Cancel / Esc / scrim. Vetoed (guard dialog shown)
- *  when the form has unsaved changes. */
+ *  when the form has unsaved changes, unless the profile skips the
+ *  leave confirmation (live read). */
 function requestClose() {
-  if (isDirty.value) {
+  if (isDirty.value && !isConfirmationSkipped()) {
     pendingClose.value = true
     showGuardDialog.value = true
   } else {
