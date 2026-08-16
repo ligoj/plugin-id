@@ -33,7 +33,7 @@ Related plugins:
 
 | Parameter               | Scope              | Default | Note                                                          |                     
 |-------------------------|--------------------|---------|---------------------------------------------------------------|
-| service:id:user-display | Global             | `id`    | Display mode of user. `mail` and `mail-short` are accepted.   |
+| service:id:user-display | Global             | `id`    | Displayed username mode: `id` (login), `mail` (first attached mail, fallback `id`), `mail-short` (`mail` without the domain part), or any user attribute name (`firstName`, `lastName`, `company`, ... — also resolved in the `customAttributes` map, fallback `id`). |
 | service:id:uid-pattern  | Node, Subscription | `.*`    | Pattern determining the login is valid for an authentication. |
 | service:id:ou           | Node, Subscription | `null`  | Parent OU.                                                    |
 | service:id:group        | Node, Subscription | `null`  | Normalized Group name (CN).                                   |
