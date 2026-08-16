@@ -19,11 +19,6 @@
           </div>
         </v-slide-x-transition>
         <LjButton v-if="auth.isAllowedApi(USER_API, 'POST')" icon="mdi-plus" @click="openCreate">{{ t('user.new') }}</LjButton>
-        <!-- Export/Copy now live in the table's own tools cog (VibrantDataTable
-             :fetch-all). Only the CSV Import action remains here. -->
-        <LjButton v-if="auth.isAllowedApi('rest/service/id/user/import/csv/full', 'POST')" variant="ghost" icon="mdi-upload" :loading="importing" @click="importInput?.click()">
-          {{ importing ? (t('common.importing') || 'Import…') : (t('common.import') || 'Importer') }}
-        </LjButton>
         <input ref="importInput" type="file" accept=".csv,.tsv,text/csv" hidden @change="onImport" />
       </template>
     </LjPageHeader>
@@ -76,6 +71,13 @@
             <button v-if="auth.isAllowedApi(USER_API, 'PUT')" @click="startUserAction(item, 'resetPassword')"><v-icon size="18">mdi-lock-reset</v-icon>{{ t('user.resetPassword') }}</button>
           </div>
         </v-menu>
+      </template>
+      <template #tools-extra>
+        <!-- CSV Import, relocated from the page header into the table tools. -->
+        <button v-if="auth.isAllowedApi('rest/service/id/user/import/csv/full', 'POST')" :disabled="importing" @click="importInput?.click()">
+          <v-progress-circular v-if="importing" size="18" width="2" indeterminate />
+          <v-icon v-else size="18">mdi-upload</v-icon>{{ importing ? (t('common.importing') || 'Import…') : (t('common.import') || 'Importer') }}
+        </button>
       </template>
     </VibrantDataTable>
 
