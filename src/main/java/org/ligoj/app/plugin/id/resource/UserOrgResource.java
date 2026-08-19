@@ -995,6 +995,9 @@ public class UserOrgResource extends AbstractOrgResource implements ISessionSett
 	 * <li>{@code mail-short}: same as {@code mail} with the domain part dropped</li>
 	 * <li>any user attribute name ({@code firstName}, {@code lastName}, {@code company}, ...), also resolved
 	 * in the {@code customAttributes} map, fallback to {@code id}</li>
+	 * <li>an expression combining <code>${token}</code> placeholders and literal text, e.g.
+	 * <code>${firstName} ${lastName}</code> — each token is one of the modes above; unresolved tokens render
+	 * empty and a blank result falls back to {@code id}</li>
 	 * </ul>
 	 * The resolution itself happens in the UI from the forwarded raw details.
 	 */
