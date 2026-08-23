@@ -559,6 +559,7 @@ public class UserOrgResource extends AbstractOrgResource implements ISessionSett
 	 * Indicate the two user details have attribute differences
 	 */
 	@SafeVarargs
+	@SuppressWarnings("varargs")
 	private boolean hasAttributeChange(final SimpleUser user1, final SimpleUser user2, final Function<SimpleUser, String>... equals) {
 		final var predicateFalse = Arrays.stream(equals).filter(f -> !Strings.CI.equals(StringUtils.trimToNull(f.apply(user2)), StringUtils.trimToNull(f.apply(user1)))).findFirst().orElse(null);
 		if (predicateFalse == null) {
