@@ -5,7 +5,8 @@
 -->
 <template>
   <div class="delegates lj-surface">
-    <LjPageHeader :title="t('delegate.title')" :subtitle="t('delegate.subtitle2026')">
+    <LjPageHeader :title="t('delegate.title')" :subtitle="t('delegate.subtitle2026')"
+      actions-target="delegate" :actions-context="toolbarContext">
       <template #actions>
         <LjSearch v-model="dt.search.value" :placeholder="t('delegate.searchPlaceholder') || t('common.search')" @input="onSearch" />
         <v-slide-x-transition>
@@ -96,6 +97,8 @@ let searchTimeout = null
 let lastOptions = { page: 1, itemsPerPage: 25, sortBy: [] }
 
 const selected = ref([])
+// Context handed to the plugin toolbar actions (`actionExtension`, see LjPageHeader)
+const toolbarContext = () => ({ selected: selected.value, reload: () => dt.load(lastOptions) })
 const deleteDialog = ref(false)
 const deleteTarget = ref(null)
 const deleting = ref(false)
