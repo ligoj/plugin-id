@@ -24,6 +24,9 @@ export default {
   'service:id:ou-not-exists': 'Typed organization does not exist yet and will be created. Are you sure about the syntax?',
   'service:id:uid-pattern': 'User id pattern',
   'service:id:uid-pattern-description': 'User identifier pattern validating an authentication',
+  'service:id:group-create': 'Group name (computed)',
+  'service:id:group-already-exists': 'This group already exists',
+  'service:id:group-starts-with-pkey': 'The group name must start with the project key',
   'service:id:group-simple-name': 'Simple name',
   'service:id:group-simple-name-description': 'Simple group name without organisation prefix',
 

@@ -17,6 +17,9 @@ export default {
   'service:id:ou-not-exists': 'L\'organisation saisie n\'existe pas encore et sera créée. Êtes-vous certain de la syntaxe ?',
   'service:id:uid-pattern': 'Motif d\'utilisateur',
   'service:id:uid-pattern-description': 'Motif de validation de l\'identifiant utilisateur pour accepter une authentification',
+  'service:id:group-create': 'Nom du groupe (calculé)',
+  'service:id:group-already-exists': 'Ce groupe existe déjà',
+  'service:id:group-starts-with-pkey': 'Le nom du groupe doit commencer par la clé du projet',
   'service:id:group-simple-name': 'Nom simple',
   'service:id:group-simple-name-description': 'Nom simple du groupe, sans le préfixe d\'organisation',
 

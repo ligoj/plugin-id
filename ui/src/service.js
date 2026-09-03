@@ -1,5 +1,7 @@
 import { h } from 'vue'
 import { renderServiceLink, delegateFeature, useI18nStore, VChip, VIcon } from '@ligoj/host'
+import IdParentGroupField from './fields/IdParentGroupField.vue'
+import IdGroupField from './fields/IdGroupField.vue'
 import { useGroupMembersDialog } from './composables/useGroupMembersDialog.js'
 
 const REST = '/rest/'
@@ -24,7 +26,21 @@ function openGroupMembers(subscription, group) {
   })
 }
 
+/**
+ * Subscription parameter fields SHARED with the tool sub-plugins (ldap,
+ * cognito, ...): the parent-group autocomplete and the composite group
+ * editor only hit parent endpoints (`rest/service/id/group...`), so the
+ * parent owns them. A sibling plugin cannot import another plugin's
+ * modules — tools resolve this map at runtime through
+ * `pluginRegistry.get('id')?.service?.parameterFields`.
+ */
+const parameterFields = {
+  'service:id:parent-group': IdParentGroupField,
+  'service:id:group': IdGroupField,
+}
+
 const service = {
+  parameterFields,
   /**
    * Sidebar contribution: the top-level "Identity" menu (Users / Groups /
    * Companies / Delegates / Container scopes). Consumed by the host's
