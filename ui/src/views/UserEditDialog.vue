@@ -51,7 +51,7 @@
                    multiple + chips lets the user type any email (no
                    autocomplete source) and confirm with Enter or Tab;
                    existing emails are restored as chips at load time. -->
-              <v-combobox v-model="form.mails" :label="t('user.emails')" prepend-inner-icon="mdi-email-outline" multiple chips closable-chips variant="outlined" class="mb-2" :hint="t('user.emailsHint')" persistent-hint autocomplete="off" />
+              <LigojCombobox v-model="form.mails" :label="t('user.emails')" prepend-inner-icon="mdi-email-outline" multiple chips closable-chips variant="outlined" class="mb-2" :hint="t('user.emailsHint')" persistent-hint autocomplete="off" />
               <!-- Auto-suggest for groups (multi-select). Queries
                    rest/service/id/group as the user types (300 ms debounced).
                    v-model holds an array of group **names** (strings),
@@ -126,7 +126,7 @@
 
 <script setup>
 import { ref, computed, watch } from 'vue'
-import { useApi, useAuthStore, useEditExtensions, useFormGuard, useErrorStore, useI18nStore } from '@ligoj/host'
+import { LigojCombobox, useApi, useAuthStore, useEditExtensions, useFormGuard, useErrorStore, useI18nStore } from '@ligoj/host'
 import { TYPE_ICONS } from '../composables/delegateTypes.js'
 // Vibrant replacement for the host's confirm dialog (aliased → tags unchanged).
 import { VibrantConfirmDialog as LigojConfirmDialog, LjDialog, LjButton, LjAvailabilityField, LigojAutocomplete } from '@ligoj/host'
