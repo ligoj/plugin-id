@@ -156,8 +156,8 @@ let userSearchTimer = null
 
 async function fetchUsers(q) {
   const query = (q || '').trim()
-  const qp = query ? `q=${encodeURIComponent(query)}&` : ''
-  const data = await api.get(`rest/service/id/user?${qp}rows=20`)
+  // Backend criteria is the DataTables-style `search[value]` (UserOrgResource#findAll)
+  const data = await api.get(`rest/service/id/user?search[value]=${encodeURIComponent(query)}&rows=20&page=1&sidx=id&sord=asc`)
   const rows = Array.isArray(data) ? data : (data?.data || [])
   return rows.map((r) => ({
     id: r.id,
