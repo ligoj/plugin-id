@@ -108,6 +108,51 @@ public class UserOrgResource extends AbstractOrgResource implements ISessionSett
 	}
 
 	/**
+	 * Configuration key of the attribute displayed as the user's visual identifier in the UI (table headers,
+	 * implicit sort). Accepted values: {@code id} (default), {@code firstName}, {@code lastName}, {@code mail}
+	 * (first one), and {@code customAttributes.<property>} looked up in {@link SimpleUser#getCustomAttributes()}.
+	 */
+	public static final String CONF_VISUAL_ID_NAME = "service:id:visual-id-name";
+
+	/**
+	 * Configuration key of the static (non localizable) label displayed for the visual identifier column. When
+	 * undefined, the UI localizes the {@link #CONF_VISUAL_ID_NAME} value instead.
+	 */
+	public static final String CONF_VISUAL_ID_LABEL = "service:id:visual-id-label";
+
+	/**
+	 * Sort key accepted by {@link #findAll} and mapped to the configured visual identifier property.
+	 */
+	public static final String VISUAL_ID_COLUMN = "visual-id";
+
+	/**
+	 * Resolve the repository sort property of the configured visual identifier: {@code id} (default and fallback
+	 * of unaccepted values), {@code firstName}, {@code lastName}, {@code mail} or a
+	 * {@code customAttributes.<property>} pass-through the repositories understand.
+	 *
+	 * @return The sort property behind the {@code visual-id} column.
+	 */
+	String getVisualIdProperty() {
+		final var name = configuration.get(CONF_VISUAL_ID_NAME, USER_KEY);
+		if ("firstName".equals(name) || "lastName".equals(name) || "mail".equals(name)
+				|| name.startsWith("customAttributes.")) {
+			return name;
+		}
+		return USER_KEY;
+	}
+
+	/**
+	 * The ordered columns extended with the dynamic {@code visual-id} mapping.
+	 *
+	 * @return A new map, {@link #ORDERED_COLUMNS} plus the resolved {@code visual-id} property.
+	 */
+	Map<String, String> getOrderedColumns() {
+		final var columns = new HashMap<>(ORDERED_COLUMNS);
+		columns.put(VISUAL_ID_COLUMN, getVisualIdProperty());
+		return columns;
+	}
+
+	/**
 	 * Return users matching the given criteria. The visible groups, trees and companies are checked. The returned
 	 * groups of each user depends on the groups the user can see. The result is not secured : it contains DN.
 	 *
@@ -137,7 +182,7 @@ public class UserOrgResource extends AbstractOrgResource implements ISessionSett
 	 * @return found users.
 	 */
 	private Page<UserOrg> findAllNotSecure(final Set<GroupOrg> visibleGroups, final String company, final String group, final String criteria, @Context final UriInfo uriInfo) {
-		final var pageRequest = paginationJson.getPageRequest(uriInfo, ORDERED_COLUMNS);
+		final var pageRequest = paginationJson.getPageRequest(uriInfo, getOrderedColumns());
 		final var visibleCompanies = companyResource.getContainers().stream().map(CompanyOrg::getId).collect(Collectors.toSet());
 		final var allGroups = getGroupRepository().findAll();
 
@@ -1013,6 +1058,9 @@ public class UserOrgResource extends AbstractOrgResource implements ISessionSett
 		}
 		// Add user display
 		settings.getApplicationSettings().getData().computeIfAbsent("service:id:user-display", configuration::get);
+		// Add the visual identifier configuration (see CONF_VISUAL_ID_NAME / CONF_VISUAL_ID_LABEL)
+		settings.getApplicationSettings().getData().computeIfAbsent(CONF_VISUAL_ID_NAME, configuration::get);
+		settings.getApplicationSettings().getData().computeIfAbsent(CONF_VISUAL_ID_LABEL, configuration::get);
 	}
 
 	@Override

@@ -1254,9 +1254,40 @@ class UserOrgResourceTest extends AbstractAppTest {
 		settings.setUserSettings(new HashMap<>());
 		var configuration = mock(ConfigurationResource.class);
 		when(configuration.get("service:id:user-display")).thenReturn("some");
+		when(configuration.get(UserOrgResource.CONF_VISUAL_ID_NAME)).thenReturn("customAttributes.badge");
+		when(configuration.get(UserOrgResource.CONF_VISUAL_ID_LABEL)).thenReturn("Badge");
 		FieldUtils.writeField(resource, "configuration", configuration, true);
 		resource.decorate(settings);
 		Assertions.assertEquals("some", settings.getApplicationSettings().getData().get("service:id:user-display"));
+		Assertions.assertEquals("customAttributes.badge",
+				settings.getApplicationSettings().getData().get(UserOrgResource.CONF_VISUAL_ID_NAME));
+		Assertions.assertEquals("Badge",
+				settings.getApplicationSettings().getData().get(UserOrgResource.CONF_VISUAL_ID_LABEL));
+	}
+
+	@Test
+	void getVisualIdProperty() throws IllegalAccessException {
+		final var resource = new UserOrgResource();
+		final var configuration = mock(ConfigurationResource.class);
+		FieldUtils.writeField(resource, "configuration", configuration, true);
+
+		// Default and accepted values
+		when(configuration.get(UserOrgResource.CONF_VISUAL_ID_NAME, "id")).thenReturn("id");
+		Assertions.assertEquals("id", resource.getVisualIdProperty());
+		for (final var accepted : new String[] { "firstName", "lastName", "mail", "customAttributes.badge" }) {
+			when(configuration.get(UserOrgResource.CONF_VISUAL_ID_NAME, "id")).thenReturn(accepted);
+			Assertions.assertEquals(accepted, resource.getVisualIdProperty());
+		}
+
+		// Unaccepted values fall back to the identifier
+		when(configuration.get(UserOrgResource.CONF_VISUAL_ID_NAME, "id")).thenReturn("dn");
+		Assertions.assertEquals("id", resource.getVisualIdProperty());
+
+		// The dynamic ordered columns expose the mapping
+		when(configuration.get(UserOrgResource.CONF_VISUAL_ID_NAME, "id")).thenReturn("customAttributes.badge");
+		Assertions.assertEquals("customAttributes.badge",
+				resource.getOrderedColumns().get(UserOrgResource.VISUAL_ID_COLUMN));
+		Assertions.assertEquals("id", resource.getOrderedColumns().get("id"));
 	}
 
 	@Test

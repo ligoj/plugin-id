@@ -25,9 +25,9 @@
     </v-alert>
 
     <VibrantDataTable v-if="!dt.error.value" :headers="headers" :items="dt.items.value" :items-length="dt.totalItems.value" :loading="dt.loading.value"
-      item-value="id" default-sort="id" :fetch-all="dt.loadAll" filename="members.csv" @update:options="loadData">
-      <template #cell.id="{ item }">
-        <span class="login"><v-icon size="16" class="login-ic">mdi-account-circle</v-icon><span class="mono">{{ item.id }}</span></span>
+      item-value="id" :default-sort="visualIdColumnKey()" :fetch-all="dt.loadAll" filename="members.csv" @update:options="loadData">
+      <template #[`cell.${visualIdColumnKey()}`]="{ item }">
+        <span class="login"><v-icon size="16" class="login-ic">mdi-account-circle</v-icon><span class="mono">{{ visualIdValue(item) }}</span></span>
       </template>
       <template #cell.mails="{ item }">
         <span class="mails">
@@ -73,6 +73,7 @@ import {
   useErrorStore,
   useI18nStore,
 } from '@ligoj/host'
+import { visualIdColumnKey, visualIdLabel, visualIdValue } from '../visualId.js'
 import { TYPE_ICONS } from '../composables/delegateTypes.js'
 import { VibrantConfirmDialog as LigojConfirmDialog, VibrantDataTable, LjButton, LjSearch, LigojAutocomplete } from '@ligoj/host'
 
@@ -116,12 +117,13 @@ let searchTimer = null
 // reactive aspect doesn't matter there, but the function form costs
 // nothing.
 const dt = useDataTable('service/id/user', {
-  defaultSort: 'id',
+  defaultSort: visualIdColumnKey(),
   extraParams: () => ({ group: groupName.value }),
 })
 
 const headers = computed(() => [
-  { label: t('user.login'), key: 'id', sortable: true, width: '170px' },
+  // Visual identifier column: configured attribute (or login), key 'visual-id' maps server-side
+  { label: visualIdLabel(), key: visualIdColumnKey(), sortable: true, width: '170px' },
   { label: t('user.firstName'), key: 'firstName', sortable: true },
   { label: t('user.lastName'), key: 'lastName', sortable: true },
   { label: t('user.company'), key: 'company', sortable: true },
@@ -157,7 +159,7 @@ let userSearchTimer = null
 async function fetchUsers(q) {
   const query = (q || '').trim()
   // Backend criteria is the DataTables-style `search[value]` (UserOrgResource#findAll)
-  const data = await api.get(`rest/service/id/user?search[value]=${encodeURIComponent(query)}&rows=20&page=1&sidx=id&sord=asc`)
+  const data = await api.get(`rest/service/id/user?search[value]=${encodeURIComponent(query)}&rows=20&page=1&sidx=${visualIdColumnKey()}&sord=asc`)
   const rows = Array.isArray(data) ? data : (data?.data || [])
   return rows.map((r) => ({
     id: r.id,

@@ -33,9 +33,9 @@
     </v-alert>
 
     <VibrantDataTable v-if="!dt.error.value" :headers="headers" :items="dt.items.value" :items-length="dt.totalItems.value" :loading="dt.loading.value" selectable v-model="selected" item-value="id"
-      default-sort="id" :fetch-all="dt.loadAll" filename="users.csv" @update:options="loadData" @row-click="(item) => openEdit(item.id)">
-      <template #cell.id="{ item }">
-        <span class="mono">{{ item.id }}</span>
+      :default-sort="visualIdColumnKey()" :fetch-all="dt.loadAll" filename="users.csv" @update:options="loadData" @row-click="(item) => openEdit(item.id)">
+      <template #[`cell.${visualIdColumnKey()}`]="{ item }">
+        <span class="mono">{{ visualIdValue(item) }}</span>
       </template>
       <template #cell.mails="{ item }">
         <span class="mails">
@@ -103,6 +103,7 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useDataTable, useApi, useAppStore, useAuthStore, useErrorStore, useI18nStore } from '@ligoj/host'
+import { visualIdColumnKey, visualIdLabel, visualIdValue } from '../visualId.js'
 import { TYPE_ICONS } from '../composables/delegateTypes.js'
 // Shared 2026 chrome: table, confirm dialog (aliased so <LigojConfirmDialog>
 // tags need no change), page header, buttons, search — all from the host.
@@ -130,7 +131,7 @@ const DEMO_USERS = [
   { id: 'crichard', firstName: 'Claire', lastName: 'Richard', company: 'Ligoj', mails: ['claire.richard@ligoj.org'], groups: [{ name: 'Management' }], locked: false },
   { id: 'agarcia', firstName: 'Antoine', lastName: 'Garcia', company: 'Ligoj', mails: ['antoine.garcia@ligoj.org'], groups: [{ name: 'Engineering' }], locked: false },
 ]
-const dt = useDataTable('service/id/user', { defaultSort: 'id', demoData: DEMO_USERS })
+const dt = useDataTable('service/id/user', { defaultSort: visualIdColumnKey(), demoData: DEMO_USERS })
 let searchTimeout = null
 let lastOptions = { page: 1, itemsPerPage: 25, sortBy: [] }
 
@@ -153,7 +154,8 @@ const importing = ref(false)
 // `exportValue` keeps the CSV/clipboard output human-readable (arrays and
 // the locked boolean would otherwise serialize as JSON / true|false).
 const headers = computed(() => [
-  { title: t('user.login'), label: t('user.login'), key: 'id', sortable: true },
+  // Visual identifier column: configured attribute (or login), key 'visual-id' maps server-side
+  { title: visualIdLabel(), label: visualIdLabel(), key: visualIdColumnKey(), sortable: true },
   { label: t('user.firstName'), key: 'firstName', sortable: true },
   { label: t('user.lastName'), key: 'lastName', sortable: true },
   { label: t('user.company'), key: 'company', sortable: true },
