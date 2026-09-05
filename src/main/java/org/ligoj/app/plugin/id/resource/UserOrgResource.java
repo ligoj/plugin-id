@@ -30,6 +30,9 @@ import org.ligoj.bootstrap.core.json.TableItem;
 import org.ligoj.bootstrap.core.json.datatable.DataTableAttributes;
 import org.ligoj.bootstrap.core.validation.ValidationJsonException;
 import org.ligoj.bootstrap.resource.system.configuration.ConfigurationResource;
+import org.ligoj.bootstrap.core.crypto.CryptoHelper;
+import org.ligoj.bootstrap.dao.system.SystemConfigurationRepository;
+import org.ligoj.bootstrap.model.system.SystemConfiguration;
 import org.ligoj.bootstrap.resource.system.session.ISessionSettingsProvider;
 import org.ligoj.bootstrap.resource.system.session.SessionSettings;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -75,6 +78,12 @@ public class UserOrgResource extends AbstractOrgResource implements ISessionSett
 	private DelegateOrgRepository delegateRepository;
 	@Autowired
 	private ConfigurationResource configuration;
+
+	@Autowired
+	private SystemConfigurationRepository configurationRepository;
+
+	@Autowired
+	private CryptoHelper cryptoHelper;
 
 	@Autowired
 	private PasswordResetAuditRepository passwordResetRepository;
@@ -1056,11 +1065,30 @@ public class UserOrgResource extends AbstractOrgResource implements ISessionSett
 			// Ignore this error
 			log.debug("User being authenticated is not defined in primary identity provider ");
 		}
-		// Add user display
-		settings.getApplicationSettings().getData().computeIfAbsent("service:id:user-display", configuration::get);
-		// Add the visual identifier configuration (see CONF_VISUAL_ID_NAME / CONF_VISUAL_ID_LABEL)
-		settings.getApplicationSettings().getData().computeIfAbsent(CONF_VISUAL_ID_NAME, configuration::get);
-		settings.getApplicationSettings().getData().computeIfAbsent(CONF_VISUAL_ID_LABEL, configuration::get);
+		// Add user display and the visual identifier configuration (see CONF_VISUAL_ID_NAME / CONF_VISUAL_ID_LABEL)
+		final var data = settings.getApplicationSettings().getData();
+		data.computeIfAbsent("service:id:user-display", this::getDisplayConfiguration);
+		data.computeIfAbsent(CONF_VISUAL_ID_NAME, this::getDisplayConfiguration);
+		data.computeIfAbsent(CONF_VISUAL_ID_LABEL, this::getDisplayConfiguration);
+	}
+
+	/**
+	 * Configuration value forwarded to the UI as-is. Display expressions such as {@code ${firstName} ${lastName}}
+	 * are placeholders for the UI, NOT for the Spring Environment: the regular resolution
+	 * ({@link ConfigurationResource#get(String)}) tries to expand them and throws — which would break every
+	 * session. On such an unresolvable placeholder, the stored value is returned raw (decrypted as needed).
+	 *
+	 * @param name The configuration name.
+	 * @return The value, or {@code null} when undefined.
+	 */
+	private String getDisplayConfiguration(final String name) {
+		try {
+			return configuration.get(name);
+		} catch (final IllegalArgumentException _) {
+			// Unresolvable placeholder: read the stored value without any resolution
+			return Optional.ofNullable(configurationRepository.findByName(name)).map(SystemConfiguration::getValue)
+					.map(StringUtils::trimToNull).map(cryptoHelper::decryptAsNeeded).orElse(null);
+		}
 	}
 
 	@Override

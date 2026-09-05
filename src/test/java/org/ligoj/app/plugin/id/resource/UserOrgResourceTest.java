@@ -1266,6 +1266,34 @@ class UserOrgResourceTest extends AbstractAppTest {
 	}
 
 	@Test
+	void decoratePlaceholderExpression() throws IllegalAccessException {
+		// `${firstName} ${lastName}` is a UI expression: the Environment resolution throws, the raw stored value is forwarded
+		final var resource = new UserOrgResource() {
+			@Override
+			public UserOrg findById(@PathParam("user") final String user) {
+				return new UserOrg();
+			}
+		};
+		final var settings = new SessionSettings();
+		FieldUtils.writeDeclaredField(settings, "userName", "JUNIT", true);
+		FieldUtils.writeDeclaredField(settings, "applicationSettings", new ApplicationSettings(), true);
+		settings.setUserSettings(new HashMap<>());
+		final var configuration = mock(ConfigurationResource.class);
+		when(configuration.get("service:id:user-display")).thenThrow(new IllegalArgumentException("Could not resolve placeholder 'firstName'"));
+		final var repository = mock(org.ligoj.bootstrap.dao.system.SystemConfigurationRepository.class);
+		final var stored = new org.ligoj.bootstrap.model.system.SystemConfiguration();
+		stored.setValue(" ${firstName} ${lastName} ");
+		when(repository.findByName("service:id:user-display")).thenReturn(stored);
+		final var cryptoHelper = mock(org.ligoj.bootstrap.core.crypto.CryptoHelper.class);
+		when(cryptoHelper.decryptAsNeeded("${firstName} ${lastName}")).thenReturn("${firstName} ${lastName}");
+		FieldUtils.writeField(resource, "configuration", configuration, true);
+		FieldUtils.writeField(resource, "configurationRepository", repository, true);
+		FieldUtils.writeField(resource, "cryptoHelper", cryptoHelper, true);
+		resource.decorate(settings);
+		Assertions.assertEquals("${firstName} ${lastName}", settings.getApplicationSettings().getData().get("service:id:user-display"));
+	}
+
+	@Test
 	void getVisualIdProperty() throws IllegalAccessException {
 		final var resource = new UserOrgResource();
 		final var configuration = mock(ConfigurationResource.class);
