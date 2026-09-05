@@ -13,7 +13,7 @@
        group (`service/id/group/<name>/exists`). The result surfaces as
        a Vuetify error message on the simple-name input. -->
   <div v-if="composite">
-    <v-text-field
+    <LigojTextField
       v-model="simpleName"
       :label="t('service:id:group-simple-name')"
       :hint="t('service:id:group-simple-name-description')"
@@ -26,7 +26,7 @@
       class="mb-2"
       required
     />
-    <v-text-field
+    <LigojTextField
       :model-value="computedGroup"
       :label="t('service:id:group')"
       :placeholder="t('service:id:group-create')"
@@ -58,7 +58,7 @@
 
 <script setup>
 import { computed, ref, watch } from 'vue'
-import { useApi, useI18nStore, LigojAutocomplete } from '@ligoj/host'
+import { LigojTextField, useApi, useI18nStore, LigojAutocomplete } from '@ligoj/host'
 
 const props = defineProps({
   modelValue: { type: [String, Number, null], default: null },

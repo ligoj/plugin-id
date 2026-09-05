@@ -55,7 +55,7 @@
                      (e.g. ou=project,dc=acme,dc=com) — there's no entity
                      list to pick from, so swap the autocomplete out for a
                      free-form text field. -->
-                <v-text-field v-if="form.type === 'TREE'" v-model="form.name" prepend-inner-icon="mdi-file-tree-outline" :label="t('delegate.resource')" :rules="[rules.required]" :hint="t('delegate.resourceDnHint')" persistent-hint
+                <LigojTextField v-if="form.type === 'TREE'" v-model="form.name" prepend-inner-icon="mdi-file-tree-outline" :label="t('delegate.resource')" :rules="[rules.required]" :hint="t('delegate.resourceDnHint')" persistent-hint
                   variant="outlined" class="mb-2" />
                 <LigojAutocomplete v-else v-model="form.name" v-model:search="resourceSearch" prepend-inner-icon="mdi-shield-key-outline" :label="t('delegate.resource')" :items="resourceDisplayItems" item-title="label" item-value="id"
                   :loading="resourceLoading" :rules="[rules.required]" :hint="t('delegate.resourceHint')" persistent-hint no-filter clearable auto-select-first variant="outlined" class="mb-2" autocomplete="off"
@@ -124,7 +124,7 @@
 
 <script setup>
 import { ref, computed, watch, nextTick } from 'vue'
-import { useApi, useAuthStore, useEditExtensions, useFormGuard, useErrorStore, useI18nStore, LigojSelect } from '@ligoj/host'
+import { LigojTextField, useApi, useAuthStore, useEditExtensions, useFormGuard, useErrorStore, useI18nStore, LigojSelect } from '@ligoj/host'
 import { TYPE_ICONS, RECEIVER_TYPES, RESOURCE_TYPES } from '../composables/delegateTypes.js'
 import { VibrantConfirmDialog as LigojConfirmDialog, LjDialog, LjButton, LigojAutocomplete } from '@ligoj/host'
 import CreateAnotherToggle from '../components/CreateAnotherToggle.vue'
@@ -158,7 +158,7 @@ const createAnother = ref(false)
 const isEdit = computed(() => props.delegateId !== null && props.delegateId !== undefined && props.delegateId !== '')
 
 // Plugin extension point (`editExtension` feature, target 'delegate').
-const { components: extensionComponents, footers: extensionFooters, apiPath: extensionApiPath, context: extensionContext } = useEditExtensions(
+const { components: extensionComponents, footers: extensionFooters, apiPath: extensionApiPath, context: extensionContext, prepare: extensionPrepare } = useEditExtensions(
   'delegate', 'rest/security/delegate', () => ({ mode: isEdit.value ? 'edit' : 'create', delegateId: props.delegateId }))
 
 /** v-select item-title callback: resolves the i18n key from the item object. */
@@ -435,10 +435,12 @@ async function save() {
   // written extra keys into it.
   const payload = { ...form.value }
 
+  const body = await extensionPrepare(isEdit.value ? { id: Number(props.delegateId), ...payload } : payload)
+  if (body === false) return // a plugin hook aborted the save
   if (isEdit.value) {
-    await api.put(extensionApiPath.value, { id: Number(props.delegateId), ...payload })
+    await api.put(extensionApiPath.value, body)
   } else {
-    await api.post(extensionApiPath.value, payload)
+    await api.post(extensionApiPath.value, body)
   }
   saving.value = false
   markClean()

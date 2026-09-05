@@ -51,7 +51,7 @@
       <v-form ref="formRef" @submit.prevent="save">
         <LjAvailabilityField v-model="editForm.name" v-model:taken="nameTaken" :endpoint="'service/id/container-scope/' + activeTab" :enabled="!editTarget?.id && !demoMode"
           prepend-inner-icon="mdi-form-textbox" :label="t('common.name')" :disabled="readOnly" class="mb-2" autofocus />
-        <v-text-field v-model="editForm.dn" prepend-inner-icon="mdi-file-tree-outline" :label="t('containerScope.dn')" variant="outlined"
+        <LigojTextField v-model="editForm.dn" prepend-inner-icon="mdi-file-tree-outline" :label="t('containerScope.dn')" variant="outlined"
           :disabled="readOnly" :rules="[rules.required]" />
         <v-checkbox v-model="editForm.locked" :label="t('containerScope.locked')" :disabled="readOnly" color="primary" density="compact" hide-details />
         <p v-if="editForm.locked" class="locked-note"><v-icon size="14">mdi-alert-outline</v-icon>{{ t('containerScope.lockedHint') }}</p>
@@ -75,7 +75,7 @@
 
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue'
-import { useApi, useAppStore, useEditExtensions, useErrorStore, useI18nStore } from '@ligoj/host'
+import { LigojTextField, useApi, useAppStore, useEditExtensions, useErrorStore, useI18nStore } from '@ligoj/host'
 import { TYPE_ICONS } from '../composables/delegateTypes.js'
 import { VibrantDataTable, VibrantConfirmDialog as LigojConfirmDialog, LjPageHeader, LjButton, LjSearch, LjSegmented, LjDialog, LjAvailabilityField, LjStatus } from '@ligoj/host'
 
@@ -125,7 +125,7 @@ const editTarget = ref(null)
 const editForm = ref({ name: '', dn: '', locked: false })
 
 // Plugin extension point (`editExtension` feature, target 'container-scope').
-const { components: extensionComponents, footers: extensionFooters, apiPath: extensionApiPath, context: extensionContext } = useEditExtensions(
+const { components: extensionComponents, footers: extensionFooters, apiPath: extensionApiPath, context: extensionContext, prepare: extensionPrepare } = useEditExtensions(
   'container-scope', 'rest/service/id/container-scope',
   () => ({ mode: editTarget.value?.id ? 'edit' : 'create', scope: editTarget.value, type: activeTab.value }))
 const saving = ref(false)
@@ -186,10 +186,12 @@ async function save() {
     ...editForm.value,
     type: activeTab.value.toUpperCase(),
   }
+  const body = await extensionPrepare(editTarget.value?.id ? { id: editTarget.value.id, ...payload } : payload)
+  if (body === false) return // a plugin hook aborted the save
   if (editTarget.value?.id) {
-    await api.put(extensionApiPath.value, { id: editTarget.value.id, ...payload })
+    await api.put(extensionApiPath.value, body)
   } else {
-    await api.post(extensionApiPath.value, payload)
+    await api.post(extensionApiPath.value, body)
   }
   saving.value = false
   editDialog.value = false

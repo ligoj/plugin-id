@@ -133,7 +133,7 @@ const scopesLoading = ref(false)
 const isEdit = computed(() => props.groupId != null && props.groupId !== '' && props.groupId !== 'new')
 
 // Plugin extension point (`editExtension` feature, target 'group').
-const { components: extensionComponents, footers: extensionFooters, apiPath: extensionApiPath, context: extensionContext } = useEditExtensions(
+const { components: extensionComponents, footers: extensionFooters, apiPath: extensionApiPath, context: extensionContext, prepare: extensionPrepare } = useEditExtensions(
   'group', 'rest/service/id/group', () => ({ mode: isEdit.value ? 'edit' : 'create', groupId: props.groupId }))
 
 const form = ref({
@@ -278,10 +278,12 @@ async function save() {
   // override the scope name with its id and normalize the parent.
   const payload = { ...form.value, scope: scopeEntry.id, parent: form.value.parent || null }
   try {
+    const body = await extensionPrepare(payload)
+    if (body === false) return // a plugin hook aborted the save
     if (isEdit.value) {
-      await api.put(extensionApiPath.value, payload)
+      await api.put(extensionApiPath.value, body)
     } else {
-      await api.post(extensionApiPath.value, payload)
+      await api.post(extensionApiPath.value, body)
     }
     // "Create another": ask the parent to keep the dialog open (keepOpen)
     // and reset the form here for the next entry instead of closing.

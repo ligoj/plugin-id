@@ -20,10 +20,10 @@
               <!-- First + last name grouped on a single row (stacks below sm). -->
               <v-row>
                 <v-col cols="12" sm="6">
-                  <v-text-field v-model="form.firstName" :label="t('user.firstName')" prepend-inner-icon="mdi-account-outline" :rules="[rules.required]" variant="outlined" class="mb-2" />
+                  <LigojTextField v-model="form.firstName" :label="t('user.firstName')" prepend-inner-icon="mdi-account-outline" :rules="[rules.required]" variant="outlined" class="mb-2" />
                 </v-col>
                 <v-col cols="12" sm="6">
-                  <v-text-field v-model="form.lastName" :label="t('user.lastName')" prepend-inner-icon="mdi-account-outline" :rules="[rules.required]" variant="outlined" class="mb-2" />
+                  <LigojTextField v-model="form.lastName" :label="t('user.lastName')" prepend-inner-icon="mdi-account-outline" :rules="[rules.required]" variant="outlined" class="mb-2" />
                 </v-col>
               </v-row>
               <!-- Auto-suggest for company. Queries rest/service/id/company as the
@@ -126,7 +126,7 @@
 
 <script setup>
 import { ref, computed, watch } from 'vue'
-import { LigojCombobox, useApi, useAuthStore, useEditExtensions, useFormGuard, useErrorStore, useI18nStore } from '@ligoj/host'
+import { LigojTextField, LigojCombobox, useApi, useAuthStore, useEditExtensions, useFormGuard, useErrorStore, useI18nStore } from '@ligoj/host'
 import { TYPE_ICONS } from '../composables/delegateTypes.js'
 // Vibrant replacement for the host's confirm dialog (aliased → tags unchanged).
 import { VibrantConfirmDialog as LigojConfirmDialog, LjDialog, LjButton, LjAvailabilityField, LigojAutocomplete } from '@ligoj/host'
@@ -180,7 +180,7 @@ const isEdit = computed(() => !!props.userId)
 
 // Plugin extension point (`editExtension` feature, target 'user'): contributed
 // body components + optional replacement REST resource for the save call.
-const { components: extensionComponents, footers: extensionFooters, apiPath: extensionApiPath, context: extensionContext } = useEditExtensions(
+const { components: extensionComponents, footers: extensionFooters, apiPath: extensionApiPath, context: extensionContext, prepare: extensionPrepare } = useEditExtensions(
   'user', 'rest/service/id/user', () => ({ mode: isEdit.value ? 'edit' : 'create', userId: props.userId }))
 
 const form = ref({
@@ -548,10 +548,12 @@ async function save() {
     groups: groups.value.map(g => g.name || g),
   }
 
+  const body = await extensionPrepare(payload)
+  if (body === false) return // a plugin hook aborted the save
   if (isEdit.value) {
-    await api.put(extensionApiPath.value, payload)
+    await api.put(extensionApiPath.value, body)
   } else {
-    await api.post(extensionApiPath.value, payload)
+    await api.post(extensionApiPath.value, body)
   }
   saving.value = false
   markClean()

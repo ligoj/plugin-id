@@ -149,7 +149,7 @@ let scopeDebounce = null
 const isEdit = computed(() => props.companyId != null && props.companyId !== '' && props.companyId !== 'new')
 
 // Plugin extension point (`editExtension` feature, target 'company').
-const { components: extensionComponents, footers: extensionFooters, apiPath: extensionApiPath, context: extensionContext } = useEditExtensions(
+const { components: extensionComponents, footers: extensionFooters, apiPath: extensionApiPath, context: extensionContext, prepare: extensionPrepare } = useEditExtensions(
   'company', 'rest/service/id/company', () => ({ mode: isEdit.value ? 'edit' : 'create', companyId: props.companyId }))
 
 const form = ref({
@@ -282,10 +282,12 @@ async function save() {
   delete payload.locked
   delete payload.count
   try {
+    const body = await extensionPrepare(payload)
+    if (body === false) return // a plugin hook aborted the save
     if (isEdit.value) {
-      await api.put(extensionApiPath.value, payload)
+      await api.put(extensionApiPath.value, body)
     } else {
-      await api.post(extensionApiPath.value, payload)
+      await api.post(extensionApiPath.value, body)
     }
     // "Create another": ask the parent to keep the dialog open (keepOpen)
     // and reset the form here for the next entry instead of closing.
