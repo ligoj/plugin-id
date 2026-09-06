@@ -130,6 +130,12 @@ public class UserOrgResource extends AbstractOrgResource implements ISessionSett
 	public static final String CONF_VISUAL_ID_LABEL = "service:id:visual-id-label";
 
 	/**
+	 * Session data key forwarding the custom attribute names declared by the primary identity provider, comma
+	 * separated, so the user edition form can edit them.
+	 */
+	public static final String CONF_CUSTOM_ATTRIBUTES = "service:id:custom-attributes";
+
+	/**
 	 * Sort key accepted by {@link #findAll} and mapped to the configured visual identifier property.
 	 */
 	public static final String VISUAL_ID_COLUMN = "visual-id";
@@ -1070,6 +1076,13 @@ public class UserOrgResource extends AbstractOrgResource implements ISessionSett
 		data.computeIfAbsent("service:id:user-display", this::getDisplayConfiguration);
 		data.computeIfAbsent(CONF_VISUAL_ID_NAME, this::getDisplayConfiguration);
 		data.computeIfAbsent(CONF_VISUAL_ID_LABEL, this::getDisplayConfiguration);
+
+		// Add the custom attribute names of the primary identity provider, edited by the user form
+		try {
+			data.computeIfAbsent(CONF_CUSTOM_ATTRIBUTES, k -> String.join(",", getUserRepository().getCustomAttributes()));
+		} catch (final RuntimeException re) {
+			log.debug("Custom attributes are not available from the primary identity provider", re);
+		}
 	}
 
 	/**

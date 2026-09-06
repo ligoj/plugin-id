@@ -63,7 +63,7 @@
          mount/unmount, so the content unmounts AFTER the close transition.
          Adding `v-if="editDialog"` here removed the panel synchronously while
          the dialog was still animating out, which could orphan the header. -->
-    <LjDialog v-model="editDialog" :title="editingId ? `${t('group.detailsTitle')} ${editingId}` : t('group.new')" :icon="editingId ? 'mdi-eye-outline' : 'mdi-account-group'" :max-width="600">
+    <LjDialog v-model="editDialog" :title="editingId ? t('group.detailsTitle') : t('group.new')" :badge="editingId || ''" :icon="editingId ? 'mdi-eye-outline' : 'mdi-account-group'" :max-width="600">
       <GroupEditPanel :key="editingId ?? 'new'" :group-id="editingId" @saved="onEditSaved" @deleted="onEditDeleted" @cancel="editDialog = false" />
     </LjDialog>
 

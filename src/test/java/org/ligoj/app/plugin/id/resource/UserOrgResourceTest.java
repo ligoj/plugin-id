@@ -1239,15 +1239,32 @@ class UserOrgResourceTest extends AbstractAppTest {
 
 	@Test
 	void decorate() throws IllegalAccessException {
-		decorate(new UserOrgResource() {
+		// No identity provider on this bare resource: the custom attribute names are simply absent
+		final var settings = decorate(new UserOrgResource() {
 			@Override
 			public UserOrg findById(@PathParam("user") final String user) {
 				return new UserOrg();
 			}
 		});
+		Assertions.assertNull(settings.getApplicationSettings().getData().get(UserOrgResource.CONF_CUSTOM_ATTRIBUTES));
 	}
 
-	private void decorate(UserOrgResource resource) throws IllegalAccessException {
+	@Test
+	void decorateCustomAttributes() throws IllegalAccessException {
+		when(userRepository.getCustomAttributes()).thenReturn(new String[] { "badge", "uidFonctionnel" });
+		final var resource = new UserOrgResource() {
+			@Override
+			public UserOrg findById(@PathParam("user") final String user) {
+				return new UserOrg();
+			}
+		};
+		resource.setIamProvider(new IamProvider[] { iamProvider });
+		final var settings = decorate(resource);
+		Assertions.assertEquals("badge,uidFonctionnel",
+				settings.getApplicationSettings().getData().get(UserOrgResource.CONF_CUSTOM_ATTRIBUTES));
+	}
+
+	private SessionSettings decorate(UserOrgResource resource) throws IllegalAccessException {
 		var settings = new SessionSettings();
 		FieldUtils.writeDeclaredField(settings, "userName", "JUNIT", true);
 		FieldUtils.writeDeclaredField(settings, "applicationSettings", new ApplicationSettings(), true);
@@ -1263,6 +1280,7 @@ class UserOrgResourceTest extends AbstractAppTest {
 				settings.getApplicationSettings().getData().get(UserOrgResource.CONF_VISUAL_ID_NAME));
 		Assertions.assertEquals("Badge",
 				settings.getApplicationSettings().getData().get(UserOrgResource.CONF_VISUAL_ID_LABEL));
+		return settings;
 	}
 
 	@Test

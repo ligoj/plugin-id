@@ -58,7 +58,7 @@
     <!-- No `v-if` on the panel: the lazy v-dialog owns the mount/unmount so the
          content tears down after the close transition (avoids orphaning the
          header). See GroupListView for the same fix. -->
-    <LjDialog v-model="editDialog" :title="editingId ? `${t('company.detailsTitle')} ${editingId}` : t('company.new')" :icon="editingId ? 'mdi-eye-outline' : 'mdi-office-building'" :max-width="600">
+    <LjDialog v-model="editDialog" :title="editingId ? t('company.detailsTitle') : t('company.new')" :badge="editingId || ''" :icon="editingId ? 'mdi-eye-outline' : 'mdi-office-building'" :max-width="600">
       <CompanyEditPanel :key="editingId ?? 'new'" :company-id="editingId" @saved="onEditSaved" @deleted="onEditDeleted" @cancel="editDialog = false" />
     </LjDialog>
 

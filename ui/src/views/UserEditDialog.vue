@@ -5,7 +5,7 @@
          user" button and the row gear menu. model-value is bound one-way
          so a close request (Cancel / Esc / scrim) can be vetoed by the
          unsaved-changes guard before it actually closes. -->
-    <LjDialog :model-value="modelValue" :title="isEdit ? `${t('user.edit')} ${userId}` : t('user.new')" :icon="TYPE_ICONS.USER" :max-width="600" @update:model-value="onDialogModel">
+    <LjDialog :model-value="modelValue" :title="isEdit ? t('user.edit') : t('user.new')" :badge="isEdit ? titleBadge : ''" :icon="TYPE_ICONS.USER" :max-width="600" @update:model-value="onDialogModel">
       <v-alert v-if="demoMode" type="info" variant="tonal" density="compact" class="mb-4">
             {{ t('user.demoEdit') }}
           </v-alert>
@@ -70,6 +70,12 @@
                   </v-list-item>
                 </template>
               </LigojAutocomplete>
+              <!-- Custom attributes of the identity provider (names from the session data
+                   `service:id:custom-attributes`, merged with the ones present on the user). -->
+              <template v-if="attributeNames.length">
+                <div class="text-subtitle-2 text-medium-emphasis mb-2 actions-label">{{ t('user.customAttributes') }}</div>
+                <LigojTextField v-for="name in attributeNames" :key="name" v-model="form.customAttributes[name]" :label="customAttributeLabel(name)" prepend-inner-icon="mdi-tag-outline" variant="outlined" class="mb-2" />
+              </template>
             </v-form>
 
             <template v-if="isEdit">
@@ -128,6 +134,8 @@
 import { ref, computed, watch } from 'vue'
 import { LigojTextField, LigojCombobox, useApi, useAuthStore, useEditExtensions, useFormGuard, useErrorStore, useI18nStore } from '@ligoj/host'
 import { TYPE_ICONS } from '../composables/delegateTypes.js'
+import { visualIdLabel, visualIdName, visualIdValue } from '../visualId.js'
+import { customAttributeNames, toCustomAttributesPayload } from '../customAttributes.js'
 // Replacement for the host's confirm dialog (aliased → tags unchanged).
 import { LjConfirmDialog as LigojConfirmDialog, LjDialog, LjButton, LjAvailabilityField, LigojAutocomplete } from '@ligoj/host'
 import CreateAnotherToggle from '../components/CreateAnotherToggle.vue'
@@ -177,6 +185,15 @@ const groupsPreloaded = ref(false)
 let groupDebounce = null
 
 const isEdit = computed(() => !!props.userId)
+// Loaded user (edit mode): the title highlights its visual identifier (login by default).
+const loadedUser = ref(null)
+const titleBadge = computed(() => (loadedUser.value ? visualIdValue(loadedUser.value) : props.userId) || '')
+// Custom attribute names to edit: provider configuration (session data) merged with the loaded user.
+const attributeNames = ref([])
+// The attribute serving as visual identifier is labelled like the list column (e.g. "Matricule"), the others by name.
+function customAttributeLabel(name) {
+  return visualIdName() === 'customAttributes.' + name ? visualIdLabel() + ' (' + name + ')' : name
+}
 
 // Plugin extension point (`editExtension` feature, target 'user'): contributed
 // body components + optional replacement REST resource for the save call.
@@ -193,6 +210,8 @@ const form = ref({
   // Chantier D4: emails as a list. Backend response carries `mails: [...]`;
   // a string fallback at load time keeps tolerance for any legacy payload.
   mails: [],
+  // Custom attributes of the provider, one key per name of `attributeNames`.
+  customAttributes: {},
 })
 
 // Set by LjAvailabilityField when the typed login already exists (create only).
@@ -390,8 +409,10 @@ function loadDemoUser(id) {
 /** Reset all form state to a clean create-mode baseline. Called every time
  *  the dialog opens so a previous edit never bleeds into the next one. */
 function resetForm() {
-  form.value = { id: '', firstName: '', lastName: '', company: null, mails: [] }
+  form.value = { id: '', firstName: '', lastName: '', company: null, mails: [], customAttributes: {} }
   groups.value = []
+  loadedUser.value = null
+  attributeNames.value = []
   locked.value = false
   isolated.value = false
   demoMode.value = false
@@ -421,6 +442,9 @@ async function loadOnOpen() {
       // for any legacy payload that stored a single email as `mail`.
       form.value.mails = Array.isArray(data.mails) ? [...data.mails]
         : data.mail ? [data.mail] : []
+      loadedUser.value = data
+      attributeNames.value = customAttributeNames(data)
+      form.value.customAttributes = Object.fromEntries(attributeNames.value.map((n) => [n, data.customAttributes?.[n] ?? '']))
       // Normalize groups to an array of names (strings) so v-autocomplete
       // with item-value="name" can roundtrip them through v-model.
       groups.value = (data.groups || []).map(g => g.name || g)
@@ -455,6 +479,8 @@ async function loadOnOpen() {
     // Preload the group list so the Groups dropdown is instant when opened.
     // Do NOT auto-open it: initial focus belongs to the login field.
     await preloadGroups()
+    attributeNames.value = customAttributeNames(null)
+    form.value.customAttributes = Object.fromEntries(attributeNames.value.map((n) => [n, '']))
   }
   // Snapshot the loaded state so the guard only flags real edits.
   initGuard()
@@ -546,6 +572,8 @@ async function save() {
     // groups is an array of names (strings). Defensive `.map(g => g.name || g)`
     // in case any legacy object slipped through.
     groups: groups.value.map(g => g.name || g),
+    // Every known custom attribute; a blank value is sent as null so the provider removes it.
+    customAttributes: toCustomAttributesPayload(attributeNames.value, form.value.customAttributes),
   }
 
   const body = await extensionPrepare(payload)

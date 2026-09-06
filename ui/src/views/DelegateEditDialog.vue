@@ -6,7 +6,7 @@
          one-way so a close request (Cancel / Esc / scrim) can be vetoed
          by the unsaved-changes guard before it actually closes — same
          pattern as UserEditDialog. -->
-    <LjDialog :model-value="modelValue" :title="isEdit ? t('delegate.edit') : t('delegate.new')" :icon="TYPE_ICONS.DELEGATE" :max-width="640" @update:model-value="onDialogModel">
+    <LjDialog :model-value="modelValue" :title="isEdit ? t('delegate.edit') : t('delegate.new')" :badge="isEdit ? (form.receiver || '#' + delegateId) : ''" :icon="TYPE_ICONS.DELEGATE" :max-width="640" @update:model-value="onDialogModel">
       <v-skeleton-loader v-if="loading" type="article" />
 
           <v-form v-else ref="formRef" @submit.prevent="save">
