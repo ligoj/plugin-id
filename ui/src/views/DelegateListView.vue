@@ -1,11 +1,11 @@
 <!--
-  DelegatesView — 2026 "Vibrant" Delegations list (plugin-id). Same recipe:
-  VibrantDataTable + reused DelegateEditDialog (Vibrant) + VibrantConfirmDialog,
+  DelegatesView — Delegations list (plugin-id). Same recipe:
+  LjDataTable + reused DelegateEditDialog + LjConfirmDialog,
   on the security/delegate endpoint. Columns: receiver, resource, admin, write.
 -->
 <template>
   <div class="delegates lj-surface">
-    <LjPageHeader :title="t('delegate.title')" :subtitle="t('delegate.subtitle2026')"
+    <LjPageHeader :title="t('delegate.title')" :subtitle="t('delegate.subtitle')"
       actions-target="delegate" :actions-context="toolbarContext">
       <template #actions>
         <LjSearch v-model="dt.search.value" :placeholder="t('delegate.searchPlaceholder') || t('common.search')" @input="onSearch" />
@@ -21,7 +21,7 @@
 
     <v-alert v-if="dt.error.value" type="warning" variant="tonal" class="mb-4" rounded="lg">{{ dt.error.value }}</v-alert>
 
-    <VibrantDataTable v-if="!dt.error.value" :headers="headers" :items="dt.items.value" :items-length="dt.totalItems.value" :loading="dt.loading.value" selectable v-model="selected" item-value="id"
+    <LjDataTable v-if="!dt.error.value" :headers="headers" :items="dt.items.value" :items-length="dt.totalItems.value" :loading="dt.loading.value" selectable v-model="selected" item-value="id"
       default-sort="receiver" :fetch-all="dt.loadAll" filename="delegates.csv" @update:options="loadData" @row-click="(item) => openDialog(item.id)">
       <template #cell.receiver="{ item }">
         <span class="rcv">
@@ -59,7 +59,7 @@
           </div>
         </v-menu>
       </template>
-    </VibrantDataTable>
+    </LjDataTable>
 
     <LigojConfirmDialog v-model="deleteDialog" :title="t('delegate.deleteTitle')" :icon="TYPE_ICONS.DELEGATE" :confirm-label="t('common.delete')" confirm-color="error" :loading="deleting"
       @confirm="confirmDelete">
@@ -78,7 +78,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { useDataTable, useApi, useAppStore, useAuthStore, useI18nStore } from '@ligoj/host'
 import { TYPE_ICONS } from '../composables/delegateTypes.js'
-import { VibrantDataTable, VibrantConfirmDialog as LigojConfirmDialog, LjPageHeader, LjButton, LjSearch, LjStatus } from '@ligoj/host'
+import { LjDataTable, LjConfirmDialog as LigojConfirmDialog, LjPageHeader, LjButton, LjSearch, LjStatus } from '@ligoj/host'
 import DelegateEditDialog from './DelegateEditDialog.vue'
 
 const appStore = useAppStore()

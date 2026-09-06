@@ -128,8 +128,8 @@
 import { ref, computed, watch } from 'vue'
 import { LigojTextField, LigojCombobox, useApi, useAuthStore, useEditExtensions, useFormGuard, useErrorStore, useI18nStore } from '@ligoj/host'
 import { TYPE_ICONS } from '../composables/delegateTypes.js'
-// Vibrant replacement for the host's confirm dialog (aliased → tags unchanged).
-import { VibrantConfirmDialog as LigojConfirmDialog, LjDialog, LjButton, LjAvailabilityField, LigojAutocomplete } from '@ligoj/host'
+// Replacement for the host's confirm dialog (aliased → tags unchanged).
+import { LjConfirmDialog as LigojConfirmDialog, LjDialog, LjButton, LjAvailabilityField, LigojAutocomplete } from '@ligoj/host'
 import CreateAnotherToggle from '../components/CreateAnotherToggle.vue'
 
 const props = defineProps({
@@ -657,7 +657,7 @@ async function confirmAction() {
 /* Selected chips inside group/email fields → match the list's pill look. */
 :deep(.v-chip) { border-radius: var(--lj-radius-sm, 8px); font-weight: 600; }
 
-/* Account-actions list (edit mode) — use the Vibrant font, not Roboto. */
+/* Account-actions list (edit mode) — use the display font, not Roboto. */
 :deep(.v-list) { border-color: var(--border, rgba(var(--v-theme-on-surface), .14)) !important; border-radius: var(--radius, var(--lj-radius, 20px)) !important; }
 :deep(.v-list-item) { border-radius: var(--lj-radius-sm, 9px); }
 :deep(.v-list-item-title) { font-family: var(--font, "Bricolage Grotesque", system-ui, sans-serif); font-weight: 600; font-size: 14px; }

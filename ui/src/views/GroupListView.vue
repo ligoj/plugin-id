@@ -1,13 +1,13 @@
 <!--
-  GroupsView — 2026 "Vibrant" Groups list (plugin-id). Mirrors UsersView:
-  VibrantDataTable + reused logic (useDataTable on service/id/group), Vibrant
+  GroupsView — Groups list (plugin-id). Mirrors UsersView:
+  LjDataTable + reused logic (useDataTable on service/id/group),
   page header/toolbar, gear popmenu, and the reused GroupEditPanel (in a
-  Vibrant dialog) + the global GroupMembersDialog mounted locally (the
+  LjDialog) + the global GroupMembersDialog mounted locally (the
   standalone app doesn't run the plugin install() that normally mounts it).
 -->
 <template>
   <div class="groups lj-surface">
-    <LjPageHeader :title="t('group.title')" :subtitle="t('group.subtitle2026')"
+    <LjPageHeader :title="t('group.title')" :subtitle="t('group.subtitle')"
       actions-target="group" :actions-context="toolbarContext">
       <template #actions>
         <LjSearch v-model="dt.search.value" :placeholder="t('group.searchPlaceholder') || t('common.search')" @input="onSearch" />
@@ -29,7 +29,7 @@
       {{ t('user.demoMode') }}
     </v-alert>
 
-    <VibrantDataTable v-if="!dt.error.value" :headers="headers" :items="dt.items.value" :items-length="dt.totalItems.value" :loading="dt.loading.value" selectable v-model="selected" item-value="name"
+    <LjDataTable v-if="!dt.error.value" :headers="headers" :items="dt.items.value" :items-length="dt.totalItems.value" :loading="dt.loading.value" selectable v-model="selected" item-value="name"
       default-sort="name" :fetch-all="dt.loadAll" filename="groups.csv" @update:options="loadData" @row-click="(item) => openEdit(item.name)">
       <template #cell.name="{ item }">
         <span class="gname">{{ item.name }}</span>
@@ -56,7 +56,7 @@
           </div>
         </v-menu>
       </template>
-    </VibrantDataTable>
+    </LjDataTable>
 
     <!-- Group view / create dialog (shared chrome around the reused panel). -->
     <!-- No `v-if` on the panel: the v-dialog is lazy and owns the
@@ -84,7 +84,7 @@ import { useRoute } from 'vue-router'
 import { useDataTable, useApi, useAppStore, useAuthStore, useErrorStore, useI18nStore } from '@ligoj/host'
 import { TYPE_ICONS } from '../composables/delegateTypes.js'
 import { useGroupMembersDialog } from '../composables/useGroupMembersDialog.js'
-import { VibrantDataTable, VibrantConfirmDialog as LigojConfirmDialog, LjPageHeader, LjButton, LjSearch, LjDialog, LjStatus } from '@ligoj/host'
+import { LjDataTable, LjConfirmDialog as LigojConfirmDialog, LjPageHeader, LjButton, LjSearch, LjDialog, LjStatus } from '@ligoj/host'
 import GroupEditPanel from '../components/GroupEditPanel.vue'
 
 const route = useRoute()

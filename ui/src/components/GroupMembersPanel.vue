@@ -10,7 +10,7 @@
        that made the dialog cheap: backend API contract is "group name
        → members list", no project / subscription context required. -->
   <div class="gmpanel lj-surface">
-    <!-- Add-member bar: server-side autocomplete + Vibrant CTA. -->
+    <!-- Add-member bar: server-side autocomplete + CTA. -->
     <div class="addbar">
       <LigojAutocomplete v-model="newMember" v-model:search="searchTerm" :label="t('id.group.addPlaceholder')" :items="searchResults" item-title="label" item-value="id" :loading="searching" no-filter
         clearable variant="outlined" density="comfortable" rounded="lg" hide-details autocomplete="off" class="addsel" prepend-inner-icon="mdi-account-search"
@@ -24,7 +24,7 @@
       {{ dt.error.value === 'internal' ? t('user.noProviderMsg') : dt.error.value }}
     </v-alert>
 
-    <VibrantDataTable v-if="!dt.error.value" :headers="headers" :items="dt.items.value" :items-length="dt.totalItems.value" :loading="dt.loading.value"
+    <LjDataTable v-if="!dt.error.value" :headers="headers" :items="dt.items.value" :items-length="dt.totalItems.value" :loading="dt.loading.value"
       item-value="id" :default-sort="visualIdColumnKey()" :fetch-all="dt.loadAll" filename="members.csv" @update:options="loadData">
       <template #[`cell.${visualIdColumnKey()}`]="{ item }">
         <span class="login"><v-icon size="16" class="login-ic">mdi-account-circle</v-icon><span class="mono">{{ visualIdValue(item) }}</span></span>
@@ -54,7 +54,7 @@
           </template>
         </v-tooltip>
       </template>
-    </VibrantDataTable>
+    </LjDataTable>
 
     <!-- Confirm dialog. Vuetify teleports it to <body>, so being
          nested inside this panel — which itself can be inside a
@@ -75,7 +75,7 @@ import {
 } from '@ligoj/host'
 import { visualIdColumnKey, visualIdLabel, visualIdValue } from '../visualId.js'
 import { TYPE_ICONS } from '../composables/delegateTypes.js'
-import { VibrantConfirmDialog as LigojConfirmDialog, VibrantDataTable, LjButton, LjSearch, LigojAutocomplete } from '@ligoj/host'
+import { LjConfirmDialog as LigojConfirmDialog, LjDataTable, LjButton, LjSearch, LigojAutocomplete } from '@ligoj/host'
 
 const props = defineProps({
   /**

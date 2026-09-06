@@ -1,15 +1,15 @@
 <!--
-  UsersView — 2026 "Vibrant" Users list (plugin-id), mockup-faithful.
+  UsersView — Users list (plugin-id), mockup-faithful.
 
-  Renders the validated 2026 mockup language (page header + toolbar +
-  VibrantDataTable: tinted header, mailchips, group chips, mono login,
+  Renders the validated mockup language (page header + toolbar +
+  LjDataTable: tinted header, mailchips, group chips, mono login,
   gear popmenu, "Lignes : N / a–b sur total" footer) while REUSING the
   real logic: useDataTable for fetch/sort/pagination/search, and the core
   CRUD dialogs (UserEditDialog, LigojConfirmDialog) via @ligoj/host.
 -->
 <template>
   <div class="users lj-surface">
-    <LjPageHeader :title="t('user.title')" :subtitle="t('user.subtitle2026')"
+    <LjPageHeader :title="t('user.title')" :subtitle="t('user.subtitle')"
       actions-target="user" :actions-context="toolbarContext">
       <template #actions>
         <LjSearch v-model="dt.search.value" :placeholder="t('user.searchPlaceholder') || t('common.search')" @input="onSearch" />
@@ -32,7 +32,7 @@
       {{ t('user.demoMode') }}
     </v-alert>
 
-    <VibrantDataTable v-if="!dt.error.value" :headers="headers" :items="dt.items.value" :items-length="dt.totalItems.value" :loading="dt.loading.value" selectable v-model="selected" item-value="id"
+    <LjDataTable v-if="!dt.error.value" :headers="headers" :items="dt.items.value" :items-length="dt.totalItems.value" :loading="dt.loading.value" selectable v-model="selected" item-value="id"
       :default-sort="visualIdColumnKey()" :fetch-all="dt.loadAll" filename="users.csv" @update:options="loadData" @row-click="(item) => openEdit(item.id)">
       <template #[`cell.${visualIdColumnKey()}`]="{ item }">
         <span class="mono">{{ visualIdValue(item) }}</span>
@@ -80,7 +80,7 @@
           <v-icon v-else size="18">mdi-upload</v-icon>{{ importing ? (t('common.importing') || 'Import…') : (t('common.import') || 'Importer') }}
         </button>
       </template>
-    </VibrantDataTable>
+    </LjDataTable>
 
     <!-- Single-user delete: name in bold red via the default slot. -->
     <LigojConfirmDialog v-model="deleteDialog" :title="t('user.deleteTitle')" :icon="TYPE_ICONS.USER" :confirm-label="t('common.delete')" confirm-color="error" :loading="deleting"
@@ -105,9 +105,9 @@ import { ref, computed, onMounted } from 'vue'
 import { useDataTable, useApi, useAppStore, useAuthStore, useErrorStore, useI18nStore } from '@ligoj/host'
 import { visualIdColumnKey, visualIdLabel, visualIdValue } from '../visualId.js'
 import { TYPE_ICONS } from '../composables/delegateTypes.js'
-// Shared 2026 chrome: table, confirm dialog (aliased so <LigojConfirmDialog>
+// Shared chrome: table, confirm dialog (aliased so <LigojConfirmDialog>
 // tags need no change), page header, buttons, search — all from the host.
-import { VibrantDataTable, VibrantConfirmDialog as LigojConfirmDialog, LjPageHeader, LjButton, LjSearch, LjStatus } from '@ligoj/host'
+import { LjDataTable, LjConfirmDialog as LigojConfirmDialog, LjPageHeader, LjButton, LjSearch, LjStatus } from '@ligoj/host'
 import UserEditDialog from './UserEditDialog.vue'
 
 const appStore = useAppStore()
@@ -222,7 +222,7 @@ function openCreate() { editUserId.value = null; editDialog.value = true }
 function openEdit(id) { editUserId.value = id; editDialog.value = true }
 function onUserSaved() { dt.load(lastOptions) }
 
-/* Export / Copy are provided by VibrantDataTable's tools cog (it calls the
+/* Export / Copy are provided by LjDataTable's tools cog (it calls the
    `:fetch-all="dt.loadAll"` we pass to pull every row). No view-local CSV
    code needed. */
 

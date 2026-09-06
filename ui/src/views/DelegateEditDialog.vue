@@ -126,7 +126,7 @@
 import { ref, computed, watch, nextTick } from 'vue'
 import { LigojTextField, useApi, useAuthStore, useEditExtensions, useFormGuard, useErrorStore, useI18nStore, LigojSelect } from '@ligoj/host'
 import { TYPE_ICONS, RECEIVER_TYPES, RESOURCE_TYPES } from '../composables/delegateTypes.js'
-import { VibrantConfirmDialog as LigojConfirmDialog, LjDialog, LjButton, LigojAutocomplete } from '@ligoj/host'
+import { LjConfirmDialog as LigojConfirmDialog, LjDialog, LjButton, LigojAutocomplete } from '@ligoj/host'
 import CreateAnotherToggle from '../components/CreateAnotherToggle.vue'
 
 const props = defineProps({

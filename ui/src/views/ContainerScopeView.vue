@@ -1,17 +1,17 @@
 <!--
-  ScopesView — 2026 "Vibrant" Container scopes (plugin-id ContainerScopeView).
-  Tabs (group / company), small client-side dataset fed to VibrantDataTable,
-  inline create/edit dialog + VibrantConfirmDialog. Endpoint:
+  ScopesView — Container scopes (plugin-id ContainerScopeView).
+  Tabs (group / company), small client-side dataset fed to LjDataTable,
+  inline create/edit dialog + LjConfirmDialog. Endpoint:
   rest/service/id/container-scope/{group|company}.
 
   Chrome (header, tabs, search, primary button, dialog, row menu) comes from
   the shared host components (LjPageHeader / LjSegmented / LjSearch / LjButton
   / LjDialog) + the `.lj-surface` token class — so this view carries only its
-  own cell styling, not the repeated 2026 boilerplate.
+  own cell styling, not the repeated boilerplate.
 -->
 <template>
   <div class="scopes lj-surface">
-    <LjPageHeader :title="t('containerScope.title')" :subtitle="t('containerScope.subtitle2026')">
+    <LjPageHeader :title="t('containerScope.title')" :subtitle="t('containerScope.subtitle')">
       <template #actions>
         <LjSegmented v-model="activeTab" :options="tabs" />
         <LjSearch v-model="search" :placeholder="t('common.search')" />
@@ -22,7 +22,7 @@
     <v-alert v-if="error" type="warning" variant="tonal" class="mb-4" rounded="lg">{{ t('containerScope.noProvider') }}</v-alert>
     <v-alert v-if="demoMode" type="info" variant="tonal" density="compact" class="mb-4" rounded="lg">{{ t('containerScope.demoMode') }}</v-alert>
 
-    <VibrantDataTable v-if="!error" :headers="headers" :items="filteredItems" :items-length="filteredItems.length" :loading="loading"
+    <LjDataTable v-if="!error" :headers="headers" :items="filteredItems" :items-length="filteredItems.length" :loading="loading"
       item-value="id" filename="container-scopes.csv" @row-click="openEdit">
       <template #cell.name="{ item }">
         <span class="sname">{{ item.name }}</span>
@@ -44,7 +44,7 @@
           </div>
         </v-menu>
       </template>
-    </VibrantDataTable>
+    </LjDataTable>
 
     <!-- Create / edit dialog (shared chrome). -->
     <LjDialog v-model="editDialog" :title="readOnly ? t('containerScope.view') : (editTarget?.id ? t('containerScope.edit') : t('containerScope.new'))" :icon="TYPE_ICONS.SCOPE" :max-width="520">
@@ -77,7 +77,7 @@
 import { ref, computed, watch, onMounted } from 'vue'
 import { LigojTextField, useApi, useAppStore, useEditExtensions, useErrorStore, useI18nStore } from '@ligoj/host'
 import { TYPE_ICONS } from '../composables/delegateTypes.js'
-import { VibrantDataTable, VibrantConfirmDialog as LigojConfirmDialog, LjPageHeader, LjButton, LjSearch, LjSegmented, LjDialog, LjAvailabilityField, LjStatus } from '@ligoj/host'
+import { LjDataTable, LjConfirmDialog as LigojConfirmDialog, LjPageHeader, LjButton, LjSearch, LjSegmented, LjDialog, LjAvailabilityField, LjStatus } from '@ligoj/host'
 
 const api = useApi()
 const appStore = useAppStore()

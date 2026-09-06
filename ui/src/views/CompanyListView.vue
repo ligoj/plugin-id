@@ -1,11 +1,11 @@
 <!--
-  CompaniesView — 2026 "Vibrant" Companies/Entities list (plugin-id). Same
-  recipe as GroupsView (VibrantDataTable + reused CompanyEditPanel in a
-  Vibrant dialog + VibrantConfirmDialog), on service/id/company. No members.
+  CompaniesView — Companies/Entities list (plugin-id). Same
+  recipe as GroupsView (LjDataTable + reused CompanyEditPanel in a
+  LjDialog + LjConfirmDialog), on service/id/company. No members.
 -->
 <template>
   <div class="companies lj-surface">
-    <LjPageHeader :title="t('company.title')" :subtitle="t('company.subtitle2026')"
+    <LjPageHeader :title="t('company.title')" :subtitle="t('company.subtitle')"
       actions-target="company" :actions-context="toolbarContext">
       <template #actions>
         <LjSearch v-model="dt.search.value" :placeholder="t('company.searchPlaceholder') || t('common.search')" @input="onSearch" />
@@ -27,7 +27,7 @@
       {{ t('user.demoMode') }}
     </v-alert>
 
-    <VibrantDataTable v-if="!dt.error.value" :headers="headers" :items="dt.items.value" :items-length="dt.totalItems.value" :loading="dt.loading.value" selectable v-model="selected" item-value="name"
+    <LjDataTable v-if="!dt.error.value" :headers="headers" :items="dt.items.value" :items-length="dt.totalItems.value" :loading="dt.loading.value" selectable v-model="selected" item-value="name"
       default-sort="name" :fetch-all="dt.loadAll" filename="companies.csv" @update:options="loadData" @row-click="(item) => openDetails(item.name)">
       <template #cell.name="{ item }">
         <span class="cname">{{ item.name }}</span>
@@ -53,7 +53,7 @@
           </div>
         </v-menu>
       </template>
-    </VibrantDataTable>
+    </LjDataTable>
 
     <!-- No `v-if` on the panel: the lazy v-dialog owns the mount/unmount so the
          content tears down after the close transition (avoids orphaning the
@@ -78,7 +78,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { useDataTable, useApi, useAppStore, useAuthStore, useErrorStore, useI18nStore } from '@ligoj/host'
 import { TYPE_ICONS } from '../composables/delegateTypes.js'
-import { VibrantDataTable, VibrantConfirmDialog as LigojConfirmDialog, LjPageHeader, LjButton, LjSearch, LjDialog, LjStatus } from '@ligoj/host'
+import { LjDataTable, LjConfirmDialog as LigojConfirmDialog, LjPageHeader, LjButton, LjSearch, LjDialog, LjStatus } from '@ligoj/host'
 import CompanyEditPanel from '../components/CompanyEditPanel.vue'
 
 const route = useRoute()
