@@ -71,11 +71,9 @@
                 </template>
               </LigojAutocomplete>
               <!-- Custom attributes of the identity provider (names from the session data
-                   `service:id:custom-attributes`, merged with the ones present on the user). -->
-              <template v-if="attributeNames.length">
-                <div class="text-subtitle-2 text-medium-emphasis mb-2 actions-label">{{ t('user.customAttributes') }}</div>
-                <LigojTextField v-for="name in attributeNames" :key="name" v-model="form.customAttributes[name]" :label="customAttributeLabel(name)" prepend-inner-icon="mdi-tag-outline" variant="outlined" class="mb-2" />
-              </template>
+                   `service:id:custom-attributes`, merged with the ones present on the user),
+                   rendered like the standard fields, without a section heading. -->
+              <LigojTextField v-for="name in attributeNames" :key="name" v-model="form.customAttributes[name]" :label="customAttributeLabel(name)" prepend-inner-icon="mdi-tag-outline" variant="outlined" class="mb-2" />
             </v-form>
 
             <template v-if="isEdit">

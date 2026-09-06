@@ -54,7 +54,6 @@ export default {
   'user.deleteConfirmAfter': '?',
   // Chantier D4 — multi-email input (v-combobox)
   'user.emailsHint': 'Press Enter or Tab to confirm each email',
-  'user.customAttributes': 'Custom attributes',
   // Chantier D2 (rattrapage) — fragments wrapping the bulk-delete count
   // in bold red.
   'common.bulkDeleteConfirmBefore': 'Are you sure you want to delete ',

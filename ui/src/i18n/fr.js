@@ -47,7 +47,6 @@ export default {
   'user.deleteConfirmAfter': ' ?',
   // Chantier D4 — saisie multi-email (v-combobox)
   'user.emailsHint': 'Appuyez sur Entrée ou Tab pour valider chaque email',
-  'user.customAttributes': 'Attributs personnalisés',
   // Chantier D2 (rattrapage) — fragments encadrant le nombre d'éléments
   // en gras-rouge pour la suppression en masse.
   'common.bulkDeleteConfirmBefore': 'Supprimer ',
