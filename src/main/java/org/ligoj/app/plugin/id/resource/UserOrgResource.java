@@ -11,6 +11,7 @@ import jakarta.ws.rs.core.UriInfo;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.ObjectUtils;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Strings;
 import org.apache.commons.text.WordUtils;
@@ -148,12 +149,50 @@ public class UserOrgResource extends AbstractOrgResource implements ISessionSett
 	 * @return The sort property behind the {@code visual-id} column.
 	 */
 	String getVisualIdProperty() {
-		final var name = configuration.get(CONF_VISUAL_ID_NAME, USER_KEY);
-		if ("firstName".equals(name) || "lastName".equals(name) || "mail".equals(name)
-				|| name.startsWith("customAttributes.")) {
+		return Objects.requireNonNullElse(resolveVisualIdName(configuration.get(CONF_VISUAL_ID_NAME, USER_KEY)), USER_KEY);
+	}
+
+	/**
+	 * Last visual identifier value a warning was logged for, to log it once.
+	 */
+	private volatile String warnedVisualId;
+
+	/**
+	 * The accepted visual identifier name, or <code>null</code> when the value means the login: unset, unaccepted,
+	 * or a custom attribute the identity provider does not declare. The custom attribute must be named exactly as
+	 * declared (case-sensitive), the lookups being exact: a case mismatch is logged once and ignored.
+	 *
+	 * @param raw The configured value.
+	 * @return The accepted name, or <code>null</code> for the login.
+	 */
+	String resolveVisualIdName(final String raw) {
+		final var name = StringUtils.trimToNull(raw);
+		if (name == null) {
+			return null;
+		}
+		if ("firstName".equals(name) || "lastName".equals(name) || "mail".equals(name)) {
 			return name;
 		}
-		return USER_KEY;
+		if (!name.startsWith("customAttributes.")) {
+			return null;
+		}
+		final var attribute = name.substring("customAttributes.".length());
+		final String[] declared;
+		try {
+			declared = getUserRepository().getCustomAttributes();
+		} catch (final RuntimeException re) {
+			// No provider to check against
+			return name;
+		}
+		if (ArrayUtils.isEmpty(declared) || ArrayUtils.contains(declared, attribute)) {
+			return name;
+		}
+		if (!name.equals(warnedVisualId)) {
+			warnedVisualId = name;
+			log.warn("{} is '{}' but the identity provider declares the custom attributes {} (case-sensitive): the login is used as visual identifier",
+					CONF_VISUAL_ID_NAME, name, Arrays.toString(declared));
+		}
+		return null;
 	}
 
 	/**
@@ -1071,17 +1110,27 @@ public class UserOrgResource extends AbstractOrgResource implements ISessionSett
 			// Ignore this error
 			log.debug("User being authenticated is not defined in primary identity provider ");
 		}
-		// Add user display and the visual identifier configuration (see CONF_VISUAL_ID_NAME / CONF_VISUAL_ID_LABEL)
+		// Add user display and the visual identifier configuration (see CONF_VISUAL_ID_NAME / CONF_VISUAL_ID_LABEL).
+		// The application settings are shared by every session: always recompute, so that a configuration change
+		// applies to the next session without a restart.
 		final var data = settings.getApplicationSettings().getData();
-		data.computeIfAbsent("service:id:user-display", this::getDisplayConfiguration);
-		data.computeIfAbsent(CONF_VISUAL_ID_NAME, this::getDisplayConfiguration);
-		data.computeIfAbsent(CONF_VISUAL_ID_LABEL, this::getDisplayConfiguration);
-
+		putOrRemove(data, "service:id:user-display", getDisplayConfiguration("service:id:user-display"));
+		putOrRemove(data, CONF_VISUAL_ID_NAME, resolveVisualIdName(getDisplayConfiguration(CONF_VISUAL_ID_NAME)));
+		putOrRemove(data, CONF_VISUAL_ID_LABEL, getDisplayConfiguration(CONF_VISUAL_ID_LABEL));
 		// Add the custom attribute names of the primary identity provider, edited by the user form
 		try {
-			data.computeIfAbsent(CONF_CUSTOM_ATTRIBUTES, k -> String.join(",", getUserRepository().getCustomAttributes()));
+			putOrRemove(data, CONF_CUSTOM_ATTRIBUTES, String.join(",", getUserRepository().getCustomAttributes()));
 		} catch (final RuntimeException re) {
 			log.debug("Custom attributes are not available from the primary identity provider", re);
+		}
+	}
+
+	private static void putOrRemove(final Map<String, String> data, final String key, final String value) {
+		final var trimmed = StringUtils.trimToNull(value);
+		if (trimmed == null) {
+			data.remove(key);
+		} else {
+			data.put(key, trimmed);
 		}
 	}
 

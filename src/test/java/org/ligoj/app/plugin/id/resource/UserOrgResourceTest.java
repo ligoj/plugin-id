@@ -1284,6 +1284,45 @@ class UserOrgResourceTest extends AbstractAppTest {
 	}
 
 	@Test
+	void decorateRecomputesEachSession() throws IllegalAccessException {
+		// The application settings are shared by every session: a configuration change must be visible to the next
+		// session without a restart, and a removed configuration must disappear
+		when(userRepository.getCustomAttributes()).thenReturn(new String[] { "badge" });
+		final var resource = new UserOrgResource() {
+			@Override
+			public UserOrg findById(@PathParam("user") final String user) {
+				return new UserOrg();
+			}
+		};
+		resource.setIamProvider(new IamProvider[] { iamProvider });
+		final var configuration = mock(ConfigurationResource.class);
+		FieldUtils.writeField(resource, "configuration", configuration, true);
+		final var shared = new ApplicationSettings();
+		when(configuration.get(UserOrgResource.CONF_VISUAL_ID_NAME)).thenReturn("customAttributes.badge");
+		when(configuration.get(UserOrgResource.CONF_VISUAL_ID_LABEL)).thenReturn("Badge");
+		resource.decorate(newSettings(shared));
+		Assertions.assertEquals("customAttributes.badge", shared.getData().get(UserOrgResource.CONF_VISUAL_ID_NAME));
+		Assertions.assertEquals("badge", shared.getData().get(UserOrgResource.CONF_CUSTOM_ATTRIBUTES));
+
+		// Configuration and provider changed
+		when(configuration.get(UserOrgResource.CONF_VISUAL_ID_NAME)).thenReturn("mail");
+		when(configuration.get(UserOrgResource.CONF_VISUAL_ID_LABEL)).thenReturn(null);
+		when(userRepository.getCustomAttributes()).thenReturn(new String[] { "badge", "uidFonctionnel" });
+		resource.decorate(newSettings(shared));
+		Assertions.assertEquals("mail", shared.getData().get(UserOrgResource.CONF_VISUAL_ID_NAME));
+		Assertions.assertNull(shared.getData().get(UserOrgResource.CONF_VISUAL_ID_LABEL));
+		Assertions.assertEquals("badge,uidFonctionnel", shared.getData().get(UserOrgResource.CONF_CUSTOM_ATTRIBUTES));
+	}
+
+	private SessionSettings newSettings(final ApplicationSettings shared) throws IllegalAccessException {
+		final var settings = new SessionSettings();
+		FieldUtils.writeDeclaredField(settings, "userName", "JUNIT", true);
+		FieldUtils.writeDeclaredField(settings, "applicationSettings", shared, true);
+		settings.setUserSettings(new HashMap<>());
+		return settings;
+	}
+
+	@Test
 	void decoratePlaceholderExpression() throws IllegalAccessException {
 		// `${firstName} ${lastName}` is a UI expression: the Environment resolution throws, the raw stored value is forwarded
 		final var resource = new UserOrgResource() {
@@ -1334,6 +1373,42 @@ class UserOrgResourceTest extends AbstractAppTest {
 		Assertions.assertEquals("customAttributes.badge",
 				resource.getOrderedColumns().get(UserOrgResource.VISUAL_ID_COLUMN));
 		Assertions.assertEquals("id", resource.getOrderedColumns().get("id"));
+	}
+
+	@Test
+	void visualIdCustomAttributeCaseSensitive() throws IllegalAccessException {
+		// The custom attribute must be named exactly as declared by the provider: a case mismatch is ignored (login
+		// fallback, warning in the log) for the sort property and for the session settings
+		when(userRepository.getCustomAttributes()).thenReturn(new String[] { "uidFonctionnel" });
+		final var resource = new UserOrgResource() {
+			@Override
+			public UserOrg findById(@PathParam("user") final String user) {
+				return new UserOrg();
+			}
+		};
+		resource.setIamProvider(new IamProvider[] { iamProvider });
+		final var configuration = mock(ConfigurationResource.class);
+		FieldUtils.writeField(resource, "configuration", configuration, true);
+		final var shared = new ApplicationSettings();
+
+		// Wrong case: ignored
+		when(configuration.get(UserOrgResource.CONF_VISUAL_ID_NAME, "id")).thenReturn("customAttributes.uidfonctionnel");
+		when(configuration.get(UserOrgResource.CONF_VISUAL_ID_NAME)).thenReturn("customAttributes.uidfonctionnel");
+		Assertions.assertEquals("id", resource.getVisualIdProperty());
+		resource.decorate(newSettings(shared));
+		Assertions.assertNull(shared.getData().get(UserOrgResource.CONF_VISUAL_ID_NAME));
+
+		// Exact case: accepted
+		when(configuration.get(UserOrgResource.CONF_VISUAL_ID_NAME, "id")).thenReturn("customAttributes.uidFonctionnel");
+		when(configuration.get(UserOrgResource.CONF_VISUAL_ID_NAME)).thenReturn("customAttributes.uidFonctionnel");
+		Assertions.assertEquals("customAttributes.uidFonctionnel", resource.getVisualIdProperty());
+		resource.decorate(newSettings(shared));
+		Assertions.assertEquals("customAttributes.uidFonctionnel", shared.getData().get(UserOrgResource.CONF_VISUAL_ID_NAME));
+
+		// Provider without declared attributes: not checked
+		when(userRepository.getCustomAttributes()).thenReturn(ArrayUtils.EMPTY_STRING_ARRAY);
+		when(configuration.get(UserOrgResource.CONF_VISUAL_ID_NAME, "id")).thenReturn("customAttributes.any");
+		Assertions.assertEquals("customAttributes.any", resource.getVisualIdProperty());
 	}
 
 	@Test
