@@ -8,6 +8,7 @@ import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.core.UriInfo;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.reflect.FieldUtils;
+import java.util.List;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -772,6 +773,30 @@ class UserOrgResourceTest extends AbstractAppTest {
 	void updateMail() {
 		// Mail change only
 		update2(userVo -> userVo.setMail("john31.last31@ing.com"));
+	}
+
+	@Test
+	void updateMailsList() {
+		// The user dialog sends the full list of mails (`mails`) and no single `mail`: all of them are stored
+		update2(userVo -> {
+			userVo.setMail(null);
+			userVo.setMails(List.of("john31.last31@ing.com", "john31@sample.com"));
+		});
+		final var captor = org.mockito.ArgumentCaptor.forClass(UserOrg.class);
+		verify(userRepository).updateUser(captor.capture());
+		Assertions.assertEquals(List.of("john31.last31@ing.com", "john31@sample.com"), captor.getValue().getMails());
+	}
+
+	@Test
+	void updateMailsListWinsOverMail() {
+		// Both given: the list is the contract of the dialog, the single mail is the legacy one
+		update2(userVo -> {
+			userVo.setMail("legacy@ing.com");
+			userVo.setMails(List.of(" john31@sample.com ", ""));
+		});
+		final var captor = org.mockito.ArgumentCaptor.forClass(UserOrg.class);
+		verify(userRepository).updateUser(captor.capture());
+		Assertions.assertEquals(List.of("john31@sample.com"), captor.getValue().getMails());
 	}
 
 	@Test

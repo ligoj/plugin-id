@@ -644,7 +644,19 @@ public class UserOrgResource extends AbstractOrgResource implements ISessionSett
 		return hasAttributeChange(importEntry, userOrg == null, "new")
 				|| hasAttributeChange(importEntry, userOrg, SimpleUser::getFirstName, SimpleUser::getLastName, SimpleUser::getCompany, SimpleUser::getLocalId, SimpleUser::getDepartment)
 				|| hasAttributeChange(importEntry, !mapToString(importEntry.getCustomAttributes()).equals(mapToString(userOrg.getCustomAttributes())), "customAttributes")
-				|| hasAttributeChange(importEntry, !userOrg.getMails().contains(importEntry.getMail()), "mail");
+				|| hasAttributeChange(importEntry, hasMailChange(importEntry, userOrg), "mail");
+	}
+
+	/**
+	 * The full list of mails (dialog) replaces the stored one: any difference is a change. The legacy single mail
+	 * only has to be present among the stored ones.
+	 */
+	private static boolean hasMailChange(final UserOrgEditionVo importEntry, final UserOrg userOrg) {
+		final var mails = importEntry.getEffectiveMails();
+		if (importEntry.getMails() != null) {
+			return !new HashSet<>(userOrg.getMails()).equals(new HashSet<>(mails));
+		}
+		return !userOrg.getMails().containsAll(mails);
 	}
 
 	private boolean hasAttributeChange(final SimpleUser importEntry, boolean hasChange, String source) {
@@ -763,9 +775,7 @@ public class UserOrgResource extends AbstractOrgResource implements ISessionSett
 		final var user = new UserOrg();
 		importEntry.copy(user);
 		user.setGroups(new ArrayList<>());
-		final List<String> mails = new ArrayList<>();
-		CollectionUtils.addIgnoreNull(mails, importEntry.getMail());
-		user.setMails(mails);
+		user.setMails(new ArrayList<>(importEntry.getEffectiveMails()));
 		return user;
 	}
 
