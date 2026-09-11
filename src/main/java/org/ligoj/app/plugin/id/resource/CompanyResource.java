@@ -144,13 +144,14 @@ public class CompanyResource extends AbstractContainerResource<CompanyOrg, Conta
 	 * registers the route on the concrete bean — the parent annotation isn't
 	 * picked up because of type erasure on the generic parameter V.
 	 *
-	 * <p>Produces {@code text/plain} (not the class-level JSON default): the
-	 * returned identifier is a raw string, not a JSON document, so clients can
-	 * read it via {@code response.text()} instead of failing to parse an
-	 * unquoted scalar as JSON.
+	 * <p>Produces {@code text/plain} first (not the class-level JSON default): the
+	 * returned identifier is a raw string, not a JSON document, so a client
+	 * accepting anything (the web application) reads it via
+	 * {@code response.text()}. JSON is still produced for clients asking only
+	 * for it (the CLI, scripts), which were refused with 406 otherwise.
 	 */
 	@POST
-	@Produces(MediaType.TEXT_PLAIN)
+	@Produces({ MediaType.TEXT_PLAIN, MediaType.APPLICATION_JSON })
 	@Override
 	public String create(final ContainerEditionVo container) {
 		return super.create(container);
