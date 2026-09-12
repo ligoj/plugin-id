@@ -53,6 +53,14 @@ public class IdentityResource extends AbstractServicePlugin {
 	 */
 	public static final String PARAMETER_UID_PATTERN = SERVICE_KEY + ":uid-pattern";
 
+	/**
+	 * Custom user attribute names, comma or space separated, the identity provider exposes as
+	 * {@link org.ligoj.app.iam.SimpleUser#getCustomAttributes()} and lets the user dialog edit. A node parameter of
+	 * the identity service: available on every identity tool node, the tool plugins read it to know which attributes
+	 * to load. Supersedes the tool-level declarations such as <code>service:id:ldap:people-custom-attributes</code>.
+	 */
+	public static final String PARAMETER_PEOPLE_CUSTOM_ATTRIBUTES = SERVICE_KEY + ":people-custom-attributes";
+
 	@Override
 	public String getKey() {
 		return SERVICE_KEY;

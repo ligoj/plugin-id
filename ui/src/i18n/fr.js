@@ -17,6 +17,8 @@ export default {
   'service:id:ou-not-exists': 'L\'organisation saisie n\'existe pas encore et sera créée. Êtes-vous certain de la syntaxe ?',
   'service:id:uid-pattern': 'Motif d\'utilisateur',
   'service:id:uid-pattern-description': 'Motif de validation de l\'identifiant utilisateur pour accepter une authentification',
+  'service:id:people-custom-attributes': 'Attributs personnalisés',
+  'service:id:people-custom-attributes-description': 'Noms des attributs utilisateur personnalisés chargés par le fournisseur d\'identité et modifiables dans le dialogue utilisateur. Valeurs séparées par des virgules ou des espaces.',
   'service:id:group-create': 'Nom du groupe (calculé)',
   'service:id:group-already-exists': 'Ce groupe existe déjà',
   'service:id:group-starts-with-pkey': 'Le nom du groupe doit commencer par la clé du projet',
