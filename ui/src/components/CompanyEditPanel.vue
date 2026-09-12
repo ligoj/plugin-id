@@ -11,7 +11,7 @@
        UI; the dialog is informational. The lock status + member
        count are surfaced as a read-only chip / line item so the
        view actually shows MORE than the form does, not less. -->
-  <v-card flat class="cep">
+  <div class="cep">
     <v-alert v-if="demoMode" type="info" variant="tonal" density="compact" class="ma-4">
       {{ t('company.demoEdit') }}
     </v-alert>
@@ -104,7 +104,7 @@
     >
       {{ t('company.deleteConfirmBefore') }}<strong class="text-error">{{ form.name }}</strong>{{ t('company.deleteConfirmAfter') }}
     </LigojConfirmDialog>
-  </v-card>
+  </div>
 </template>
 
 <script setup>

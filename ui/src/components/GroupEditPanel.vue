@@ -8,7 +8,7 @@
        emits events so the parent can react (close the dialog, refresh
        the table, …). No router awareness — receives the editing
        target through the `groupId` prop (null = new). -->
-  <v-card flat class="gp">
+  <div class="gp">
     <v-alert v-if="demoMode" type="info" variant="tonal" density="compact" class="ma-4">
       {{ t('group.demoEdit') }}
     </v-alert>
@@ -81,7 +81,7 @@
     >
       {{ t('group.deleteConfirmBefore') }}<strong class="text-error">{{ form.name }}</strong>{{ t('group.deleteConfirmAfter') }}
     </LigojConfirmDialog>
-  </v-card>
+  </div>
 </template>
 
 <script setup>
