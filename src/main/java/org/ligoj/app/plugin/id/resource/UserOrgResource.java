@@ -649,14 +649,13 @@ public class UserOrgResource extends AbstractOrgResource implements ISessionSett
 
 	/**
 	 * The full list of mails (dialog) replaces the stored one: any difference is a change. The legacy single mail
-	 * only has to be present among the stored ones.
+	 * keeps its rule: a change unless it is already among the stored ones, so a missing mail clears them.
 	 */
 	private static boolean hasMailChange(final UserOrgEditionVo importEntry, final UserOrg userOrg) {
-		final var mails = importEntry.getEffectiveMails();
 		if (importEntry.getMails() != null) {
-			return !new HashSet<>(userOrg.getMails()).equals(new HashSet<>(mails));
+			return !new HashSet<>(userOrg.getMails()).equals(new HashSet<>(importEntry.getEffectiveMails()));
 		}
-		return !userOrg.getMails().containsAll(mails);
+		return !userOrg.getMails().contains(importEntry.getMail());
 	}
 
 	private boolean hasAttributeChange(final SimpleUser importEntry, boolean hasChange, String source) {
