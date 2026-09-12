@@ -29,6 +29,7 @@ import org.ligoj.app.plugin.id.model.PasswordResetAudit;
 import org.ligoj.bootstrap.core.json.PaginationJson;
 import org.ligoj.bootstrap.core.json.TableItem;
 import org.ligoj.bootstrap.core.json.datatable.DataTableAttributes;
+import org.ligoj.app.resource.node.ParameterValueResource;
 import org.ligoj.bootstrap.core.validation.ValidationJsonException;
 import org.ligoj.bootstrap.resource.system.configuration.ConfigurationResource;
 import org.ligoj.bootstrap.core.crypto.CryptoHelper;
@@ -79,6 +80,9 @@ public class UserOrgResource extends AbstractOrgResource implements ISessionSett
 	private DelegateOrgRepository delegateRepository;
 	@Autowired
 	private ConfigurationResource configuration;
+
+	@Autowired
+	private ParameterValueResource pvResource;
 
 	@Autowired
 	private SystemConfigurationRepository configurationRepository;
@@ -427,6 +431,8 @@ public class UserOrgResource extends AbstractOrgResource implements ISessionSett
 		// Check the user exists
 		getUserRepository().findByIdExpected(user.getId());
 
+		// Attributes locked after the creation cannot change
+		checkReadOnlyAttributes(user, getUserRepository().findById(user.getId()));
 		return saveOrUpdate(user, hasAttributeChange);
 	}
 
@@ -645,6 +651,59 @@ public class UserOrgResource extends AbstractOrgResource implements ISessionSett
 				|| hasAttributeChange(importEntry, userOrg, SimpleUser::getFirstName, SimpleUser::getLastName, SimpleUser::getCompany, SimpleUser::getLocalId, SimpleUser::getDepartment)
 				|| hasAttributeChange(importEntry, !mapToString(importEntry.getCustomAttributes()).equals(mapToString(userOrg.getCustomAttributes())), "customAttributes")
 				|| hasAttributeChange(importEntry, hasMailChange(importEntry, userOrg), "mail");
+	}
+
+	/**
+	 * Attribute names locked after the creation, from the {@link IdentityResource#PARAMETER_READ_ONLY_ATTRIBUTES}
+	 * parameter of the primary identity node.
+	 *
+	 * @return The attribute names, never <code>null</code>.
+	 */
+	List<String> getReadOnlyAttributes() {
+		try {
+			final var node = iamProvider[0].getConfiguration().getNode();
+			if (node == null) {
+				return List.of();
+			}
+			final var value = pvResource.getNodeParameters(node).get(IdentityResource.PARAMETER_READ_ONLY_ATTRIBUTES);
+			return Arrays.asList(StringUtils.split(StringUtils.defaultString(value), ", "));
+		} catch (final RuntimeException re) {
+			log.debug("Read-only attributes are not available from the primary identity node", re);
+			return List.of();
+		}
+	}
+
+	/**
+	 * Refuse an update changing an attribute locked after the creation.
+	 *
+	 * @param entry  The update payload.
+	 * @param stored The stored user, <code>null</code> when unknown (nothing to compare).
+	 */
+	void checkReadOnlyAttributes(final UserOrgEditionVo entry, final UserOrg stored) {
+		if (stored == null) {
+			return;
+		}
+		for (final var attribute : getReadOnlyAttributes()) {
+			final boolean changed = switch (attribute) {
+				case "firstName" -> differs(entry.getFirstName(), stored.getFirstName());
+				case "lastName" -> differs(entry.getLastName(), stored.getLastName());
+				case "company" -> differs(entry.getCompany(), stored.getCompany());
+				case "department" -> differs(entry.getDepartment(), stored.getDepartment());
+				case "localId" -> differs(entry.getLocalId(), stored.getLocalId());
+				case "mail" -> hasMailChange(entry, stored);
+				default -> attribute.startsWith("customAttributes.") && entry.getCustomAttributes() != null
+						&& differs(entry.getCustomAttributes().get(attribute.substring("customAttributes.".length())),
+								stored.getCustomAttributes() == null ? null : stored.getCustomAttributes().get(attribute.substring("customAttributes.".length())));
+			};
+			if (changed) {
+				log.info("Update of {} refused: attribute {} is read-only after the creation", entry.getId(), attribute);
+				throw new ValidationJsonException(attribute, "read-only");
+			}
+		}
+	}
+
+	private static boolean differs(final String newValue, final String oldValue) {
+		return !Objects.equals(StringUtils.trimToNull(newValue), StringUtils.trimToNull(oldValue));
 	}
 
 	/**
@@ -1132,6 +1191,8 @@ public class UserOrgResource extends AbstractOrgResource implements ISessionSett
 		} catch (final RuntimeException re) {
 			log.debug("Custom attributes are not available from the primary identity provider", re);
 		}
+		// Add the attributes locked after the creation, shown read-only by the user form
+		putOrRemove(data, IdentityResource.PARAMETER_READ_ONLY_ATTRIBUTES, String.join(",", getReadOnlyAttributes()));
 	}
 
 	private static void putOrRemove(final Map<String, String> data, final String key, final String value) {

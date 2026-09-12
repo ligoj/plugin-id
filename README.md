@@ -38,6 +38,7 @@ Related plugins:
 | service:id:visual-id-label | Global | - | Static (non localizable) label displayed for the visual identifier column. When undefined, the UI localizes the `visual-id-name` value. |
 | service:id:uid-pattern  | Node, Subscription | `.*`    | Pattern determining the login is valid for an authentication. |
 | service:id:people-custom-attributes | Node | - | Custom user attribute names, comma or space separated, loaded by the identity tool (LDAP…) and edited in the user dialog. Replaces the tool-level `service:id:ldap:people-custom-attributes`. |
+| service:id:read-only-attributes | Node | - | User attributes that cannot be updated after creation, comma or space separated: `firstName`, `lastName`, `company`, `department`, `localId`, `mail` or `customAttributes.<name>`. The API refuses such an update and the user dialog shows the fields read-only. |
 | service:id:ou           | Node, Subscription | `null`  | Parent OU.                                                    |
 | service:id:group        | Node, Subscription | `null`  | Normalized Group name (CN).                                   |
 | service:id:parent-group | Node, Subscription | `null`  | Normalized parent Group name (CN).                            |

@@ -20,16 +20,16 @@
               <!-- First + last name grouped on a single row (stacks below sm). -->
               <v-row>
                 <v-col cols="12" sm="6">
-                  <LigojTextField v-model="form.firstName" :label="t('user.firstName')" prepend-inner-icon="mdi-account-outline" :rules="[rules.required]" variant="outlined" class="mb-2" />
+                  <LigojTextField v-model="form.firstName" :label="t('user.firstName')" prepend-inner-icon="mdi-account-outline" :rules="[rules.required]" :readonly="isReadOnly('firstName', isEdit)" :hint="isReadOnly('firstName', isEdit) ? t('user.readOnlyHint') : undefined" persistent-hint variant="outlined" class="mb-2" />
                 </v-col>
                 <v-col cols="12" sm="6">
-                  <LigojTextField v-model="form.lastName" :label="t('user.lastName')" prepend-inner-icon="mdi-account-outline" :rules="[rules.required]" variant="outlined" class="mb-2" />
+                  <LigojTextField v-model="form.lastName" :label="t('user.lastName')" prepend-inner-icon="mdi-account-outline" :rules="[rules.required]" :readonly="isReadOnly('lastName', isEdit)" :hint="isReadOnly('lastName', isEdit) ? t('user.readOnlyHint') : undefined" persistent-hint variant="outlined" class="mb-2" />
                 </v-col>
               </v-row>
               <!-- Auto-suggest for company. Queries rest/service/id/company as the
                    user types (300 ms debounced). v-model stores the company name
                    as a string, matching the payload contract of rest/service/id/user. -->
-              <LigojAutocomplete v-model="form.company" :items="companyResults" :loading="companyLoading" :search="companySearchQuery" item-title="name" item-value="name" :label="t('user.company')" prepend-inner-icon="mdi-domain"
+              <LigojAutocomplete v-model="form.company" :items="companyResults" :loading="companyLoading" :search="companySearchQuery" item-title="name" item-value="name" :label="t('user.company')" :readonly="isReadOnly('company', isEdit)" prepend-inner-icon="mdi-domain"
                 placeholder="Rechercher une entité…" variant="outlined" class="mb-2" no-filter clearable autocomplete="off" @update:search="onCompanySearch">
                 <template #item="{ props: itemProps, item }">
                   <v-list-item v-bind="itemProps" :title="item?.name || ''">
@@ -51,7 +51,7 @@
                    multiple + chips lets the user type any email (no
                    autocomplete source) and confirm with Enter or Tab;
                    existing emails are restored as chips at load time. -->
-              <LigojCombobox v-model="form.mails" :label="t('user.emails')" prepend-inner-icon="mdi-email-outline" multiple chips closable-chips variant="outlined" class="mb-2" :hint="t('user.emailsHint')" persistent-hint autocomplete="off" />
+              <LigojCombobox v-model="form.mails" :label="t('user.emails')" prepend-inner-icon="mdi-email-outline" multiple chips :closable-chips="!isReadOnly('mail', isEdit)" :readonly="isReadOnly('mail', isEdit)" variant="outlined" class="mb-2" :hint="isReadOnly('mail', isEdit) ? t('user.readOnlyHint') : t('user.emailsHint')" persistent-hint autocomplete="off" />
               <!-- Auto-suggest for groups (multi-select). Queries
                    rest/service/id/group as the user types (300 ms debounced).
                    v-model holds an array of group **names** (strings),
@@ -73,7 +73,7 @@
               <!-- Custom attributes of the identity provider (names from the session data
                    `service:id:custom-attributes`, merged with the ones present on the user),
                    rendered like the standard fields, without a section heading. -->
-              <LigojTextField v-for="name in attributeNames" :key="name" v-model="form.customAttributes[name]" :label="customAttributeLabel(name)" prepend-inner-icon="mdi-tag-outline" variant="outlined" class="mb-2" />
+              <LigojTextField v-for="name in attributeNames" :key="name" v-model="form.customAttributes[name]" :label="customAttributeLabel(name)" prepend-inner-icon="mdi-tag-outline" :readonly="isReadOnly('customAttributes.' + name, isEdit)" :hint="isReadOnly('customAttributes.' + name, isEdit) ? t('user.readOnlyHint') : undefined" persistent-hint variant="outlined" class="mb-2" />
             </v-form>
 
             <template v-if="isEdit">
@@ -133,6 +133,7 @@ import { ref, computed, watch } from 'vue'
 import { LigojTextField, LigojCombobox, useApi, useAuthStore, useEditExtensions, useFormGuard, useErrorStore, useI18nStore } from '@ligoj/host'
 import { TYPE_ICONS } from '../composables/delegateTypes.js'
 import { visualIdLabel, visualIdName, visualIdValue } from '../visualId.js'
+import { isReadOnly } from '../readOnlyAttributes.js'
 import { customAttributeNames, toCustomAttributesPayload } from '../customAttributes.js'
 // Replacement for the host's confirm dialog (aliased → tags unchanged).
 import { LjConfirmDialog as LigojConfirmDialog, LjDialog, LjButton, LjAvailabilityField, LigojAutocomplete } from '@ligoj/host'

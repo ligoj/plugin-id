@@ -61,6 +61,14 @@ public class IdentityResource extends AbstractServicePlugin {
 	 */
 	public static final String PARAMETER_PEOPLE_CUSTOM_ATTRIBUTES = SERVICE_KEY + ":people-custom-attributes";
 
+	/**
+	 * User attribute names, comma or space separated, that cannot be updated after the creation: <code>firstName</code>,
+	 * <code>lastName</code>, <code>company</code>, <code>department</code>, <code>localId</code>, <code>mail</code>
+	 * (the address list) or <code>customAttributes.&lt;name&gt;</code>. Unknown names are ignored. The API refuses an
+	 * update changing one of them and the user dialog shows them read-only. A node parameter of the identity service.
+	 */
+	public static final String PARAMETER_READ_ONLY_ATTRIBUTES = SERVICE_KEY + ":read-only-attributes";
+
 	@Override
 	public String getKey() {
 		return SERVICE_KEY;

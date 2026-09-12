@@ -32,6 +32,20 @@ class IdentityParametersTest {
 		Assertions.assertEquals("FALSE", row.get("availableForSubscription"));
 	}
 
+	/**
+	 * Attribute names not updatable after creation: a service parameter, node level only.
+	 */
+	@Test
+	void readOnlyAttributesIsAServiceParameter() throws IOException {
+		Assertions.assertEquals("service:id:read-only-attributes", IdentityResource.PARAMETER_READ_ONLY_ATTRIBUTES);
+		final var row = csvRow("csv/parameter.csv", IdentityResource.PARAMETER_READ_ONLY_ATTRIBUTES);
+		Assertions.assertEquals("service:id", row.get("owner.id"));
+		Assertions.assertEquals("TEXT", row.get("type"));
+		Assertions.assertEquals("FALSE", row.get("mandatory"));
+		Assertions.assertEquals("TRUE", row.get("availableForNode"));
+		Assertions.assertEquals("FALSE", row.get("availableForSubscription"));
+	}
+
 	private Map<String, String> csvRow(final String resource, final String id) throws IOException {
 		final var lines = IOUtils.readLines(getClass().getClassLoader().getResourceAsStream(resource), StandardCharsets.UTF_8);
 		final var headers = Arrays.asList(lines.getFirst().split(";", -1));

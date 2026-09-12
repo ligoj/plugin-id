@@ -799,6 +799,57 @@ class UserOrgResourceTest extends AbstractAppTest {
 		Assertions.assertEquals(List.of("john31@sample.com"), captor.getValue().getMails());
 	}
 
+	private void readOnly(final String value) throws IllegalAccessException {
+		// The primary identity node declares the read-only attributes
+		when(iamProvider.getConfiguration().getNode()).thenReturn("service:id:ldap:dig");
+		final var pvResource = mock(org.ligoj.app.resource.node.ParameterValueResource.class);
+		when(pvResource.getNodeParameters("service:id:ldap:dig")).thenReturn(Map.of(IdentityResource.PARAMETER_READ_ONLY_ATTRIBUTES, value));
+		FieldUtils.writeField(resource, "pvResource", pvResource, true);
+	}
+
+	@Test
+	void updateReadOnlyAttributeRejected() throws IllegalAccessException {
+		readOnly("firstName, customAttributes.badge, mail");
+		MatcherUtil.assertThrows(Assertions.assertThrows(ValidationJsonException.class,
+				() -> update2(userVo -> userVo.setFirstName("Other"))), "firstName", "read-only");
+		MatcherUtil.assertThrows(Assertions.assertThrows(ValidationJsonException.class,
+				() -> update2(userVo -> userVo.setMail("other@ing.fr"))), "mail", "read-only");
+		MatcherUtil.assertThrows(Assertions.assertThrows(ValidationJsonException.class, () -> update2(
+				userVo -> userVo.setCustomAttributes(Map.of("badge", "B2")), old -> old.setCustomAttributes(Map.of("badge", "B1")))),
+				"customAttributes.badge", "read-only");
+	}
+
+	@Test
+	void updateReadOnlyAttributeUnchangedAccepted() throws IllegalAccessException {
+		// Same values, other attributes changed, unknown names ignored: accepted
+		readOnly("firstName customAttributes.badge unknownAttribute");
+		update2(userVo -> {
+			userVo.setLastName("Changed");
+			userVo.setCustomAttributes(Map.of("badge", " B1 "));
+		}, old -> old.setCustomAttributes(Map.of("badge", "B1")));
+		verify(userRepository).updateUser(org.mockito.ArgumentMatchers.any(UserOrg.class));
+	}
+
+	@Test
+	void decorateReadOnlyAttributes() throws IllegalAccessException {
+		// The locked attribute names reach the session data, for the user dialog
+		final var resource = new UserOrgResource() {
+			@Override
+			public UserOrg findById(@PathParam("user") final String user) {
+				return new UserOrg();
+			}
+		};
+		resource.setIamProvider(new IamProvider[] { iamProvider });
+		when(iamProvider.getConfiguration().getNode()).thenReturn("service:id:ldap:dig");
+		final var pvResource = mock(org.ligoj.app.resource.node.ParameterValueResource.class);
+		when(pvResource.getNodeParameters("service:id:ldap:dig")).thenReturn(Map.of(IdentityResource.PARAMETER_READ_ONLY_ATTRIBUTES, " firstName , mail "));
+		FieldUtils.writeField(resource, "pvResource", pvResource, true);
+		FieldUtils.writeField(resource, "configuration", mock(ConfigurationResource.class), true);
+		final var shared = new ApplicationSettings();
+		resource.decorate(newSettings(shared));
+		Assertions.assertEquals("firstName,mail", shared.getData().get(IdentityResource.PARAMETER_READ_ONLY_ATTRIBUTES));
+	}
+
 	@Test
 	void updateCompany() {
 		update2(userVo -> userVo.setCompany("ligoj"));

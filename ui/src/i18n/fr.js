@@ -19,6 +19,8 @@ export default {
   'service:id:uid-pattern-description': 'Motif de validation de l\'identifiant utilisateur pour accepter une authentification',
   'service:id:people-custom-attributes': 'Attributs personnalisés',
   'service:id:people-custom-attributes-description': 'Noms des attributs utilisateur personnalisés chargés par le fournisseur d\'identité et modifiables dans le dialogue utilisateur. Valeurs séparées par des virgules ou des espaces.',
+  'service:id:read-only-attributes': 'Attributs non modifiables',
+  'service:id:read-only-attributes-description': 'Attributs utilisateur non modifiables après la création : firstName, lastName, company, department, localId, mail ou customAttributes.<nom>. Valeurs séparées par des virgules ou des espaces.',
   'service:id:group-create': 'Nom du groupe (calculé)',
   'service:id:group-already-exists': 'Ce groupe existe déjà',
   'service:id:group-starts-with-pkey': 'Le nom du groupe doit commencer par la clé du projet',
@@ -49,6 +51,7 @@ export default {
   'user.deleteConfirmAfter': ' ?',
   // Chantier D4 — saisie multi-email (v-combobox)
   'user.emailsHint': 'Appuyez sur Entrée ou Tab pour valider chaque email',
+  'user.readOnlyHint': 'Non modifiable après la création',
   // Chantier D2 (rattrapage) — fragments encadrant le nombre d'éléments
   // en gras-rouge pour la suppression en masse.
   'common.bulkDeleteConfirmBefore': 'Supprimer ',

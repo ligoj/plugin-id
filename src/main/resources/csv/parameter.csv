@@ -4,3 +4,4 @@ service:id:ou;TRUE;CREATE;FALSE;TEXT;service:id;;;TRUE;TRUE
 service:id:parent-group;FALSE;CREATE;FALSE;TEXT;service:id;;;TRUE;TRUE
 service:id:uid-pattern;FALSE;;FALSE;TEXT;service:id;;;FALSE;TRUE
 service:id:people-custom-attributes;FALSE;;FALSE;TEXT;service:id;;;FALSE;TRUE
+service:id:read-only-attributes;FALSE;;FALSE;TEXT;service:id;;;FALSE;TRUE

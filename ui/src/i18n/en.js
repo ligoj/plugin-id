@@ -26,6 +26,8 @@ export default {
   'service:id:uid-pattern-description': 'User identifier pattern validating an authentication',
   'service:id:people-custom-attributes': 'Custom attributes',
   'service:id:people-custom-attributes-description': 'Custom user attribute names the identity provider loads and the user dialog edits. Comma or space separated values.',
+  'service:id:read-only-attributes': 'Read-only attributes',
+  'service:id:read-only-attributes-description': 'User attributes that cannot be changed after creation: firstName, lastName, company, department, localId, mail or customAttributes.<name>. Comma or space separated values.',
   'service:id:group-create': 'Group name (computed)',
   'service:id:group-already-exists': 'This group already exists',
   'service:id:group-starts-with-pkey': 'The group name must start with the project key',
@@ -56,6 +58,7 @@ export default {
   'user.deleteConfirmAfter': '?',
   // Chantier D4 — multi-email input (v-combobox)
   'user.emailsHint': 'Press Enter or Tab to confirm each email',
+  'user.readOnlyHint': 'Read-only after creation',
   // Chantier D2 (rattrapage) — fragments wrapping the bulk-delete count
   // in bold red.
   'common.bulkDeleteConfirmBefore': 'Are you sure you want to delete ',
