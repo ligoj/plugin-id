@@ -1487,6 +1487,21 @@ class UserOrgResourceTest extends AbstractAppTest {
 		Assertions.assertEquals("customAttributes.any", resource.getVisualIdProperty());
 	}
 
+	/**
+	 * A runtime failure of the identity provider (misconfigured primary node, unreachable directory) must not turn
+	 * every session into an error: the details are simply absent.
+	 */
+	@Test
+	void decorateRuntimeError() throws IllegalAccessException {
+		final var settings = decorate(new UserOrgResource() {
+			@Override
+			public UserOrg findById(@PathParam("user") final String user) {
+				throw new IllegalStateException("Identity provider is broken");
+			}
+		});
+		Assertions.assertFalse(settings.getUserSettings().containsKey("userDetails"));
+	}
+
 	@Test
 	void decorateError() throws IllegalAccessException {
 		decorate(new UserOrgResource() {

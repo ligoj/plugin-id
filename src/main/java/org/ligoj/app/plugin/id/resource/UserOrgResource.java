@@ -1174,9 +1174,14 @@ public class UserOrgResource extends AbstractOrgResource implements ISessionSett
 		try {
 			// Add the user details when available
 			settings.getUserSettings().put("userDetails", findById(settings.getUserName()));
-		} catch (ValidationJsonException ve) {
+		} catch (final ValidationJsonException ve) {
 			// Ignore this error
 			log.debug("User being authenticated is not defined in primary identity provider ");
+		} catch (final RuntimeException re) {
+			// A broken identity provider (misconfigured primary node, unreachable directory) must not lock everyone
+			// out: the session is created without the user details, and the administrators can still fix it
+			log.warn("User details of '{}' are unavailable from the primary identity provider: {}",
+					settings.getUserName(), re.getMessage());
 		}
 		// Add user display and the visual identifier configuration (see CONF_VISUAL_ID_NAME / CONF_VISUAL_ID_LABEL).
 		// The application settings are shared by every session: always recompute, so that a configuration change
