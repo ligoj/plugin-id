@@ -11,7 +11,7 @@
  *
  * Every resolution falls back to the login (`id`).
  */
-import { useAuthStore, useI18nStore } from '@ligoj/host'
+import { useAuthStore, useI18nStore, resolveVisualId } from '@ligoj/host'
 
 const NAME_KEY = 'service:id:visual-id-name'
 const LABEL_KEY = 'service:id:visual-id-label'
@@ -45,11 +45,8 @@ export function visualIdColumnKey() {
 
 /** The user's visual identifier value, login fallback. */
 export function visualIdValue(user) {
-  if (!user) return ''
-  const name = visualIdName()
-  if (name === 'mail') return user.mails?.[0] || user.id
-  if (name.startsWith('customAttributes.')) return user.customAttributes?.[name.substring(17)] || user.id
-  return user[name] || user.id
+  // One rule for every user rendering: the host helper (also used by plugin-ui's project views)
+  return resolveVisualId(visualIdName(), user)
 }
 
 /** The column header label: configured static label, else localized attribute name. */
