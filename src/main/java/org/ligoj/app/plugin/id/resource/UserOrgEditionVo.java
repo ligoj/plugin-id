@@ -33,9 +33,6 @@ public class UserOrgEditionVo extends SimpleUser {
 	private static final long serialVersionUID = 1L;
 
 	/**
-	 * User mail address.
-	 */
-	/**
 	 * Single mail address, the legacy contract (CLI, batch imports). Ignored when {@link #mails} carries at least
 	 * one address. A user may have no mail: no password notification is sent then.
 	 */
