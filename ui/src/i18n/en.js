@@ -20,7 +20,7 @@ export default {
   'service:id:parent-group': 'Parent group',
   'service:id:parent-group-description': 'Optional parent group where the new group will be added',
   'service:id:ou': 'Organization',
-  'service:id:ou-description': 'Organizational Unit or customer, used as prefix for the full group name. Will be created if it does not exist.',
+  'service:id:ou-description': 'Organizational Unit or customer, used as prefix of the full group name (<organization>-<name>). It must be a prefix of the project key, or the key itself (the default): the group must also start with the project key. Created if it does not exist.',
   'service:id:ou-not-exists': 'Typed organization does not exist yet and will be created. Are you sure about the syntax?',
   'service:id:uid-pattern': 'User id pattern',
   'service:id:uid-pattern-description': 'User identifier pattern validating an authentication',
@@ -31,6 +31,7 @@ export default {
   'service:id:group-create': 'Group name (computed)',
   'service:id:group-already-exists': 'This group already exists',
   'service:id:group-starts-with-pkey': 'The group name must start with the project key',
+  'service:id:group-ou-pkey': 'The project key "{pkey}" must start with the organization "{ou}-": the group is named "<organization>-<name>" and must also start with the project key. Choose the organization the key was built with, or a project key like "{ou}-...".',
   'service:id:group-simple-name': 'Simple name',
   'service:id:group-simple-name-description': 'Simple group name without organisation prefix',
 

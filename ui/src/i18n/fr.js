@@ -13,7 +13,7 @@ export default {
   'service:id:parent-group': 'Groupe parent',
   'service:id:parent-group-description': 'Groupe parent optionnel qui contiendra le nouveau groupe créé',
   'service:id:ou': 'Organisation',
-  'service:id:ou-description': 'Unité d\'organisation, ou client, utilisée comme préfixe au nom complet du groupe. Sera créée si elle n\'existe pas.',
+  'service:id:ou-description': 'Unité d\'organisation, ou client, préfixe du nom complet du groupe (<organisation>-<nom>). Elle doit être un préfixe de la clé du projet, ou la clé elle-même (valeur par défaut) : le groupe doit aussi commencer par la clé du projet. Créée si elle n\'existe pas.',
   'service:id:ou-not-exists': 'L\'organisation saisie n\'existe pas encore et sera créée. Êtes-vous certain de la syntaxe ?',
   'service:id:uid-pattern': 'Motif d\'utilisateur',
   'service:id:uid-pattern-description': 'Motif de validation de l\'identifiant utilisateur pour accepter une authentification',
@@ -24,6 +24,7 @@ export default {
   'service:id:group-create': 'Nom du groupe (calculé)',
   'service:id:group-already-exists': 'Ce groupe existe déjà',
   'service:id:group-starts-with-pkey': 'Le nom du groupe doit commencer par la clé du projet',
+  'service:id:group-ou-pkey': 'La clé du projet "{pkey}" doit commencer par l\'organisation "{ou}-" : le groupe se nomme "<organisation>-<nom>" et doit aussi commencer par la clé du projet. Choisir l\'organisation avec laquelle la clé a été construite, ou une clé de projet de la forme "{ou}-...".',
   'service:id:group-simple-name': 'Nom simple',
   'service:id:group-simple-name-description': 'Nom simple du groupe, sans le préfixe d\'organisation',
 

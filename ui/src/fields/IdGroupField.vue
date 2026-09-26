@@ -107,6 +107,14 @@ async function recheck() {
   const fullName = computedGroup.value
   if (!composite.value) return
   if (!fullName) return
+  // The server also requires the group to start with the organization (`<ou>-`, or the parent group):
+  // since the group is `<prefix>-<simple name>`, this holds only when the project key itself starts
+  // with that prefix. Say it explicitly, before the pkey rule below fires with a less obvious message.
+  const org = prefix.value
+  if (org && pkey.value && pkey.value !== org && !pkey.value.startsWith(`${org}-`)) {
+    liveError.value = t('service:id:group-ou-pkey', { ou: org, pkey: pkey.value })
+    return
+  }
   // Pkey constraint (legacy `validateIdGroupCreateMode`): the computed
   // group name MUST equal the project's pkey OR start with `<pkey>-`.
   if (pkey.value && fullName !== pkey.value && !fullName.startsWith(`${pkey.value}-`)) {
