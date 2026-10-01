@@ -16,7 +16,10 @@ import org.ligoj.app.model.ContainerType;
 import org.ligoj.bootstrap.MatcherUtil;
 import org.ligoj.bootstrap.core.json.datatable.DataTableAttributes;
 import org.ligoj.bootstrap.core.validation.ValidationJsonException;
+import org.ligoj.bootstrap.model.system.SystemAuthorization;
+import org.ligoj.bootstrap.model.system.SystemRole;
 import org.mockito.ArgumentMatchers;
+import org.mockito.Mockito;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.ContextConfiguration;
@@ -180,6 +183,60 @@ class GroupResourceTest extends AbstractContainerResourceTest {
 	@Test
 	void create() {
 		createInternal(new GroupEditionVo(), "cn=new-group,ou=fonction,ou=groups,dc=sample,dc=com");
+	}
+
+	/**
+	 * Create a system role, with the administration API authorization when requested.
+	 */
+	private void newSystemRole(final String name, final boolean admin) {
+		final var role = new SystemRole();
+		role.setName(name);
+		em.persist(role);
+		final var authorization = new SystemAuthorization();
+		authorization.setRole(role);
+		authorization.setType(SystemAuthorization.AuthorizationType.API);
+		authorization.setPattern(admin ? ".*" : "service/.*");
+		em.persist(authorization);
+		em.flush();
+	}
+
+	private GroupEditionVo newGroup(final String name) {
+		final var group = new GroupEditionVo();
+		group.setName(name);
+		group.setScope(containerScopeRepository.findByName(GROUP_FUNCTION).getId());
+		return group;
+	}
+
+	/**
+	 * A group named like an administration role (case-insensitive) would grant this role to its members: refused for
+	 * a principal that is not an administrator himself.
+	 */
+	@Test
+	void createAdminRoleNotAdmin() {
+		newSystemRole("ADMIN-ROLE", true);
+		MatcherUtil.assertThrows(Assertions.assertThrows(ValidationJsonException.class, () -> resource.create(newGroup("admin-Role"))),
+				"name", "group-admin-role");
+		Mockito.verify(groupRepository, Mockito.never()).create(ArgumentMatchers.anyString(), ArgumentMatchers.anyString());
+	}
+
+	@Test
+	void createAdminRoleAdmin() {
+		newSystemRole("ADMIN-ROLE", true);
+		initSpringSecurityContextAdmin(DEFAULT_USER);
+		when(groupRepository.create("cn=admin-Role,ou=fonction,ou=groups,dc=sample,dc=com", "admin-Role"))
+				.thenReturn(new GroupOrg("cn=admin-Role", "admin-Role", null));
+		Assertions.assertEquals("admin-role", resource.create(newGroup("admin-Role")));
+	}
+
+	/**
+	 * A role without the administration level does not restrict the group name.
+	 */
+	@Test
+	void createNotAdminRole() {
+		newSystemRole("SOME-ROLE", false);
+		when(groupRepository.create("cn=some-role,ou=fonction,ou=groups,dc=sample,dc=com", "some-role"))
+				.thenReturn(new GroupOrg("cn=some-role", "some-role", null));
+		Assertions.assertEquals("some-role", resource.create(newGroup("some-role")));
 	}
 
 	private void createInternal(final GroupEditionVo group, final String expected) {

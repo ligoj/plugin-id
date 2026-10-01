@@ -3,6 +3,7 @@
  */
 package org.ligoj.app.plugin.id.resource;
 
+import lombok.extern.slf4j.Slf4j;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.Context;
@@ -25,6 +26,7 @@ import org.ligoj.bootstrap.core.json.TableItem;
 import org.ligoj.bootstrap.core.json.datatable.DataTableAttributes;
 import org.ligoj.bootstrap.core.resource.BusinessException;
 import org.ligoj.bootstrap.core.validation.ValidationJsonException;
+import org.ligoj.bootstrap.dao.system.AuthorizationRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -33,6 +35,7 @@ import java.util.List;
 /**
  * Group resource.
  */
+@Slf4j
 @Path(IdentityResource.SERVICE_URL + "/group")
 @Service
 @Produces(MediaType.APPLICATION_JSON)
@@ -49,6 +52,9 @@ public class GroupResource extends AbstractContainerResource<GroupOrg, GroupEdit
 
 	@Autowired
 	private CacheGroupRepository cacheGroupRepository;
+
+	@Autowired
+	private AuthorizationRepository authorizationRepository;
 
 	/**
 	 * Default constructor specifying the type as {@link ContainerType#GROUP}
@@ -180,8 +186,27 @@ public class GroupResource extends AbstractContainerResource<GroupOrg, GroupEdit
 		getRepository().empty(container, getUserRepository().findAll());
 	}
 
+	/**
+	 * Members of a group receive the system role having the same name (case-insensitive): a group named like an
+	 * administration role would grant this level to its members. Only an administrator can create such group.
+	 *
+	 * @param name The new group name.
+	 */
+	private void checkAdminRole(final String name) {
+		if (securityHelper.isAdmin()) {
+			return;
+		}
+		authorizationRepository.findAdminApiRoles().stream().filter(name::equalsIgnoreCase).findFirst().ifPresent(role -> {
+			log.warn("Attempt to create the group '{}' matching the administration role '{}' by the non-administrator {}", name,
+					role, securityHelper.getLogin());
+			throw new ValidationJsonException("name", "group-admin-role", "role", role);
+		});
+	}
+
 	@Override
 	protected GroupOrg create(final GroupEditionVo container, final ContainerScope type, final String newDn) {
+		checkAdminRole(container.getName());
+
 		// Check the related objects
 		final var assistants = toDn(container.getAssistants());
 		final var owners = toDn(container.getOwners());

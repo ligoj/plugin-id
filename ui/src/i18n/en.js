@@ -30,6 +30,7 @@ export default {
   'service:id:read-only-attributes-description': 'User attributes that cannot be changed after creation: firstName, lastName, company, department, localId, mail or customAttributes.<name>. Comma or space separated values.',
   'service:id:group-create': 'Group name (computed)',
   'service:id:group-already-exists': 'This group already exists',
+  'error.rule.group-admin-role': 'The group name matches the administration role "{role}": its members would become administrators. Only an administrator can create this group.',
   'service:id:group-starts-with-pkey': 'The group name must start with the project key',
   'service:id:group-ou-pkey': 'The project key "{pkey}" must start with the organization "{ou}-": the group is named "<organization>-<name>" and must also start with the project key. Choose the organization the key was built with, or a project key like "{ou}-...".',
   'service:id:group-simple-name': 'Simple name',

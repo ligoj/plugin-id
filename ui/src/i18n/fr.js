@@ -23,6 +23,7 @@ export default {
   'service:id:read-only-attributes-description': 'Attributs utilisateur non modifiables après la création : firstName, lastName, company, department, localId, mail ou customAttributes.<nom>. Valeurs séparées par des virgules ou des espaces.',
   'service:id:group-create': 'Nom du groupe (calculé)',
   'service:id:group-already-exists': 'Ce groupe existe déjà',
+  'error.rule.group-admin-role': 'Le nom du groupe correspond au rôle d\'administration "{role}" : ses membres deviendraient administrateurs. Seul un administrateur peut créer ce groupe.',
   'service:id:group-starts-with-pkey': 'Le nom du groupe doit commencer par la clé du projet',
   'service:id:group-ou-pkey': 'La clé du projet "{pkey}" doit commencer par l\'organisation "{ou}-" : le groupe se nomme "<organisation>-<nom>" et doit aussi commencer par la clé du projet. Choisir l\'organisation avec laquelle la clé a été construite, ou une clé de projet de la forme "{ou}-...".',
   'service:id:group-simple-name': 'Nom simple',
