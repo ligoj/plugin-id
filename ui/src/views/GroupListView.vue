@@ -44,12 +44,12 @@
                   :tooltip="item.locked ? t('user.statusLocked') : t('user.statusActive')" />
       </template>
       <template #actions="{ item }">
-        <v-menu location="bottom end">
+        <v-menu v-if="auth.isAllowedApi(USER_API, 'PUT') || auth.isAllowedApi(GROUP_API, 'GET') || auth.isAllowedApi(GROUP_API, 'DELETE')" location="bottom end">
           <template #activator="{ props }">
             <button class="lj-iconbtn" v-bind="props" :aria-label="t('group.actions') || t('id.group.manage')" @click.stop><v-icon size="18">mdi-cog</v-icon></button>
           </template>
           <div class="lj-popmenu">
-            <button v-if="auth.isAllowedApi(GROUP_API, 'PUT')" @click="onManageMembers(item.name)"><v-icon size="18">mdi-account-multiple</v-icon>{{ t('id.group.manage') }}</button>
+            <button v-if="auth.isAllowedApi(USER_API, 'PUT')" @click="onManageMembers(item.name)"><v-icon size="18">mdi-account-multiple</v-icon>{{ t('id.group.manage') }}</button>
             <button v-if="auth.isAllowedApi(GROUP_API, 'GET')" @click="openEdit(item.name)"><v-icon size="18">mdi-eye-outline</v-icon>{{ t('common.view') }}</button>
             <div class="sep" />
             <button v-if="auth.isAllowedApi(GROUP_API, 'DELETE')" class="danger" @click="startDelete(item)"><v-icon size="18">mdi-delete</v-icon>{{ t('common.delete') }}</button>
@@ -99,6 +99,8 @@ const t = i18n.t
 // (admins bypass). Managing members PUTs the group; deletion DELETEs it; the
 // read-only "view" needs GET.
 const GROUP_API = 'rest/service/id/group'
+// The members are managed through the user memberships (rest/service/id/user/{user}/group/{group})
+const USER_API = 'rest/service/id/user'
 const membersDialog = useGroupMembersDialog()
 
 const DEMO_GROUPS = [

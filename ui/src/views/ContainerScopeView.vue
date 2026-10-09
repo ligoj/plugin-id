@@ -15,7 +15,7 @@
       <template #actions>
         <LjSegmented v-model="activeTab" :options="tabs" />
         <LjSearch v-model="search" :placeholder="t('common.search')" />
-        <LjButton icon="mdi-plus" @click="openNew">{{ t('containerScope.new') }}</LjButton>
+        <LjButton v-if="auth.isAllowedApi(SCOPE_API, 'POST')" icon="mdi-plus" @click="openNew">{{ t('containerScope.new') }}</LjButton>
       </template>
     </LjPageHeader>
 
@@ -33,14 +33,14 @@
                   :tooltip="item.locked ? t('user.statusLocked') : t('user.statusActive')" />
       </template>
       <template #actions="{ item }">
-        <v-menu location="bottom end">
+        <v-menu v-if="auth.isAllowedApi(SCOPE_API, 'PUT') || auth.isAllowedApi(SCOPE_API, 'DELETE')" location="bottom end">
           <template #activator="{ props }">
             <button class="lj-iconbtn" v-bind="props" :aria-label="t('common.edit')" @click.stop><v-icon size="18">mdi-cog</v-icon></button>
           </template>
           <div class="lj-popmenu">
-            <button @click="openEdit(item)"><v-icon size="18">mdi-pencil</v-icon>{{ t('common.edit') }}</button>
+            <button v-if="auth.isAllowedApi(SCOPE_API, 'PUT')" @click="openEdit(item)"><v-icon size="18">mdi-pencil</v-icon>{{ t('common.edit') }}</button>
             <div class="sep" />
-            <button class="danger" :disabled="item.locked" @click="!item.locked && startDelete(item)"><v-icon size="18">mdi-delete</v-icon>{{ t('common.delete') }}</button>
+            <button v-if="auth.isAllowedApi(SCOPE_API, 'DELETE')" class="danger" :disabled="item.locked" @click="!item.locked && startDelete(item)"><v-icon size="18">mdi-delete</v-icon>{{ t('common.delete') }}</button>
           </div>
         </v-menu>
       </template>
@@ -75,12 +75,15 @@
 
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue'
-import { LigojTextField, useApi, useAppStore, useEditExtensions, useErrorStore, useI18nStore } from '@ligoj/host'
+import { LigojTextField, useApi, useAppStore, useAuthStore, useEditExtensions, useErrorStore, useI18nStore } from '@ligoj/host'
 import { TYPE_ICONS } from '../composables/delegateTypes.js'
 import { LjDataTable, LjConfirmDialog as LigojConfirmDialog, LjPageHeader, LjButton, LjSearch, LjSegmented, LjDialog, LjAvailabilityField, LjStatus } from '@ligoj/host'
 
 const api = useApi()
 const appStore = useAppStore()
+const auth = useAuthStore()
+// API-permission gates (v-if auth.isAllowedApi) of the actions
+const SCOPE_API = 'rest/service/id/container-scope'
 const errorStore = useErrorStore()
 const i18n = useI18nStore()
 const t = i18n.t
@@ -132,7 +135,8 @@ const saving = ref(false)
 
 // A locked scope is read-only: the dialog opens as a view (no save, fields
 // disabled), matching the backend rule that locked scopes can't be mutated.
-const readOnly = computed(() => !!editTarget.value?.locked)
+// So is an existing scope without the API permission to update it.
+const readOnly = computed(() => !!editTarget.value?.locked || (!!editTarget.value?.id && !auth.isAllowedApi(SCOPE_API, 'PUT')))
 const deleteDialog = ref(false)
 const deleteTarget = ref(null)
 const deleting = ref(false)

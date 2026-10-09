@@ -11,7 +11,7 @@
        → members list", no project / subscription context required. -->
   <div class="gmpanel lj-surface">
     <!-- Add-member bar: server-side autocomplete + CTA. -->
-    <div class="addbar">
+    <div v-if="auth.isAllowedApi(USER_API, 'PUT')" class="addbar">
       <LigojAutocomplete v-model="newMember" v-model:search="searchTerm" :label="t('id.group.addPlaceholder')" :items="searchResults" item-title="label" item-value="id" :loading="searching" no-filter
         clearable variant="outlined" density="comfortable" rounded="lg" hide-details autocomplete="off" class="addsel" prepend-inner-icon="mdi-account-search"
         @update:search="onSearch" @update:menu="onSearchMenu" />
@@ -44,7 +44,7 @@
         </span>
       </template>
       <template #actions="{ item }">
-        <button v-if="canRemove(item)" class="lj-iconbtn remove-danger" :aria-label="t('id.group.removeTitle')" @click.stop="startRemove(item)">
+        <button v-if="canRemove(item) && auth.isAllowedApi(USER_API, 'DELETE')" class="lj-iconbtn remove-danger" :aria-label="t('id.group.removeTitle')" @click.stop="startRemove(item)">
           <v-icon size="18">mdi-account-minus</v-icon>
           <v-tooltip activator="parent" :text="t('id.group.removeTitle')" location="top" />
         </button>
@@ -69,6 +69,7 @@
 import { ref, computed, watch } from 'vue'
 import {
   useApi,
+  useAuthStore,
   useDataTable,
   useErrorStore,
   useI18nStore,
@@ -101,6 +102,9 @@ const props = defineProps({
 const emit = defineEmits(['changed'])
 
 const api = useApi()
+const auth = useAuthStore()
+// API-permission gates (v-if auth.isAllowedApi) of the actions
+const USER_API = 'rest/service/id/user'
 const errorStore = useErrorStore()
 const { t } = useI18nStore()
 

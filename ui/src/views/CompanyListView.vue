@@ -42,7 +42,7 @@
                   :tooltip="item.locked ? t('user.statusLocked') : t('user.statusActive')" />
       </template>
       <template #actions="{ item }">
-        <v-menu location="bottom end">
+        <v-menu v-if="auth.isAllowedApi(COMPANY_API, 'GET') || auth.isAllowedApi(COMPANY_API, 'DELETE')" location="bottom end">
           <template #activator="{ props }">
             <button class="lj-iconbtn" v-bind="props" :aria-label="t('common.view')" @click.stop><v-icon size="18">mdi-cog</v-icon></button>
           </template>

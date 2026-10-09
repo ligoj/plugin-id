@@ -76,14 +76,14 @@
               <LigojTextField v-for="name in attributeNames" :key="name" v-model="form.customAttributes[name]" :label="customAttributeLabel(name)" prepend-inner-icon="mdi-tag-outline" :readonly="isReadOnly('customAttributes.' + name, isEdit)" :hint="isReadOnly('customAttributes.' + name, isEdit) ? t('user.readOnlyHint') : undefined" persistent-hint variant="outlined" class="mb-2" />
             </v-form>
 
-            <template v-if="isEdit">
+            <template v-if="isEdit && (auth.isAllowedApi(USER_API, 'PUT') || auth.isAllowedApi(USER_API, 'DELETE'))">
               <v-divider class="my-4" />
               <div class="text-subtitle-2 text-medium-emphasis mb-2 actions-label">{{ t('user.actions') }}</div>
               <v-list border rounded density="compact" bg-color="transparent">
-                <v-list-item :prepend-icon="locked ? 'mdi-lock-open-variant' : 'mdi-lock'" :title="locked ? t('user.unlock') : t('user.lock')" @click="startAction(locked ? 'unlock' : 'lock')" />
-                <v-list-item :prepend-icon="isolated ? 'mdi-account-check' : 'mdi-account-off'" :title="isolated ? t('user.restore') : t('user.isolate')"
+                <v-list-item v-if="auth.isAllowedApi(USER_API, locked ? 'PUT' : 'DELETE')" :prepend-icon="locked ? 'mdi-lock-open-variant' : 'mdi-lock'" :title="locked ? t('user.unlock') : t('user.lock')" @click="startAction(locked ? 'unlock' : 'lock')" />
+                <v-list-item v-if="auth.isAllowedApi(USER_API, isolated ? 'PUT' : 'DELETE')" :prepend-icon="isolated ? 'mdi-account-check' : 'mdi-account-off'" :title="isolated ? t('user.restore') : t('user.isolate')"
                   @click="startAction(isolated ? 'restore' : 'isolate')" />
-                <v-list-item prepend-icon="mdi-lock-reset" :title="t('user.resetPassword')" @click="startAction('resetPassword')" />
+                <v-list-item v-if="auth.isAllowedApi(USER_API, 'PUT')" prepend-icon="mdi-lock-reset" :title="t('user.resetPassword')" @click="startAction('resetPassword')" />
               </v-list>
             </template>
 
@@ -94,14 +94,14 @@
           </template>
 
       <template #footer>
-        <LjButton v-if="isEdit && auth.isAllowedApi('rest/service/id/user', 'DELETE')" variant="danger" icon="mdi-delete" :disabled="loading" style="margin-right: auto" @click="confirmDelete = true">{{ t('common.delete') }}</LjButton>
+        <LjButton v-if="isEdit && auth.isAllowedApi(USER_API, 'DELETE')" variant="danger" icon="mdi-delete" :disabled="loading" style="margin-right: auto" @click="confirmDelete = true">{{ t('common.delete') }}</LjButton>
         <!-- order:-1 jumps the toggle ahead of LjDialog's leading `.foot-sp`
              flex spacer so it sits flush-left while the buttons stay right. -->
         <CreateAnotherToggle v-if="!isEdit" v-model="createAnother" style="order: -1" />
         <!-- Plugin action-bar contributions (`editExtension.footer`). -->
         <component :is="f" v-for="(f, fi) in extensionFooters" :key="'xf' + fi" :mode="isEdit ? 'edit' : 'create'" :form="form" :context="extensionContext" />
         <LjButton variant="ghost" @click="requestClose">{{ t('common.cancel') }}</LjButton>
-        <LjButton icon="mdi-content-save" :disabled="loading" :loading="saving" @click="save">{{ t('common.save') }}</LjButton>
+        <LjButton v-if="auth.isAllowedApi(USER_API, isEdit ? 'PUT' : 'POST')" icon="mdi-content-save" :disabled="loading" :loading="saving" @click="save">{{ t('common.save') }}</LjButton>
       </template>
     </LjDialog>
 
@@ -149,6 +149,8 @@ const emit = defineEmits(['update:modelValue', 'saved'])
 
 const api = useApi()
 const auth = useAuthStore()
+// API-permission gates (v-if auth.isAllowedApi) of the actions
+const USER_API = 'rest/service/id/user'
 const errorStore = useErrorStore()
 const i18n = useI18nStore()
 const t = i18n.t

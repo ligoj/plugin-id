@@ -90,14 +90,14 @@
       <component :is="extension" v-for="(extension, i) in extensionComponents" :key="i" :mode="isEdit ? 'edit' : 'create'" :form="form" :context="extensionContext" />
 
       <template #footer>
-        <LjButton v-if="isEdit && auth.isAllowedApi('rest/security/delegate', 'DELETE')" variant="danger" icon="mdi-delete" :disabled="loading" style="margin-right: auto" @click="confirmDelete = true">{{ t('common.delete') }}</LjButton>
+        <LjButton v-if="isEdit && auth.isAllowedApi(DELEGATE_API, 'DELETE')" variant="danger" icon="mdi-delete" :disabled="loading" style="margin-right: auto" @click="confirmDelete = true">{{ t('common.delete') }}</LjButton>
         <!-- order:-1 jumps the toggle ahead of LjDialog's leading `.foot-sp`
              flex spacer so it sits flush-left while the buttons stay right. -->
         <CreateAnotherToggle v-if="!isEdit" v-model="createAnother" style="order: -1" />
         <!-- Plugin action-bar contributions (`editExtension.footer`). -->
         <component :is="f" v-for="(f, fi) in extensionFooters" :key="'xf' + fi" :mode="isEdit ? 'edit' : 'create'" :form="form" :context="extensionContext" />
         <LjButton variant="ghost" @click="requestClose">{{ t('common.cancel') }}</LjButton>
-        <LjButton icon="mdi-content-save" :disabled="loading" :loading="saving" @click="save">{{ t('common.save') }}</LjButton>
+        <LjButton v-if="auth.isAllowedApi(DELEGATE_API, isEdit ? 'PUT' : 'POST')" icon="mdi-content-save" :disabled="loading" :loading="saving" @click="save">{{ t('common.save') }}</LjButton>
       </template>
     </LjDialog>
 
@@ -142,6 +142,8 @@ const emit = defineEmits(['update:modelValue', 'saved'])
 
 const api = useApi()
 const auth = useAuthStore()
+// API-permission gates (v-if auth.isAllowedApi) of the actions
+const DELEGATE_API = 'rest/security/delegate'
 const errorStore = useErrorStore()
 const i18n = useI18nStore()
 const t = i18n.t

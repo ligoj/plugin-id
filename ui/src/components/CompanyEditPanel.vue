@@ -84,7 +84,7 @@
     <component :is="extension" v-for="(extension, i) in extensionComponents" :key="i" :mode="isEdit ? 'edit' : 'create'" :form="form" :context="extensionContext" />
 
     <div v-if="!loading" class="cep-foot">
-      <LjButton v-if="isEdit" variant="danger" icon="mdi-delete" :disabled="saving" @click="confirmDelete = true">{{ t('common.delete') }}</LjButton>
+      <LjButton v-if="isEdit && auth.isAllowedApi('rest/service/id/company', 'DELETE')" variant="danger" icon="mdi-delete" :disabled="saving" @click="confirmDelete = true">{{ t('common.delete') }}</LjButton>
       <CreateAnotherToggle v-if="!isEdit" v-model="createAnother" />
       <span class="foot-sp" />
       <!-- Plugin action-bar contributions (`editExtension.footer`). -->
@@ -109,7 +109,7 @@
 
 <script setup>
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
-import { useApi, useEditExtensions, useErrorStore, useI18nStore } from '@ligoj/host'
+import { useApi, useAuthStore, useEditExtensions, useErrorStore, useI18nStore } from '@ligoj/host'
 import { TYPE_ICONS } from '../composables/delegateTypes.js'
 import { LjConfirmDialog as LigojConfirmDialog, LjButton, LjAvailabilityField, LjStatus, LigojAutocomplete } from '@ligoj/host'
 import CreateAnotherToggle from './CreateAnotherToggle.vue'
@@ -126,6 +126,7 @@ const props = defineProps({
 const emit = defineEmits(['saved', 'deleted', 'cancel'])
 
 const api = useApi()
+const auth = useAuthStore()
 const errorStore = useErrorStore()
 const i18n = useI18nStore()
 const t = i18n.t

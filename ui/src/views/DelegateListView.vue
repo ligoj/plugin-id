@@ -48,7 +48,7 @@
                   :tooltip="item.canWrite ? t('delegate.writeGranted') : t('delegate.writeNotGranted')" />
       </template>
       <template #actions="{ item }">
-        <v-menu location="bottom end">
+        <v-menu v-if="auth.isAllowedApi(DELEGATE_API, 'PUT') || auth.isAllowedApi(DELEGATE_API, 'DELETE')" location="bottom end">
           <template #activator="{ props }">
             <button class="lj-iconbtn" v-bind="props" :aria-label="t('common.edit')" @click.stop><v-icon size="18">mdi-cog</v-icon></button>
           </template>
