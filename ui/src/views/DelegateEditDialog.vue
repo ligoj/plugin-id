@@ -124,7 +124,7 @@
 
 <script setup>
 import { ref, computed, watch, nextTick } from 'vue'
-import { LigojTextField, useApi, useAuthStore, useEditExtensions, useFormGuard, useErrorStore, useI18nStore, LigojSelect } from '@ligoj/host'
+import { LigojTextField, useApi, useAuthStore, useEditExtensions, useFormGuard, useErrorStore, useI18nStore, LigojSelect, userLabel } from '@ligoj/host'
 import { TYPE_ICONS, RECEIVER_TYPES, RESOURCE_TYPES } from '../composables/delegateTypes.js'
 import { LjConfirmDialog as LigojConfirmDialog, LjDialog, LjButton, LigojAutocomplete } from '@ligoj/host'
 import CreateAnotherToggle from '../components/CreateAnotherToggle.vue'
@@ -192,7 +192,8 @@ const typeIcon = computed(() => TYPE_ICONS[form.value.type] || '')
  *    type=USER/GROUP/COMPANY → same as above
  *    type=TREE             → groups (TREE delegates scope on a group)
  *
- *  Server-side filtering only (the autocomplete passes `?q=`), so we
+ *  Server-side filtering only (the typed text goes as the DataTables
+ *  criterion `search[value]`, the only one the user API reads), so we
  *  set `no-filter` on the components to disable Vuetify's local filter.
  *  ------------------------------------------------------------------- */
 
@@ -205,14 +206,12 @@ const TYPE_TO_ENDPOINT = {
 }
 
 /** Normalize a backend row to `{ id, label }` regardless of the entity
- *  kind. Users get `id — First Last` so the dropdown is scannable;
+ *  kind. Users are labelled by the visual identifier and name
+ *  (service:id:visual-id-name), the value stays the login;
  *  groups/companies are identified by name only. */
 function normalizeEntity(row, kind) {
   if (!row) return null
-  if (kind === 'USER') {
-    const full = [row.firstName, row.lastName].filter(Boolean).join(' ')
-    return { id: row.id, label: full ? `${row.id} — ${full}` : row.id }
-  }
+  if (kind === 'USER') return { id: row.id, label: userLabel(row) }
   return { id: row.name, label: row.name }
 }
 
@@ -223,7 +222,7 @@ async function fetchEntities(kind, query) {
   const endpoint = TYPE_TO_ENDPOINT[kind]
   if (!endpoint) return []
   const q = (query || '').trim()
-  const qp = q ? `q=${encodeURIComponent(q)}&` : ''
+  const qp = q ? `search[value]=${encodeURIComponent(q)}&` : ''
   const data = await api.get(`rest/${endpoint}?${qp}rows=20`)
   const rows = Array.isArray(data) ? data : (data?.data || [])
   return rows.map((r) => normalizeEntity(r, kind)).filter(Boolean)
