@@ -214,7 +214,7 @@ public abstract class AbstractMemCacheRepository {
 	 * Reset the database cache with the LDAP data. Note there is no synchronization for this method. Initial first
 	 * concurrent calls may not involve the cache.
 	 *
-	 * @return The cached LDAP data..
+	 * @return The cached LDAP data.
 	 */
 	public abstract Map<CacheDataType, Map<String, ? extends ResourceOrg>> getData();
 

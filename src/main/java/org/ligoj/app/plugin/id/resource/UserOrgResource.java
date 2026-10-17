@@ -129,7 +129,7 @@ public class UserOrgResource extends AbstractOrgResource implements ISessionSett
 	public static final String CONF_VISUAL_ID_NAME = "service:id:visual-id-name";
 
 	/**
-	 * Configuration key of the static (non localizable) label displayed for the visual identifier column. When
+	 * Configuration key of the static (non-localizable) label displayed for the visual identifier column. When
 	 * undefined, the UI localizes the {@link #CONF_VISUAL_ID_NAME} value instead.
 	 */
 	public static final String CONF_VISUAL_ID_LABEL = "service:id:visual-id-label";

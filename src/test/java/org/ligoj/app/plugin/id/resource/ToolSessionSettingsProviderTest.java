@@ -89,7 +89,7 @@ class ToolSessionSettingsProviderTest extends AbstractAppTest {
 	}
 
 	/**
-	 * Invalid JSon in tool configuration.
+	 * Invalid JSON in tool configuration.
 	 */
 	@Test
 	void decorateError() {

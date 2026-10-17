@@ -514,7 +514,7 @@ class IdCacheDaoTest extends AbstractJpaTest {
 
 		em.flush();
 
-		// Pre state
+		// Pre-state
 		Assertions.assertNotNull(em.find(CacheCompany.class, "another-company"));
 		Assertions.assertNotNull(em.find(CacheGroup.class, "group"));
 		Assertions.assertNotNull(em.find(CacheUser.class, "u0"));
