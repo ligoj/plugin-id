@@ -46,7 +46,7 @@ class IdentityParametersTest {
 		Assertions.assertEquals("FALSE", row.get("availableForSubscription"));
 	}
 
-	private Map<String, String> csvRow(final String resource, final String id) throws IOException {
+	private Map<String, String> csvRow(final String resource, final String id) {
 		final var lines = IOUtils.readLines(getClass().getClassLoader().getResourceAsStream(resource), StandardCharsets.UTF_8);
 		final var headers = Arrays.asList(lines.getFirst().split(";", -1));
 		final var values = lines.stream().filter(l -> l.startsWith(id + ";")).findFirst().map(l -> Arrays.asList(l.split(";", -1)))

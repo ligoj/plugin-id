@@ -3,21 +3,17 @@
  */
 package org.ligoj.app.plugin.id.resource;
 
-import java.util.Collection;
-import java.util.Objects;
-import java.util.List;
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.validation.constraints.Email;
-import org.apache.commons.lang3.StringUtils;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-
-import org.ligoj.app.iam.SimpleUser;
-
 import lombok.Getter;
 import lombok.Setter;
+import org.apache.commons.lang3.StringUtils;
+import org.ligoj.app.iam.SimpleUser;
+
+import java.util.Collection;
+import java.util.List;
+import java.util.Objects;
 
 /**
  * User definition for edition.

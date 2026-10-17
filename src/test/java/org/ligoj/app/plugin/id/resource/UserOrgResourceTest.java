@@ -8,7 +8,6 @@ import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.core.UriInfo;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.reflect.FieldUtils;
-import java.util.List;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
