@@ -47,7 +47,7 @@
     </LjDataTable>
 
     <!-- Create / edit dialog (shared chrome). -->
-    <LjDialog v-model="editDialog" :title="readOnly ? t('containerScope.view') : (editTarget?.id ? t('containerScope.edit') : t('containerScope.new'))" :icon="TYPE_ICONS.SCOPE" :max-width="520">
+    <LjDialog v-model="editDialog" :guard="editForm" :title="readOnly ? t('containerScope.view') : (editTarget?.id ? t('containerScope.edit') : t('containerScope.new'))" :icon="TYPE_ICONS.SCOPE" :max-width="520">
       <v-form ref="formRef" @submit.prevent="save">
         <LjAvailabilityField v-model="editForm.name" v-model:taken="nameTaken" :endpoint="'service/id/container-scope/' + activeTab" :enabled="!editTarget?.id && !demoMode"
           prepend-inner-icon="mdi-form-textbox" :label="t('common.name')" :disabled="readOnly" class="mb-2" autofocus />
@@ -59,10 +59,10 @@
       <!-- Plugin contributions (`editExtension`, target 'container-scope').
            Extra keys written into `editForm` ride along in the save payload. -->
       <component :is="extension" v-for="(extension, i) in extensionComponents" :key="i" :mode="editTarget?.id ? 'edit' : 'create'" :form="editForm" :context="extensionContext" />
-      <template #footer>
+      <template #footer="{ close }">
         <!-- Plugin action-bar contributions (`editExtension.footer`). -->
         <component :is="f" v-for="(f, fi) in extensionFooters" :key="'xf' + fi" :mode="editTarget?.id ? 'edit' : 'create'" :form="editForm" :context="extensionContext" />
-        <LjButton variant="ghost" @click="editDialog = false">{{ readOnly ? t('common.close') : t('common.cancel') }}</LjButton>
+        <LjButton variant="ghost" @click="close">{{ readOnly ? t('common.close') : t('common.cancel') }}</LjButton>
         <LjButton v-if="!readOnly" icon="mdi-content-save" :loading="saving" @click="save">{{ t('common.save') }}</LjButton>
       </template>
     </LjDialog>

@@ -58,8 +58,10 @@
     <!-- No `v-if` on the panel: the lazy v-dialog owns the mount/unmount so the
          content tears down after the close transition (avoids orphaning the
          header). See GroupListView for the same fix. -->
-    <LjDialog v-model="editDialog" :title="editingId ? t('company.detailsTitle') : t('company.new')" :badge="editingId || ''" :icon="editingId ? 'mdi-eye-outline' : 'mdi-office-building'" :max-width="600">
-      <CompanyEditPanel :key="editingId ?? 'new'" :company-id="editingId" @saved="onEditSaved" @deleted="onEditDeleted" @cancel="editDialog = false" />
+    <LjDialog v-model="editDialog" :guard="editingId ? null : createForm" :guard-ready="!!createForm" :title="editingId ? t('company.detailsTitle') : t('company.new')" :badge="editingId || ''" :icon="editingId ? 'mdi-eye-outline' : 'mdi-office-building'" :max-width="600">
+      <template #default="{ close }">
+        <CompanyEditPanel :key="editingId ?? 'new'" :company-id="editingId" @form="createForm = $event" @saved="onEditSaved" @deleted="onEditDeleted" @cancel="close" />
+      </template>
     </LjDialog>
 
     <LigojConfirmDialog v-model="deleteDialog" :title="t('company.deleteTitle')" :icon="TYPE_ICONS.COMPANY" :confirm-label="t('common.delete')" confirm-color="error" :loading="deleting"
@@ -111,6 +113,8 @@ const deleting = ref(false)
 const bulkDeleteDialog = ref(false)
 const editDialog = ref(false)
 const editingId = ref(null)
+// The form of a company being created, from its panel: its details have nothing to guard, ready once the panel shows it
+const createForm = ref(null)
 
 const headers = computed(() => [
   { title: t('common.name'), label: t('common.name'), key: 'name', sortable: true },

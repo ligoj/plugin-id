@@ -63,8 +63,10 @@
          mount/unmount, so the content unmounts AFTER the close transition.
          Adding `v-if="editDialog"` here removed the panel synchronously while
          the dialog was still animating out, which could orphan the header. -->
-    <LjDialog v-model="editDialog" :title="editingId ? t('group.detailsTitle') : t('group.new')" :badge="editingId || ''" :icon="editingId ? 'mdi-eye-outline' : 'mdi-account-group'" :max-width="600">
-      <GroupEditPanel :key="editingId ?? 'new'" :group-id="editingId" @saved="onEditSaved" @deleted="onEditDeleted" @cancel="editDialog = false" />
+    <LjDialog v-model="editDialog" :guard="editingId ? null : createForm" :guard-ready="!!createForm" :title="editingId ? t('group.detailsTitle') : t('group.new')" :badge="editingId || ''" :icon="editingId ? 'mdi-eye-outline' : 'mdi-account-group'" :max-width="600">
+      <template #default="{ close }">
+        <GroupEditPanel :key="editingId ?? 'new'" :group-id="editingId" @form="createForm = $event" @saved="onEditSaved" @deleted="onEditDeleted" @cancel="close" />
+      </template>
     </LjDialog>
 
     <LigojConfirmDialog v-model="deleteDialog" :title="t('group.deleteTitle')" :icon="TYPE_ICONS.GROUP" :confirm-label="t('common.delete')" confirm-color="error" :loading="deleting"
@@ -123,6 +125,8 @@ const deleting = ref(false)
 const bulkDeleteDialog = ref(false)
 const editDialog = ref(false)
 const editingId = ref(null)
+// The form of a group being created, from its panel: its details have nothing to guard, ready once the panel shows it
+const createForm = ref(null)
 
 const headers = computed(() => [
   { title: t('common.name'), label: t('common.name'), key: 'name', sortable: true },

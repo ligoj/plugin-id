@@ -108,7 +108,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
+import { ref, computed, watch, onMounted, onBeforeUnmount } from 'vue'
 import { useApi, useAuthStore, useEditExtensions, useErrorStore, useI18nStore } from '@ligoj/host'
 import { TYPE_ICONS } from '../composables/delegateTypes.js'
 import { LjConfirmDialog as LigojConfirmDialog, LjButton, LjAvailabilityField, LjStatus, LigojAutocomplete } from '@ligoj/host'
@@ -123,7 +123,7 @@ const props = defineProps({
    */
   companyId: { type: [String, Number, null], default: null },
 })
-const emit = defineEmits(['saved', 'deleted', 'cancel'])
+const emit = defineEmits(['saved', 'deleted', 'cancel', 'form'])
 
 const api = useApi()
 const auth = useAuthStore()
@@ -159,6 +159,8 @@ const form = ref({
   locked: false,
   count: null,
 })
+// The form, for the unsaved-changes guard of the dialog showing this panel
+watch(form, (value) => emit('form', value), { immediate: true })
 
 // Set by LjAvailabilityField when the typed name already exists (create only).
 const nameTaken = ref(false)
