@@ -44,7 +44,7 @@
       <template #actions="{ item }">
         <v-menu v-if="auth.isAllowedApi(COMPANY_API, 'GET') || auth.isAllowedApi(COMPANY_API, 'DELETE')" location="bottom end">
           <template #activator="{ props }">
-            <button class="lj-iconbtn" v-bind="props" :aria-label="t('common.view')" @click.stop><v-icon size="18">mdi-cog</v-icon></button>
+            <button class="lj-iconbtn" v-bind="props" :aria-label="t('common.view')" @click.stop><v-icon size="18">mdi-dots-vertical</v-icon></button>
           </template>
           <div class="lj-popmenu">
             <button v-if="auth.isAllowedApi(COMPANY_API, 'GET')" @click="openDetails(item.name)"><v-icon size="18">mdi-eye-outline</v-icon>{{ t('common.view') }}</button>

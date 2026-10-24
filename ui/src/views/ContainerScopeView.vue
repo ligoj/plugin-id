@@ -35,7 +35,7 @@
       <template #actions="{ item }">
         <v-menu v-if="auth.isAllowedApi(SCOPE_API, 'PUT') || auth.isAllowedApi(SCOPE_API, 'DELETE')" location="bottom end">
           <template #activator="{ props }">
-            <button class="lj-iconbtn" v-bind="props" :aria-label="t('common.edit')" @click.stop><v-icon size="18">mdi-cog</v-icon></button>
+            <button class="lj-iconbtn" v-bind="props" :aria-label="t('common.edit')" @click.stop><v-icon size="18">mdi-dots-vertical</v-icon></button>
           </template>
           <div class="lj-popmenu">
             <button v-if="auth.isAllowedApi(SCOPE_API, 'PUT')" @click="openEdit(item)"><v-icon size="18">mdi-pencil</v-icon>{{ t('common.edit') }}</button>

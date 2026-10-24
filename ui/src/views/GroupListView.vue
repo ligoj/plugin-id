@@ -46,7 +46,7 @@
       <template #actions="{ item }">
         <v-menu v-if="auth.isAllowedApi(USER_API, 'PUT') || auth.isAllowedApi(GROUP_API, 'GET') || auth.isAllowedApi(GROUP_API, 'DELETE')" location="bottom end">
           <template #activator="{ props }">
-            <button class="lj-iconbtn" v-bind="props" :aria-label="t('group.actions') || t('id.group.manage')" @click.stop><v-icon size="18">mdi-cog</v-icon></button>
+            <button class="lj-iconbtn" v-bind="props" :aria-label="t('group.actions') || t('id.group.manage')" @click.stop><v-icon size="18">mdi-dots-vertical</v-icon></button>
           </template>
           <div class="lj-popmenu">
             <button v-if="auth.isAllowedApi(USER_API, 'PUT')" @click="onManageMembers(item.name)"><v-icon size="18">mdi-account-multiple</v-icon>{{ t('id.group.manage') }}</button>
