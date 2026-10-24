@@ -3,7 +3,7 @@
     <!-- User create/edit popup (chantier I.2). Replaces the former routed
          UserEditView page; hosted by UserListView, opened from the "New
          user" button and the row gear menu. model-value is bound one-way
-         so a close request (Cancel / Esc / scrim) can be vetoed by the
+         so a close request (close button / Esc / scrim) can be vetoed by the
          unsaved-changes guard before it actually closes. -->
     <LjDialog :model-value="modelValue" :title="isEdit ? t('user.edit') : t('user.new')" :badge="isEdit ? titleBadge : ''" :icon="TYPE_ICONS.USER" :max-width="600" @update:model-value="onDialogModel">
       <v-alert v-if="demoMode" type="info" variant="tonal" density="compact" class="mb-4">
@@ -100,7 +100,7 @@
         <CreateAnotherToggle v-if="!isEdit" v-model="createAnother" style="order: -1" />
         <!-- Plugin action-bar contributions (`editExtension.footer`). -->
         <component :is="f" v-for="(f, fi) in extensionFooters" :key="'xf' + fi" :mode="isEdit ? 'edit' : 'create'" :form="form" :context="extensionContext" />
-        <LjButton variant="ghost" @click="requestClose">{{ t('common.cancel') }}</LjButton>
+        <LjButton variant="ghost" @click="cancel">{{ t('common.cancel') }}</LjButton>
         <LjButton v-if="auth.isAllowedApi(USER_API, isEdit ? 'PUT' : 'POST')" icon="mdi-content-save" :disabled="loading" :loading="saving" @click="save">{{ t('common.save') }}</LjButton>
       </template>
     </LjDialog>
@@ -110,7 +110,7 @@
     </LigojConfirmDialog>
 
     <!-- Unsaved-changes guard. Triggered either by a dialog close request
-         (Cancel / Esc / scrim) or by useFormGuard's onBeforeRouteLeave when
+         (close button / Esc / scrim) or by useFormGuard's onBeforeRouteLeave when
          navigating away from the list with the dialog still open.
          persistent: only the explicit buttons dismiss it, so pendingClose
          is always reset through onGuardConfirm/onGuardCancel. -->
@@ -220,7 +220,7 @@ const loginTaken = ref(false)
 
 // useFormGuard still drives the dirty tracking (snapshot + deep watch) and
 // keeps its onBeforeRouteLeave guard for the "navigate away with the dialog
-// open" case. The dialog's own close (Cancel / Esc / scrim) is intercepted
+// open" case. The dialog's own close (close button / Esc / scrim) is intercepted
 // separately below — onBeforeRouteLeave never fires without a route change.
 // The tracked value merges `form` with the `groups` multi-select (a separate
 // ref) so editing only the groups still flags the form as dirty.
@@ -514,12 +514,12 @@ watch(groupMenu, open => {
 // --- Close handling with the unsaved-changes guard ---
 
 /** v-dialog requests a visibility change. Opening is parent-driven, so only
- *  close requests (Esc / scrim click) reach here. */
+ *  close requests (close button / Esc / scrim click) reach here. */
 function onDialogModel(val) {
   if (!val) requestClose()
 }
 
-/** Close request from Cancel / Esc / scrim. Vetoed (guard dialog shown)
+/** Close request from close button / Esc / scrim. Vetoed (guard dialog shown)
  *  when the form has unsaved changes. */
 function requestClose() {
   // Honor the profile's "skip leave confirmation" preference (live read).
@@ -529,6 +529,12 @@ function requestClose() {
   } else {
     emit('update:modelValue', false)
   }
+}
+
+/** Cancel of the user: the changes are discarded, without asking. */
+function cancel() {
+  markClean()
+  emit('update:modelValue', false)
 }
 
 /** Guard dialog — "Discard changes". */

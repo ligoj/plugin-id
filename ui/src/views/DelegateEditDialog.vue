@@ -3,7 +3,7 @@
     <!-- Delegate create/edit popup (chantier D3). Replaces the former
          routed DelegateEditView page; hosted by DelegateListView, opened
          from the "New" button and the row pencil. model-value is bound
-         one-way so a close request (Cancel / Esc / scrim) can be vetoed
+         one-way so a close request (close button / Esc / scrim) can be vetoed
          by the unsaved-changes guard before it actually closes — same
          pattern as UserEditDialog. -->
     <LjDialog :model-value="modelValue" :title="isEdit ? t('delegate.edit') : t('delegate.new')" :badge="isEdit ? (form.receiver || '#' + delegateId) : ''" :icon="TYPE_ICONS.DELEGATE" :max-width="640" @update:model-value="onDialogModel">
@@ -96,7 +96,7 @@
         <CreateAnotherToggle v-if="!isEdit" v-model="createAnother" style="order: -1" />
         <!-- Plugin action-bar contributions (`editExtension.footer`). -->
         <component :is="f" v-for="(f, fi) in extensionFooters" :key="'xf' + fi" :mode="isEdit ? 'edit' : 'create'" :form="form" :context="extensionContext" />
-        <LjButton variant="ghost" @click="requestClose">{{ t('common.cancel') }}</LjButton>
+        <LjButton variant="ghost" @click="cancel">{{ t('common.cancel') }}</LjButton>
         <LjButton v-if="auth.isAllowedApi(DELEGATE_API, isEdit ? 'PUT' : 'POST')" icon="mdi-content-save" :disabled="loading" :loading="saving" @click="save">{{ t('common.save') }}</LjButton>
       </template>
     </LjDialog>
@@ -113,7 +113,7 @@
     </LigojConfirmDialog>
 
     <!-- Unsaved-changes guard. Triggered either by a dialog close request
-         (Cancel / Esc / scrim) or by useFormGuard's onBeforeRouteLeave
+         (close button / Esc / scrim) or by useFormGuard's onBeforeRouteLeave
          when navigating away from the list with the dialog still open.
          persistent: only the explicit buttons dismiss it, so pendingClose
          is always reset through onGuardConfirm/onGuardCancel. -->
@@ -387,12 +387,12 @@ watch(() => props.modelValue, val => {
 // --- Close handling with the unsaved-changes guard ---
 
 /** v-dialog requests a visibility change. Opening is parent-driven, so
- *  only close requests (Esc / scrim click) reach here. */
+ *  only close requests (close button / Esc / scrim click) reach here. */
 function onDialogModel(val) {
   if (!val) requestClose()
 }
 
-/** Close request from Cancel / Esc / scrim. Vetoed (guard dialog shown)
+/** Close request from close button / Esc / scrim. Vetoed (guard dialog shown)
  *  when the form has unsaved changes, unless the profile skips the
  *  leave confirmation (live read). */
 function requestClose() {
@@ -402,6 +402,12 @@ function requestClose() {
   } else {
     emit('update:modelValue', false)
   }
+}
+
+/** Cancel of the user: the changes are discarded, without asking. */
+function cancel() {
+  markClean()
+  emit('update:modelValue', false)
 }
 
 /** Guard dialog — "Discard changes". */
