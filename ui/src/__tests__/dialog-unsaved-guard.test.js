@@ -14,6 +14,8 @@ import GroupListView from '../views/GroupListView.vue'
 import CompanyListView from '../views/CompanyListView.vue'
 import GroupEditPanel from '../components/GroupEditPanel.vue'
 import CompanyEditPanel from '../components/CompanyEditPanel.vue'
+import UserEditDialog from '../views/UserEditDialog.vue'
+import DelegateEditDialog from '../views/DelegateEditDialog.vue'
 import enMessages from '../i18n/en.js'
 
 const close = vi.fn()
@@ -100,5 +102,39 @@ describe('edit dialogs of the identity views', () => {
     expect(openDialog(w).props('guard')).toBeNull()
     await button(w, 'common.close').trigger('click')
     expect(close).toHaveBeenCalledTimes(1)
+  })
+})
+
+// The user and delegate dialogs guard their form by themselves: Cancel discards the changes at once, as the one of
+// LjDialog, and the other close requests of the dialog ask
+describe.each([
+  ['user', UserEditDialog, (vm) => { vm.form.firstName = 'John' }],
+  ['delegate', DelegateEditDialog, (vm) => { vm.form.name = 'dev' }],
+])('%s dialog guarding its own form', (_, dialog, edit) => {
+  async function mountChanged() {
+    const router = createRouter({ history: createMemoryHistory(), routes: [{ path: '/:pathMatch(.*)*', component: { template: '<div />' } }] })
+    const w = mount(dialog, { props: { modelValue: false }, global: { stubs, plugins: [router] } })
+    await w.setProps({ modelValue: true })
+    await flushPromises()
+    edit(w.vm)
+    await nextTick()
+    expect(w.vm.isDirty).toBe(true)
+    return w
+  }
+
+  it('discards the changes on Cancel without asking', async () => {
+    const w = await mountChanged()
+    await button(w, 'common.cancel').trigger('click')
+    expect(w.vm.showGuardDialog).toBe(false)
+    expect(w.emitted('update:modelValue')).toEqual([[false]])
+    expect(w.vm.isDirty).toBe(false)
+  })
+
+  it('asks on the other close requests', async () => {
+    const w = await mountChanged()
+    openDialog(w).vm.$emit('update:modelValue', false)
+    await nextTick()
+    expect(w.vm.showGuardDialog).toBe(true)
+    expect(w.emitted('update:modelValue')).toBeUndefined()
   })
 })
