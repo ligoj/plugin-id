@@ -29,18 +29,27 @@
       <template #[`cell.${visualIdColumnKey()}`]="{ item }">
         <span class="login"><v-icon size="16" class="login-ic">mdi-account-circle</v-icon><span class="mono">{{ visualIdValue(item) }}</span></span>
       </template>
+      <!-- Emails and groups: cut to the room left by the other columns, the full values in the tooltip -->
       <template #cell.mails="{ item }">
-        <span class="mails">
-          <span v-for="m in (item.mails || []).slice(0, 2)" :key="m" class="mailchip"><v-icon size="12">mdi-email-outline</v-icon>{{ m }}</span>
-          <span v-if="(item.mails || []).length > 2" class="more">+{{ item.mails.length - 2 }}</span>
-          <span v-if="!(item.mails || []).length" class="dash">—</span>
+        <span class="cut">
+          <template v-if="(item.mails || []).length">
+            <span v-for="m in item.mails.slice(0, 2)" :key="m" class="mailchip"><v-icon size="12">mdi-email-outline</v-icon><span class="txt">{{ m }}</span></span>
+            <span v-if="item.mails.length > 2" class="more">+{{ item.mails.length - 2 }}</span>
+            <v-tooltip activator="parent" location="top"><div class="cell-tip"><div v-for="m in item.mails" :key="m">{{ m }}</div></div></v-tooltip>
+          </template>
+          <span v-else class="dash">—</span>
         </span>
       </template>
       <template #cell.groups="{ item }">
-        <span class="groups">
-          <span v-for="g in (item.groups || []).slice(0, 3)" :key="g.name || g" class="chip">{{ g.name || g }}</span>
-          <span v-if="(item.groups || []).length > 3" class="more">+{{ item.groups.length - 3 }}</span>
-          <span v-if="!(item.groups || []).length" class="dash">—</span>
+        <span class="cut">
+          <template v-if="(item.groups || []).length">
+            <span v-for="g in item.groups.slice(0, 3)" :key="g.name || g" class="chip">{{ g.name || g }}</span>
+            <span v-if="item.groups.length > 3" class="more">+{{ item.groups.length - 3 }}</span>
+            <v-tooltip activator="parent" location="top">
+              <div class="cell-tip chips"><v-chip v-for="g in item.groups" :key="g.name || g" size="x-small" variant="tonal" label>{{ g.name || g }}</v-chip></div>
+            </v-tooltip>
+          </template>
+          <span v-else class="dash">—</span>
         </span>
       </template>
       <template #actions="{ item }">
@@ -131,8 +140,9 @@ const headers = computed(() => [
   { label: t('user.firstName'), key: 'firstName', sortable: true },
   { label: t('user.lastName'), key: 'lastName', sortable: true },
   { label: t('user.company'), key: 'company', sortable: true },
-  { label: t('user.emails'), key: 'mails', exportValue: (r) => (r.mails || []).join(' ') },
-  { label: t('user.groups'), key: 'groups', exportValue: (r) => (r.groups || []).map((g) => g.name || g).join(' ') },
+  // A share of the room the other columns leave: their cells have no width of their own, see `.cut`
+  { label: t('user.emails'), key: 'mails', width: '30%', exportValue: (r) => (r.mails || []).join(' ') },
+  { label: t('user.groups'), key: 'groups', width: '22%', exportValue: (r) => (r.groups || []).map((g) => g.name || g).join(' ') },
 ])
 
 function loadData(options) {
@@ -282,11 +292,15 @@ watch(() => groupName.value, (g) => {
 .login { display: inline-flex; align-items: center; gap: 8px; }
 .login-ic { color: var(--ink-3); }
 .mono { font-family: var(--mono); font-size: 13px; font-weight: 600; }
-.mails { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 5px; }
-.mailchip { display: inline-flex; align-items: center; gap: 5px; font-size: 12.5px; font-weight: 600; color: rgba(var(--v-theme-on-surface), .72); background: var(--pill); border: var(--border-w) var(--lj-border-style, solid) var(--border-c); border-radius: var(--radius-sm); padding: 3px 9px; }
-.mailchip :deep(.v-icon) { opacity: .6; }
-.groups { display: inline-flex; align-items: center; flex-wrap: nowrap; gap: 5px; overflow: hidden; }
-.chip { display: inline-flex; align-items: center; font-size: 12px; font-weight: 700; color: rgba(var(--v-theme-on-surface), .72); background: var(--pill); border: var(--border-w) var(--lj-border-style, solid) var(--border-c); border-radius: var(--lj-radius-sm, 20px); padding: 3px 11px; white-space: nowrap; }
-.more { font-size: 12px; font-weight: 700; color: var(--ink-3); }
+/* A cut cell: no width of its own (width 0, min-width 100%), so it fills the room its column gets and never widens
+   the table; its chips shrink with an ellipsis, the counter stays whole. */
+.cut { display: flex; align-items: center; gap: 5px; width: 0; min-width: 100%; overflow: hidden; }
+.mailchip { display: inline-flex; flex: 0 1 auto; min-width: 0; align-items: center; gap: 5px; font-size: 12.5px; font-weight: 600; color: rgba(var(--v-theme-on-surface), .72); background: var(--pill); border: var(--border-w) var(--lj-border-style, solid) var(--border-c); border-radius: var(--radius-sm); padding: 3px 9px; }
+.mailchip :deep(.v-icon) { opacity: .6; flex: none; }
+.mailchip .txt, .chip { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.chip { display: block; flex: 0 1 auto; min-width: 0; font-size: 12px; font-weight: 700; color: rgba(var(--v-theme-on-surface), .72); background: var(--pill); border: var(--border-w) var(--lj-border-style, solid) var(--border-c); border-radius: var(--lj-radius-sm, 20px); padding: 3px 11px; }
+.more { flex: none; font-size: 12px; font-weight: 700; color: var(--ink-3); }
+.cell-tip { display: grid; gap: 2px; font-size: 12.5px; }
+.cell-tip.chips { display: flex; flex-wrap: wrap; gap: 4px; max-width: 360px; }
 .dash { color: var(--ink-3); }
 </style>
