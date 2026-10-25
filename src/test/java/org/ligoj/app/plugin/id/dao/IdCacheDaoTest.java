@@ -14,6 +14,7 @@ import org.ligoj.app.iam.UserOrg;
 import org.ligoj.app.iam.dao.DelegateOrgRepository;
 import org.ligoj.app.iam.model.*;
 import org.ligoj.app.model.*;
+import org.ligoj.app.plugin.id.model.CacheCopyState;
 import org.ligoj.bootstrap.AbstractJpaTest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -21,6 +22,7 @@ import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
+import java.time.Instant;
 import java.util.*;
 
 /**
@@ -604,6 +606,79 @@ class IdCacheDaoTest extends AbstractJpaTest {
 		Assertions.assertEquals("group", memberships.getFirst().getGroup().getId());
 		Assertions.assertNull(memberships.getFirst().getSubGroup());
 		Assertions.assertEquals("u0", memberships.getFirst().getUser().getId());
+	}
+
+	/**
+	 * A user with every attribute an identity provider reads.
+	 */
+	private UserOrg newFullUser(final String login) {
+		final var user = newUser(login);
+		user.setFirstName("f");
+		user.setLastName("l");
+		user.setCompany("another-company");
+		user.setGroups(new ArrayList<>());
+		user.setDn("uid=" + login + ",ou=company");
+		user.setMails(List.of("mail", "mail2"));
+		user.setSecured(true);
+		user.setLocked(Instant.ofEpochMilli(1000));
+		user.setLockedBy("admin");
+		user.setIsolated("previous");
+		user.setDepartment("dep");
+		user.setLocalId("lid");
+		user.setCustomAttributes(Map.of("k", "v"));
+		return user;
+	}
+
+	private void assertFullUser(final String login) {
+		final var entity = em.find(CacheUser.class, login);
+		Assertions.assertEquals("uid=" + login + ",ou=company", entity.getDn());
+		Assertions.assertEquals("mail", entity.getMails());
+		Assertions.assertEquals("[\"mail\",\"mail2\"]", entity.getMailList());
+		Assertions.assertEquals(Boolean.TRUE, entity.getSecured());
+		Assertions.assertEquals(Instant.ofEpochMilli(1000), entity.getLocked());
+		Assertions.assertEquals("admin", entity.getLockedBy());
+		Assertions.assertEquals("previous", entity.getIsolated());
+		Assertions.assertEquals("dep", entity.getDepartment());
+		Assertions.assertEquals("lid", entity.getLocalId());
+		Assertions.assertEquals("{\"k\":\"v\"}", entity.getCustomAttributes());
+	}
+
+	@Test
+	void resetWritesUserColumns() {
+		dao.reset(Map.of("another-company", new CompanyOrg("dna", "Another-Company")), Map.of(), Map.of("u", newFullUser("u")));
+		assertFullUser("u");
+	}
+
+	@Test
+	void updateWritesUserColumns() {
+		dao.update(newFullUser("u0"));
+		assertFullUser("u0");
+	}
+
+	@Test
+	void createWritesNoNullAttributeAsText() {
+		final var user = newUser("u9");
+		user.setCompany("another-company");
+		dao.create(user);
+		final var entity = em.find(CacheUser.class, "u9");
+		Assertions.assertNull(entity.getMailList());
+		Assertions.assertNull(entity.getCustomAttributes());
+		Assertions.assertEquals(Boolean.FALSE, entity.getSecured());
+	}
+
+	/**
+	 * Any reset, by any provider or plugin version, invalidates the copy: only the shared mechanism writes it back.
+	 */
+	@Test
+	void resetInvalidatesTheCopy() {
+		final var state = new CacheCopyState();
+		state.setId("service:id:ldap:dig");
+		state.setFingerprint("fingerprint");
+		state.setLastFullRead(Instant.ofEpochMilli(1000));
+		em.persist(state);
+		em.flush();
+		dao.reset(Map.of("company", new CompanyOrg("dn=company1", "Company")), Map.of(), Map.of());
+		Assertions.assertEquals(0, em.createQuery("FROM CacheCopyState").getResultList().size());
 	}
 
 	@Test

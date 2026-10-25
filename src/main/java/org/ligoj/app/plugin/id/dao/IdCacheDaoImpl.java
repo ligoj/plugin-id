@@ -364,6 +364,9 @@ public class IdCacheDaoImpl implements IdCacheDao {
 		em.flush();
 		em.clear();
 
+		// The copy is not trusted until its state is written again, after this complete reset
+		em.createQuery("DELETE FROM CacheCopyState").executeUpdate();
+
 		// Update companies
 		final var oldCompanies = em.createQuery("FROM CacheCompany", CacheCompany.class).getResultList().stream()
 				.collect(Collectors.toMap(CacheCompany::getId, Function.identity()));
@@ -443,6 +446,17 @@ public class IdCacheDaoImpl implements IdCacheDao {
 		if (CollectionUtils.isNotEmpty(user.getMails())) {
 			entity.setMails(user.getMails().getFirst());
 		}
+
+		// All the attributes a provider reads: its memory is rebuilt from them after a restart
+		entity.setDn(user.getDn());
+		entity.setMailList(IdCopy.toJson(user.getMails()));
+		entity.setSecured(user.isSecured());
+		entity.setLocked(user.getLocked());
+		entity.setLockedBy(user.getLockedBy());
+		entity.setIsolated(user.getIsolated());
+		entity.setDepartment(user.getDepartment());
+		entity.setLocalId(user.getLocalId());
+		entity.setCustomAttributes(IdCopy.toJson(user.getCustomAttributes()));
 
 		// Set the company if defined
 		entity.setCompany(Optional.ofNullable(user.getCompany()).map(c -> {
