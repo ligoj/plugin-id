@@ -36,7 +36,7 @@
           item-value="name"
           :label="t('group.scope')"
           :disabled="isEdit"
-          placeholder="Sélectionner un scope…"
+          :placeholder="t('company.scopePlaceholder')"
           variant="outlined"
           class="mb-2"
           no-filter
@@ -50,7 +50,7 @@
           <template #no-data>
             <v-list-item>
               <v-list-item-title>
-                {{ scopeSearchQuery ? 'Aucun scope trouvé' : 'Saisissez des caractères pour rechercher' }}
+                {{ t(scopeSearchQuery ? 'id.search.noScope' : 'id.search.typeToSearch') }}
               </v-list-item-title>
             </v-list-item>
           </template>

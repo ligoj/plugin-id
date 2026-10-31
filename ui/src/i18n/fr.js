@@ -111,6 +111,13 @@ export default {
   'containerScope.dn': 'Chemin LDAP',
 
   // Search placeholders + section subtitles
+  'company.scopePlaceholder': "Sélectionner un scope…",
+  'user.companyPlaceholder': "Rechercher une entité…",
+  'user.groupPlaceholder': "Ajouter un groupe…",
+  'id.search.noScope': "Aucun scope trouvé",
+  'id.search.noEntity': "Aucune entité trouvée",
+  'id.search.noGroup': "Aucun groupe trouvé",
+  'id.search.typeToSearch': "Saisissez des caractères pour rechercher",
   'company.searchPlaceholder': "Rechercher une entité…",
   'company.subtitle': "Gérez les entités et leur annuaire.",
   'containerScope.deleteConfirmAfter': " ?",

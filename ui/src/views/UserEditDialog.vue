@@ -30,7 +30,7 @@
                    user types (300 ms debounced). v-model stores the company name
                    as a string, matching the payload contract of rest/service/id/user. -->
               <LigojAutocomplete v-model="form.company" :items="companyResults" :loading="companyLoading" :search="companySearchQuery" item-title="name" item-value="name" :label="t('user.company')" :readonly="isReadOnly('company', isEdit)" prepend-inner-icon="mdi-domain"
-                placeholder="Rechercher une entité…" variant="outlined" class="mb-2" no-filter clearable autocomplete="off" @update:search="onCompanySearch">
+                :placeholder="t('user.companyPlaceholder')" variant="outlined" class="mb-2" no-filter clearable autocomplete="off" @update:search="onCompanySearch">
                 <template #item="{ props: itemProps, item }">
                   <v-list-item v-bind="itemProps" :title="item?.name || ''">
                     <template v-if="item?.scope || item?.count !== undefined" #subtitle>
@@ -42,7 +42,7 @@
                 <template #no-data>
                   <v-list-item>
                     <v-list-item-title>
-                      {{ companySearchQuery ? 'Aucune entité trouvée' : 'Saisissez des caractères pour rechercher' }}
+                      {{ t(companySearchQuery ? 'id.search.noEntity' : 'id.search.typeToSearch') }}
                     </v-list-item-title>
                   </v-list-item>
                 </template>
@@ -57,7 +57,7 @@
                    v-model holds an array of group **names** (strings),
                    matching the payload contract of rest/service/id/user. -->
               <LigojAutocomplete v-model="groups" v-model:menu="groupMenu" :items="groupResults" :loading="groupLoading" :search="groupSearchQuery" item-title="name" item-value="name"
-                :label="t('user.groups')" prepend-inner-icon="mdi-account-group" placeholder="Ajouter un groupe…" variant="outlined" class="mb-2" multiple chips closable-chips no-filter clearable autocomplete="off" @update:search="onGroupSearch"
+                :label="t('user.groups')" prepend-inner-icon="mdi-account-group" :placeholder="t('user.groupPlaceholder')" variant="outlined" class="mb-2" multiple chips closable-chips no-filter clearable autocomplete="off" @update:search="onGroupSearch"
                 @update:model-value="onGroupModelUpdate">
                 <template #item="{ props: itemProps, item }">
                   <v-list-item v-bind="itemProps" :title="item?.name || ''" />
@@ -65,7 +65,7 @@
                 <template #no-data>
                   <v-list-item>
                     <v-list-item-title>
-                      {{ groupSearchQuery ? 'Aucun groupe trouvé' : 'Saisissez des caractères pour rechercher' }}
+                      {{ t(groupSearchQuery ? 'id.search.noGroup' : 'id.search.typeToSearch') }}
                     </v-list-item-title>
                   </v-list-item>
                 </template>

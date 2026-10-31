@@ -119,6 +119,13 @@ export default {
   'containerScope.dn': 'LDAP path',
 
   // Search placeholders + section subtitles
+  'company.scopePlaceholder': "Select a scope…",
+  'user.companyPlaceholder': "Search an entity…",
+  'user.groupPlaceholder': "Add a group…",
+  'id.search.noScope': "No scope found",
+  'id.search.noEntity': "No entity found",
+  'id.search.noGroup': "No group found",
+  'id.search.typeToSearch': "Type to search",
   'company.searchPlaceholder': "Search an entity…",
   'company.subtitle': "Manage entities and their directory.",
   'containerScope.deleteConfirmAfter': "?",
