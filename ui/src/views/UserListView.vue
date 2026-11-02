@@ -77,7 +77,7 @@
         <!-- CSV Import, relocated from the page header into the table tools. -->
         <button v-if="auth.isAllowedApi('rest/service/id/user/import/csv/full', 'POST')" :disabled="importing" @click="importInput?.click()">
           <v-progress-circular v-if="importing" size="18" width="2" indeterminate />
-          <v-icon v-else size="18">mdi-upload</v-icon>{{ importing ? (t('common.importing') || 'Import…') : (t('common.import') || 'Importer') }}
+          <v-icon v-else size="18">mdi-upload</v-icon>{{ importing ? t('common.importing') : t('common.import') }}
         </button>
       </template>
     </LjDataTable>
