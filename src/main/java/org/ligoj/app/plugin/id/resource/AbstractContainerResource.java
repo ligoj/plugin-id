@@ -27,7 +27,9 @@ import org.ligoj.bootstrap.core.validation.ValidationJsonException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 
 import java.util.*;
 import java.util.function.Function;
@@ -54,6 +56,11 @@ public abstract class AbstractContainerResource<T extends ContainerOrg, V extend
 	static {
 		ORDERED_COLUMNS.put("name", "name");
 	}
+
+	/**
+	 * Order of a database cache search requesting none.
+	 */
+	private static final Sort DEFAULT_SORT = Sort.by("id");
 
 	@Autowired
 	protected ContainerScopeResource containerScopeResource;
@@ -281,6 +288,19 @@ public abstract class AbstractContainerResource<T extends ContainerOrg, V extend
 	}
 
 	/**
+	 * Return the page request of a database cache search. A request without order is sorted by identifier, the
+	 * normalized name: otherwise the database returns its physical order, and the first page looks like random
+	 * containers.
+	 *
+	 * @param uriInfo filter data.
+	 * @return The ordered page request.
+	 */
+	protected PageRequest getPageRequest(final UriInfo uriInfo) {
+		final var request = paginationJson.getPageRequest(uriInfo, ORDERED_COLUMNS);
+		return request.getSort().isSorted() ? request : request.withSort(DEFAULT_SORT);
+	}
+
+	/**
 	 * Return containers the current user can see. A user always sees his company, as if he had a company delegation to
 	 * see it.
 	 *
@@ -291,7 +311,7 @@ public abstract class AbstractContainerResource<T extends ContainerOrg, V extend
 	@Path("filter/read")
 	public TableItem<String> getContainers(@Context final UriInfo uriInfo) {
 		return paginationJson.applyPagination(uriInfo, getCacheRepository().findAll(securityHelper.getLogin(),
-						DataTableAttributes.getSearch(uriInfo), paginationJson.getPageRequest(uriInfo, ORDERED_COLUMNS)),
+						DataTableAttributes.getSearch(uriInfo), getPageRequest(uriInfo)),
 				CacheContainer::getName);
 	}
 
@@ -334,7 +354,7 @@ public abstract class AbstractContainerResource<T extends ContainerOrg, V extend
 	@Path("filter/admin")
 	public TableItem<String> getContainersForAdmin(@Context final UriInfo uriInfo) {
 		return paginationJson.applyPagination(uriInfo, getCacheRepository().findAllAdmin(securityHelper.getLogin(),
-						DataTableAttributes.getSearch(uriInfo), paginationJson.getPageRequest(uriInfo, ORDERED_COLUMNS)),
+						DataTableAttributes.getSearch(uriInfo), getPageRequest(uriInfo)),
 				CacheContainer::getName);
 	}
 
@@ -366,7 +386,7 @@ public abstract class AbstractContainerResource<T extends ContainerOrg, V extend
 	@Path("filter/write")
 	public TableItem<String> getContainersForWrite(@Context final UriInfo uriInfo) {
 		return paginationJson.applyPagination(uriInfo, getCacheRepository().findAllWrite(securityHelper.getLogin(),
-						DataTableAttributes.getSearch(uriInfo), paginationJson.getPageRequest(uriInfo, ORDERED_COLUMNS)),
+						DataTableAttributes.getSearch(uriInfo), getPageRequest(uriInfo)),
 				CacheContainer::getName);
 	}
 

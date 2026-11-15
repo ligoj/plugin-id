@@ -91,8 +91,7 @@ public class GroupResource extends AbstractContainerResource<GroupOrg, GroupEdit
 		final var groups = getGroupRepository().findAll();
 
 		// Search the groups
-		final var page = getContainers(DataTableAttributes.getSearch(uriInfo),
-				paginationJson.getPageRequest(uriInfo, ORDERED_COLUMNS));
+		final var page = getContainers(DataTableAttributes.getSearch(uriInfo), getPageRequest(uriInfo));
 
 		// Apply pagination and secure the users data
 		return paginationJson.applyPagination(uriInfo, page, rawGroup -> {

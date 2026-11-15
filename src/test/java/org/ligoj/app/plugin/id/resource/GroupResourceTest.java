@@ -12,20 +12,29 @@ import org.ligoj.app.iam.CompanyOrg;
 import org.ligoj.app.iam.GroupOrg;
 import org.ligoj.app.iam.IamProvider;
 import org.ligoj.app.iam.UserOrg;
+import org.ligoj.app.iam.dao.CacheGroupRepository;
 import org.ligoj.app.model.ContainerType;
 import org.ligoj.bootstrap.MatcherUtil;
 import org.ligoj.bootstrap.core.json.datatable.DataTableAttributes;
 import org.ligoj.bootstrap.core.validation.ValidationJsonException;
 import org.ligoj.bootstrap.model.system.SystemAuthorization;
 import org.ligoj.bootstrap.model.system.SystemRole;
+import org.mockito.AdditionalAnswers;
+import org.mockito.ArgumentCaptor;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.*;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 
 import static org.mockito.Mockito.when;
 
@@ -40,6 +49,9 @@ class GroupResourceTest extends AbstractContainerResourceTest {
 
 	public static final String GROUP_FUNCTION = "Fonction";
 	private GroupResource resource;
+
+	@Autowired
+	private CacheGroupRepository cacheGroupRepository;
 
 	@BeforeEach
 	void mock() {
@@ -106,6 +118,60 @@ class GroupResourceTest extends AbstractContainerResourceTest {
 		Assertions.assertEquals(ContainerType.GROUP, group10.getContainerType());
 		Assertions.assertTrue(group10.isLocked());
 		Assertions.assertNull(group10.getParents());
+	}
+
+	/**
+	 * Return the page request the given call sends to the database cache, the real repository answering. HSQLDB scans
+	 * the cache table in identifier order, so an unsorted page only shows up in the request: PostgreSQL returns the
+	 * physical order.
+	 */
+	private Pageable cachePageRequest(final Consumer<GroupResource> call,
+			final BiConsumer<CacheGroupRepository, ArgumentCaptor<Pageable>> query) {
+		final var spy = Mockito.mock(CacheGroupRepository.class, AdditionalAnswers.delegatesTo(cacheGroupRepository));
+		ReflectionTestUtils.setField(resource, "cacheGroupRepository", spy);
+		call.accept(resource);
+		final var captor = ArgumentCaptor.forClass(Pageable.class);
+		query.accept(Mockito.verify(spy), captor);
+		return captor.getValue();
+	}
+
+	private Pageable cachePageRequest(final Consumer<GroupResource> call) {
+		return cachePageRequest(call, (r, c) -> r.findAll(ArgumentMatchers.any(), ArgumentMatchers.any(), c.capture()));
+	}
+
+	/**
+	 * No order requested, as the group pickers of the subscription wizard: the page is sorted by identifier, the
+	 * normalized name, otherwise the first page holds random groups.
+	 */
+	@Test
+	void findAllDefaultOrder() {
+		when(groupRepository.findAll()).thenReturn(Collections.emptyMap());
+		Assertions.assertEquals(Sort.by("id"), cachePageRequest(r -> r.findAll(newUriInfo())).getSort());
+	}
+
+	@Test
+	void findAllRequestedOrder() {
+		when(groupRepository.findAll()).thenReturn(Collections.emptyMap());
+		Assertions.assertEquals(Sort.by(Sort.Order.desc("name").ignoreCase()),
+				cachePageRequest(r -> r.findAll(newUriInfo("name", "desc"))).getSort());
+	}
+
+	@Test
+	void getContainersDefaultOrder() {
+		initSpringSecurityContext("mtuyer");
+		Assertions.assertEquals(Sort.by("id"), cachePageRequest(r -> r.getContainers(newUriInfo())).getSort());
+	}
+
+	@Test
+	void getContainersForWriteDefaultOrder() {
+		Assertions.assertEquals(Sort.by("id"), cachePageRequest(r -> r.getContainersForWrite(newUriInfo()),
+				(r, c) -> r.findAllWrite(ArgumentMatchers.any(), ArgumentMatchers.any(), c.capture())).getSort());
+	}
+
+	@Test
+	void getContainersForAdminDefaultOrder() {
+		Assertions.assertEquals(Sort.by("id"), cachePageRequest(r -> r.getContainersForAdmin(newUriInfo()),
+				(r, c) -> r.findAllAdmin(ArgumentMatchers.any(), ArgumentMatchers.any(), c.capture())).getSort());
 	}
 
 	@Test
