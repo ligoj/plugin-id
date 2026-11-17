@@ -375,7 +375,12 @@ async function loadOnOpen() {
       form.value.type = (data.type || 'GROUP').toUpperCase()
       await nextTick()
       form.value.receiver = data.receiver?.id || data.receiver || ''
-      loadedUser.value = form.value.receiverType === 'USER' && typeof data.receiver === 'object' ? data.receiver : null
+      // The delegate holds the login only: fetch the user for its visual identifier, the login stays on failure
+      if (form.value.receiverType === 'USER' && form.value.receiver) {
+        loadedUser.value = typeof data.receiver === 'object'
+          ? data.receiver
+          : await api.get(`rest/service/id/user/${encodeURIComponent(form.value.receiver)}`).catch(() => null)
+      }
       // TREE delegates store the DN separately — `name` is a "-"
       // placeholder server-side. Show the DN in the resource input so
       // the user can read/edit the actual subtree path.
