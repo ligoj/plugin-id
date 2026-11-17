@@ -49,6 +49,16 @@ export function visualIdValue(user) {
   return resolveVisualId(visualIdName(), user)
 }
 
+/**
+ * Displayed receiver of a delegate: a user by its visual identifier, as the
+ * users table does, a group or a company by its name.
+ */
+export function receiverName(delegate) {
+  const receiver = delegate?.receiver
+  if (!receiver) return ''
+  return String(delegate.receiverType).toUpperCase() === 'USER' ? visualIdValue(receiver) : (receiver.name || receiver.id || '')
+}
+
 /** The column header label: configured static label, else localized attribute name. */
 export function visualIdLabel() {
   const { t } = useI18nStore()

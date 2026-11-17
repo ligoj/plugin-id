@@ -6,7 +6,7 @@
          one-way so a close request (close button / Esc / scrim) can be vetoed
          by the unsaved-changes guard before it actually closes — same
          pattern as UserEditDialog. -->
-    <LjDialog :model-value="modelValue" :title="isEdit ? t('delegate.edit') : t('delegate.new')" :badge="isEdit ? (form.receiver || '#' + delegateId) : ''" :icon="TYPE_ICONS.DELEGATE" :max-width="640" @update:model-value="onDialogModel">
+    <LjDialog :model-value="modelValue" :title="isEdit ? t('delegate.edit') : t('delegate.new')" :badge="isEdit ? (receiverBadge || '#' + delegateId) : ''" :icon="TYPE_ICONS.DELEGATE" :max-width="640" @update:model-value="onDialogModel">
       <v-skeleton-loader v-if="loading" type="article" />
 
           <v-form v-else ref="formRef" @submit.prevent="save">
@@ -109,7 +109,7 @@
          name. -->
     <LigojConfirmDialog v-model="confirmDelete" :title="t('delegate.deleteTitle')" :icon="TYPE_ICONS.DELEGATE" :confirm-label="t('common.delete')"
       confirm-color="error" :loading="deleting" @confirm="remove">
-      {{ t('delegate.deleteConfirmBefore') }}<strong class="text-error">{{ form.receiver }}</strong>{{ t('delegate.deleteConfirmAfter') }}
+      {{ t('delegate.deleteConfirmBefore') }}<strong class="text-error">{{ receiverBadge }}</strong>{{ t('delegate.deleteConfirmAfter') }}
     </LigojConfirmDialog>
 
     <!-- Unsaved-changes guard. Triggered either by a dialog close request
@@ -124,7 +124,7 @@
 
 <script setup>
 import { ref, computed, watch, nextTick } from 'vue'
-import { LigojTextField, useApi, useAuthStore, useEditExtensions, useFormGuard, useErrorStore, useI18nStore, LigojSelect, userLabel } from '@ligoj/host'
+import { LigojTextField, useApi, useAuthStore, useEditExtensions, useFormGuard, useErrorStore, useI18nStore, LigojSelect, userLabel, userVisualId } from '@ligoj/host'
 import { TYPE_ICONS, RECEIVER_TYPES, RESOURCE_TYPES } from '../composables/delegateTypes.js'
 import { LjConfirmDialog as LigojConfirmDialog, LjDialog, LjButton, LigojAutocomplete } from '@ligoj/host'
 import CreateAnotherToggle from '../components/CreateAnotherToggle.vue'
@@ -229,6 +229,8 @@ async function fetchEntities(kind, query) {
 }
 
 const receiverItems = ref([])
+/** The user receiving the edited delegate, as loaded: source of its displayed identifier. */
+const loadedUser = ref(null)
 const receiverSearch = ref('')
 const receiverLoading = ref(false)
 let receiverTimer = null
@@ -245,9 +247,16 @@ const receiverDisplayItems = computed(() => {
   const cur = form.value.receiver
   const items = receiverItems.value
   if (cur && !items.find((i) => i.id === cur)) {
-    return [{ id: cur, label: cur }, ...items]
+    // The edited delegate's user: labelled from the delegate payload until the search lists it
+    const known = loadedUser.value?.id === cur ? loadedUser.value : null
+    return [{ id: cur, label: known ? userLabel(known) : cur }, ...items]
   }
   return items
+})
+/** Dialog title badge: the loaded user's visual identifier, else the raw receiver. */
+const receiverBadge = computed(() => {
+  const cur = form.value.receiver
+  return loadedUser.value?.id === cur ? userVisualId(loadedUser.value) : cur
 })
 const resourceDisplayItems = computed(() => {
   const cur = form.value.name
@@ -334,6 +343,7 @@ function resetForm() {
     canWrite: false,
   }
   receiverItems.value = []
+  loadedUser.value = null
   receiverSearch.value = ''
   resourceItems.value = []
   resourceSearch.value = ''
@@ -365,6 +375,7 @@ async function loadOnOpen() {
       form.value.type = (data.type || 'GROUP').toUpperCase()
       await nextTick()
       form.value.receiver = data.receiver?.id || data.receiver || ''
+      loadedUser.value = form.value.receiverType === 'USER' && typeof data.receiver === 'object' ? data.receiver : null
       // TREE delegates store the DN separately — `name` is a "-"
       // placeholder server-side. Show the DN in the resource input so
       // the user can read/edit the actual subtree path.

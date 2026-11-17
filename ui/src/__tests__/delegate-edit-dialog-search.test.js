@@ -62,4 +62,19 @@ describe('DelegateEditDialog — receiver and resource search', () => {
     expect(lastUrl()).toContain('rest/service/id/user?rows=20')
     expect(lastUrl()).not.toContain('search')
   })
+
+  it('edit: the title badge and the prefilled receiver show the visual identifier, the value stays the login', async () => {
+    useAuthStore().session = { applicationSettings: { data: { 'service:id:visual-id-name': 'customAttributes.employeeId' } } }
+    const receiver = { id: '006i28s5y', name: '006i28s5y', firstName: 'Fabrice', lastName: 'Daugan', customAttributes: { employeeId: 'E-42' } }
+    globalThis.fetch = vi.fn(() => jsonResponse({ id: 7, receiverType: 'user', receiver, type: 'group', name: 'dig' }))
+    const w = mount(DelegateEditDialog, { shallow: true, props: { modelValue: false, delegateId: 7 } })
+    await w.setProps({ modelValue: true })
+    await flushPromises()
+    expect(w.vm.form.receiver).toBe('006i28s5y')
+    expect(w.vm.receiverBadge).toBe('E-42')
+    expect(w.vm.receiverDisplayItems[0]).toEqual({ id: '006i28s5y', label: 'E-42 — Fabrice Daugan' })
+    // Another receiver picked: the badge follows the new value
+    w.vm.form.receiver = 'other'
+    expect(w.vm.receiverBadge).toBe('other')
+  })
 })

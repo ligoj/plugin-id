@@ -28,7 +28,7 @@
           <v-tooltip :text="t('delegate.type.' + (item.receiverType || '').toLowerCase())" location="top">
             <template #activator="{ props: tt }"><v-icon v-bind="tt" size="16" class="rcv-ic">{{ TYPE_ICONS[item.receiverType?.toUpperCase()] || 'mdi-account' }}</v-icon></template>
           </v-tooltip>
-          <span class="rcv-name">{{ item.receiver?.name || item.receiver?.id || item.name || '—' }}</span>
+          <span class="rcv-name">{{ receiverName(item) || item.name || '—' }}</span>
         </span>
       </template>
       <template #cell.name="{ item }">
@@ -63,7 +63,7 @@
 
     <LigojConfirmDialog v-model="deleteDialog" :title="t('delegate.deleteTitle')" :icon="TYPE_ICONS.DELEGATE" :confirm-label="t('common.delete')" confirm-color="error" :loading="deleting"
       @confirm="confirmDelete">
-      {{ t('delegate.deleteConfirmBefore') }}<strong class="text-error">{{ deleteTarget?.receiver?.name || deleteTarget?.name || deleteTarget?.id }}</strong>{{ t('delegate.deleteConfirmAfter') }}
+      {{ t('delegate.deleteConfirmBefore') }}<strong class="text-error">{{ receiverName(deleteTarget) || deleteTarget?.name || deleteTarget?.id }}</strong>{{ t('delegate.deleteConfirmAfter') }}
     </LigojConfirmDialog>
     <LigojConfirmDialog v-model="bulkDeleteDialog" :title="t('common.bulkDeleteTitle')" :icon="TYPE_ICONS.DELEGATE" :confirm-label="t('common.delete')" confirm-color="error" :loading="deleting"
       @confirm="confirmBulkDelete">
@@ -78,6 +78,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { useDataTable, useApi, useAppStore, useAuthStore, useI18nStore } from '@ligoj/host'
 import { TYPE_ICONS } from '../composables/delegateTypes.js'
+import { receiverName } from '../visualId.js'
 import { LjDataTable, LjConfirmDialog as LigojConfirmDialog, LjPageHeader, LjButton, LjSearch, LjStatus } from '@ligoj/host'
 import DelegateEditDialog from './DelegateEditDialog.vue'
 
@@ -107,7 +108,7 @@ const editDialog = ref(false)
 const editDelegateId = ref(null)
 
 const headers = computed(() => [
-  { label: t('delegate.receiver'), key: 'receiver', sortable: true, exportValue: (r) => r.receiver?.name || r.receiver?.id || r.name || '' },
+  { label: t('delegate.receiver'), key: 'receiver', sortable: true, exportValue: (r) => receiverName(r) || r.name || '' },
   { label: t('delegate.resource'), key: 'name', exportValue: (r) => r.name || '' },
   { label: t('delegate.admin'), key: 'canAdmin', align: 'center', width: '90px', exportValue: (r) => (r.canAdmin ? t('delegate.adminGranted') : '') },
   { label: t('delegate.write'), key: 'canWrite', align: 'center', width: '90px', exportValue: (r) => (r.canWrite ? t('delegate.writeGranted') : '') },

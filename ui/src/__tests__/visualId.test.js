@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest'
 import { setActivePinia, createPinia } from 'pinia'
 import { useAuthStore, useI18nStore } from '@ligoj/host'
-import { visualIdName, isVisualId, visualIdColumnKey, visualIdValue, visualIdLabel } from '../visualId.js'
+import { visualIdName, isVisualId, visualIdColumnKey, visualIdValue, visualIdLabel, receiverName } from '../visualId.js'
 
 function setConfig(data) {
   // The auth store reads `appSettings` from the session payload
@@ -54,5 +54,18 @@ describe('visualId resolution (service:id:visual-id-name/-label)', () => {
     expect(visualIdLabel()).toBe('Login')
     setConfig({ 'service:id:visual-id-name': 'customAttributes.badge' })
     expect(visualIdLabel()).toBe('badge')
+  })
+
+  it('delegate receiver: a user shows its visual identifier, a container its name', () => {
+    const user = { id: 'jdoe', name: 'jdoe', firstName: 'John', customAttributes: { badge: 'B-7' } }
+    setConfig({ 'service:id:visual-id-name': 'customAttributes.badge' })
+    expect(receiverName({ receiverType: 'USER', receiver: user })).toBe('B-7')
+    expect(receiverName({ receiverType: 'user', receiver: user })).toBe('B-7')
+    expect(receiverName({ receiverType: 'GROUP', receiver: { id: 'dig', name: 'DIG', customAttributes: { badge: 'x' } } })).toBe('DIG')
+    expect(receiverName({ receiverType: 'COMPANY', receiver: { id: 'ing' } })).toBe('ing')
+    setConfig({})
+    expect(receiverName({ receiverType: 'USER', receiver: user })).toBe('jdoe')
+    expect(receiverName({ receiverType: 'USER' })).toBe('')
+    expect(receiverName(null)).toBe('')
   })
 })
