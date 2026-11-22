@@ -243,6 +243,16 @@ public abstract class AbstractMemCacheRepository {
 	 * @return The fresh LDAP data.
 	 */
 	protected Map<CacheDataType, Map<String, ? extends ResourceOrg>> refreshData() {
+		this.data = fetchData();
+		return this.data;
+	}
+
+	/**
+	 * Read the origin identity data, without touching the memory.
+	 *
+	 * @return The fresh identity data.
+	 */
+	protected Map<CacheDataType, Map<String, ? extends ResourceOrg>> fetchData() {
 		final Map<CacheDataType, Map<String, ? extends ResourceOrg>> result = new EnumMap<>(CacheDataType.class);
 
 		// Fetch origin data
@@ -251,7 +261,6 @@ public abstract class AbstractMemCacheRepository {
 		result.put(CacheDataType.COMPANY, getCompany().findAllNoCache());
 		result.put(CacheDataType.GROUP, groups);
 		result.put(CacheDataType.USER, getUser().findAllNoCache(groups));
-		this.data = result;
 		return result;
 	}
 

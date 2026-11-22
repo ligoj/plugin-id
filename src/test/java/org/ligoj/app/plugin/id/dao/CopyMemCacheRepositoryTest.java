@@ -147,13 +147,14 @@ class CopyMemCacheRepositoryTest {
 	private SampleCopyMemCacheRepository repository;
 	private IdCacheDao cache;
 	private IdCopy copy;
+	private IUserRepository userRepository;
 	private javax.cache.Cache<Object, Object> nativeCache;
 
 	@BeforeEach
 	void init() {
 		final var companyRepository = mock(ICompanyRepository.class);
 		final var groupRepository = mock(IGroupRepository.class);
-		final var userRepository = mock(IUserRepository.class);
+		userRepository = mock(IUserRepository.class);
 		final var configuration = new IamConfiguration();
 		configuration.setNode("service:id:sample:node");
 		configuration.setCompanyRepository(companyRepository);
@@ -599,5 +600,176 @@ class CopyMemCacheRepositoryTest {
 		edited.setId("u");
 		repository.update(edited);
 		verify(cache).update(edited);
+	}
+
+	/**
+	 * The server answers no user from now on.
+	 */
+	private void emptyServer() {
+		when(userRepository.findAllNoCache(groups)).thenReturn(new HashMap<>());
+	}
+
+	/**
+	 * A full read returning no user while users are cached is refused: the memory and the database stay.
+	 */
+	@Test
+	void refreshDataEmptyUsersKeepsTheData() {
+		repository.getData();
+		emptyServer();
+		final var logs = logs(() -> Assertions.assertSame(users, repository.refreshData().get(CacheDataType.USER)));
+		verify(cache, times(1)).reset(any(), any(), any());
+		verify(copy, times(1)).saveState(any(), any(), any());
+		assertLogged(logs, "Full read of service:id:sample:node refused, no user returned while 1 are cached: the cached data is kept, retry 1/2 at " + AT);
+	}
+
+	/**
+	 * Until the time of the retry, the server is not read again.
+	 */
+	@Test
+	void refreshDataWaitsForTheRetry() {
+		repository.getData();
+		emptyServer();
+		repository.refreshData();
+		Assertions.assertSame(users, repository.refreshData().get(CacheDataType.USER));
+		verify(userRepository, times(2)).findAllNoCache(groups);
+	}
+
+	/**
+	 * A due full read does not shorten the wait.
+	 */
+	@Test
+	void getDataWaitsForTheRetry() {
+		repository.getData();
+		emptyServer();
+		repository.entry = 0L;
+		repository.getData();
+		Assertions.assertSame(users, repository.getData().get(CacheDataType.USER));
+		verify(userRepository, times(2)).findAllNoCache(groups);
+	}
+
+	/**
+	 * At the time of the retry, the next access reads the server, even when no full read is due.
+	 */
+	@Test
+	void getDataRetriesWhenDue() {
+		repository.setEmptyReadDelay(0);
+		repository.getData();
+		emptyServer();
+		repository.refreshData();
+		when(userRepository.findAllNoCache(groups)).thenReturn(users);
+		repository.entry = System.currentTimeMillis();
+		Assertions.assertSame(users, repository.getData().get(CacheDataType.USER));
+		verify(cache, times(2)).reset(companies, groups, users);
+		Assertions.assertEquals(ReflectionTestUtils.getField(repository, "lastFullRead"), repository.armed);
+
+		// Back to the regular schedule
+		repository.getData();
+		verify(userRepository, times(3)).findAllNoCache(groups);
+	}
+
+	/**
+	 * After the retries, the server is believed: its users are gone.
+	 */
+	@Test
+	void refreshDataAcceptsEmptyUsersAfterTheRetries() {
+		repository.setEmptyReadDelay(0);
+		repository.getData();
+		emptyServer();
+		repository.refreshData();
+		final var retry2 = logs(() -> repository.refreshData());
+		assertLogged(retry2, "Full read of service:id:sample:node refused, .* retry 2/2 at " + AT);
+		verify(cache, times(1)).reset(any(), any(), any());
+
+		final var logs = logs(() -> Assertions.assertTrue(repository.refreshData().get(CacheDataType.USER).isEmpty()));
+		assertLogged(logs, "Full read of service:id:sample:node accepted after 2 retries: no user returned while 1 are cached");
+		verify(cache).reset(companies, groups, new HashMap<>());
+
+		// Nothing cached anymore: an empty read is a regular one
+		repository.refreshData();
+		verify(cache, times(2)).reset(companies, groups, new HashMap<>());
+	}
+
+	@Test
+	void refreshDataEmptyUsersGuardDisabled() {
+		repository.setEmptyReadGuard(false);
+		repository.getData();
+		emptyServer();
+		Assertions.assertTrue(repository.refreshData().get(CacheDataType.USER).isEmpty());
+		verify(cache, times(2)).reset(any(), any(), any());
+	}
+
+	/**
+	 * A failed full read is refused as an empty one.
+	 */
+	@Test
+	void refreshDataFailedKeepsTheData() {
+		repository.getData();
+		when(userRepository.findAllNoCache(groups)).thenThrow(new IllegalStateException("size limit"));
+		final var logs = logs(() -> Assertions.assertSame(users, repository.refreshData().get(CacheDataType.USER)));
+		verify(cache, times(1)).reset(any(), any(), any());
+		assertLogged(logs, "Full read of service:id:sample:node refused, it failed \\(size limit\\): the cached data is kept, retry 1/2 at " + AT);
+	}
+
+	/**
+	 * After the retries, the failure is the caller's.
+	 */
+	@Test
+	void refreshDataFailedAfterTheRetries() {
+		repository.setEmptyReadDelay(0);
+		repository.getData();
+		when(userRepository.findAllNoCache(groups)).thenThrow(new IllegalStateException("size limit"));
+		repository.refreshData();
+		repository.refreshData();
+		Assertions.assertThrows(IllegalStateException.class, repository::refreshData);
+
+		// The memory is untouched, and each access reads the server until it answers
+		Assertions.assertSame(users, ((Map<?, ?>) ReflectionTestUtils.getField(repository, "data")).get(CacheDataType.USER));
+		Assertions.assertThrows(IllegalStateException.class, repository::getData);
+	}
+
+	/**
+	 * Nothing to keep at the first load: the failure is the caller's.
+	 */
+	@Test
+	void refreshDataFailedWithoutMemory() {
+		when(userRepository.findAllNoCache(groups)).thenThrow(new IllegalStateException("size limit"));
+		Assertions.assertThrows(IllegalStateException.class, repository::refreshData);
+	}
+
+	/**
+	 * With a scheduler, the retry runs at its time, nobody waits for it.
+	 */
+	@Test
+	void refusedReadSchedulesTheRetry() {
+		final var scheduler = mock(TaskScheduler.class);
+		repository.setScheduler(scheduler);
+		repository.setEmptyReadDelay(0);
+		repository.getData();
+		emptyServer();
+		repository.refreshData();
+		final ArgumentCaptor<Runnable> task = ArgumentCaptor.captor();
+		verify(scheduler).schedule(task.capture(), any(Instant.class));
+
+		when(userRepository.findAllNoCache(groups)).thenReturn(users);
+		task.getValue().run();
+		verify(cache, times(2)).reset(companies, groups, users);
+		Assertions.assertEquals(ReflectionTestUtils.getField(repository, "lastFullRead"), repository.armed);
+
+		// A late retry, after an accepted read: nothing to do
+		task.getValue().run();
+		verify(userRepository, times(3)).findAllNoCache(groups);
+	}
+
+	/**
+	 * A cache flush while waiting for the retry: the server is read at once.
+	 */
+	@Test
+	void ensureDataForcesTheReadWhileWaiting() {
+		repository.getData();
+		emptyServer();
+		repository.refreshData();
+		when(userRepository.findAllNoCache(groups)).thenReturn(users);
+		repository.ensureCachedData();
+		verify(cache, times(2)).reset(companies, groups, users);
 	}
 }

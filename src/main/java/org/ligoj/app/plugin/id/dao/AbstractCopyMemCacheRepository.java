@@ -27,6 +27,7 @@ import org.ligoj.app.iam.model.CacheCompany;
 import org.ligoj.bootstrap.resource.system.cache.CronExpiryPolicy;
 import org.springframework.beans.factory.SmartInitializingSingleton;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.CacheManager;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.scheduling.support.CronTrigger;
@@ -85,6 +86,38 @@ public abstract class AbstractCopyMemCacheRepository extends AbstractMemCacheRep
 	private volatile long lastFullRead;
 
 	private final Object cacheLock = new Object();
+
+	/**
+	 * Refuse a full read returning no user while users are cached, or a failed one: the cached data is kept, and the
+	 * server is read again later.
+	 */
+	@Value("${id.cache.empty-read.guard:true}")
+	@Setter
+	private boolean emptyReadGuard = true;
+
+	/**
+	 * The retries of a refused full read. After them, the server is believed.
+	 */
+	@Value("${id.cache.empty-read.retries:2}")
+	@Setter
+	private int emptyReadRetries = 2;
+
+	/**
+	 * The minutes between a refused full read and its retry.
+	 */
+	@Value("${id.cache.empty-read.delay:15}")
+	@Setter
+	private int emptyReadDelay = 15;
+
+	/**
+	 * The full reads refused since the last accepted one.
+	 */
+	private volatile int refusedReads;
+
+	/**
+	 * The time, in milliseconds, of the retry of the last refused full read.
+	 */
+	private volatile long retryTime;
 
 	/**
 	 * Ensure the data is in memory when the cache entry is missing, through {@link #ensureData()}. Annotated by the
@@ -169,7 +202,7 @@ public abstract class AbstractCopyMemCacheRepository extends AbstractMemCacheRep
 	@Override
 	public Map<CacheDataType, Map<String, ? extends ResourceOrg>> getData() {
 		final var read = self().ensureCachedData();
-		if (data != null && isDue(read)) {
+		if (data != null && isReadDue(read)) {
 			refreshData();
 			self().arm(lastFullRead);
 		}
@@ -186,6 +219,8 @@ public abstract class AbstractCopyMemCacheRepository extends AbstractMemCacheRep
 		if (data == null) {
 			restore();
 		} else {
+			// A cache flush is a request to read the server now, even while waiting for the retry of a refused read
+			retryTime = 0;
 			refreshData();
 		}
 		return lastFullRead;
@@ -236,6 +271,44 @@ public abstract class AbstractCopyMemCacheRepository extends AbstractMemCacheRep
 
 	private boolean isDue(final long read) {
 		return !Instant.now().isBefore(getNextFullRead(Instant.ofEpochMilli(read)));
+	}
+
+	/**
+	 * Indicates the server must be read: at the time of the retry after a refused full read, otherwise when the next
+	 * full read is due.
+	 */
+	private boolean isReadDue(final long read) {
+		return refusedReads > 0 ? System.currentTimeMillis() >= retryTime : isDue(read);
+	}
+
+	/**
+	 * Refuse a full read, when allowed: the guard is enabled, there is cached data to keep, and retries are left. The
+	 * retry is scheduled when possible, otherwise the first access after its time runs it.
+	 *
+	 * @return <code>true</code> when the full read is refused.
+	 */
+	private boolean refuse(final IamConfiguration configuration, final String reason, final long now) {
+		if (!emptyReadGuard || data == null || refusedReads >= emptyReadRetries) {
+			return false;
+		}
+		refusedReads++;
+		retryTime = now + Duration.ofMinutes(emptyReadDelay).toMillis();
+		log.error("Full read of {} refused, {}: the cached data is kept, retry {}/{} at {}", configuration.getNode(), reason,
+				refusedReads, emptyReadRetries, NEXT_FORMAT.format(Instant.ofEpochMilli(retryTime)));
+		if (scheduler != null) {
+			scheduler.schedule(this::retryFullRead, Instant.ofEpochMilli(retryTime));
+		}
+		return true;
+	}
+
+	/**
+	 * The scheduled retry of a refused full read, unless a full read was accepted meanwhile.
+	 */
+	private void retryFullRead() {
+		if (refusedReads > 0) {
+			refreshData();
+			self().arm(lastFullRead);
+		}
 	}
 
 	/**
@@ -323,6 +396,10 @@ public abstract class AbstractCopyMemCacheRepository extends AbstractMemCacheRep
 				log.info("Another refresh just finished, new age is {}", DurationFormatUtils.formatDurationHMS(now - cache.getCacheRefreshTime()));
 				return this.data;
 			}
+			if (refusedReads > 0 && now < retryTime) {
+				// A full read was refused, its retry is not due: the cached data is still the best one
+				return this.data;
+			}
 			if (refreshTime == 0) {
 				log.info("Refresh cache requested, first time load");
 			} else {
@@ -331,7 +408,27 @@ public abstract class AbstractCopyMemCacheRepository extends AbstractMemCacheRep
 
 			// The reset invalidates the copy, until its state is written again
 			final var configuration = iamProvider[0].getConfiguration();
-			final var data = super.refreshData();
+			final Map<CacheDataType, Map<String, ? extends ResourceOrg>> data;
+			try {
+				data = fetchData();
+			} catch (final RuntimeException e) {
+				if (refuse(configuration, "it failed (" + e.getMessage() + ")", now)) {
+					return this.data;
+				}
+				throw e;
+			}
+			if (this.data != null && data.get(CacheDataType.USER).isEmpty() && !this.data.get(CacheDataType.USER).isEmpty()) {
+				// No user anymore: a server answering an empty or cut result without error, more likely than a real removal
+				final var reason = "no user returned while " + this.data.get(CacheDataType.USER).size() + " are cached";
+				if (refuse(configuration, reason, now)) {
+					return this.data;
+				}
+				if (emptyReadGuard) {
+					log.warn("Full read of {} accepted after {} retries: {}", configuration.getNode(), refusedReads, reason);
+				}
+			}
+			refusedReads = 0;
+			this.data = data;
 			cache.reset((Map<String, CompanyOrg>) data.get(CacheDataType.COMPANY),
 					(Map<String, GroupOrg>) data.get(CacheDataType.GROUP), (Map<String, UserOrg>) data.get(CacheDataType.USER));
 			if (isProvider(configuration) && isComplete(configuration)) {
