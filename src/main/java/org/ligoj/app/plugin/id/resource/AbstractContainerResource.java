@@ -5,6 +5,7 @@ package org.ligoj.app.plugin.id.resource;
 
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.Context;
+import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.UriInfo;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -154,6 +155,7 @@ public abstract class AbstractContainerResource<T extends ContainerOrg, V extend
 	 * @return The identifier of created {@link org.ligoj.app.iam.ContainerOrg}.
 	 */
 	@POST
+	@Produces({ MediaType.TEXT_PLAIN, MediaType.APPLICATION_JSON })
 	public String create(final V container) {
 		return createInternal(container).getId();
 	}
